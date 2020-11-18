@@ -1432,47 +1432,44 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const token = core.getInput('token', { required: true });
-            // 从 GitHub context 中获取 issue 的相关信息
+            // 从 GitHub Context 中获取 Issue 的相关信息
             const issueNumber = (_a = github.context.payload.issue) === null || _a === void 0 ? void 0 : _a.number;
             const issueBody = (_b = github.context.payload.issue) === null || _b === void 0 ? void 0 : _b.body;
             if (!issueNumber || !issueBody) {
                 core.setFailed('无法获取 issue 的信息');
                 return;
             }
-            // GitHub 客户端
+            // 初始化 GitHub 客户端
             const octokit = github.getOctokit(token);
             if (yield checkPluginLabel(octokit, issueNumber)) {
                 // 创建新分支
-                const branchName = github.context.actor;
+                // 分支名就plugin+issue编号
+                // plugin/issue123
+                const branchName = `plugin/issue${issueNumber}`;
                 yield exec.exec('git', ['checkout', '-b', branchName]);
                 // 更新 plugins.json
-                const plugin = {
-                    id: 'test',
-                    link: 'nonebot/nonebot2',
-                    author: 'test',
-                    desc: 'test',
-                    name: 'test',
-                    repo: 'test'
-                };
-                yield updatePlugins(plugin);
+                const pluginInfo = extractPluginInfo(issueBody);
+                pluginInfo.author = github.context.issue.owner;
+                yield updatePlugins(pluginInfo);
                 // 提交修改
-                const commitMessage = 'test';
-                const username = 'Your Name';
-                const useremail = 'you@example.com';
+                const commitMessage = 'Commit by Plugin Issue Bot';
+                const username = github.context.issue.owner;
+                core.info(`username: ${username}`);
+                const useremail = 'bot@github.com';
                 yield exec.exec('git', ['config', '--global', 'user.name', username]);
                 yield exec.exec('git', ['config', '--global', 'user.email', useremail]);
                 yield exec.exec('git', ['add', '-A']);
                 yield exec.exec('git', ['commit', '-m', commitMessage]);
                 yield exec.exec('git', ['push', 'origin', branchName]);
-                // 提交 PR
+                // 提交 Pull Request
+                // 标题里要注明issue编号
+                const pullRequestTitle = `Plugin ${pluginInfo.name} (resolve #${issueNumber})`;
                 octokit.pulls.create({
                     owner: github.context.repo.owner,
                     repo: github.context.repo.repo,
-                    title: 'test',
+                    title: pullRequestTitle,
                     head: branchName,
-                    base: 'main',
-                    body: 'test',
-                    draft: true
+                    base: 'main'
                 });
             }
         }
@@ -1481,7 +1478,7 @@ function run() {
         }
     });
 }
-// 检查 issue 是否带有 Plugin label
+/** 检查 Issue 是否带有 Plugin Label */
 function checkPluginLabel(octokit, issueNumber) {
     return __awaiter(this, void 0, void 0, function* () {
         const response = yield octokit.issues.get({
@@ -1494,35 +1491,46 @@ function checkPluginLabel(octokit, issueNumber) {
         return title.search('plugin') !== -1;
     });
 }
-// 更新 plugins.json
-function updatePlugins(plugin) {
+/** 更新 plugins.json */
+function updatePlugins(pluginInfo) {
     return __awaiter(this, void 0, void 0, function* () {
         if (process.env.GITHUB_WORKSPACE) {
             const pluginJsonFilePath = `${process.env.GITHUB_WORKSPACE}/docs/.vuepress/public/plugins.json`;
-            core.info(pluginJsonFilePath);
-            // 构造插件数据
-            const pluginObj = {
-                id: plugin.id,
-                link: plugin.link,
-                name: plugin.name,
-                desc: plugin.desc,
-                author: plugin.author,
-                repo: plugin.repo
-            };
             // 写入新数据
-            fs.readFile(pluginJsonFilePath, 'utf8', function readFileCallback(err, data) {
+            fs.readFile(pluginJsonFilePath, 'utf8', (err, data) => {
                 if (err) {
                     core.setFailed(err);
                 }
                 else {
                     const obj = JSON.parse(data);
-                    obj.push(pluginObj);
+                    obj.push(pluginInfo);
                     const json = JSON.stringify(obj, null, 2);
                     fs.writeFile(pluginJsonFilePath, json, 'utf8', () => { }); // write it back
                 }
             });
         }
     });
+}
+/** 从 Issue 内容提取插件信息 */
+function extractPluginInfo(body) {
+    core.info('body');
+    core.info(body);
+    const oneLine = body.replace(/\n/g, '');
+    core.info('oneLine');
+    core.info(oneLine);
+    const match = oneLine.match(/\*\*你的插件名称：\*\*(?<name>.*)\*\*简短描述插件功能：\*\*(?<desc>.*)\*\*插件 import 使用的名称\*\*(?<id>.*)\*\*插件 install 使用的名称\*\*(?<link>.*)\*\*插件项目仓库\/主页链接\*\*(?<repo>.*)/);
+    if (match === null || match === void 0 ? void 0 : match.groups) {
+        return {
+            id: match.groups.id,
+            link: match.groups.link,
+            author: 'test',
+            desc: match.groups.desc,
+            name: match.groups.name,
+            repo: match.groups.repo
+        };
+    }
+    core.setFailed('无法匹配成功');
+    throw new Error('无法匹配成功');
 }
 run();
 

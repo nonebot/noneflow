@@ -2,14 +2,29 @@ import * as core from '@actions/core'
 import * as github from '@actions/github'
 import * as exec from '@actions/exec'
 import * as fs from 'fs'
-
 import {GitHub} from '@actions/github/lib/utils'
+
+/** 插件所需要的信息 */
+interface PluginInfo {
+  /** import id */
+  id: string
+  /** pip地址 */
+  link: string
+  /** 你的插件名称 */
+  name: string
+  /** 简短描述插件功能 */
+  desc: string
+  /** 开发者 */
+  author: string
+  /** 插件项目仓库/主页链接 */
+  repo: string
+}
 
 async function run(): Promise<void> {
   try {
     const token: string = core.getInput('token', {required: true})
 
-    // 从 GitHub context 中获取 issue 的相关信息
+    // 从 GitHub Context 中获取 Issue 的相关信息
     const issueNumber = github.context.payload.issue?.number
     const issueBody = github.context.payload.issue?.body
 
@@ -17,41 +32,38 @@ async function run(): Promise<void> {
       core.setFailed('无法获取 issue 的信息')
       return
     }
-    // GitHub 客户端
+    // 初始化 GitHub 客户端
     const octokit = github.getOctokit(token)
 
     if (await checkPluginLabel(octokit, issueNumber)) {
       // 创建新分支
-      const branchName = github.context.actor
+      // 分支名就plugin+issue编号
+      // plugin/issue123
+      const branchName = `plugin/issue${issueNumber}`
       await exec.exec('git', ['checkout', '-b', branchName])
       // 更新 plugins.json
-      const plugin: Plugin = {
-        id: 'test',
-        link: 'nonebot/nonebot2',
-        author: 'test',
-        desc: 'test',
-        name: 'test',
-        repo: 'test'
-      }
-      await updatePlugins(plugin)
+      const pluginInfo = extractPluginInfo(issueBody)
+      pluginInfo.author = github.context.issue.owner
+      await updatePlugins(pluginInfo)
       // 提交修改
-      const commitMessage = 'test'
-      const username = 'Your Name'
-      const useremail = 'you@example.com'
+      const commitMessage = 'Commit by Plugin Issue Bot'
+      const username = github.context.issue.owner
+      core.info(`username: ${username}`)
+      const useremail = 'bot@github.com'
       await exec.exec('git', ['config', '--global', 'user.name', username])
       await exec.exec('git', ['config', '--global', 'user.email', useremail])
       await exec.exec('git', ['add', '-A'])
       await exec.exec('git', ['commit', '-m', commitMessage])
       await exec.exec('git', ['push', 'origin', branchName])
-      // 提交 PR
+      // 提交 Pull Request
+      // 标题里要注明issue编号
+      const pullRequestTitle = `Plugin ${pluginInfo.name} (resolve #${issueNumber})`
       octokit.pulls.create({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
-        title: 'test',
+        title: pullRequestTitle,
         head: branchName,
-        base: 'main',
-        body: 'test',
-        draft: true
+        base: 'main'
       })
     }
   } catch (error) {
@@ -59,7 +71,7 @@ async function run(): Promise<void> {
   }
 }
 
-// 检查 issue 是否带有 Plugin label
+/** 检查 Issue 是否带有 Plugin Label */
 async function checkPluginLabel(
   octokit: InstanceType<typeof GitHub>,
   issueNumber: number
@@ -74,44 +86,46 @@ async function checkPluginLabel(
   return title.search('plugin') !== -1
 }
 
-interface Plugin {
-  id: string
-  link: string
-  name: string
-  desc: string
-  author: string
-  repo: string
-}
-
-// 更新 plugins.json
-async function updatePlugins(plugin: Plugin): Promise<void> {
+/** 更新 plugins.json */
+async function updatePlugins(pluginInfo: PluginInfo): Promise<void> {
   if (process.env.GITHUB_WORKSPACE) {
     const pluginJsonFilePath = `${process.env.GITHUB_WORKSPACE}/docs/.vuepress/public/plugins.json`
-    core.info(pluginJsonFilePath)
-    // 构造插件数据
-    const pluginObj = {
-      id: plugin.id,
-      link: plugin.link,
-      name: plugin.name,
-      desc: plugin.desc,
-      author: plugin.author,
-      repo: plugin.repo
-    }
     // 写入新数据
-    fs.readFile(pluginJsonFilePath, 'utf8', function readFileCallback(
-      err,
-      data
-    ) {
+    fs.readFile(pluginJsonFilePath, 'utf8', (err, data) => {
       if (err) {
         core.setFailed(err)
       } else {
         const obj = JSON.parse(data)
-        obj.push(pluginObj)
+        obj.push(pluginInfo)
         const json = JSON.stringify(obj, null, 2)
         fs.writeFile(pluginJsonFilePath, json, 'utf8', () => {}) // write it back
       }
     })
   }
+}
+
+/** 从 Issue 内容提取插件信息 */
+function extractPluginInfo(body: string): PluginInfo {
+  core.info('body')
+  core.info(body)
+  const oneLine = body.replace(/\n/g, '')
+  core.info('oneLine')
+  core.info(oneLine)
+  const match = oneLine.match(
+    /\*\*你的插件名称：\*\*(?<name>.*)\*\*简短描述插件功能：\*\*(?<desc>.*)\*\*插件 import 使用的名称\*\*(?<id>.*)\*\*插件 install 使用的名称\*\*(?<link>.*)\*\*插件项目仓库\/主页链接\*\*(?<repo>.*)/
+  )
+  if (match?.groups) {
+    return {
+      id: match.groups.id,
+      link: match.groups.link,
+      author: 'test',
+      desc: match.groups.desc,
+      name: match.groups.name,
+      repo: match.groups.repo
+    }
+  }
+  core.setFailed('无法匹配成功')
+  throw new Error('无法匹配成功')
 }
 
 run()
