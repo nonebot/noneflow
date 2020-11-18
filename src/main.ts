@@ -49,7 +49,8 @@ async function run(): Promise<void> {
       const commitMessage = 'Commit by Plugin Issue Bot'
       const username = github.context.issue.owner
       core.info(`username: ${username}`)
-      const useremail = 'bot@github.com'
+      const user = await octokit.users.getByUsername({username})
+      const useremail = user.data.email
       await exec.exec('git', ['config', '--global', 'user.name', username])
       await exec.exec('git', ['config', '--global', 'user.email', useremail])
       await exec.exec('git', ['add', '-A'])
@@ -83,7 +84,12 @@ async function checkPluginLabel(
   })
   const title = response.data.title
   core.info(`Issue title: '${title}'`)
-  return title.search('plugin') !== -1
+  const labels = response.data.labels
+  labels.filter(x => x.name === 'Plugin')
+  if (labels) {
+    return true
+  }
+  return false
 }
 
 /** 更新 plugins.json */

@@ -1455,7 +1455,8 @@ function run() {
                 const commitMessage = 'Commit by Plugin Issue Bot';
                 const username = github.context.issue.owner;
                 core.info(`username: ${username}`);
-                const useremail = 'bot@github.com';
+                const user = yield octokit.users.getByUsername({ username: username });
+                const useremail = user.data.email;
                 yield exec.exec('git', ['config', '--global', 'user.name', username]);
                 yield exec.exec('git', ['config', '--global', 'user.email', useremail]);
                 yield exec.exec('git', ['add', '-A']);
@@ -1488,7 +1489,12 @@ function checkPluginLabel(octokit, issueNumber) {
         });
         const title = response.data.title;
         core.info(`Issue title: '${title}'`);
-        return title.search('plugin') !== -1;
+        const labels = response.data.labels;
+        labels.filter(x => x.name === 'Plugin');
+        if (labels) {
+            return true;
+        }
+        return false;
     });
 }
 /** 更新 plugins.json */
