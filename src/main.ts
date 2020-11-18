@@ -55,7 +55,7 @@ async function run(): Promise<void> {
       await exec.exec('git', ['config', '--global', 'user.email', useremail])
       await exec.exec('git', ['add', '-A'])
       await exec.exec('git', ['commit', '-m', commitMessage])
-      await exec.exec('git', ['push', 'origin', branchName])
+      await exec.exec('git', ['push', 'origin', branchName, '-f'])
       // 提交 Pull Request
       // 标题里要注明issue编号
       const pullRequestTitle = `Plugin ${pluginInfo.name} (resolve #${issueNumber})`

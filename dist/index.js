@@ -1461,7 +1461,7 @@ function run() {
                 yield exec.exec('git', ['config', '--global', 'user.email', useremail]);
                 yield exec.exec('git', ['add', '-A']);
                 yield exec.exec('git', ['commit', '-m', commitMessage]);
-                yield exec.exec('git', ['push', 'origin', branchName]);
+                yield exec.exec('git', ['push', 'origin', branchName, '-f']);
                 // 提交 Pull Request
                 // 标题里要注明issue编号
                 const pullRequestTitle = `Plugin ${pluginInfo.name} (resolve #${issueNumber})`;
