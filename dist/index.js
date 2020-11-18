@@ -1426,6 +1426,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(186));
 const github = __importStar(__webpack_require__(438));
 const exec = __importStar(__webpack_require__(514));
+const fs = __importStar(__webpack_require__(747));
 function run() {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
@@ -1485,9 +1486,34 @@ function checkPluginLabel(octokit, issueNumber) {
         return title.search('plugin') !== -1;
     });
 }
+// 更新 plugins.json
 function updatePlugins(plugin) {
     return __awaiter(this, void 0, void 0, function* () {
-        yield exec.exec('echo', [plugin.name, '>', 'test.txt']);
+        if (process.env.GITHUB_WORKSPACE) {
+            const pluginJsonFilePath = `${process.env.GITHUB_WORKSPACE}/docs/.vuepress/public/plugins.json`;
+            core.info(pluginJsonFilePath);
+            // 构造插件数据
+            const pluginObj = {
+                id: plugin.id,
+                link: plugin.link,
+                name: plugin.name,
+                desc: plugin.desc,
+                author: plugin.author,
+                repo: plugin.repo
+            };
+            // 写入新数据
+            fs.readFile(pluginJsonFilePath, 'utf8', function readFileCallback(err, data) {
+                if (err) {
+                    core.setFailed(err);
+                }
+                else {
+                    const obj = JSON.parse(data);
+                    obj.push(pluginObj);
+                    const json = JSON.stringify(obj);
+                    fs.writeFile(pluginJsonFilePath, json, 'utf8', () => { }); // write it back
+                }
+            });
+        }
     });
 }
 run();

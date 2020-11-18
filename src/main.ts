@@ -1,6 +1,8 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import * as exec from '@actions/exec'
+import * as fs from 'fs'
+
 import {GitHub} from '@actions/github/lib/utils'
 
 async function run(): Promise<void> {
@@ -75,7 +77,33 @@ interface Plugin {
 
 // 更新 plugins.json
 async function updatePlugins(plugin: Plugin): Promise<void> {
-  await exec.exec('echo', [plugin.name, '>', 'test.txt'])
+  if (process.env.GITHUB_WORKSPACE) {
+    const pluginJsonFilePath = `${process.env.GITHUB_WORKSPACE}/docs/.vuepress/public/plugins.json`
+    core.info(pluginJsonFilePath)
+    // 构造插件数据
+    const pluginObj = {
+      id: plugin.id,
+      link: plugin.link,
+      name: plugin.name,
+      desc: plugin.desc,
+      author: plugin.author,
+      repo: plugin.repo
+    }
+    // 写入新数据
+    fs.readFile(pluginJsonFilePath, 'utf8', function readFileCallback(
+      err,
+      data
+    ) {
+      if (err) {
+        core.setFailed(err)
+      } else {
+        const obj = JSON.parse(data)
+        obj.push(pluginObj)
+        const json = JSON.stringify(obj)
+        fs.writeFile(pluginJsonFilePath, json, 'utf8', () => {}) // write it back
+      }
+    })
+  }
 }
 
 run()
