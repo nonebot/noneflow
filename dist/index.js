@@ -1505,7 +1505,7 @@ function updatePlugins(pluginInfo) {
                     const obj = JSON.parse(data);
                     obj.push(pluginInfo);
                     const json = JSON.stringify(obj, null, 2);
-                    fs.writeFile(pluginJsonFilePath, json, 'utf8', () => { }); // write it back
+                    fs.writeFile(pluginJsonFilePath, json, 'utf8', () => { });
                 }
             });
         }
@@ -1513,7 +1513,7 @@ function updatePlugins(pluginInfo) {
 }
 /** 从 Issue 内容提取插件信息 */
 function extractPluginInfo(body) {
-    const match = body.match(/\*\*你的插件名称：\*\*\n+(?<name>.*)\n+\*\*简短描述插件功能：\*\*\n+(?<desc>.*)\n+\*\*插件 import 使用的名称\*\*\n+(?<id>.*)\n+\*\*插件 install 使用的名称\*\*\n+(?<link>.*)\n+\*\*插件项目仓库\/主页链接\*\*\n+(?<repo>.*)/);
+    const match = body.match(/\*\*你的插件名称：\*\*[\n\r]+(?<name>.*)[\n\r]+\*\*简短描述插件功能：\*\*[\n\r]+(?<desc>.*)[\n\r]+\*\*插件 import 使用的名称\*\*[\n\r]+(?<id>.*)[\n\r]+\*\*插件 install 使用的名称\*\*[\n\r]+(?<link>.*)[\n\r]+\*\*插件项目仓库\/主页链接\*\*[\n\r]+(?<repo>.*)/);
     if (match === null || match === void 0 ? void 0 : match.groups) {
         return {
             id: match.groups.id,
@@ -1524,7 +1524,6 @@ function extractPluginInfo(body) {
             repo: match.groups.repo
         };
     }
-    core.setFailed('无法匹配成功');
     throw new Error('无法匹配成功');
 }
 run();

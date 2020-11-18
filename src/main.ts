@@ -98,7 +98,7 @@ async function updatePlugins(pluginInfo: PluginInfo): Promise<void> {
         const obj = JSON.parse(data)
         obj.push(pluginInfo)
         const json = JSON.stringify(obj, null, 2)
-        fs.writeFile(pluginJsonFilePath, json, 'utf8', () => {}) // write it back
+        fs.writeFile(pluginJsonFilePath, json, 'utf8', () => {})
       }
     })
   }
@@ -107,7 +107,7 @@ async function updatePlugins(pluginInfo: PluginInfo): Promise<void> {
 /** 从 Issue 内容提取插件信息 */
 function extractPluginInfo(body: string): PluginInfo {
   const match = body.match(
-    /\*\*你的插件名称：\*\*\n+(?<name>.*)\n+\*\*简短描述插件功能：\*\*\n+(?<desc>.*)\n+\*\*插件 import 使用的名称\*\*\n+(?<id>.*)\n+\*\*插件 install 使用的名称\*\*\n+(?<link>.*)\n+\*\*插件项目仓库\/主页链接\*\*\n+(?<repo>.*)/
+    /\*\*你的插件名称：\*\*[\n\r]+(?<name>.*)[\n\r]+\*\*简短描述插件功能：\*\*[\n\r]+(?<desc>.*)[\n\r]+\*\*插件 import 使用的名称\*\*[\n\r]+(?<id>.*)[\n\r]+\*\*插件 install 使用的名称\*\*[\n\r]+(?<link>.*)[\n\r]+\*\*插件项目仓库\/主页链接\*\*[\n\r]+(?<repo>.*)/
   )
   if (match?.groups) {
     return {
@@ -119,7 +119,6 @@ function extractPluginInfo(body: string): PluginInfo {
       repo: match.groups.repo
     }
   }
-  core.setFailed('无法匹配成功')
   throw new Error('无法匹配成功')
 }
 
