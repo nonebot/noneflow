@@ -1,6 +1,10 @@
-name: 'Your name here'
+name: 'Plugin Issue Bot'
 description: 'Provide a description here'
 author: 'Your name or organization here'
+inputs:
+  token:
+    required: true
+    description: 'GitHub Token'
 runs:
   using: 'node12'
   main: 'dist/index.js'

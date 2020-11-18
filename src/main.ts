@@ -24,7 +24,15 @@ async function run(): Promise<void> {
       // 创建新分支
       await creatBranch(git, github.context.actor)
       // 更新 plugins.json
-
+      const plugin: Plugin = {
+        id: 'test',
+        link: 'nonebot/nonebot2',
+        author: 'test',
+        desc: 'test',
+        name: 'test',
+        repo: 'test'
+      }
+      await updatePlugins(plugin)
       // 提交 PR
       // octokit.pulls.create()
     }
@@ -98,6 +106,8 @@ interface Plugin {
   repo: string
 }
 
-async function updatePlugins(plugin: Plugin): Promise<void> {}
+async function updatePlugins(plugin: Plugin): Promise<void> {
+  plugin.author
+}
 
 run()

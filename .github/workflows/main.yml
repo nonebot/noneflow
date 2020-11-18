@@ -1,4 +1,4 @@
-name: "Plugin Issue Bot"
+name: 'Plugin Issue Bot'
 on:
   issues:
     types: [opened, edited]
@@ -14,4 +14,6 @@ jobs:
         uses: actions/checkout@v2
       - name: plugin issue
         uses: ./ # Uses an action in the root directory
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
         id: issue
