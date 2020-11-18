@@ -1456,6 +1456,10 @@ function run() {
                 yield updatePlugins(plugin);
                 // 提交修改
                 const commitMessage = 'test';
+                const username = 'Your Name';
+                const useremail = 'you@example.com';
+                yield exec.exec('git', ['config', '--global', 'user.name', username]);
+                yield exec.exec('git', ['config', '--global', 'user.email', useremail]);
                 yield exec.exec('git', ['add', '-A']);
                 yield exec.exec('git', ['commit', '-m', commitMessage]);
                 yield exec.exec('git', ['push', 'origin', branchName]);

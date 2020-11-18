@@ -34,6 +34,10 @@ async function run(): Promise<void> {
       await updatePlugins(plugin)
       // 提交修改
       const commitMessage = 'test'
+      const username = 'Your Name'
+      const useremail = 'you@example.com'
+      await exec.exec('git', ['config', '--global', 'user.name', username])
+      await exec.exec('git', ['config', '--global', 'user.email', useremail])
       await exec.exec('git', ['add', '-A'])
       await exec.exec('git', ['commit', '-m', commitMessage])
       await exec.exec('git', ['push', 'origin', branchName])
