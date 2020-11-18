@@ -73,8 +73,9 @@ interface Plugin {
   repo: string
 }
 
+// 更新 plugins.json
 async function updatePlugins(plugin: Plugin): Promise<void> {
-  plugin.author
+  await exec.exec('echo', [plugin.name, '>', 'test.txt'])
 }
 
 run()

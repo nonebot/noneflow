@@ -1487,7 +1487,7 @@ function checkPluginLabel(octokit, issueNumber) {
 }
 function updatePlugins(plugin) {
     return __awaiter(this, void 0, void 0, function* () {
-        plugin.author;
+        yield exec.exec('echo', [plugin.name, '>', 'test.txt']);
     });
 }
 run();
