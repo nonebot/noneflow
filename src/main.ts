@@ -46,26 +46,36 @@ async function run(): Promise<void> {
       pluginInfo.author = github.context.issue.owner
       await updatePlugins(pluginInfo)
       // 提交修改
-      const commitMessage = 'Commit by Plugin Issue Bot'
+      const commitMessage = `:beers: publish ${pluginInfo.name}`
       const username = github.context.issue.owner
       core.info(`username: ${username}`)
       const user = await octokit.users.getByUsername({username})
-      const useremail = user.data.email
+      const useremail = user.data.email ?? 'bot@github.com'
       await exec.exec('git', ['config', '--global', 'user.name', username])
       await exec.exec('git', ['config', '--global', 'user.email', useremail])
       await exec.exec('git', ['add', '-A'])
       await exec.exec('git', ['commit', '-m', commitMessage])
       await exec.exec('git', ['push', 'origin', branchName, '-f'])
       // 提交 Pull Request
-      // 标题里要注明issue编号
+      // 标题里要注明 issue 编号
       const pullRequestTitle = `Plugin ${pluginInfo.name} (resolve #${issueNumber})`
-      octokit.pulls.create({
+      const pr = await octokit.pulls.create({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
         title: pullRequestTitle,
         head: branchName,
-        base: 'main'
+        base: 'main',
+        body: pullRequestTitle
       })
+      // 自动给 Pull Request 添加 Plugin 标签
+      await octokit.issues.addLabels({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        issue_number: pr.data.number,
+        labels: ['Plugin']
+      })
+    } else {
+      core.info('没有 Plugin 标签，不处理')
     }
   } catch (error) {
     core.setFailed(error.message)
