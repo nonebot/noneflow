@@ -44,7 +44,15 @@ async function run(): Promise<void> {
       await exec.exec('git', ['commit', '-m', commitMessage])
       await exec.exec('git', ['push', 'origin', branchName])
       // 提交 PR
-      // octokit.pulls.create()
+      octokit.pulls.create({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        title: 'test',
+        head: branchName,
+        base: 'main',
+        body: 'test',
+        draft: true
+      })
     }
   } catch (error) {
     core.setFailed(error.message)
