@@ -1513,12 +1513,7 @@ function updatePlugins(pluginInfo) {
 }
 /** 从 Issue 内容提取插件信息 */
 function extractPluginInfo(body) {
-    core.info('body');
-    core.info(body);
-    const oneLine = body.replace(/\n/g, '');
-    core.info('oneLine');
-    core.info(oneLine);
-    const match = oneLine.match(/\*\*你的插件名称：\*\*(?<name>.*)\*\*简短描述插件功能：\*\*(?<desc>.*)\*\*插件 import 使用的名称\*\*(?<id>.*)\*\*插件 install 使用的名称\*\*(?<link>.*)\*\*插件项目仓库\/主页链接\*\*(?<repo>.*)/);
+    const match = body.match(/\*\*你的插件名称：\*\*\n+(?<name>.*)\n+\*\*简短描述插件功能：\*\*\n+(?<desc>.*)\n+\*\*插件 import 使用的名称\*\*\n+(?<id>.*)\n+\*\*插件 install 使用的名称\*\*\n+(?<link>.*)\n+\*\*插件项目仓库\/主页链接\*\*\n+(?<repo>.*)/);
     if (match === null || match === void 0 ? void 0 : match.groups) {
         return {
             id: match.groups.id,
