@@ -85,9 +85,10 @@ async function checkPluginLabel(
   const title = response.data.title
   core.info(`Issue title: '${title}'`)
   const labels = response.data.labels
-  labels.filter(x => x.name === 'Plugin')
-  if (labels) {
-    return true
+  for (const label of labels) {
+    if (label.name === 'Plugin') {
+      return true
+    }
   }
   return false
 }
