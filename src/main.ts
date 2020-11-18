@@ -1,7 +1,6 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import * as exec from '@actions/exec'
-import * as io from '@actions/io'
 import {GitHub} from '@actions/github/lib/utils'
 
 async function run(): Promise<void> {
@@ -20,9 +19,9 @@ async function run(): Promise<void> {
     const octokit = github.getOctokit(token)
 
     if (await checkPluginLabel(octokit, issueNumber)) {
-      const git = await GitCommandManager.create()
       // 创建新分支
-      await creatBranch(git, github.context.actor)
+      const branchName = github.context.actor
+      await exec.exec('git', ['checkout', '-b', branchName])
       // 更新 plugins.json
       const plugin: Plugin = {
         id: 'test',
@@ -33,6 +32,11 @@ async function run(): Promise<void> {
         repo: 'test'
       }
       await updatePlugins(plugin)
+      // 提交修改
+      const commitMessage = 'test'
+      await exec.exec('git', ['add', '-A'])
+      await exec.exec('git', ['commit', '-m', commitMessage])
+      await exec.exec('git', ['push', 'origin', branchName])
       // 提交 PR
       // octokit.pulls.create()
     }
@@ -54,47 +58,6 @@ async function checkPluginLabel(
   const title = response.data.title
   core.info(`Issue title: '${title}'`)
   return title.search('plugin') !== -1
-}
-
-class GitCommandManager {
-  private gitPath: string
-  private workingDirectory: string
-
-  private constructor(workingDirectory: string, gitPath: string) {
-    this.workingDirectory = workingDirectory
-    this.gitPath = gitPath
-  }
-
-  static async create(): Promise<GitCommandManager> {
-    const gitPath = await io.which('git', true)
-    const workingDirectory = process.env['GITHUB_WORKSPACE']
-    if (!workingDirectory) {
-      throw new Error('GITHUB_WORKSPACE not defined')
-    }
-    core.info(`workingDirectory: '${workingDirectory}'`)
-    return new GitCommandManager(workingDirectory, gitPath)
-  }
-
-  async checkout(name: string): Promise<void> {
-    const args = ['checkout', '-b', name]
-    await this.exec(args)
-  }
-
-  async exec(args: string[]): Promise<void> {
-    const options = {
-      cwd: this.workingDirectory
-    }
-
-    await exec.exec(`"${this.gitPath}"`, args, options)
-  }
-}
-
-// 创建新分支
-async function creatBranch(
-  git: GitCommandManager,
-  name: string
-): Promise<void> {
-  await exec.exec('git', ['checkout', '-b', name])
 }
 
 interface Plugin {

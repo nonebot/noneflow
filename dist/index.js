@@ -1426,7 +1426,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(186));
 const github = __importStar(__webpack_require__(438));
 const exec = __importStar(__webpack_require__(514));
-const io = __importStar(__webpack_require__(436));
 function run() {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
@@ -1442,9 +1441,9 @@ function run() {
             // GitHub 客户端
             const octokit = github.getOctokit(token);
             if (yield checkPluginLabel(octokit, issueNumber)) {
-                const git = yield GitCommandManager.create();
                 // 创建新分支
-                yield creatBranch(git, github.context.actor);
+                const branchName = github.context.actor;
+                yield exec.exec('git', ['checkout', '-b', branchName]);
                 // 更新 plugins.json
                 const plugin = {
                     id: 'test',
@@ -1455,6 +1454,11 @@ function run() {
                     repo: 'test'
                 };
                 yield updatePlugins(plugin);
+                // 提交修改
+                const commitMessage = 'test';
+                yield exec.exec('git', ['add', '-A']);
+                yield exec.exec('git', ['commit', '-m', commitMessage]);
+                yield exec.exec('git', ['push', 'origin', branchName]);
                 // 提交 PR
                 // octokit.pulls.create()
             }
@@ -1475,43 +1479,6 @@ function checkPluginLabel(octokit, issueNumber) {
         const title = response.data.title;
         core.info(`Issue title: '${title}'`);
         return title.search('plugin') !== -1;
-    });
-}
-class GitCommandManager {
-    constructor(workingDirectory, gitPath) {
-        this.workingDirectory = workingDirectory;
-        this.gitPath = gitPath;
-    }
-    static create() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const gitPath = yield io.which('git', true);
-            const workingDirectory = process.env['GITHUB_WORKSPACE'];
-            if (!workingDirectory) {
-                throw new Error('GITHUB_WORKSPACE not defined');
-            }
-            core.info(`workingDirectory: '${workingDirectory}'`);
-            return new GitCommandManager(workingDirectory, gitPath);
-        });
-    }
-    checkout(name) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const args = ['checkout', '-b', name];
-            yield this.exec(args);
-        });
-    }
-    exec(args) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const options = {
-                cwd: this.workingDirectory
-            };
-            yield exec.exec(`"${this.gitPath}"`, args, options);
-        });
-    }
-}
-// 创建新分支
-function creatBranch(git, name) {
-    return __awaiter(this, void 0, void 0, function* () {
-        yield exec.exec('git', ['checkout', '-b', name]);
     });
 }
 function updatePlugins(plugin) {
