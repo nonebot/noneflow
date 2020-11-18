@@ -99,7 +99,7 @@ async function updatePlugins(plugin: Plugin): Promise<void> {
       } else {
         const obj = JSON.parse(data)
         obj.push(pluginObj)
-        const json = JSON.stringify(obj)
+        const json = JSON.stringify(obj, null, 2)
         fs.writeFile(pluginJsonFilePath, json, 'utf8', () => {}) // write it back
       }
     })
