@@ -1427,70 +1427,7 @@ const core = __importStar(__webpack_require__(186));
 const github = __importStar(__webpack_require__(438));
 const exec = __importStar(__webpack_require__(514));
 const fs = __importStar(__webpack_require__(747));
-function run() {
-    var _a, _b, _c;
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const token = core.getInput('token', { required: true });
-            // 从 GitHub Context 中获取 Issue 的相关信息
-            const issueNumber = (_a = github.context.payload.issue) === null || _a === void 0 ? void 0 : _a.number;
-            const issueBody = (_b = github.context.payload.issue) === null || _b === void 0 ? void 0 : _b.body;
-            if (!issueNumber || !issueBody) {
-                core.setFailed('无法获取 issue 的信息');
-                return;
-            }
-            // 初始化 GitHub 客户端
-            const octokit = github.getOctokit(token);
-            if (yield checkPluginLabel(octokit, issueNumber)) {
-                // 创建新分支
-                // 分支名就plugin+issue编号
-                // plugin/issue123
-                const branchName = `plugin/issue${issueNumber}`;
-                yield exec.exec('git', ['checkout', '-b', branchName]);
-                // 更新 plugins.json
-                const pluginInfo = extractPluginInfo(issueBody);
-                pluginInfo.author = github.context.issue.owner;
-                yield updatePlugins(pluginInfo);
-                // 提交修改
-                const commitMessage = `:beers: publish ${pluginInfo.name}`;
-                const username = github.context.issue.owner;
-                core.info(`username: ${username}`);
-                const user = yield octokit.users.getByUsername({ username });
-                const useremail = (_c = user.data.email) !== null && _c !== void 0 ? _c : 'bot@github.com';
-                yield exec.exec('git', ['config', '--global', 'user.name', username]);
-                yield exec.exec('git', ['config', '--global', 'user.email', useremail]);
-                yield exec.exec('git', ['add', '-A']);
-                yield exec.exec('git', ['commit', '-m', commitMessage]);
-                yield exec.exec('git', ['push', 'origin', branchName, '-f']);
-                // 提交 Pull Request
-                // 标题里要注明 issue 编号
-                const pullRequestTitle = `Plugin ${pluginInfo.name} (resolve #${issueNumber})`;
-                const pr = yield octokit.pulls.create({
-                    owner: github.context.repo.owner,
-                    repo: github.context.repo.repo,
-                    title: pullRequestTitle,
-                    head: branchName,
-                    base: 'main',
-                    body: pullRequestTitle
-                });
-                // 自动给 Pull Request 添加 Plugin 标签
-                yield octokit.issues.addLabels({
-                    owner: github.context.repo.owner,
-                    repo: github.context.repo.repo,
-                    issue_number: pr.data.number,
-                    labels: ['Plugin']
-                });
-            }
-            else {
-                core.info('没有 Plugin 标签，不处理');
-            }
-        }
-        catch (error) {
-            core.setFailed(error.message);
-        }
-    });
-}
-/** 检查 Issue 是否带有 Plugin Label */
+/**检查 Issue 是否带有 Plugin Label */
 function checkPluginLabel(octokit, issueNumber) {
     return __awaiter(this, void 0, void 0, function* () {
         const response = yield octokit.issues.get({
@@ -1509,8 +1446,8 @@ function checkPluginLabel(octokit, issueNumber) {
         return false;
     });
 }
-/** 更新 plugins.json */
-function updatePlugins(pluginInfo) {
+/**更新 plugins.json */
+function updatePluginsFile(pluginInfo) {
     return __awaiter(this, void 0, void 0, function* () {
         if (process.env.GITHUB_WORKSPACE) {
             const pluginJsonFilePath = `${process.env.GITHUB_WORKSPACE}/docs/.vuepress/public/plugins.json`;
@@ -1529,7 +1466,7 @@ function updatePlugins(pluginInfo) {
         }
     });
 }
-/** 从 Issue 内容提取插件信息 */
+/**从 Issue 内容提取插件信息 */
 function extractPluginInfo(body) {
     const match = body.match(/\*\*你的插件名称：\*\*[\n\r]+(?<name>.*)[\n\r]+\*\*简短描述插件功能：\*\*[\n\r]+(?<desc>.*)[\n\r]+\*\*插件 import 使用的名称\*\*[\n\r]+(?<id>.*)[\n\r]+\*\*插件 install 使用的名称\*\*[\n\r]+(?<link>.*)[\n\r]+\*\*插件项目仓库\/主页链接\*\*[\n\r]+(?<repo>.*)/);
     if (match === null || match === void 0 ? void 0 : match.groups) {
@@ -1543,6 +1480,78 @@ function extractPluginInfo(body) {
         };
     }
     throw new Error('无法匹配成功');
+}
+/**创建 Pull Request
+ *
+ * 同时添加 Plugin 标签
+ */
+function createPullRequest(pluginInfo, issueNumber, octokit, branchName) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const pullRequestTitle = `Plugin ${pluginInfo.name} (resolve #${issueNumber})`;
+        const pr = yield octokit.pulls.create({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            title: pullRequestTitle,
+            head: branchName,
+            base: 'main',
+            body: pullRequestTitle
+        });
+        // 自动给 Pull Request 添加 Plugin 标签
+        yield octokit.issues.addLabels({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            issue_number: pr.data.number,
+            labels: ['Plugin']
+        });
+    });
+}
+function run() {
+    var _a, _b, _c;
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const token = core.getInput('token', { required: true });
+            // 从 GitHub Context 中获取 Issue 的相关信息
+            const issueNumber = (_a = github.context.payload.issue) === null || _a === void 0 ? void 0 : _a.number;
+            const issueBody = (_b = github.context.payload.issue) === null || _b === void 0 ? void 0 : _b.body;
+            if (!issueNumber || !issueBody) {
+                core.setFailed('无法获取 issue 的信息');
+                return;
+            }
+            // 初始化 GitHub 客户端
+            const octokit = github.getOctokit(token);
+            // 检查是否含有 Plugin 标签
+            const isPluginIssue = yield checkPluginLabel(octokit, issueNumber);
+            if (!isPluginIssue) {
+                core.info('没有 Plugin 标签，不处理');
+                return;
+            }
+            // 创建新分支
+            // plugin/issue123
+            const branchName = `plugin/issue${issueNumber}`;
+            yield exec.exec('git', ['checkout', '-b', branchName]);
+            // 更新 plugins.json
+            const pluginInfo = extractPluginInfo(issueBody);
+            pluginInfo.author = github.context.issue.owner;
+            yield updatePluginsFile(pluginInfo);
+            // 提交修改
+            const commitMessage = `:beers: publish ${pluginInfo.name}`;
+            const username = github.context.issue.owner;
+            core.info(`username: ${username}`);
+            const user = yield octokit.users.getByUsername({ username });
+            const useremail = (_c = user.data.email) !== null && _c !== void 0 ? _c : 'bot@github.com';
+            yield exec.exec('git', ['config', '--global', 'user.name', username]);
+            yield exec.exec('git', ['config', '--global', 'user.email', useremail]);
+            yield exec.exec('git', ['add', '-A']);
+            yield exec.exec('git', ['commit', '-m', commitMessage]);
+            yield exec.exec('git', ['push', 'origin', branchName, '-f']);
+            // 提交 Pull Request
+            // 标题里要注明 issue 编号
+            yield createPullRequest(pluginInfo, issueNumber, octokit, branchName);
+        }
+        catch (error) {
+            core.setFailed(error.message);
+        }
+    });
 }
 run();
 
