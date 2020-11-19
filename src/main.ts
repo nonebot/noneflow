@@ -123,10 +123,19 @@ async function createPullRequest(
 
 async function run(): Promise<void> {
   try {
-    core.info(`event name: ${github.context.eventName}`)
-
     const token: string = core.getInput('token', {required: true})
     const base: string = core.getInput('base', {required: true})
+    const action: string = core.getInput('action', {required: true})
+
+    // 打印事件信息
+    core.info(`event name: ${github.context.eventName}`)
+    core.info(`action type: ${action}`)
+
+    // 暂时不处理 Pull Request 相关事件
+    if (github.context.eventName === 'pull_request') {
+      core.info('暂时无法处理 Pull Request，已跳过')
+      return
+    }
 
     // 从 GitHub Context 中获取 Issue 的相关信息
     const issueNumber = github.context.payload.issue?.number
@@ -143,7 +152,7 @@ async function run(): Promise<void> {
     const isPluginIssue = await checkPluginLabel(octokit, issueNumber)
 
     if (!isPluginIssue) {
-      core.info('没有 Plugin 标签，不处理')
+      core.info('没有 Plugin 标签，已跳过')
       return
     }
 

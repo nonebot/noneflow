@@ -137,9 +137,17 @@ function run() {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            core.info(`event name: ${github.context.eventName}`);
             const token = core.getInput('token', { required: true });
             const base = core.getInput('base', { required: true });
+            const action = core.getInput('action', { required: true });
+            // 打印事件信息
+            core.info(`event name: ${github.context.eventName}`);
+            core.info(`action type: ${action}`);
+            // 暂时不处理 Pull Request 相关事件
+            if (github.context.eventName === 'pull_request') {
+                core.info('暂时无法处理 Pull Request，已跳过');
+                return;
+            }
             // 从 GitHub Context 中获取 Issue 的相关信息
             const issueNumber = (_a = github.context.payload.issue) === null || _a === void 0 ? void 0 : _a.number;
             const issueBody = (_b = github.context.payload.issue) === null || _b === void 0 ? void 0 : _b.body;
@@ -152,7 +160,7 @@ function run() {
             // 检查是否含有 Plugin 标签
             const isPluginIssue = yield checkPluginLabel(octokit, issueNumber);
             if (!isPluginIssue) {
-                core.info('没有 Plugin 标签，不处理');
+                core.info('没有 Plugin 标签，已跳过');
                 return;
             }
             // 插件作者信息

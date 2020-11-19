@@ -2,8 +2,6 @@ name: 'Plugin Issue Bot'
 on:
   issues:
     types: [opened, edited]
-  pull_request:
-    types: [closed, synchronize]
   pull_request_target:
     types: [closed, synchronize]
 
@@ -21,3 +19,4 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           base: main
+          action: ${{ github.event.action }}
