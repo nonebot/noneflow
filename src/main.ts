@@ -121,6 +121,11 @@ async function createPullRequest(
   })
 }
 
+/**根据关联的 Issue rebase 提交来解决冲突 */
+async function rebaseAllOpenPullRequests(): Promise<void> {
+  core.info('rebasing(')
+}
+
 async function run(): Promise<void> {
   try {
     const token: string = core.getInput('token', {required: true})
@@ -139,7 +144,10 @@ async function run(): Promise<void> {
 
     // 暂时不处理 Push 相关事件
     if (github.context.eventName === 'push') {
-      core.info(JSON.stringify(github.context))
+      const commitMessage: string = github.context.payload.head_commit.message
+      if (commitMessage.includes(':beers: publish')) {
+        rebaseAllOpenPullRequests()
+      }
       core.info('暂时无法处理 Push，已跳过')
       return
     }

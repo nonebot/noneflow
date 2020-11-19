@@ -133,6 +133,12 @@ function createPullRequest(pluginInfo, issueNumber, octokit, branchName, base) {
         });
     });
 }
+/**根据关联的 Issue rebase 提交来解决冲突 */
+function rebaseAllOpenPullRequests() {
+    return __awaiter(this, void 0, void 0, function* () {
+        core.info('rebasing(');
+    });
+}
 function run() {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
@@ -150,7 +156,10 @@ function run() {
             }
             // 暂时不处理 Push 相关事件
             if (github.context.eventName === 'push') {
-                core.info(JSON.stringify(github.context));
+                const commitMessage = github.context.payload.head_commit.message;
+                if (commitMessage.includes(':beers: publish')) {
+                    rebaseAllOpenPullRequests();
+                }
                 core.info('暂时无法处理 Push，已跳过');
                 return;
             }
