@@ -185,7 +185,7 @@ function rebaseAllOpenPullRequests(pullRequests, base, octokit) {
             // 切换到对应分支
             yield exec.exec('git', ['checkout', '-b', pull.head.ref]);
             // 重置之前的提交
-            yield exec.exec('git', ['reset', '--hard', 'HEAD^']);
+            yield exec.exec('git', ['reset', '--hard', base]);
             // 合并修改
             yield exec.exec('git', ['merge', base]);
             const issue_number = extractIssueNumberFromRef(pull.head.ref);

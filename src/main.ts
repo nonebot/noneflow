@@ -186,7 +186,7 @@ async function rebaseAllOpenPullRequests(
     // 切换到对应分支
     await exec.exec('git', ['checkout', '-b', pull.head.ref])
     // 重置之前的提交
-    await exec.exec('git', ['reset', '--hard', 'HEAD^'])
+    await exec.exec('git', ['reset', '--hard', base])
     // 合并修改
     await exec.exec('git', ['merge', base])
     const issue_number = extractIssueNumberFromRef(pull.head.ref)
