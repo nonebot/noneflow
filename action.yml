@@ -9,9 +9,8 @@ inputs:
     required: true
     description: 'The pull request base branch'
   action:
-    description: 'Event action type'
     required: false
-    default: 'push'
+    description: 'Event action type'
 runs:
   using: 'node12'
   main: 'dist/index.js'
