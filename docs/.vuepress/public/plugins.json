@@ -14,13 +14,5 @@
     "desc": "将B站UP主的动态和直播信息推送至QQ",
     "author": "SK-415",
     "repo": "SK-415/HarukaBot"
-  },
-  {
-    "id": "nonebot_plugin_example",
-    "link": "nonebot-plugin-example",
-    "author": "he0119",
-    "desc": "复读群友的消息1",
-    "name": "复读机1",
-    "repo": "nonebot/nonebot2"
   }
 ]
