@@ -8,9 +8,6 @@ inputs:
   base:
     required: true
     description: 'The pull request base branch'
-  action:
-    required: false
-    description: 'Event action type'
 runs:
   using: 'node12'
   main: 'dist/index.js'

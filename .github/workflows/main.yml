@@ -22,4 +22,3 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           base: main
-          action: ${{ github.event.action }}
