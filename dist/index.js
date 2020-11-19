@@ -158,7 +158,7 @@ function createPullRequest(pluginInfo, issueNumber, octokit, branchName, base) {
             });
         }
         catch (e) {
-            if (e.message.includes(`A pull request already exists for ${branchName}`)) {
+            if (e.message.includes(`A pull request already exists for`)) {
                 core.info('拉取请求已经创建，请查看');
             }
             else {
