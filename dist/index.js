@@ -1467,13 +1467,13 @@ function updatePluginsFile(pluginInfo) {
     });
 }
 /**从 Issue 内容提取插件信息 */
-function extractPluginInfo(body) {
+function extractPluginInfo(body, author) {
     const match = body.match(/\*\*你的插件名称：\*\*[\n\r]+(?<name>.*)[\n\r]+\*\*简短描述插件功能：\*\*[\n\r]+(?<desc>.*)[\n\r]+\*\*插件 import 使用的名称\*\*[\n\r]+(?<id>.*)[\n\r]+\*\*插件 install 使用的名称\*\*[\n\r]+(?<link>.*)[\n\r]+\*\*插件项目仓库\/主页链接\*\*[\n\r]+(?<repo>.*)/);
     if (match === null || match === void 0 ? void 0 : match.groups) {
         return {
             id: match.groups.id,
             link: match.groups.link,
-            author: 'test',
+            author,
             desc: match.groups.desc,
             name: match.groups.name,
             repo: match.groups.repo
@@ -1485,7 +1485,7 @@ function extractPluginInfo(body) {
  *
  * 同时添加 Plugin 标签
  */
-function createPullRequest(pluginInfo, issueNumber, octokit, branchName) {
+function createPullRequest(pluginInfo, issueNumber, octokit, branchName, base) {
     return __awaiter(this, void 0, void 0, function* () {
         const pullRequestTitle = `Plugin ${pluginInfo.name} (resolve #${issueNumber})`;
         const pr = yield octokit.pulls.create({
@@ -1493,7 +1493,7 @@ function createPullRequest(pluginInfo, issueNumber, octokit, branchName) {
             repo: github.context.repo.repo,
             title: pullRequestTitle,
             head: branchName,
-            base: 'main',
+            base,
             body: pullRequestTitle
         });
         // 自动给 Pull Request 添加 Plugin 标签
@@ -1506,10 +1506,11 @@ function createPullRequest(pluginInfo, issueNumber, octokit, branchName) {
     });
 }
 function run() {
-    var _a, _b, _c;
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const token = core.getInput('token', { required: true });
+            const base = core.getInput('base', { required: true });
             // 从 GitHub Context 中获取 Issue 的相关信息
             const issueNumber = (_a = github.context.payload.issue) === null || _a === void 0 ? void 0 : _a.number;
             const issueBody = (_b = github.context.payload.issue) === null || _b === void 0 ? void 0 : _b.body;
@@ -1525,20 +1526,19 @@ function run() {
                 core.info('没有 Plugin 标签，不处理');
                 return;
             }
+            // 插件作者信息
+            const username = github.context.issue.owner;
+            const useremail = `${username}@users.noreply.github.com`;
+            core.info(`username: ${username}`);
             // 创建新分支
             // plugin/issue123
             const branchName = `plugin/issue${issueNumber}`;
             yield exec.exec('git', ['checkout', '-b', branchName]);
             // 更新 plugins.json
-            const pluginInfo = extractPluginInfo(issueBody);
-            pluginInfo.author = github.context.issue.owner;
+            const pluginInfo = extractPluginInfo(issueBody, username);
             yield updatePluginsFile(pluginInfo);
             // 提交修改
             const commitMessage = `:beers: publish ${pluginInfo.name}`;
-            const username = github.context.issue.owner;
-            core.info(`username: ${username}`);
-            const user = yield octokit.users.getByUsername({ username });
-            const useremail = (_c = user.data.email) !== null && _c !== void 0 ? _c : 'bot@github.com';
             yield exec.exec('git', ['config', '--global', 'user.name', username]);
             yield exec.exec('git', ['config', '--global', 'user.email', useremail]);
             yield exec.exec('git', ['add', '-A']);
@@ -1546,7 +1546,7 @@ function run() {
             yield exec.exec('git', ['push', 'origin', branchName, '-f']);
             // 提交 Pull Request
             // 标题里要注明 issue 编号
-            yield createPullRequest(pluginInfo, issueNumber, octokit, branchName);
+            yield createPullRequest(pluginInfo, issueNumber, octokit, branchName, base);
         }
         catch (error) {
             core.setFailed(error.message);

@@ -1,19 +1,19 @@
 name: 'Plugin Issue Bot'
 on:
   issues:
-    types: [opened, edited]
+    types: [opened, closed, edited]
 
 jobs:
   issue_bot_job:
     runs-on: ubuntu-latest
-    name: plugin issue bot
+    name: issue bot
     steps:
       # 要使用此仓库的私有操作，
       # 您必须检出仓库
       - name: Checkout
         uses: actions/checkout@v2
-      - name: plugin issue
+      - name: issue
         uses: ./ # Uses an action in the root directory
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-        id: issue
+          base: main

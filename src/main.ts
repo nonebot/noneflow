@@ -60,7 +60,7 @@ async function updatePluginsFile(pluginInfo: PluginInfo): Promise<void> {
 }
 
 /**从 Issue 内容提取插件信息 */
-function extractPluginInfo(body: string): PluginInfo {
+function extractPluginInfo(body: string, author: string): PluginInfo {
   const match = body.match(
     /\*\*你的插件名称：\*\*[\n\r]+(?<name>.*)[\n\r]+\*\*简短描述插件功能：\*\*[\n\r]+(?<desc>.*)[\n\r]+\*\*插件 import 使用的名称\*\*[\n\r]+(?<id>.*)[\n\r]+\*\*插件 install 使用的名称\*\*[\n\r]+(?<link>.*)[\n\r]+\*\*插件项目仓库\/主页链接\*\*[\n\r]+(?<repo>.*)/
   )
@@ -68,7 +68,7 @@ function extractPluginInfo(body: string): PluginInfo {
     return {
       id: match.groups.id,
       link: match.groups.link,
-      author: 'test',
+      author,
       desc: match.groups.desc,
       name: match.groups.name,
       repo: match.groups.repo
@@ -85,7 +85,8 @@ async function createPullRequest(
   pluginInfo: PluginInfo,
   issueNumber: number,
   octokit: InstanceType<typeof GitHub>,
-  branchName: string
+  branchName: string,
+  base: string
 ): Promise<void> {
   const pullRequestTitle = `Plugin ${pluginInfo.name} (resolve #${issueNumber})`
   const pr = await octokit.pulls.create({
@@ -93,7 +94,7 @@ async function createPullRequest(
     repo: github.context.repo.repo,
     title: pullRequestTitle,
     head: branchName,
-    base: 'main',
+    base,
     body: pullRequestTitle
   })
   // 自动给 Pull Request 添加 Plugin 标签
@@ -108,6 +109,7 @@ async function createPullRequest(
 async function run(): Promise<void> {
   try {
     const token: string = core.getInput('token', {required: true})
+    const base: string = core.getInput('base', {required: true})
 
     // 从 GitHub Context 中获取 Issue 的相关信息
     const issueNumber = github.context.payload.issue?.number
@@ -128,22 +130,22 @@ async function run(): Promise<void> {
       return
     }
 
+    // 插件作者信息
+    const username = github.context.issue.owner
+    const useremail = `${username}@users.noreply.github.com`
+    core.info(`username: ${username}`)
+
     // 创建新分支
     // plugin/issue123
     const branchName = `plugin/issue${issueNumber}`
     await exec.exec('git', ['checkout', '-b', branchName])
 
     // 更新 plugins.json
-    const pluginInfo = extractPluginInfo(issueBody)
-    pluginInfo.author = github.context.issue.owner
+    const pluginInfo = extractPluginInfo(issueBody, username)
     await updatePluginsFile(pluginInfo)
 
     // 提交修改
     const commitMessage = `:beers: publish ${pluginInfo.name}`
-    const username = github.context.issue.owner
-    core.info(`username: ${username}`)
-    const user = await octokit.users.getByUsername({username})
-    const useremail = user.data.email ?? 'bot@github.com'
     await exec.exec('git', ['config', '--global', 'user.name', username])
     await exec.exec('git', ['config', '--global', 'user.email', useremail])
     await exec.exec('git', ['add', '-A'])
@@ -152,7 +154,7 @@ async function run(): Promise<void> {
 
     // 提交 Pull Request
     // 标题里要注明 issue 编号
-    await createPullRequest(pluginInfo, issueNumber, octokit, branchName)
+    await createPullRequest(pluginInfo, issueNumber, octokit, branchName, base)
   } catch (error) {
     core.setFailed(error.message)
   }

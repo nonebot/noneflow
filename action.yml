@@ -1,10 +1,13 @@
-name: 'Plugin Issue Bot'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'NoneBot2 Plugin Issue Bot'
+description: 'Manage plugin related issues in nonebot2 project'
+author: 'he0119'
 inputs:
   token:
     required: true
     description: 'GitHub Token'
+  base:
+    required: true
+    description: 'The pull request base branch'
 runs:
   using: 'node12'
   main: 'dist/index.js'
