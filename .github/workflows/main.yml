@@ -1,5 +1,8 @@
 name: 'Plugin Issue Bot'
 on:
+  push:
+    branches:
+      - main
   issues:
     types: [opened, edited]
   pull_request:
