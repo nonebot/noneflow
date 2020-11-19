@@ -61,11 +61,13 @@ function extractIssueNumberFromRef(ref: string): number | undefined {
 /**更新 plugins.json
  * 并提交到 Git
  */
-async function updatePluginsFileAndCommit(
-  pluginInfo: PluginInfo
+async function updatePluginsFileAndCommitPush(
+  pluginInfo: PluginInfo,
+  branchName: string
 ): Promise<void> {
   if (process.env.GITHUB_WORKSPACE) {
-    const pluginJsonFilePath = `${process.env.GITHUB_WORKSPACE}/docs/.vuepress/public/plugins.json`
+    const path: string = core.getInput('path', {required: true})
+    const pluginJsonFilePath = `${process.env.GITHUB_WORKSPACE}/${path}`
     // 写入新数据
     fs.readFile(pluginJsonFilePath, 'utf8', (err, data) => {
       if (err) {
@@ -88,6 +90,7 @@ async function updatePluginsFileAndCommit(
     await exec.exec('git', ['config', '--global', 'user.email', useremail])
     await exec.exec('git', ['add', '-A'])
     await exec.exec('git', ['commit', '-m', commitMessage])
+    await exec.exec('git', ['push', 'origin', branchName, '-f'])
   }
 }
 
@@ -152,11 +155,11 @@ async function createPullRequest(
       issue_number: pr.data.number,
       labels: ['Plugin']
     })
-  } catch (e) {
-    if (e.message.includes(`A pull request already exists for`)) {
-      core.info('拉取请求已经创建，请查看')
+  } catch (error) {
+    if (error.message.includes(`A pull request already exists for`)) {
+      core.info('该分支的拉取请求已创建，请前往查看')
     } else {
-      throw e
+      throw error
     }
   }
 }
@@ -187,8 +190,6 @@ async function rebaseAllOpenPullRequests(
     await exec.exec('git', ['checkout', '-b', pull.head.ref])
     // 重置之前的提交
     await exec.exec('git', ['reset', '--hard', base])
-    // 合并修改
-    await exec.exec('git', ['merge', base])
     const issue_number = extractIssueNumberFromRef(pull.head.ref)
     if (issue_number) {
       core.info(`正在处理 ${pull.title}`)
@@ -200,9 +201,10 @@ async function rebaseAllOpenPullRequests(
         issue.data.body,
         issue.data.user.login
       )
-      await updatePluginsFileAndCommit(pluginInfo)
-      await exec.exec('git', ['push', 'origin', pull.head.ref, '-f'])
+      await updatePluginsFileAndCommitPush(pluginInfo, pull.head.ref)
       core.info(`拉取请求更新完毕`)
+    } else {
+      core.setFailed(`无法获取 ${pull.title} 对应的议题`)
     }
   }
 }
@@ -239,8 +241,12 @@ async function run(): Promise<void> {
         const ref: string = github.context.payload.pull_request?.head.ref
         const relatedIssueNumber = extractIssueNumberFromRef(ref)
         if (relatedIssueNumber) {
-          closeIssue(relatedIssueNumber, octokit)
+          await closeIssue(relatedIssueNumber, octokit)
+          core.info(`议题 #${relatedIssueNumber}  已关闭`)
+          await exec.exec('git', ['push', 'origin', '--delete', ref])
         }
+      } else {
+        core.info('不是拉取请求关闭事件，已跳过')
       }
       return
     }
@@ -249,8 +255,11 @@ async function run(): Promise<void> {
     if (github.context.eventName === 'push') {
       const commitMessage: string = github.context.payload.head_commit.message
       if (commitMessage.includes(':beers: publish')) {
+        core.info('发现提交为插件发布，准备更新拉取请求的提交')
         const pullRequests = await getAllPluginPullRequest(octokit)
         rebaseAllOpenPullRequests(pullRequests, base, octokit)
+      } else {
+        core.info('该提交不是插件发布，已跳过')
       }
       return
     }
@@ -282,10 +291,7 @@ async function run(): Promise<void> {
 
     // 更新 plugins.json 并提交更改
     const pluginInfo = extractPluginInfo(issueBody, username)
-    await updatePluginsFileAndCommit(pluginInfo)
-
-    // 提交更改到远程分支
-    await exec.exec('git', ['push', 'origin', branchName, '-f'])
+    await updatePluginsFileAndCommitPush(pluginInfo, branchName)
 
     // 提交 Pull Request
     // 标题里要注明 issue 编号

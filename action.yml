@@ -8,6 +8,9 @@ inputs:
   base:
     required: true
     description: 'The pull request base branch'
+  path:
+    required: true
+    description: 'Path for plugins.json'
 runs:
   using: 'node12'
   main: 'dist/index.js'

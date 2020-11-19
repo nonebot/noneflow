@@ -22,3 +22,4 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           base: main
+          path: docs/.vuepress/public/plugins.json

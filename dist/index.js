@@ -73,10 +73,11 @@ function extractIssueNumberFromRef(ref) {
 /**更新 plugins.json
  * 并提交到 Git
  */
-function updatePluginsFileAndCommit(pluginInfo) {
+function updatePluginsFileAndCommitPush(pluginInfo, branchName) {
     return __awaiter(this, void 0, void 0, function* () {
         if (process.env.GITHUB_WORKSPACE) {
-            const pluginJsonFilePath = `${process.env.GITHUB_WORKSPACE}/docs/.vuepress/public/plugins.json`;
+            const path = core.getInput('path', { required: true });
+            const pluginJsonFilePath = `${process.env.GITHUB_WORKSPACE}/${path}`;
             // 写入新数据
             fs.readFile(pluginJsonFilePath, 'utf8', (err, data) => {
                 if (err) {
@@ -100,6 +101,7 @@ function updatePluginsFileAndCommit(pluginInfo) {
             yield exec.exec('git', ['config', '--global', 'user.email', useremail]);
             yield exec.exec('git', ['add', '-A']);
             yield exec.exec('git', ['commit', '-m', commitMessage]);
+            yield exec.exec('git', ['push', 'origin', branchName, '-f']);
         }
     });
 }
@@ -157,12 +159,12 @@ function createPullRequest(pluginInfo, issueNumber, octokit, branchName, base) {
                 labels: ['Plugin']
             });
         }
-        catch (e) {
-            if (e.message.includes(`A pull request already exists for`)) {
-                core.info('拉取请求已经创建，请查看');
+        catch (error) {
+            if (error.message.includes(`A pull request already exists for`)) {
+                core.info('该分支的拉取请求已创建，请前往查看');
             }
             else {
-                throw e;
+                throw error;
             }
         }
     });
@@ -186,16 +188,16 @@ function rebaseAllOpenPullRequests(pullRequests, base, octokit) {
             yield exec.exec('git', ['checkout', '-b', pull.head.ref]);
             // 重置之前的提交
             yield exec.exec('git', ['reset', '--hard', base]);
-            // 合并修改
-            yield exec.exec('git', ['merge', base]);
             const issue_number = extractIssueNumberFromRef(pull.head.ref);
             if (issue_number) {
                 core.info(`正在处理 ${pull.title}`);
                 const issue = yield octokit.issues.get(Object.assign(Object.assign({}, github.context.repo), { issue_number }));
                 const pluginInfo = extractPluginInfo(issue.data.body, issue.data.user.login);
-                yield updatePluginsFileAndCommit(pluginInfo);
-                yield exec.exec('git', ['push', 'origin', pull.head.ref, '-f']);
+                yield updatePluginsFileAndCommitPush(pluginInfo, pull.head.ref);
                 core.info(`拉取请求更新完毕`);
+            }
+            else {
+                core.setFailed(`无法获取 ${pull.title} 对应的议题`);
             }
         }
     });
@@ -229,8 +231,13 @@ function run() {
                     const ref = (_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.head.ref;
                     const relatedIssueNumber = extractIssueNumberFromRef(ref);
                     if (relatedIssueNumber) {
-                        closeIssue(relatedIssueNumber, octokit);
+                        yield closeIssue(relatedIssueNumber, octokit);
+                        core.info(`议题 #${relatedIssueNumber}  已关闭`);
+                        yield exec.exec('git', ['push', 'origin', '--delete', ref]);
                     }
+                }
+                else {
+                    core.info('不是拉取请求关闭事件，已跳过');
                 }
                 return;
             }
@@ -238,8 +245,12 @@ function run() {
             if (github.context.eventName === 'push') {
                 const commitMessage = github.context.payload.head_commit.message;
                 if (commitMessage.includes(':beers: publish')) {
+                    core.info('发现提交为插件发布，准备更新拉取请求的提交');
                     const pullRequests = yield getAllPluginPullRequest(octokit);
                     rebaseAllOpenPullRequests(pullRequests, base, octokit);
+                }
+                else {
+                    core.info('该提交不是插件发布，已跳过');
                 }
                 return;
             }
@@ -264,9 +275,7 @@ function run() {
             yield exec.exec('git', ['checkout', '-b', branchName]);
             // 更新 plugins.json 并提交更改
             const pluginInfo = extractPluginInfo(issueBody, username);
-            yield updatePluginsFileAndCommit(pluginInfo);
-            // 提交更改到远程分支
-            yield exec.exec('git', ['push', 'origin', branchName, '-f']);
+            yield updatePluginsFileAndCommitPush(pluginInfo, branchName);
             // 提交 Pull Request
             // 标题里要注明 issue 编号
             yield createPullRequest(pluginInfo, issueNumber, octokit, branchName, base);
