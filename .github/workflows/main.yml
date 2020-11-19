@@ -1,7 +1,7 @@
 name: 'Plugin Issue Bot'
 on:
   issues:
-    types: [opened, closed, edited]
+    types: [opened, edited]
 
 jobs:
   issue_bot_job:
