@@ -102,14 +102,15 @@ async function createPullRequest(
   branchName: string,
   base: string
 ): Promise<void> {
-  const pullRequestTitle = `Plugin ${pluginInfo.name} (resolve #${issueNumber})`
+  const pullRequestTitle = `Plugin ${pluginInfo.name}`
+  const pullRequestbody = `resolve #${issueNumber}`
   const pr = await octokit.pulls.create({
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
     title: pullRequestTitle,
     head: branchName,
     base,
-    body: pullRequestTitle
+    body: pullRequestbody
   })
   // 自动给 Pull Request 添加 Plugin 标签
   await octokit.issues.addLabels({

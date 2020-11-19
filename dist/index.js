@@ -1501,14 +1501,15 @@ function extractPluginInfo(body, author) {
  */
 function createPullRequest(pluginInfo, issueNumber, octokit, branchName, base) {
     return __awaiter(this, void 0, void 0, function* () {
-        const pullRequestTitle = `Plugin ${pluginInfo.name} (resolve #${issueNumber})`;
+        const pullRequestTitle = `Plugin ${pluginInfo.name}`;
+        const pullRequestbody = `resolve #${issueNumber}`;
         const pr = yield octokit.pulls.create({
             owner: github.context.repo.owner,
             repo: github.context.repo.repo,
             title: pullRequestTitle,
             head: branchName,
             base,
-            body: pullRequestTitle
+            body: pullRequestbody
         });
         // 自动给 Pull Request 添加 Plugin 标签
         yield octokit.issues.addLabels({
