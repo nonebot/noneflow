@@ -121,9 +121,39 @@ async function createPullRequest(
   })
 }
 
+/**获取所有带有 Plugin 标签的 Pull Request */
+async function getAllPluginPullRequest(
+  octokit: InstanceType<typeof GitHub>
+): Promise<number[]> {
+  const listOfPulls = await octokit.pulls.list({
+    owner: github.context.repo.owner,
+    repo: github.context.repo.repo,
+    state: 'open'
+  })
+  core.info(JSON.stringify(listOfPulls))
+  return [12]
+}
+
 /**根据关联的 Issue rebase 提交来解决冲突 */
-async function rebaseAllOpenPullRequests(): Promise<void> {
+async function rebaseAllOpenPullRequests(
+  octokit: InstanceType<typeof GitHub>
+): Promise<void> {
+  await getAllPluginPullRequest(octokit)
   core.info('rebasing(')
+}
+
+/**关闭指定的 Issue */
+async function closeIssue(
+  issue_number: number,
+  octokit: InstanceType<typeof GitHub>
+): Promise<void> {
+  core.info(`Closing issue ${issue_number}`)
+  await octokit.issues.update({
+    owner: github.context.repo.owner,
+    repo: github.context.repo.repo,
+    issue_number,
+    state: 'closed'
+  })
 }
 
 async function run(): Promise<void> {
@@ -131,14 +161,23 @@ async function run(): Promise<void> {
     const token: string = core.getInput('token', {required: true})
     const base: string = core.getInput('base', {required: true})
 
+    // 初始化 GitHub 客户端
+    const octokit = github.getOctokit(token)
+
     // 打印事件信息
     core.info(`event name: ${github.context.eventName}`)
     core.info(`action type: ${github.context.payload.action}`)
 
-    // 暂时不处理 Pull Request 相关事件
     if (github.context.eventName === 'pull_request') {
-      core.info(JSON.stringify(github.context))
-      core.info('暂时无法处理 Pull Request，已跳过')
+      // 关闭对应的 Issue
+      if (github.context.payload.action === 'closed') {
+        const ref: string = github.context.payload.pull_request?.head.ref
+        const match = ref.match(/plugin\/issue(\d+)/)
+        const relatedIssueNumber = match ? Number(match[1]) : null
+        if (relatedIssueNumber) {
+          closeIssue(relatedIssueNumber, octokit)
+        }
+      }
       return
     }
 
@@ -146,8 +185,9 @@ async function run(): Promise<void> {
     if (github.context.eventName === 'push') {
       const commitMessage: string = github.context.payload.head_commit.message
       if (commitMessage.includes(':beers: publish')) {
-        rebaseAllOpenPullRequests()
+        rebaseAllOpenPullRequests(octokit)
       }
+      await getAllPluginPullRequest(octokit)
       core.info('暂时无法处理 Push，已跳过')
       return
     }
@@ -160,8 +200,6 @@ async function run(): Promise<void> {
       core.setFailed('无法获取 issue 的信息')
       return
     }
-    // 初始化 GitHub 客户端
-    const octokit = github.getOctokit(token)
 
     // 检查是否含有 Plugin 标签
     const isPluginIssue = await checkPluginLabel(octokit, issueNumber)

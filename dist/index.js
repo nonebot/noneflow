@@ -133,45 +133,77 @@ function createPullRequest(pluginInfo, issueNumber, octokit, branchName, base) {
         });
     });
 }
-/**根据关联的 Issue rebase 提交来解决冲突 */
-function rebaseAllOpenPullRequests() {
+/**获取所有带有 Plugin 标签的 Pull Request */
+function getAllPluginPullRequest(octokit) {
     return __awaiter(this, void 0, void 0, function* () {
+        const listOfPulls = yield octokit.pulls.list({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            state: 'open'
+        });
+        core.info(JSON.stringify(listOfPulls));
+        return [12];
+    });
+}
+/**根据关联的 Issue rebase 提交来解决冲突 */
+function rebaseAllOpenPullRequests(octokit) {
+    return __awaiter(this, void 0, void 0, function* () {
+        yield getAllPluginPullRequest(octokit);
         core.info('rebasing(');
     });
 }
+/**关闭指定的 Issue */
+function closeIssue(issue_number, octokit) {
+    return __awaiter(this, void 0, void 0, function* () {
+        core.info(`Closing issue ${issue_number}`);
+        yield octokit.issues.update({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            issue_number,
+            state: 'closed'
+        });
+    });
+}
 function run() {
-    var _a, _b;
+    var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const token = core.getInput('token', { required: true });
             const base = core.getInput('base', { required: true });
+            // 初始化 GitHub 客户端
+            const octokit = github.getOctokit(token);
             // 打印事件信息
             core.info(`event name: ${github.context.eventName}`);
             core.info(`action type: ${github.context.payload.action}`);
-            // 暂时不处理 Pull Request 相关事件
             if (github.context.eventName === 'pull_request') {
-                core.info(JSON.stringify(github.context));
-                core.info('暂时无法处理 Pull Request，已跳过');
+                // 关闭对应的 Issue
+                if (github.context.payload.action === 'closed') {
+                    const ref = (_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.head.ref;
+                    const match = ref.match(/plugin\/issue(\d+)/);
+                    const relatedIssueNumber = match ? Number(match[1]) : null;
+                    if (relatedIssueNumber) {
+                        closeIssue(relatedIssueNumber, octokit);
+                    }
+                }
                 return;
             }
             // 暂时不处理 Push 相关事件
             if (github.context.eventName === 'push') {
                 const commitMessage = github.context.payload.head_commit.message;
                 if (commitMessage.includes(':beers: publish')) {
-                    rebaseAllOpenPullRequests();
+                    rebaseAllOpenPullRequests(octokit);
                 }
+                yield getAllPluginPullRequest(octokit);
                 core.info('暂时无法处理 Push，已跳过');
                 return;
             }
             // 从 GitHub Context 中获取 Issue 的相关信息
-            const issueNumber = (_a = github.context.payload.issue) === null || _a === void 0 ? void 0 : _a.number;
-            const issueBody = (_b = github.context.payload.issue) === null || _b === void 0 ? void 0 : _b.body;
+            const issueNumber = (_b = github.context.payload.issue) === null || _b === void 0 ? void 0 : _b.number;
+            const issueBody = (_c = github.context.payload.issue) === null || _c === void 0 ? void 0 : _c.body;
             if (!issueNumber || !issueBody) {
                 core.setFailed('无法获取 issue 的信息');
                 return;
             }
-            // 初始化 GitHub 客户端
-            const octokit = github.getOctokit(token);
             // 检查是否含有 Plugin 标签
             const isPluginIssue = yield checkPluginLabel(octokit, issueNumber);
             if (!isPluginIssue) {
