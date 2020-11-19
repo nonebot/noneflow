@@ -4,8 +4,6 @@ on:
     types: [opened, edited]
   pull_request:
     types: [closed, synchronize]
-  pull_request_target:
-    types: [closed, synchronize]
 
 jobs:
   issue_bot_job:
