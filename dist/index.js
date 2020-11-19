@@ -139,13 +139,18 @@ function run() {
         try {
             const token = core.getInput('token', { required: true });
             const base = core.getInput('base', { required: true });
-            const action = core.getInput('action', { required: true });
+            const action = core.getInput('action');
             // 打印事件信息
             core.info(`event name: ${github.context.eventName}`);
             core.info(`action type: ${action}`);
             // 暂时不处理 Pull Request 相关事件
             if (github.context.eventName === 'pull_request') {
                 core.info('暂时无法处理 Pull Request，已跳过');
+                return;
+            }
+            // 暂时不处理 Push 相关事件
+            if (github.context.eventName === 'push') {
+                core.info('暂时无法处理 Push，已跳过');
                 return;
             }
             // 从 GitHub Context 中获取 Issue 的相关信息
