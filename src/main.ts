@@ -61,17 +61,31 @@ async function updatePluginsFile(pluginInfo: PluginInfo): Promise<void> {
 
 /**从 Issue 内容提取插件信息 */
 function extractPluginInfo(body: string, author: string): PluginInfo {
-  const match = body.match(
-    /\*\*你的插件名称：\*\*[\n\r]+(?<name>.*)[\n\r]+\*\*简短描述插件功能：\*\*[\n\r]+(?<desc>.*)[\n\r]+\*\*插件 import 使用的名称\*\*[\n\r]+(?<id>.*)[\n\r]+\*\*插件 install 使用的名称\*\*[\n\r]+(?<link>.*)[\n\r]+\*\*插件项目仓库\/主页链接\*\*[\n\r]+(?<repo>.*)/
-  )
-  if (match?.groups) {
+  const idRegexp = /\*\*插件 import 使用的名称\*\*[\n\r]+([^*\n\r]+)/
+  const linkRegexp = /\*\*插件 install 使用的名称\*\*[\n\r]+([^*\n\r]+)/
+  const descRegexp = /\*\*简短描述插件功能：\*\*[\n\r]+([^*\n\r]+)/
+  const nameRegexp = /\*\*你的插件名称：\*\*[\n\r]+([^*\n\r]+)/
+  const repoRegexp = /\*\*插件项目仓库\/主页链接\*\*[\n\r]+([^*\n\r]+)/
+
+  const idMatch = body.match(idRegexp)
+  const id = idMatch ? idMatch[1] : null
+  const linkMatch = body.match(linkRegexp)
+  const link = linkMatch ? linkMatch[1] : null
+  const descMatch = body.match(descRegexp)
+  const desc = descMatch ? descMatch[1] : null
+  const nameMatch = body.match(nameRegexp)
+  const name = nameMatch ? nameMatch[1] : null
+  const repoMatch = body.match(repoRegexp)
+  const repo = repoMatch ? repoMatch[1] : null
+
+  if (id && link && desc && name && repo) {
     return {
-      id: match.groups.id,
-      link: match.groups.link,
+      id,
+      link,
       author,
-      desc: match.groups.desc,
-      name: match.groups.name,
-      repo: match.groups.repo
+      desc,
+      name,
+      repo
     }
   }
   throw new Error('无法匹配成功')
