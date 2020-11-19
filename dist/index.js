@@ -137,6 +137,7 @@ function run() {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         try {
+            core.info(`event name: ${github.context.eventName}`);
             const token = core.getInput('token', { required: true });
             const base = core.getInput('base', { required: true });
             // 从 GitHub Context 中获取 Issue 的相关信息

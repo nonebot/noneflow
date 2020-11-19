@@ -123,6 +123,8 @@ async function createPullRequest(
 
 async function run(): Promise<void> {
   try {
+    core.info(`event name: ${github.context.eventName}`)
+
     const token: string = core.getInput('token', {required: true})
     const base: string = core.getInput('base', {required: true})
 
