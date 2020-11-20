@@ -198,8 +198,12 @@ function run() {
     var _a, _b, _c, _d, _e;
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const token = core.getInput('token', { required: true });
             const base = core.getInput('base', { required: true });
+            const token = core.getInput('token');
+            if (!token) {
+                core.info('无法获得 Token，跳过此次操作');
+                return;
+            }
             // 初始化 GitHub 客户端
             const octokit = github.getOctokit(token);
             // 打印事件信息

@@ -211,9 +211,13 @@ async function closeIssue(
 
 async function run(): Promise<void> {
   try {
-    const token: string = core.getInput('token', {required: true})
     const base: string = core.getInput('base', {required: true})
+    const token: string = core.getInput('token')
 
+    if (!token) {
+      core.info('无法获得 Token，跳过此次操作')
+      return
+    }
     // 初始化 GitHub 客户端
     const octokit = github.getOctokit(token)
 

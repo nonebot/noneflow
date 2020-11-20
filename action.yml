@@ -3,7 +3,6 @@ description: 'Manage plugin related issues in nonebot2 project'
 author: 'he0119'
 inputs:
   token:
-    required: true
     description: 'GitHub Token'
   base:
     required: true
