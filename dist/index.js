@@ -209,7 +209,7 @@ function closeIssue(octokit, issue_number) {
     });
 }
 function run() {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const token = core.getInput('token', { required: true });
@@ -220,9 +220,11 @@ function run() {
             core.info(`event name: ${github.context.eventName}`);
             core.info(`action type: ${github.context.payload.action}`);
             // 处理拉取请求的关闭事件
-            if (github.context.eventName === 'pull_request') {
-                if (github.context.payload.action === 'closed') {
-                    const ref = (_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.head.ref;
+            if (github.context.eventName === 'pull_request' &&
+                github.context.payload.action === 'closed') {
+                // 只处理标签是 Plugin 的拉取请求
+                if (checkLabel((_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.labels, 'Plugin')) {
+                    const ref = (_b = github.context.payload.pull_request) === null || _b === void 0 ? void 0 : _b.head.ref;
                     const relatedIssueNumber = extractIssueNumberFromRef(ref);
                     if (relatedIssueNumber) {
                         yield closeIssue(octokit, relatedIssueNumber);
@@ -237,7 +239,7 @@ function run() {
                     }
                 }
                 else {
-                    core.info('不是拉取请求关闭事件，已跳过');
+                    core.info('拉取请求与插件无关，已跳过');
                 }
                 return;
             }
@@ -259,8 +261,8 @@ function run() {
                 if (github.context.payload.action &&
                     ['opened', 'edited'].includes(github.context.payload.action)) {
                     // 从 GitHub Context 中获取议题的相关信息
-                    const issueNumber = (_b = github.context.payload.issue) === null || _b === void 0 ? void 0 : _b.number;
-                    const issueBody = (_c = github.context.payload.issue) === null || _c === void 0 ? void 0 : _c.body;
+                    const issueNumber = (_c = github.context.payload.issue) === null || _c === void 0 ? void 0 : _c.number;
+                    const issueBody = (_d = github.context.payload.issue) === null || _d === void 0 ? void 0 : _d.body;
                     if (!issueNumber || !issueBody) {
                         core.setFailed('无法获取议题的信息');
                         return;
@@ -282,6 +284,9 @@ function run() {
                     yield updatePluginsFileAndCommitPush(pluginInfo, branchName);
                     // 创建拉取请求
                     yield createPullRequest(octokit, pluginInfo, issueNumber, branchName, base);
+                }
+                {
+                    core.info('事件不是议题开启或修改，已跳过');
                 }
             }
         }

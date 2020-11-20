@@ -241,8 +241,12 @@ async function run(): Promise<void> {
     core.info(`action type: ${github.context.payload.action}`)
 
     // 处理拉取请求的关闭事件
-    if (github.context.eventName === 'pull_request') {
-      if (github.context.payload.action === 'closed') {
+    if (
+      github.context.eventName === 'pull_request' &&
+      github.context.payload.action === 'closed'
+    ) {
+      // 只处理标签是 Plugin 的拉取请求
+      if (checkLabel(github.context.payload.pull_request?.labels, 'Plugin')) {
         const ref: string = github.context.payload.pull_request?.head.ref
         const relatedIssueNumber = extractIssueNumberFromRef(ref)
         if (relatedIssueNumber) {
@@ -256,7 +260,7 @@ async function run(): Promise<void> {
           }
         }
       } else {
-        core.info('不是拉取请求关闭事件，已跳过')
+        core.info('拉取请求与插件无关，已跳过')
       }
       return
     }
@@ -316,6 +320,9 @@ async function run(): Promise<void> {
           branchName,
           base
         )
+      }
+      {
+        core.info('事件不是议题开启或修改，已跳过')
       }
     }
   } catch (error) {
