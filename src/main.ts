@@ -248,7 +248,12 @@ async function run(): Promise<void> {
         if (relatedIssueNumber) {
           await closeIssue(octokit, relatedIssueNumber)
           core.info(`议题 #${relatedIssueNumber}  已关闭`)
-          await exec.exec('git', ['push', 'origin', '--delete', ref])
+          try {
+            await exec.exec('git', ['push', 'origin', '--delete', ref])
+            core.info('已删除对应分支')
+          } catch (error) {
+            core.info('对应分支不存在或已删除')
+          }
         }
       } else {
         core.info('不是拉取请求关闭事件，已跳过')

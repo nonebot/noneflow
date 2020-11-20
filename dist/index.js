@@ -227,7 +227,13 @@ function run() {
                     if (relatedIssueNumber) {
                         yield closeIssue(octokit, relatedIssueNumber);
                         core.info(`议题 #${relatedIssueNumber}  已关闭`);
-                        yield exec.exec('git', ['push', 'origin', '--delete', ref]);
+                        try {
+                            yield exec.exec('git', ['push', 'origin', '--delete', ref]);
+                            core.info('已删除对应分支');
+                        }
+                        catch (error) {
+                            core.info('对应分支不存在或已删除');
+                        }
                     }
                 }
                 else {
