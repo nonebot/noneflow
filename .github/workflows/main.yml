@@ -20,6 +20,6 @@ jobs:
       - name: issue
         uses: ./ # Uses an action in the root directory
         with:
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           base: main
           path: docs/.vuepress/public/plugins.json
