@@ -40,24 +40,10 @@ const core = __importStar(__webpack_require__(2186));
 const github = __importStar(__webpack_require__(5438));
 const exec = __importStar(__webpack_require__(1514));
 const fs = __importStar(__webpack_require__(5747));
-/**检查议题是否带有 Plugin 标签 */
-function checkPluginLabel(octokit, issueNumber) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const response = yield octokit.issues.get({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            issue_number: issueNumber
-        });
-        const title = response.data.title;
-        core.info(`议题标题: '${title}'`);
-        const labels = response.data.labels;
-        return checkLabel(labels, 'Plugin');
-    });
-}
-/**检查标签中是否具有某个名字 */
-function checkLabel(labels, name) {
+/**检查是否含有插件标签 */
+function checkPluginLabel(labels) {
     for (const label of labels) {
-        if (label.name === name) {
+        if (label.name === 'Plugin') {
             return true;
         }
     }
@@ -173,7 +159,7 @@ function createPullRequest(octokit, pluginInfo, issueNumber, branchName, base) {
 function getAllPluginPullRequest(octokit) {
     return __awaiter(this, void 0, void 0, function* () {
         const pulls = (yield octokit.pulls.list(Object.assign(Object.assign({}, github.context.repo), { state: 'open' }))).data;
-        return pulls.filter(pull => checkLabel(pull.labels, 'Plugin'));
+        return pulls.filter(pull => checkPluginLabel(pull.labels));
     });
 }
 /**根据关联的议题提交来解决冲突
@@ -209,7 +195,7 @@ function closeIssue(octokit, issue_number) {
     });
 }
 function run() {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const token = core.getInput('token', { required: true });
@@ -219,11 +205,11 @@ function run() {
             // 打印事件信息
             core.info(`event name: ${github.context.eventName}`);
             core.info(`action type: ${github.context.payload.action}`);
-            // 处理拉取请求的关闭事件
+            // 处理 pull_request 事件
             if (github.context.eventName === 'pull_request' &&
                 github.context.payload.action === 'closed') {
                 // 只处理标签是 Plugin 的拉取请求
-                if (checkLabel((_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.labels, 'Plugin')) {
+                if (checkPluginLabel((_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.labels)) {
                     const ref = (_b = github.context.payload.pull_request) === null || _b === void 0 ? void 0 : _b.head.ref;
                     const relatedIssueNumber = extractIssueNumberFromRef(ref);
                     if (relatedIssueNumber) {
@@ -257,37 +243,36 @@ function run() {
                 return;
             }
             // 处理 issues 事件
-            if (github.context.eventName === 'issues') {
-                if (github.context.payload.action &&
-                    ['opened', 'edited'].includes(github.context.payload.action)) {
-                    // 从 GitHub Context 中获取议题的相关信息
-                    const issueNumber = (_c = github.context.payload.issue) === null || _c === void 0 ? void 0 : _c.number;
-                    const issueBody = (_d = github.context.payload.issue) === null || _d === void 0 ? void 0 : _d.body;
-                    if (!issueNumber || !issueBody) {
-                        core.setFailed('无法获取议题的信息');
-                        return;
-                    }
-                    // 检查是否含有 Plugin 标签
-                    const isPluginIssue = yield checkPluginLabel(octokit, issueNumber);
-                    if (!isPluginIssue) {
-                        core.info('没有 Plugin 标签，已跳过');
-                        return;
-                    }
-                    // 创建新分支
-                    // 命名示例 plugin/issue123
-                    const branchName = `plugin/issue${issueNumber}`;
-                    yield exec.exec('git', ['checkout', '-b', branchName]);
-                    // 插件作者信息
-                    const username = github.context.issue.owner;
-                    // 更新 plugins.json 并提交更改
-                    const pluginInfo = extractPluginInfo(issueBody, username);
-                    yield updatePluginsFileAndCommitPush(pluginInfo, branchName);
-                    // 创建拉取请求
-                    yield createPullRequest(octokit, pluginInfo, issueNumber, branchName, base);
+            if (github.context.eventName === 'issues' &&
+                github.context.payload.action &&
+                ['opened', 'reopened', 'edited'].includes(github.context.payload.action)) {
+                // 从 GitHub Context 中获取议题的相关信息
+                const issueNumber = (_c = github.context.payload.issue) === null || _c === void 0 ? void 0 : _c.number;
+                const issueBody = (_d = github.context.payload.issue) === null || _d === void 0 ? void 0 : _d.body;
+                if (!issueNumber || !issueBody) {
+                    core.setFailed('无法获取议题的信息');
+                    return;
                 }
-                {
-                    core.info('事件不是议题开启或修改，已跳过');
+                // 检查是否含有 Plugin 标签
+                const isPluginIssue = checkPluginLabel((_e = github.context.payload.issue) === null || _e === void 0 ? void 0 : _e.labels);
+                if (!isPluginIssue) {
+                    core.info('没有 Plugin 标签，已跳过');
+                    return;
                 }
+                // 创建新分支
+                // 命名示例 plugin/issue123
+                const branchName = `plugin/issue${issueNumber}`;
+                yield exec.exec('git', ['checkout', '-b', branchName]);
+                // 插件作者信息
+                const username = github.context.issue.owner;
+                // 更新 plugins.json 并提交更改
+                const pluginInfo = extractPluginInfo(issueBody, username);
+                yield updatePluginsFileAndCommitPush(pluginInfo, branchName);
+                // 创建拉取请求
+                yield createPullRequest(octokit, pluginInfo, issueNumber, branchName, base);
+            }
+            else {
+                core.info('事件不是议题开启，重新开启或修改，已跳过');
             }
         }
         catch (error) {

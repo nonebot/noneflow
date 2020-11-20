@@ -4,7 +4,7 @@ on:
     branches:
       - main
   issues:
-    types: [opened, edited]
+    types: [opened, reopened, edited]
   pull_request:
     types: [closed]
 
