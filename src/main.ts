@@ -21,7 +21,7 @@ interface PluginInfo {
   repo: string
 }
 
-/**检查 Issue 是否带有 Plugin Label */
+/**检查议题是否带有 Plugin 标签 */
 async function checkPluginLabel(
   octokit: InstanceType<typeof GitHub>,
   issueNumber: number
@@ -32,12 +32,12 @@ async function checkPluginLabel(
     issue_number: issueNumber
   })
   const title = response.data.title
-  core.info(`Issue title: '${title}'`)
+  core.info(`议题标题: '${title}'`)
   const labels = response.data.labels
   return checkLabel(labels, 'Plugin')
 }
 
-/**检查 Labels 中是否具有某个名字 */
+/**检查标签中是否具有某个名字 */
 function checkLabel(
   labels: IssuesGetResponseData['labels'],
   name: string
@@ -50,7 +50,7 @@ function checkLabel(
   return false
 }
 
-/**从 Ref 中提取 Issue 编号 */
+/**从 Ref 中提取标签编号 */
 function extractIssueNumberFromRef(ref: string): number | undefined {
   const match = ref.match(/plugin\/issue(\d+)/)
   if (match) {
@@ -76,7 +76,9 @@ async function updatePluginsFileAndCommitPush(
         const obj = JSON.parse(data)
         obj.push(pluginInfo)
         const json = JSON.stringify(obj, null, 2)
-        fs.writeFile(pluginJsonFilePath, json, 'utf8', () => {})
+        fs.writeFile(pluginJsonFilePath, json, 'utf8', () => {
+          core.info(`${pluginJsonFilePath} 更新完成`)
+        })
       }
     })
     const commitMessage = `:beers: publish ${pluginInfo.name}`
@@ -94,7 +96,7 @@ async function updatePluginsFileAndCommitPush(
   }
 }
 
-/**从 Issue 内容提取插件信息 */
+/**从议题内容提取插件信息 */
 function extractPluginInfo(body: string, author: string): PluginInfo {
   const idRegexp = /\*\*插件 import 使用的名称\*\*[\n\r]+([^*\n\r]+)/
   const linkRegexp = /\*\*插件 install 使用的名称\*\*[\n\r]+([^*\n\r]+)/
@@ -126,20 +128,23 @@ function extractPluginInfo(body: string, author: string): PluginInfo {
   throw new Error('无法匹配成功')
 }
 
-/**创建 Pull Request
+/**创建拉取请求
  *
  * 同时添加 Plugin 标签
+ * 内容关联上对应的议题
  */
 async function createPullRequest(
+  octokit: InstanceType<typeof GitHub>,
   pluginInfo: PluginInfo,
   issueNumber: number,
-  octokit: InstanceType<typeof GitHub>,
   branchName: string,
   base: string
 ): Promise<void> {
   const pullRequestTitle = `Plugin ${pluginInfo.name}`
+  // 关联相关议题，当拉取请求合并时会自动关闭对应议题
   const pullRequestbody = `resolve #${issueNumber}`
   try {
+    // 创建拉取请求
     const pr = await octokit.pulls.create({
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
@@ -148,10 +153,9 @@ async function createPullRequest(
       base,
       body: pullRequestbody
     })
-    // 自动给 Pull Request 添加 Plugin 标签
+    // 自动给拉取请求添加 Plugin 标签
     await octokit.issues.addLabels({
-      owner: github.context.repo.owner,
-      repo: github.context.repo.repo,
+      ...github.context.repo,
       issue_number: pr.data.number,
       labels: ['Plugin']
     })
@@ -164,26 +168,28 @@ async function createPullRequest(
   }
 }
 
-/**获取所有带有 Plugin 标签的 Pull Request */
+/**获取所有带有 Plugin 标签的拉取请求 */
 async function getAllPluginPullRequest(
   octokit: InstanceType<typeof GitHub>
 ): Promise<PullsListResponseData> {
-  const listOfPulls = (
+  const pulls = (
     await octokit.pulls.list({
-      owner: github.context.repo.owner,
-      repo: github.context.repo.repo,
+      ...github.context.repo,
       state: 'open'
     })
   ).data
 
-  return listOfPulls.filter(pull => checkLabel(pull.labels, 'Plugin'))
+  return pulls.filter(pull => checkLabel(pull.labels, 'Plugin'))
 }
 
-/**根据关联的 Issue rebase 提交来解决冲突 */
-async function rebaseAllOpenPullRequests(
+/**根据关联的议题提交来解决冲突
+ *
+ * 参考对应的议题重新更新对应分支
+ */
+async function resolveConflictPullRequests(
+  octokit: InstanceType<typeof GitHub>,
   pullRequests: PullsListResponseData,
-  base: string,
-  octokit: InstanceType<typeof GitHub>
+  base: string
 ): Promise<void> {
   for (const pull of pullRequests) {
     // 切换到对应分支
@@ -211,13 +217,12 @@ async function rebaseAllOpenPullRequests(
 
 /**关闭指定的议题 */
 async function closeIssue(
-  issue_number: number,
-  octokit: InstanceType<typeof GitHub>
+  octokit: InstanceType<typeof GitHub>,
+  issue_number: number
 ): Promise<void> {
   core.info(`正在关闭议题 #${issue_number}`)
   await octokit.issues.update({
-    owner: github.context.repo.owner,
-    repo: github.context.repo.repo,
+    ...github.context.repo,
     issue_number,
     state: 'closed'
   })
@@ -241,7 +246,7 @@ async function run(): Promise<void> {
         const ref: string = github.context.payload.pull_request?.head.ref
         const relatedIssueNumber = extractIssueNumberFromRef(ref)
         if (relatedIssueNumber) {
-          await closeIssue(relatedIssueNumber, octokit)
+          await closeIssue(octokit, relatedIssueNumber)
           core.info(`议题 #${relatedIssueNumber}  已关闭`)
           await exec.exec('git', ['push', 'origin', '--delete', ref])
         }
@@ -257,45 +262,57 @@ async function run(): Promise<void> {
       if (commitMessage.includes(':beers: publish')) {
         core.info('发现提交为插件发布，准备更新拉取请求的提交')
         const pullRequests = await getAllPluginPullRequest(octokit)
-        rebaseAllOpenPullRequests(pullRequests, base, octokit)
+        resolveConflictPullRequests(octokit, pullRequests, base)
       } else {
         core.info('该提交不是插件发布，已跳过')
       }
       return
     }
 
-    // 从 GitHub Context 中获取议题的相关信息
-    const issueNumber = github.context.payload.issue?.number
-    const issueBody = github.context.payload.issue?.body
+    // 处理 issues 事件
+    if (github.context.eventName === 'issues') {
+      if (
+        github.context.payload.action &&
+        ['opened', 'edited'].includes(github.context.payload.action)
+      ) {
+        // 从 GitHub Context 中获取议题的相关信息
+        const issueNumber = github.context.payload.issue?.number
+        const issueBody = github.context.payload.issue?.body
 
-    if (!issueNumber || !issueBody) {
-      core.setFailed('无法获取议题的信息')
-      return
+        if (!issueNumber || !issueBody) {
+          core.setFailed('无法获取议题的信息')
+          return
+        }
+
+        // 检查是否含有 Plugin 标签
+        const isPluginIssue = await checkPluginLabel(octokit, issueNumber)
+        if (!isPluginIssue) {
+          core.info('没有 Plugin 标签，已跳过')
+          return
+        }
+
+        // 创建新分支
+        // 命名示例 plugin/issue123
+        const branchName = `plugin/issue${issueNumber}`
+        await exec.exec('git', ['checkout', '-b', branchName])
+
+        // 插件作者信息
+        const username = github.context.issue.owner
+
+        // 更新 plugins.json 并提交更改
+        const pluginInfo = extractPluginInfo(issueBody, username)
+        await updatePluginsFileAndCommitPush(pluginInfo, branchName)
+
+        // 创建拉取请求
+        await createPullRequest(
+          octokit,
+          pluginInfo,
+          issueNumber,
+          branchName,
+          base
+        )
+      }
     }
-
-    // 检查是否含有 Plugin 标签
-    const isPluginIssue = await checkPluginLabel(octokit, issueNumber)
-
-    if (!isPluginIssue) {
-      core.info('没有 Plugin 标签，已跳过')
-      return
-    }
-
-    // 插件作者信息
-    const username = github.context.issue.owner
-
-    // 创建新分支
-    // plugin/issue123
-    const branchName = `plugin/issue${issueNumber}`
-    await exec.exec('git', ['checkout', '-b', branchName])
-
-    // 更新 plugins.json 并提交更改
-    const pluginInfo = extractPluginInfo(issueBody, username)
-    await updatePluginsFileAndCommitPush(pluginInfo, branchName)
-
-    // 提交 Pull Request
-    // 标题里要注明 issue 编号
-    await createPullRequest(pluginInfo, issueNumber, octokit, branchName, base)
   } catch (error) {
     core.setFailed(error.message)
   }
