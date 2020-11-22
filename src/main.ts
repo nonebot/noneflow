@@ -121,14 +121,13 @@ async function createPullRequest(
   branchName: string,
   base: string
 ): Promise<void> {
-  const pullRequestTitle = `Plugin ${pluginInfo.name}`
+  const pullRequestTitle = `Plugin: ${pluginInfo.name}`
   // 关联相关议题，当拉取请求合并时会自动关闭对应议题
   const pullRequestbody = `resolve #${issueNumber}`
   try {
     // 创建拉取请求
     const pr = await octokit.pulls.create({
-      owner: github.context.repo.owner,
-      repo: github.context.repo.repo,
+      ...github.context.repo,
       title: pullRequestTitle,
       head: branchName,
       base,

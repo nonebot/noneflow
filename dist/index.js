@@ -129,19 +129,12 @@ function extractPluginInfo(body, author) {
  */
 function createPullRequest(octokit, pluginInfo, issueNumber, branchName, base) {
     return __awaiter(this, void 0, void 0, function* () {
-        const pullRequestTitle = `Plugin ${pluginInfo.name}`;
+        const pullRequestTitle = `Plugin: ${pluginInfo.name}`;
         // 关联相关议题，当拉取请求合并时会自动关闭对应议题
         const pullRequestbody = `resolve #${issueNumber}`;
         try {
             // 创建拉取请求
-            const pr = yield octokit.pulls.create({
-                owner: github.context.repo.owner,
-                repo: github.context.repo.repo,
-                title: pullRequestTitle,
-                head: branchName,
-                base,
-                body: pullRequestbody
-            });
+            const pr = yield octokit.pulls.create(Object.assign(Object.assign({}, github.context.repo), { title: pullRequestTitle, head: branchName, base, body: pullRequestbody }));
             // 自动给拉取请求添加 Plugin 标签
             yield octokit.issues.addLabels(Object.assign(Object.assign({}, github.context.repo), { issue_number: pr.data.number, labels: ['Plugin'] }));
         }
