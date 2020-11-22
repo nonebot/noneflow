@@ -243,6 +243,13 @@ async function run(): Promise<void> {
             core.info('对应分支不存在或已删除')
           }
         }
+        if (github.context.payload.pull_request?.merged) {
+          core.info('发布插件的拉取请求已合并，准备更新拉取请求的提交')
+          const pullRequests = await getAllPluginPullRequest(octokit)
+          resolveConflictPullRequests(octokit, pullRequests, base)
+        } else {
+          core.info('发布插件的拉取请求未合并，已跳过')
+        }
       } else {
         core.info('拉取请求与插件无关，已跳过')
       }
