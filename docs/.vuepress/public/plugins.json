@@ -30,5 +30,13 @@
     "desc": "复读群友的消息",
     "name": "复读机2",
     "repo": "nonebot/nonebot2"
+  },
+  {
+    "id": "nonebot_plugin_example",
+    "link": "nonebot-plugin-example",
+    "author": "he0119",
+    "desc": "复读群友的消息",
+    "name": "复读机2",
+    "repo": "nonebot/nonebot2"
   }
 ]
