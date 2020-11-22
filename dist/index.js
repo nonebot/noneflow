@@ -188,7 +188,7 @@ function closeIssue(octokit, issue_number) {
     });
 }
 function run() {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const base = core.getInput('base', { required: true });
@@ -220,6 +220,16 @@ function run() {
                             core.info('对应分支不存在或已删除');
                         }
                     }
+                    const commitMessage = github.context.payload.head_commit.message;
+                    if (((_c = github.context.payload.pull_request) === null || _c === void 0 ? void 0 : _c.merged) &&
+                        commitMessage.includes(':beers: publish')) {
+                        core.info('发现合并的提交为插件发布，准备更新拉取请求的提交');
+                        const pullRequests = yield getAllPluginPullRequest(octokit);
+                        resolveConflictPullRequests(octokit, pullRequests, base);
+                    }
+                    else {
+                        core.info('该合并的提交不是插件发布，已跳过');
+                    }
                 }
                 else {
                     core.info('拉取请求与插件无关，已跳过');
@@ -244,14 +254,14 @@ function run() {
                 github.context.payload.action &&
                 ['opened', 'reopened', 'edited'].includes(github.context.payload.action)) {
                 // 从 GitHub Context 中获取议题的相关信息
-                const issueNumber = (_c = github.context.payload.issue) === null || _c === void 0 ? void 0 : _c.number;
-                const issueBody = (_d = github.context.payload.issue) === null || _d === void 0 ? void 0 : _d.body;
+                const issueNumber = (_d = github.context.payload.issue) === null || _d === void 0 ? void 0 : _d.number;
+                const issueBody = (_e = github.context.payload.issue) === null || _e === void 0 ? void 0 : _e.body;
                 if (!issueNumber || !issueBody) {
                     core.setFailed('无法获取议题的信息');
                     return;
                 }
                 // 检查是否含有 Plugin 标签
-                const isPluginIssue = checkPluginLabel((_e = github.context.payload.issue) === null || _e === void 0 ? void 0 : _e.labels);
+                const isPluginIssue = checkPluginLabel((_f = github.context.payload.issue) === null || _f === void 0 ? void 0 : _f.labels);
                 if (!isPluginIssue) {
                     core.info('没有 Plugin 标签，已跳过');
                     return;

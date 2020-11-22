@@ -243,6 +243,17 @@ async function run(): Promise<void> {
             core.info('对应分支不存在或已删除')
           }
         }
+        const commitMessage: string = github.context.payload.head_commit.message
+        if (
+          github.context.payload.pull_request?.merged &&
+          commitMessage.includes(':beers: publish')
+        ) {
+          core.info('发现合并的提交为插件发布，准备更新拉取请求的提交')
+          const pullRequests = await getAllPluginPullRequest(octokit)
+          resolveConflictPullRequests(octokit, pullRequests, base)
+        } else {
+          core.info('该合并的提交不是插件发布，已跳过')
+        }
       } else {
         core.info('拉取请求与插件无关，已跳过')
       }
