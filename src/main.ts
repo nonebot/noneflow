@@ -299,7 +299,7 @@ async function run(): Promise<void> {
       await exec.exec('git', ['checkout', '-b', branchName])
 
       // 插件作者信息
-      const username = github.context.issue.owner
+      const username = github.context.payload.issue?.user.login
 
       // 更新 plugins.json 并提交更改
       const pluginInfo = extractPluginInfo(issueBody, username)

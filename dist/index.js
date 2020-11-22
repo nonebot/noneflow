@@ -188,7 +188,7 @@ function closeIssue(octokit, issue_number) {
     });
 }
 function run() {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d, _e, _f, _g;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const base = core.getInput('base', { required: true });
@@ -269,7 +269,7 @@ function run() {
                 const branchName = `plugin/issue${issueNumber}`;
                 yield exec.exec('git', ['checkout', '-b', branchName]);
                 // 插件作者信息
-                const username = github.context.issue.owner;
+                const username = (_g = github.context.payload.issue) === null || _g === void 0 ? void 0 : _g.user.login;
                 // 更新 plugins.json 并提交更改
                 const pluginInfo = extractPluginInfo(issueBody, username);
                 yield updatePluginsFileAndCommitPush(pluginInfo, branchName);
