@@ -40,6 +40,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const exec = __importStar(__nccwpck_require__(1514));
 const fs = __importStar(__nccwpck_require__(5747));
+const plugin_1 = __nccwpck_require__(4315);
 /**检查是否含有插件标签 */
 function checkPluginLabel(labels) {
     for (const label of labels) {
@@ -93,35 +94,6 @@ function updatePluginsFileAndCommitPush(pluginInfo, branchName) {
         }
     });
 }
-/**从议题内容提取插件信息 */
-function extractPluginInfo(body, author) {
-    const idRegexp = /\*\*插件 import 使用的名称\*\*[\n\r]+([^*\n\r]+)/;
-    const linkRegexp = /\*\*插件 install 使用的名称\*\*[\n\r]+([^*\n\r]+)/;
-    const descRegexp = /\*\*简短描述插件功能：\*\*[\n\r]+([^*\n\r]+)/;
-    const nameRegexp = /\*\*你的插件名称：\*\*[\n\r]+([^*\n\r]+)/;
-    const repoRegexp = /\*\*插件项目仓库\/主页链接\*\*[\n\r]+([^*\n\r]+)/;
-    const idMatch = body.match(idRegexp);
-    const id = idMatch ? idMatch[1] : null;
-    const linkMatch = body.match(linkRegexp);
-    const link = linkMatch ? linkMatch[1] : null;
-    const descMatch = body.match(descRegexp);
-    const desc = descMatch ? descMatch[1] : null;
-    const nameMatch = body.match(nameRegexp);
-    const name = nameMatch ? nameMatch[1] : null;
-    const repoMatch = body.match(repoRegexp);
-    const repo = repoMatch ? repoMatch[1] : null;
-    if (id && link && desc && name && repo) {
-        return {
-            id,
-            link,
-            author,
-            desc,
-            name,
-            repo
-        };
-    }
-    throw new Error('无法匹配成功');
-}
 /**创建拉取请求
  *
  * 同时添加 Plugin 标签
@@ -170,7 +142,7 @@ function resolveConflictPullRequests(octokit, pullRequests, base) {
             if (issue_number) {
                 core.info(`正在处理 ${pull.title}`);
                 const issue = yield octokit.issues.get(Object.assign(Object.assign({}, github.context.repo), { issue_number }));
-                const pluginInfo = extractPluginInfo(issue.data.body, issue.data.user.login);
+                const pluginInfo = plugin_1.extractPluginInfo(issue.data.body, issue.data.user.login);
                 yield updatePluginsFileAndCommitPush(pluginInfo, pull.head.ref);
                 core.info(`拉取请求更新完毕`);
             }
@@ -271,7 +243,7 @@ function run() {
                 // 插件作者信息
                 const username = (_g = github.context.payload.issue) === null || _g === void 0 ? void 0 : _g.user.login;
                 // 更新 plugins.json 并提交更改
-                const pluginInfo = extractPluginInfo(issueBody, username);
+                const pluginInfo = plugin_1.extractPluginInfo(issueBody, username);
                 yield updatePluginsFileAndCommitPush(pluginInfo, branchName);
                 // 创建拉取请求
                 yield createPullRequest(octokit, pluginInfo, issueNumber, branchName, base);
@@ -286,6 +258,47 @@ function run() {
     });
 }
 run();
+
+
+/***/ }),
+
+/***/ 4315:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.extractPluginInfo = void 0;
+/**从议题内容提取插件信息 */
+function extractPluginInfo(body, author) {
+    const idRegexp = /\*\*插件 import 使用的名称\*\*[\n\r]+([^*\n\r]+)/;
+    const linkRegexp = /\*\*插件 install 使用的名称\*\*[\n\r]+([^*\n\r]+)/;
+    const descRegexp = /\*\*简短描述插件功能：\*\*[\n\r]+([^*\n\r]+)/;
+    const nameRegexp = /\*\*你的插件名称：\*\*[\n\r]+([^*\n\r]+)/;
+    const repoRegexp = /\*\*插件项目仓库\/主页链接\*\*[\n\r]+([^*\n\r]+)/;
+    const idMatch = body.match(idRegexp);
+    const id = idMatch ? idMatch[1] : null;
+    const linkMatch = body.match(linkRegexp);
+    const link = linkMatch ? linkMatch[1] : null;
+    const descMatch = body.match(descRegexp);
+    const desc = descMatch ? descMatch[1] : null;
+    const nameMatch = body.match(nameRegexp);
+    const name = nameMatch ? nameMatch[1] : null;
+    const repoMatch = body.match(repoRegexp);
+    const repo = repoMatch ? repoMatch[1] : null;
+    if (id && link && desc && name && repo) {
+        return {
+            id,
+            link,
+            author,
+            desc,
+            name,
+            repo
+        };
+    }
+    throw new Error('无法匹配成功');
+}
+exports.extractPluginInfo = extractPluginInfo;
 
 
 /***/ }),

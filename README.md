@@ -1,6 +1,6 @@
 # NoneBot2 Plugin Issue Bot
 
-NoneBot2 插件发布机器人
+[NoneBot2](https://github.com/nonebot/nonebot2) 插件/协议发布机器人
 
 ## 主要功能
 

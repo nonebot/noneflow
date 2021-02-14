@@ -1,4 +1,4 @@
-import {extractPluginInfo} from '../src/utils'
+import {extractPluginInfo} from '../src/plugin'
 
 test('extract plugin info', async () => {
   const pluginPublish = `
@@ -25,7 +25,6 @@ nonebot/nonebot2
 
   let pluginInfo = extractPluginInfo(pluginPublish, 'test')
 
-  console.log(pluginInfo)
   expect(pluginInfo.id).toBe('nonebot_plugin_example')
   expect(pluginInfo.link).toBe('nonebot-plugin-example')
   expect(pluginInfo.author).toBe('test')
