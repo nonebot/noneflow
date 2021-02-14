@@ -1,25 +1,23 @@
-name: 'Plugin Issue Bot'
+name: 'CI'
+
 on:
+  pull_request:
   push:
     branches:
+      - main
       - dev
-  issues:
-    types: [opened, reopened, edited]
-  pull_request:
-    types: [closed]
 
 jobs:
-  issue_bot_job:
+  build:
     runs-on: ubuntu-latest
-    name: issue bot
     steps:
-      # 要使用此仓库的私有操作，
-      # 您必须检出仓库
       - name: Checkout
         uses: actions/checkout@v2
-      - name: issue
-        uses: ./ # Uses an action in the root directory
+      - run: npm install
+      - run: npm run all
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          base: dev
-          path: docs/.vuepress/public/plugins.json
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./coverage/
+          flags: unittests
