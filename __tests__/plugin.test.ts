@@ -1,29 +1,18 @@
-import {extractPluginInfo} from '../src/plugin'
+import {extractInfo} from '../src/issue/plugin'
 
 test('extract plugin info', async () => {
   const pluginPublish = `
-**你的插件名称：**
-
-复读机
-
-**简短描述插件功能：**
-
-复读群友的消息
-
-**插件 import 使用的名称**
-
-nonebot_plugin_example
-
-**插件 install 使用的名称**
-
-nonebot-plugin-example
-
-**插件项目仓库/主页链接**
-
-nonebot/nonebot2
+  <!-- DO NOT EDIT ! -->
+  <!--
+  - id: nonebot_plugin_example
+  - link: nonebot-plugin-example
+  - name: 复读机
+  - desc: 复读群友的消息
+  - repo: nonebot/nonebot2
+  -->
 `
 
-  let pluginInfo = extractPluginInfo(pluginPublish, 'test')
+  let pluginInfo = extractInfo(pluginPublish, 'test')
 
   expect(pluginInfo.id).toBe('nonebot_plugin_example')
   expect(pluginInfo.link).toBe('nonebot-plugin-example')
