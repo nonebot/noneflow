@@ -1,4 +1,4 @@
-import {extractInfo} from '../src/issue/plugin'
+import {extractInfo} from '../src/types/plugin'
 
 test('extract plugin info', async () => {
   const pluginPublish = `

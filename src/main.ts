@@ -1,6 +1,18 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import * as exec from '@actions/exec'
+import {
+  checkCommitType,
+  checkLabel,
+  closeIssue,
+  commitandPush,
+  createPullRequest,
+  extractInfo,
+  extractIssueNumberFromRef,
+  getPullRequests,
+  resolveConflictPullRequests,
+  updateFile
+} from './utils'
 
 async function run(): Promise<void> {
   try {
@@ -23,8 +35,9 @@ async function run(): Promise<void> {
       github.context.eventName === 'pull_request' &&
       github.context.payload.action === 'closed'
     ) {
-      // 只处理标签是 Plugin 的拉取请求
-      if (checkPluginLabel(github.context.payload.pull_request?.labels)) {
+      // 只处理支持标签的拉取请求
+      const issueType = checkLabel(github.context.payload.pull_request?.labels)
+      if (issueType) {
         const ref: string = github.context.payload.pull_request?.head.ref
         const relatedIssueNumber = extractIssueNumberFromRef(ref)
         if (relatedIssueNumber) {
@@ -38,11 +51,11 @@ async function run(): Promise<void> {
           }
         }
         if (github.context.payload.pull_request?.merged) {
-          core.info('发布插件的拉取请求已合并，准备更新拉取请求的提交')
-          const pullRequests = await getPullRequests(octokit, 'plugin')
+          core.info('发布的拉取请求已合并，准备更新拉取请求的提交')
+          const pullRequests = await getPullRequests(octokit, issueType)
           resolveConflictPullRequests(octokit, pullRequests, base)
         } else {
-          core.info('发布插件的拉取请求未合并，已跳过')
+          core.info('发布的拉取请求未合并，已跳过')
         }
       } else {
         core.info('拉取请求与插件无关，已跳过')
@@ -52,13 +65,15 @@ async function run(): Promise<void> {
 
     // 处理 push 事件
     if (github.context.eventName === 'push') {
-      const commitMessage: string = github.context.payload.head_commit.message
-      if (commitMessage.includes(':beers: publish')) {
-        core.info('发现提交为插件发布，准备更新拉取请求的提交')
-        const pullRequests = await getPullRequests(octokit, 'plugin')
+      const publishType = checkCommitType(
+        github.context.payload.head_commit.message
+      )
+      if (publishType) {
+        core.info('发现提交为发布，准备更新拉取请求的提交')
+        const pullRequests = await getPullRequests(octokit, publishType)
         resolveConflictPullRequests(octokit, pullRequests, base)
       } else {
-        core.info('该提交不是插件发布，已跳过')
+        core.info('该提交不是发布，已跳过')
       }
       return
     }
@@ -78,12 +93,10 @@ async function run(): Promise<void> {
         return
       }
 
-      // 检查是否含有 Plugin 标签
-      const isPluginIssue = checkPluginLabel(
-        github.context.payload.issue?.labels
-      )
-      if (!isPluginIssue) {
-        core.info('没有 Plugin 标签，已跳过')
+      // 检查是否含有指定标签
+      const publishType = checkLabel(github.context.payload.issue?.labels)
+      if (!publishType) {
+        core.info('没有指定标签，已跳过')
         return
       }
 
@@ -96,17 +109,13 @@ async function run(): Promise<void> {
       const username = github.context.payload.issue?.user.login
 
       // 更新 plugins.json 并提交更改
-      const pluginInfo = extractPluginInfo(issueBody, username)
-      await updateFileAndCommitPush(branchName)
+      const info = extractInfo(publishType, issueBody, username)
+      await updateFile(info)
+      const commitMessage = `:beers: publish ${info.type.toLowerCase} ${info.name}`
+      await commitandPush(branchName, username, commitMessage)
 
       // 创建拉取请求
-      await createPullRequest(
-        octokit,
-        pluginInfo,
-        issueNumber,
-        branchName,
-        base
-      )
+      await createPullRequest(octokit, info, issueNumber, branchName, base)
     } else {
       core.info('事件不是议题开启，重新开启或修改，已跳过')
     }

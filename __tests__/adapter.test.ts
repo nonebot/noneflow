@@ -1,4 +1,4 @@
-import {extractInfo} from '../src/issue/adapter'
+import {extractInfo} from '../src/types/adapter'
 
 test('extract adapter info', async () => {
   const adapterPublish = `

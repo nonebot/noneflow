@@ -45,6 +45,8 @@ export interface PluginInfo {
   repo: string
 }
 
+/** 更新文件所需信息 */
 export type Info = BotInfo | PluginInfo | AdapterInfo
 
-export type IssueType = 'Plugin' | 'Adapter' | 'Bot'
+/** 发布类型 */
+export type PublishType = 'Plugin' | 'Adapter' | 'Bot'

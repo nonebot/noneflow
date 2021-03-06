@@ -3,7 +3,7 @@ import * as core from '@actions/core'
 import * as exec from '@actions/exec'
 import * as fs from 'fs'
 import {IssuesGetResponseData} from '@octokit/types'
-import {Info, IssueType} from './info'
+import {Info, PublishType} from './info'
 import {GitHub} from '@actions/github/lib/utils'
 import {PullsListResponseData} from '@octokit/types'
 import * as adapter from './types/adapter'
@@ -12,20 +12,42 @@ import * as plugin from './types/plugin'
 
 /**检查是否含有指定标签
  *
- * Plugin Adapter Bot
+ * 并返回指定的类型(Plugin Adapter Bot)
+ *
+ * 如果无返回则说明不含指定标签
  */
 export function checkLabel(
   labels: IssuesGetResponseData['labels']
-): IssueType | undefined {
+): PublishType | undefined {
   for (const label of labels) {
     if (['Plugin', 'Adapter', 'Bot'].includes(label.name)) {
-      return label.name as IssueType
+      return label.name as PublishType
     }
   }
 }
 
+/**检查是否含有指定类型
+ *
+ * 并返回指定的类型(Plugin Adapter Bot)
+ *
+ * 如果无返回则说明不含指定类型
+ */
+export function checkCommitType(
+  commitMessage: string
+): PublishType | undefined {
+  if (commitMessage.includes(':beers: publish adapter')) {
+    return 'Adapter'
+  }
+  if (commitMessage.includes(':beers: publish bot')) {
+    return 'Bot'
+  }
+  if (commitMessage.includes(':beers: publish plguin')) {
+    return 'Plugin'
+  }
+}
+
 /**更新 json 文件 */
-async function updateFile(info: Info): Promise<void> {
+export async function updateFile(info: Info): Promise<void> {
   if (process.env.GITHUB_WORKSPACE) {
     let path: string
     switch (info.type) {
@@ -114,7 +136,7 @@ export async function createPullRequest(
  */
 export async function getPullRequests(
   octokit: InstanceType<typeof GitHub>,
-  type: IssueType
+  type: PublishType
 ): Promise<PullsListResponseData> {
   const pulls = (
     await octokit.pulls.list({
@@ -129,8 +151,8 @@ export async function getPullRequests(
 }
 
 /**从 Ref 中提取标签编号 */
-function extractIssueNumberFromRef(ref: string): number | undefined {
-  const match = ref.match(/plugin\/issue(\d+)/)
+export function extractIssueNumberFromRef(ref: string): number | undefined {
+  const match = ref.match(/\/issue(\d+)/)
   if (match) {
     return Number(match[1])
   }
@@ -161,14 +183,7 @@ export async function resolveConflictPullRequests(
       let info: Info
       const issueType = checkLabel(issue.data.labels)
       if (issueType) {
-        switch (issueType) {
-          case 'Adapter':
-            info = adapter.extractInfo(issue.data.body, issue.data.user.login)
-          case 'Bot':
-            info = bot.extractInfo(issue.data.body, issue.data.user.login)
-          case 'Plugin':
-            info = plugin.extractInfo(issue.data.body, issue.data.user.login)
-        }
+        info = extractInfo(issueType, issue.data.body, issue.data.user.login)
         await updateFile(info)
         const commitMessage = `:beers: publish ${info.type.toLowerCase} ${info.name}`
         await commitandPush(pull.head.ref, info.author, commitMessage)
@@ -178,6 +193,24 @@ export async function resolveConflictPullRequests(
       core.setFailed(`无法获取 ${pull.title} 对应的议题`)
     }
   }
+}
+
+/** 提取所需数据  */
+export function extractInfo(
+  issueType: PublishType,
+  issueBody: string,
+  username: string
+) {
+  let info: Info
+  switch (issueType) {
+    case 'Adapter':
+      info = adapter.extractInfo(issueBody, username)
+    case 'Bot':
+      info = bot.extractInfo(issueBody, username)
+    case 'Plugin':
+      info = plugin.extractInfo(issueBody, username)
+  }
+  return info
 }
 
 /**关闭指定的议题 */

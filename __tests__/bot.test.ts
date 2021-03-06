@@ -1,4 +1,4 @@
-import {extractInfo} from '../src/issue/bot'
+import {extractInfo} from '../src/types/bot'
 
 test('extract bot info', async () => {
   const botPublish = `
