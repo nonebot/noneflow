@@ -2,10 +2,10 @@ import * as github from '@actions/github'
 import * as core from '@actions/core'
 import * as exec from '@actions/exec'
 import * as fs from 'fs'
-import {IssuesGetResponseData} from '@octokit/types'
-import {Info, PublishType} from './info'
+import {IssuesGetResponseData, PullsListResponseData} from '@octokit/types'
 import {GitHub} from '@actions/github/lib/utils'
-import {PullsListResponseData} from '@octokit/types'
+
+import {Info, PublishType} from './info'
 import * as adapter from './types/adapter'
 import * as bot from './types/bot'
 import * as plugin from './types/plugin'
@@ -53,10 +53,13 @@ export async function updateFile(info: Info): Promise<void> {
     switch (info.type) {
       case 'Adapter':
         path = core.getInput('adapter_path', {required: true})
+        break
       case 'Bot':
         path = core.getInput('bot_path', {required: true})
+        break
       case 'Plugin':
         path = core.getInput('plugin_path', {required: true})
+        break
     }
     const jsonFilePath = `${process.env.GITHUB_WORKSPACE}/${path}`
     // 写入新数据
@@ -185,7 +188,9 @@ export async function resolveConflictPullRequests(
       if (issueType) {
         info = extractInfo(issueType, issue.data.body, issue.data.user.login)
         await updateFile(info)
-        const commitMessage = `:beers: publish ${info.type.toLowerCase} ${info.name}`
+        const commitMessage = `:beers: publish ${info.type.toLowerCase()} ${
+          info.name
+        }`
         await commitandPush(pull.head.ref, info.author, commitMessage)
         core.info(`拉取请求更新完毕`)
       }
@@ -197,18 +202,21 @@ export async function resolveConflictPullRequests(
 
 /** 提取所需数据  */
 export function extractInfo(
-  issueType: PublishType,
+  publishType: PublishType,
   issueBody: string,
   username: string
-) {
+): Info {
   let info: Info
-  switch (issueType) {
+  switch (publishType) {
     case 'Adapter':
       info = adapter.extractInfo(issueBody, username)
+      break
     case 'Bot':
       info = bot.extractInfo(issueBody, username)
+      break
     case 'Plugin':
       info = plugin.extractInfo(issueBody, username)
+      break
   }
   return info
 }

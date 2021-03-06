@@ -111,7 +111,9 @@ async function run(): Promise<void> {
       // 更新 plugins.json 并提交更改
       const info = extractInfo(publishType, issueBody, username)
       await updateFile(info)
-      const commitMessage = `:beers: publish ${info.type.toLowerCase} ${info.name}`
+      const commitMessage = `:beers: publish ${info.type.toLowerCase()} ${
+        info.name
+      }`
       await commitandPush(branchName, username, commitMessage)
 
       // 创建拉取请求
