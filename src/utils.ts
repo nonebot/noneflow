@@ -50,15 +50,46 @@ export function checkCommitType(
 export async function updateFile(info: Info): Promise<void> {
   if (process.env.GITHUB_WORKSPACE) {
     let path: string
+    // 去处 Info 中的 type
+    let newInfo: {
+      id?: string
+      link?: string
+      name: string
+      desc: string
+      author: string
+      repo: string
+    }
     switch (info.type) {
       case 'Adapter':
         path = core.getInput('adapter_path', {required: true})
+        newInfo = {
+          id: info.id,
+          link: info.link,
+          name: info.name,
+          desc: info.desc,
+          author: info.author,
+          repo: info.repo
+        }
         break
       case 'Bot':
         path = core.getInput('bot_path', {required: true})
+        newInfo = {
+          name: info.name,
+          desc: info.desc,
+          author: info.author,
+          repo: info.repo
+        }
         break
       case 'Plugin':
         path = core.getInput('plugin_path', {required: true})
+        newInfo = {
+          id: info.id,
+          link: info.link,
+          name: info.name,
+          desc: info.desc,
+          author: info.author,
+          repo: info.repo
+        }
         break
     }
     const jsonFilePath = `${process.env.GITHUB_WORKSPACE}/${path}`
@@ -68,7 +99,7 @@ export async function updateFile(info: Info): Promise<void> {
         core.setFailed(err)
       } else {
         const obj = JSON.parse(data)
-        obj.push(info)
+        obj.push(newInfo)
         const json = JSON.stringify(obj, null, 2)
         fs.writeFile(jsonFilePath, json, 'utf8', () => {
           core.info(`${jsonFilePath} 更新完成`)

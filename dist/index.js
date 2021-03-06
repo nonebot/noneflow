@@ -343,15 +343,39 @@ function updateFile(info) {
     return __awaiter(this, void 0, void 0, function* () {
         if (process.env.GITHUB_WORKSPACE) {
             let path;
+            // 去处 Info 中的 type
+            let newInfo;
             switch (info.type) {
                 case 'Adapter':
                     path = core.getInput('adapter_path', { required: true });
+                    newInfo = {
+                        id: info.id,
+                        link: info.link,
+                        name: info.name,
+                        desc: info.desc,
+                        author: info.author,
+                        repo: info.repo
+                    };
                     break;
                 case 'Bot':
                     path = core.getInput('bot_path', { required: true });
+                    newInfo = {
+                        name: info.name,
+                        desc: info.desc,
+                        author: info.author,
+                        repo: info.repo
+                    };
                     break;
                 case 'Plugin':
                     path = core.getInput('plugin_path', { required: true });
+                    newInfo = {
+                        id: info.id,
+                        link: info.link,
+                        name: info.name,
+                        desc: info.desc,
+                        author: info.author,
+                        repo: info.repo
+                    };
                     break;
             }
             const jsonFilePath = `${process.env.GITHUB_WORKSPACE}/${path}`;
@@ -362,7 +386,7 @@ function updateFile(info) {
                 }
                 else {
                     const obj = JSON.parse(data);
-                    obj.push(info);
+                    obj.push(newInfo);
                     const json = JSON.stringify(obj, null, 2);
                     fs.writeFile(jsonFilePath, json, 'utf8', () => {
                         core.info(`${jsonFilePath} 更新完成`);
