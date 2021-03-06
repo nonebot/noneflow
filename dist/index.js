@@ -39,154 +39,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const exec = __importStar(__nccwpck_require__(1514));
-const fs = __importStar(__nccwpck_require__(5747));
-/**检查是否含有插件标签 */
-function checkPluginLabel(labels) {
-    for (const label of labels) {
-        if (label.name === 'Plugin') {
-            return true;
-        }
-    }
-    return false;
-}
-/**从 Ref 中提取标签编号 */
-function extractIssueNumberFromRef(ref) {
-    const match = ref.match(/plugin\/issue(\d+)/);
-    if (match) {
-        return Number(match[1]);
-    }
-}
-/**更新 plugins.json
- * 并提交到 Git
- */
-function updatePluginsFileAndCommitPush(pluginInfo, branchName) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (process.env.GITHUB_WORKSPACE) {
-            const path = core.getInput('path', { required: true });
-            const pluginJsonFilePath = `${process.env.GITHUB_WORKSPACE}/${path}`;
-            // 写入新数据
-            fs.readFile(pluginJsonFilePath, 'utf8', (err, data) => {
-                if (err) {
-                    core.setFailed(err);
-                }
-                else {
-                    const obj = JSON.parse(data);
-                    obj.push(pluginInfo);
-                    const json = JSON.stringify(obj, null, 2);
-                    fs.writeFile(pluginJsonFilePath, json, 'utf8', () => {
-                        core.info(`${pluginJsonFilePath} 更新完成`);
-                    });
-                }
-            });
-            const commitMessage = `:beers: publish ${pluginInfo.name}`;
-            yield exec.exec('git', [
-                'config',
-                '--global',
-                'user.name',
-                pluginInfo.author
-            ]);
-            const useremail = `${pluginInfo.author}@users.noreply.github.com`;
-            yield exec.exec('git', ['config', '--global', 'user.email', useremail]);
-            yield exec.exec('git', ['add', '-A']);
-            yield exec.exec('git', ['commit', '-m', commitMessage]);
-            yield exec.exec('git', ['push', 'origin', branchName, '-f']);
-        }
-    });
-}
-/**从议题内容提取插件信息 */
-function extractPluginInfo(body, author) {
-    const idRegexp = /\*\*插件 import 使用的名称\*\*[\n\r]+([^*\n\r]+)/;
-    const linkRegexp = /\*\*插件 install 使用的名称\*\*[\n\r]+([^*\n\r]+)/;
-    const descRegexp = /\*\*简短描述插件功能：\*\*[\n\r]+([^*\n\r]+)/;
-    const nameRegexp = /\*\*你的插件名称：\*\*[\n\r]+([^*\n\r]+)/;
-    const repoRegexp = /\*\*插件项目仓库\/主页链接\*\*[\n\r]+([^*\n\r]+)/;
-    const idMatch = body.match(idRegexp);
-    const id = idMatch ? idMatch[1] : null;
-    const linkMatch = body.match(linkRegexp);
-    const link = linkMatch ? linkMatch[1] : null;
-    const descMatch = body.match(descRegexp);
-    const desc = descMatch ? descMatch[1] : null;
-    const nameMatch = body.match(nameRegexp);
-    const name = nameMatch ? nameMatch[1] : null;
-    const repoMatch = body.match(repoRegexp);
-    const repo = repoMatch ? repoMatch[1] : null;
-    if (id && link && desc && name && repo) {
-        return {
-            id,
-            link,
-            author,
-            desc,
-            name,
-            repo
-        };
-    }
-    throw new Error('无法匹配成功');
-}
-/**创建拉取请求
- *
- * 同时添加 Plugin 标签
- * 内容关联上对应的议题
- */
-function createPullRequest(octokit, pluginInfo, issueNumber, branchName, base) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const pullRequestTitle = `Plugin: ${pluginInfo.name}`;
-        // 关联相关议题，当拉取请求合并时会自动关闭对应议题
-        const pullRequestbody = `resolve #${issueNumber}`;
-        try {
-            // 创建拉取请求
-            const pr = yield octokit.pulls.create(Object.assign(Object.assign({}, github.context.repo), { title: pullRequestTitle, head: branchName, base, body: pullRequestbody }));
-            // 自动给拉取请求添加 Plugin 标签
-            yield octokit.issues.addLabels(Object.assign(Object.assign({}, github.context.repo), { issue_number: pr.data.number, labels: ['Plugin'] }));
-        }
-        catch (error) {
-            if (error.message.includes(`A pull request already exists for`)) {
-                core.info('该分支的拉取请求已创建，请前往查看');
-            }
-            else {
-                throw error;
-            }
-        }
-    });
-}
-/**获取所有带有 Plugin 标签的拉取请求 */
-function getAllPluginPullRequest(octokit) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const pulls = (yield octokit.pulls.list(Object.assign(Object.assign({}, github.context.repo), { state: 'open' }))).data;
-        return pulls.filter(pull => checkPluginLabel(pull.labels));
-    });
-}
-/**根据关联的议题提交来解决冲突
- *
- * 参考对应的议题重新更新对应分支
- */
-function resolveConflictPullRequests(octokit, pullRequests, base) {
-    return __awaiter(this, void 0, void 0, function* () {
-        for (const pull of pullRequests) {
-            // 切换到对应分支
-            yield exec.exec('git', ['checkout', '-b', pull.head.ref]);
-            // 重置之前的提交
-            yield exec.exec('git', ['reset', '--hard', base]);
-            const issue_number = extractIssueNumberFromRef(pull.head.ref);
-            if (issue_number) {
-                core.info(`正在处理 ${pull.title}`);
-                const issue = yield octokit.issues.get(Object.assign(Object.assign({}, github.context.repo), { issue_number }));
-                const pluginInfo = extractPluginInfo(issue.data.body, issue.data.user.login);
-                yield updatePluginsFileAndCommitPush(pluginInfo, pull.head.ref);
-                core.info(`拉取请求更新完毕`);
-            }
-            else {
-                core.setFailed(`无法获取 ${pull.title} 对应的议题`);
-            }
-        }
-    });
-}
-/**关闭指定的议题 */
-function closeIssue(octokit, issue_number) {
-    return __awaiter(this, void 0, void 0, function* () {
-        core.info(`正在关闭议题 #${issue_number}`);
-        yield octokit.issues.update(Object.assign(Object.assign({}, github.context.repo), { issue_number, state: 'closed' }));
-    });
-}
+const utils_1 = __nccwpck_require__(918);
 function run() {
     var _a, _b, _c, _d, _e, _f, _g;
     return __awaiter(this, void 0, void 0, function* () {
@@ -205,12 +58,13 @@ function run() {
             // 处理 pull_request 事件
             if (github.context.eventName === 'pull_request' &&
                 github.context.payload.action === 'closed') {
-                // 只处理标签是 Plugin 的拉取请求
-                if (checkPluginLabel((_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.labels)) {
+                // 只处理支持标签的拉取请求
+                const issueType = utils_1.checkLabel((_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.labels);
+                if (issueType) {
                     const ref = (_b = github.context.payload.pull_request) === null || _b === void 0 ? void 0 : _b.head.ref;
-                    const relatedIssueNumber = extractIssueNumberFromRef(ref);
+                    const relatedIssueNumber = utils_1.extractIssueNumberFromRef(ref);
                     if (relatedIssueNumber) {
-                        yield closeIssue(octokit, relatedIssueNumber);
+                        yield utils_1.closeIssue(octokit, relatedIssueNumber);
                         core.info(`议题 #${relatedIssueNumber}  已关闭`);
                         try {
                             yield exec.exec('git', ['push', 'origin', '--delete', ref]);
@@ -221,12 +75,12 @@ function run() {
                         }
                     }
                     if ((_c = github.context.payload.pull_request) === null || _c === void 0 ? void 0 : _c.merged) {
-                        core.info('发布插件的拉取请求已合并，准备更新拉取请求的提交');
-                        const pullRequests = yield getAllPluginPullRequest(octokit);
-                        resolveConflictPullRequests(octokit, pullRequests, base);
+                        core.info('发布的拉取请求已合并，准备更新拉取请求的提交');
+                        const pullRequests = yield utils_1.getPullRequests(octokit, issueType);
+                        utils_1.resolveConflictPullRequests(octokit, pullRequests, base);
                     }
                     else {
-                        core.info('发布插件的拉取请求未合并，已跳过');
+                        core.info('发布的拉取请求未合并，已跳过');
                     }
                 }
                 else {
@@ -236,14 +90,14 @@ function run() {
             }
             // 处理 push 事件
             if (github.context.eventName === 'push') {
-                const commitMessage = github.context.payload.head_commit.message;
-                if (commitMessage.includes(':beers: publish')) {
-                    core.info('发现提交为插件发布，准备更新拉取请求的提交');
-                    const pullRequests = yield getAllPluginPullRequest(octokit);
-                    resolveConflictPullRequests(octokit, pullRequests, base);
+                const publishType = utils_1.checkCommitType(github.context.payload.head_commit.message);
+                if (publishType) {
+                    core.info('发现提交为发布，准备更新拉取请求的提交');
+                    const pullRequests = yield utils_1.getPullRequests(octokit, publishType);
+                    utils_1.resolveConflictPullRequests(octokit, pullRequests, base);
                 }
                 else {
-                    core.info('该提交不是插件发布，已跳过');
+                    core.info('该提交不是发布，已跳过');
                 }
                 return;
             }
@@ -258,10 +112,10 @@ function run() {
                     core.setFailed('无法获取议题的信息');
                     return;
                 }
-                // 检查是否含有 Plugin 标签
-                const isPluginIssue = checkPluginLabel((_f = github.context.payload.issue) === null || _f === void 0 ? void 0 : _f.labels);
-                if (!isPluginIssue) {
-                    core.info('没有 Plugin 标签，已跳过');
+                // 检查是否含有指定标签
+                const publishType = utils_1.checkLabel((_f = github.context.payload.issue) === null || _f === void 0 ? void 0 : _f.labels);
+                if (!publishType) {
+                    core.info('没有指定标签，已跳过');
                     return;
                 }
                 // 创建新分支
@@ -271,10 +125,12 @@ function run() {
                 // 插件作者信息
                 const username = (_g = github.context.payload.issue) === null || _g === void 0 ? void 0 : _g.user.login;
                 // 更新 plugins.json 并提交更改
-                const pluginInfo = extractPluginInfo(issueBody, username);
-                yield updatePluginsFileAndCommitPush(pluginInfo, branchName);
+                const info = utils_1.extractInfo(publishType, issueBody, username);
+                yield utils_1.updateFile(info);
+                const commitMessage = `:beers: publish ${info.type.toLowerCase()} ${info.name}`;
+                yield utils_1.commitandPush(branchName, username, commitMessage);
                 // 创建拉取请求
-                yield createPullRequest(octokit, pluginInfo, issueNumber, branchName, base);
+                yield utils_1.createPullRequest(octokit, info, issueNumber, branchName, base);
             }
             else {
                 core.info('事件不是议题开启，重新开启或修改，已跳过');
@@ -286,6 +142,381 @@ function run() {
     });
 }
 run();
+
+
+/***/ }),
+
+/***/ 4139:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.extractInfo = void 0;
+/**从议题内容提取协议信息 */
+function extractInfo(body, author) {
+    const idRegexp = /- id: (.+)/;
+    const linkRegexp = /- link: (.+)/;
+    const descRegexp = /- desc: (.+)/;
+    const nameRegexp = /- name: (.+)/;
+    const repoRegexp = /- repo: (.+)/;
+    const idMatch = body.match(idRegexp);
+    const id = idMatch ? idMatch[1] : null;
+    const linkMatch = body.match(linkRegexp);
+    const link = linkMatch ? linkMatch[1] : null;
+    const descMatch = body.match(descRegexp);
+    const desc = descMatch ? descMatch[1] : null;
+    const nameMatch = body.match(nameRegexp);
+    const name = nameMatch ? nameMatch[1] : null;
+    const repoMatch = body.match(repoRegexp);
+    const repo = repoMatch ? repoMatch[1] : null;
+    if (id && link && desc && name && repo) {
+        return {
+            type: 'Adapter',
+            id,
+            link,
+            author,
+            desc,
+            name,
+            repo
+        };
+    }
+    throw new Error('无法匹配成功');
+}
+exports.extractInfo = extractInfo;
+
+
+/***/ }),
+
+/***/ 7930:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.extractInfo = void 0;
+/**从议题内容提取机器人信息 */
+function extractInfo(body, author) {
+    const nameRegexp = /- name: (.+)/;
+    const descRegexp = /- desc: (.+)/;
+    const repoRegexp = /- repo: (.+)/;
+    const nameMatch = body.match(nameRegexp);
+    const name = nameMatch ? nameMatch[1] : null;
+    const descMatch = body.match(descRegexp);
+    const desc = descMatch ? descMatch[1] : null;
+    const repoMatch = body.match(repoRegexp);
+    const repo = repoMatch ? repoMatch[1] : null;
+    if (desc && name && repo) {
+        return {
+            type: 'Bot',
+            author,
+            desc,
+            name,
+            repo
+        };
+    }
+    throw new Error('无法匹配成功');
+}
+exports.extractInfo = extractInfo;
+
+
+/***/ }),
+
+/***/ 3698:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.extractInfo = void 0;
+/**从议题内容提取插件信息 */
+function extractInfo(body, author) {
+    const idRegexp = /- id: (.+)/;
+    const linkRegexp = /- link: (.+)/;
+    const descRegexp = /- desc: (.+)/;
+    const nameRegexp = /- name: (.+)/;
+    const repoRegexp = /- repo: (.+)/;
+    const idMatch = body.match(idRegexp);
+    const id = idMatch ? idMatch[1] : null;
+    const linkMatch = body.match(linkRegexp);
+    const link = linkMatch ? linkMatch[1] : null;
+    const descMatch = body.match(descRegexp);
+    const desc = descMatch ? descMatch[1] : null;
+    const nameMatch = body.match(nameRegexp);
+    const name = nameMatch ? nameMatch[1] : null;
+    const repoMatch = body.match(repoRegexp);
+    const repo = repoMatch ? repoMatch[1] : null;
+    if (id && link && desc && name && repo) {
+        return {
+            type: 'Plugin',
+            id,
+            link,
+            author,
+            desc,
+            name,
+            repo
+        };
+    }
+    throw new Error('无法匹配成功');
+}
+exports.extractInfo = extractInfo;
+
+
+/***/ }),
+
+/***/ 918:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.closeIssue = exports.extractInfo = exports.resolveConflictPullRequests = exports.extractIssueNumberFromRef = exports.getPullRequests = exports.createPullRequest = exports.commitandPush = exports.updateFile = exports.checkCommitType = exports.checkLabel = void 0;
+const github = __importStar(__nccwpck_require__(5438));
+const core = __importStar(__nccwpck_require__(2186));
+const exec = __importStar(__nccwpck_require__(1514));
+const fs = __importStar(__nccwpck_require__(5747));
+const adapter = __importStar(__nccwpck_require__(4139));
+const bot = __importStar(__nccwpck_require__(7930));
+const plugin = __importStar(__nccwpck_require__(3698));
+/**检查是否含有指定标签
+ *
+ * 并返回指定的类型(Plugin Adapter Bot)
+ *
+ * 如果无返回则说明不含指定标签
+ */
+function checkLabel(labels) {
+    for (const label of labels) {
+        if (['Plugin', 'Adapter', 'Bot'].includes(label.name)) {
+            return label.name;
+        }
+    }
+}
+exports.checkLabel = checkLabel;
+/**检查是否含有指定类型
+ *
+ * 并返回指定的类型(Plugin Adapter Bot)
+ *
+ * 如果无返回则说明不含指定类型
+ */
+function checkCommitType(commitMessage) {
+    if (commitMessage.includes(':beers: publish adapter')) {
+        return 'Adapter';
+    }
+    if (commitMessage.includes(':beers: publish bot')) {
+        return 'Bot';
+    }
+    if (commitMessage.includes(':beers: publish plguin')) {
+        return 'Plugin';
+    }
+}
+exports.checkCommitType = checkCommitType;
+/**更新 json 文件 */
+function updateFile(info) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (process.env.GITHUB_WORKSPACE) {
+            let path;
+            // 去处 Info 中的 type
+            let newInfo;
+            switch (info.type) {
+                case 'Adapter':
+                    path = core.getInput('adapter_path', { required: true });
+                    newInfo = {
+                        id: info.id,
+                        link: info.link,
+                        name: info.name,
+                        desc: info.desc,
+                        author: info.author,
+                        repo: info.repo
+                    };
+                    break;
+                case 'Bot':
+                    path = core.getInput('bot_path', { required: true });
+                    newInfo = {
+                        name: info.name,
+                        desc: info.desc,
+                        author: info.author,
+                        repo: info.repo
+                    };
+                    break;
+                case 'Plugin':
+                    path = core.getInput('plugin_path', { required: true });
+                    newInfo = {
+                        id: info.id,
+                        link: info.link,
+                        name: info.name,
+                        desc: info.desc,
+                        author: info.author,
+                        repo: info.repo
+                    };
+                    break;
+            }
+            const jsonFilePath = `${process.env.GITHUB_WORKSPACE}/${path}`;
+            // 写入新数据
+            fs.readFile(jsonFilePath, 'utf8', (err, data) => {
+                if (err) {
+                    core.setFailed(err);
+                }
+                else {
+                    const obj = JSON.parse(data);
+                    obj.push(newInfo);
+                    const json = JSON.stringify(obj, null, 2);
+                    fs.writeFile(jsonFilePath, json, 'utf8', () => {
+                        core.info(`${jsonFilePath} 更新完成`);
+                    });
+                }
+            });
+        }
+        else {
+            core.setFailed('GITHUB_WORKSPACE 为空，无法确定文件位置');
+        }
+    });
+}
+exports.updateFile = updateFile;
+/**提交到 Git*/
+function commitandPush(branchName, username, commitMessage) {
+    return __awaiter(this, void 0, void 0, function* () {
+        yield exec.exec('git', ['config', '--global', 'user.name', username]);
+        const useremail = `${username}@users.noreply.github.com`;
+        yield exec.exec('git', ['config', '--global', 'user.email', useremail]);
+        yield exec.exec('git', ['add', '-A']);
+        yield exec.exec('git', ['commit', '-m', commitMessage]);
+        yield exec.exec('git', ['push', 'origin', branchName, '-f']);
+    });
+}
+exports.commitandPush = commitandPush;
+/**创建拉取请求
+ *
+ * 同时添加对应标签
+ * 内容关联上对应的议题
+ */
+function createPullRequest(octokit, info, issueNumber, branchName, base) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const pullRequestTitle = `${info.type}: ${info.name}`;
+        // 关联相关议题，当拉取请求合并时会自动关闭对应议题
+        const pullRequestbody = `resolve #${issueNumber}`;
+        try {
+            // 创建拉取请求
+            const pr = yield octokit.pulls.create(Object.assign(Object.assign({}, github.context.repo), { title: pullRequestTitle, head: branchName, base, body: pullRequestbody }));
+            // 自动给拉取请求添加标签
+            yield octokit.issues.addLabels(Object.assign(Object.assign({}, github.context.repo), { issue_number: pr.data.number, labels: [info.type] }));
+        }
+        catch (error) {
+            if (error.message.includes(`A pull request already exists for`)) {
+                core.info('该分支的拉取请求已创建，请前往查看');
+            }
+            else {
+                throw error;
+            }
+        }
+    });
+}
+exports.createPullRequest = createPullRequest;
+/**获取所有带有指定标签的拉取请求
+ *
+ * 只支持 Plugin, Adapter, Bot
+ */
+function getPullRequests(octokit, type) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const pulls = (yield octokit.pulls.list(Object.assign(Object.assign({}, github.context.repo), { state: 'open' }))).data;
+        return pulls.filter(pull => {
+            return checkLabel(pull.labels) === type;
+        });
+    });
+}
+exports.getPullRequests = getPullRequests;
+/**从 Ref 中提取标签编号 */
+function extractIssueNumberFromRef(ref) {
+    const match = ref.match(/\/issue(\d+)/);
+    if (match) {
+        return Number(match[1]);
+    }
+}
+exports.extractIssueNumberFromRef = extractIssueNumberFromRef;
+/**根据关联的议题提交来解决冲突
+ *
+ * 参考对应的议题重新更新对应分支
+ */
+function resolveConflictPullRequests(octokit, pullRequests, base) {
+    return __awaiter(this, void 0, void 0, function* () {
+        for (const pull of pullRequests) {
+            // 切换到对应分支
+            yield exec.exec('git', ['checkout', '-b', pull.head.ref]);
+            // 重置之前的提交
+            yield exec.exec('git', ['reset', '--hard', base]);
+            const issue_number = extractIssueNumberFromRef(pull.head.ref);
+            if (issue_number) {
+                core.info(`正在处理 ${pull.title}`);
+                const issue = yield octokit.issues.get(Object.assign(Object.assign({}, github.context.repo), { issue_number }));
+                let info;
+                const issueType = checkLabel(issue.data.labels);
+                if (issueType) {
+                    info = extractInfo(issueType, issue.data.body, issue.data.user.login);
+                    yield updateFile(info);
+                    const commitMessage = `:beers: publish ${info.type.toLowerCase()} ${info.name}`;
+                    yield commitandPush(pull.head.ref, info.author, commitMessage);
+                    core.info(`拉取请求更新完毕`);
+                }
+            }
+            else {
+                core.setFailed(`无法获取 ${pull.title} 对应的议题`);
+            }
+        }
+    });
+}
+exports.resolveConflictPullRequests = resolveConflictPullRequests;
+/** 提取所需数据  */
+function extractInfo(publishType, issueBody, username) {
+    let info;
+    switch (publishType) {
+        case 'Adapter':
+            info = adapter.extractInfo(issueBody, username);
+            break;
+        case 'Bot':
+            info = bot.extractInfo(issueBody, username);
+            break;
+        case 'Plugin':
+            info = plugin.extractInfo(issueBody, username);
+            break;
+    }
+    return info;
+}
+exports.extractInfo = extractInfo;
+/**关闭指定的议题 */
+function closeIssue(octokit, issue_number) {
+    return __awaiter(this, void 0, void 0, function* () {
+        core.info(`正在关闭议题 #${issue_number}`);
+        yield octokit.issues.update(Object.assign(Object.assign({}, github.context.repo), { issue_number, state: 'closed' }));
+    });
+}
+exports.closeIssue = closeIssue;
 
 
 /***/ }),
