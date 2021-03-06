@@ -42,7 +42,7 @@ async function run(): Promise<void> {
         const relatedIssueNumber = extractIssueNumberFromRef(ref)
         if (relatedIssueNumber) {
           await closeIssue(octokit, relatedIssueNumber)
-          core.info(`议题 #${relatedIssueNumber}  已关闭`)
+          core.info(`议题 #${relatedIssueNumber} 已关闭`)
           try {
             await exec.exec('git', ['push', 'origin', '--delete', ref])
             core.info('已删除对应分支')
@@ -108,13 +108,10 @@ async function run(): Promise<void> {
       // 插件作者信息
       const username = github.context.payload.issue?.user.login
 
-      // 更新 plugins.json 并提交更改
+      // 更新文件并提交更改
       const info = extractInfo(publishType, issueBody, username)
       await updateFile(info)
-      const commitMessage = `:beers: publish ${info.type.toLowerCase()} ${
-        info.name
-      }`
-      await commitandPush(branchName, username, commitMessage)
+      await commitandPush(branchName, info)
 
       // 创建拉取请求
       await createPullRequest(octokit, info, issueNumber, branchName, base)

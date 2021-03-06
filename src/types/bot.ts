@@ -1,4 +1,15 @@
-import {BotInfo} from '../info'
+/**机器人所需要的信息 */
+export interface BotInfo {
+  type: 'Bot'
+  /**机器人名称 */
+  name: string
+  /**机器人介绍 */
+  desc: string
+  /**仓库/主页链接 */
+  repo: string
+  /**开发者 */
+  author: string
+}
 
 /**从议题内容提取机器人信息 */
 export function extractInfo(body: string, author: string): BotInfo {

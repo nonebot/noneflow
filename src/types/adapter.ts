@@ -1,4 +1,19 @@
-import {AdapterInfo} from '../info'
+/**协议所需要的信息 */
+export interface AdapterInfo {
+  type: 'Adapter'
+  /**PyPI 项目名 */
+  id: string
+  /**协议 import 包名 */
+  link: string
+  /**协议名称 */
+  name: string
+  /**协议介绍 */
+  desc: string
+  /**仓库/主页链接 */
+  repo: string
+  /**开发者 */
+  author: string
+}
 
 /**从议题内容提取协议信息 */
 export function extractInfo(body: string, author: string): AdapterInfo {

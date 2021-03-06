@@ -65,7 +65,7 @@ function run() {
                     const relatedIssueNumber = utils_1.extractIssueNumberFromRef(ref);
                     if (relatedIssueNumber) {
                         yield utils_1.closeIssue(octokit, relatedIssueNumber);
-                        core.info(`议题 #${relatedIssueNumber}  已关闭`);
+                        core.info(`议题 #${relatedIssueNumber} 已关闭`);
                         try {
                             yield exec.exec('git', ['push', 'origin', '--delete', ref]);
                             core.info('已删除对应分支');
@@ -124,11 +124,10 @@ function run() {
                 yield exec.exec('git', ['checkout', '-b', branchName]);
                 // 插件作者信息
                 const username = (_g = github.context.payload.issue) === null || _g === void 0 ? void 0 : _g.user.login;
-                // 更新 plugins.json 并提交更改
+                // 更新文件并提交更改
                 const info = utils_1.extractInfo(publishType, issueBody, username);
                 yield utils_1.updateFile(info);
-                const commitMessage = `:beers: publish ${info.type.toLowerCase()} ${info.name}`;
-                yield utils_1.commitandPush(branchName, username, commitMessage);
+                yield utils_1.commitandPush(branchName, info);
                 // 创建拉取请求
                 yield utils_1.createPullRequest(octokit, info, issueNumber, branchName, base);
             }
@@ -343,7 +342,7 @@ function updateFile(info) {
     return __awaiter(this, void 0, void 0, function* () {
         if (process.env.GITHUB_WORKSPACE) {
             let path;
-            // 去处 Info 中的 type
+            // 去除 Info 中的 type
             let newInfo;
             switch (info.type) {
                 case 'Adapter':
@@ -401,10 +400,11 @@ function updateFile(info) {
 }
 exports.updateFile = updateFile;
 /**提交到 Git*/
-function commitandPush(branchName, username, commitMessage) {
+function commitandPush(branchName, info) {
     return __awaiter(this, void 0, void 0, function* () {
-        yield exec.exec('git', ['config', '--global', 'user.name', username]);
-        const useremail = `${username}@users.noreply.github.com`;
+        const commitMessage = `:beers: publish ${info.type.toLowerCase()} ${info.name}`;
+        yield exec.exec('git', ['config', '--global', 'user.name', info.author]);
+        const useremail = `${info.author}@users.noreply.github.com`;
         yield exec.exec('git', ['config', '--global', 'user.email', useremail]);
         yield exec.exec('git', ['add', '-A']);
         yield exec.exec('git', ['commit', '-m', commitMessage]);
@@ -475,13 +475,11 @@ function resolveConflictPullRequests(octokit, pullRequests, base) {
             if (issue_number) {
                 core.info(`正在处理 ${pull.title}`);
                 const issue = yield octokit.issues.get(Object.assign(Object.assign({}, github.context.repo), { issue_number }));
-                let info;
                 const issueType = checkLabel(issue.data.labels);
                 if (issueType) {
-                    info = extractInfo(issueType, issue.data.body, issue.data.user.login);
+                    const info = extractInfo(issueType, issue.data.body, issue.data.user.login);
                     yield updateFile(info);
-                    const commitMessage = `:beers: publish ${info.type.toLowerCase()} ${info.name}`;
-                    yield commitandPush(pull.head.ref, info.author, commitMessage);
+                    yield commitandPush(pull.head.ref, info);
                     core.info(`拉取请求更新完毕`);
                 }
             }

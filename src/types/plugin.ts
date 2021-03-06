@@ -1,4 +1,19 @@
-import {PluginInfo} from '../info'
+/**插件所需要的信息 */
+export interface PluginInfo {
+  type: 'Plugin'
+  /**PyPI 项目名 */
+  id: string
+  /**插件 import 包名 */
+  link: string
+  /**插件名称 */
+  name: string
+  /**插件介绍 */
+  desc: string
+  /**仓库/主页链接 */
+  repo: string
+  /**开发者 */
+  author: string
+}
 
 /**从议题内容提取插件信息 */
 export function extractInfo(body: string, author: string): PluginInfo {

@@ -4,11 +4,10 @@ import * as exec from '@actions/exec'
 import * as fs from 'fs'
 import {IssuesGetResponseData, PullsListResponseData} from '@octokit/types'
 import {GitHub} from '@actions/github/lib/utils'
-
-import {Info, PublishType} from './info'
 import * as adapter from './types/adapter'
 import * as bot from './types/bot'
 import * as plugin from './types/plugin'
+import {Info, PublishType} from './info'
 
 /**检查是否含有指定标签
  *
@@ -50,7 +49,7 @@ export function checkCommitType(
 export async function updateFile(info: Info): Promise<void> {
   if (process.env.GITHUB_WORKSPACE) {
     let path: string
-    // 去处 Info 中的 type
+    // 去除 Info 中的 type
     let newInfo: {
       id?: string
       link?: string
@@ -114,11 +113,13 @@ export async function updateFile(info: Info): Promise<void> {
 /**提交到 Git*/
 export async function commitandPush(
   branchName: string,
-  username: string,
-  commitMessage: string
+  info: Info
 ): Promise<void> {
-  await exec.exec('git', ['config', '--global', 'user.name', username])
-  const useremail = `${username}@users.noreply.github.com`
+  const commitMessage = `:beers: publish ${info.type.toLowerCase()} ${
+    info.name
+  }`
+  await exec.exec('git', ['config', '--global', 'user.name', info.author])
+  const useremail = `${info.author}@users.noreply.github.com`
   await exec.exec('git', ['config', '--global', 'user.email', useremail])
   await exec.exec('git', ['add', '-A'])
   await exec.exec('git', ['commit', '-m', commitMessage])
@@ -214,15 +215,15 @@ export async function resolveConflictPullRequests(
         issue_number
       })
 
-      let info: Info
       const issueType = checkLabel(issue.data.labels)
       if (issueType) {
-        info = extractInfo(issueType, issue.data.body, issue.data.user.login)
+        const info = extractInfo(
+          issueType,
+          issue.data.body,
+          issue.data.user.login
+        )
         await updateFile(info)
-        const commitMessage = `:beers: publish ${info.type.toLowerCase()} ${
-          info.name
-        }`
-        await commitandPush(pull.head.ref, info.author, commitMessage)
+        await commitandPush(pull.head.ref, info)
         core.info(`拉取请求更新完毕`)
       }
     } else {
