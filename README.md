@@ -1,10 +1,10 @@
 # NoneBot2 Plugin Issue Bot
 
-[NoneBot2](https://github.com/nonebot/nonebot2) 插件/协议发布机器人
+[NoneBot2](https://github.com/nonebot/nonebot2) 插件/协议/机器人 发布机器人
 
 ## 主要功能
 
-根据插件发布(带 Plugin 标签)议题，自动修改 `plugins.json` 文件，并创建拉取请求。
+根据 插件/协议/机器人 发布(带 Plugin/Adapter/Bot 标签)议题，自动修改对应文件，并创建拉取请求。
 
 ## 自动处理
 
