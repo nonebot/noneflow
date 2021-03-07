@@ -27,10 +27,10 @@ export function extractInfo(body: string, author: string): BotInfo {
   if (desc && name && repo) {
     return {
       type: 'Bot',
-      author,
-      desc,
       name,
-      repo
+      desc,
+      repo,
+      author
     }
   }
   throw new Error('无法匹配成功')

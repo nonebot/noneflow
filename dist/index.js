@@ -177,10 +177,10 @@ function extractInfo(body, author) {
             type: 'Adapter',
             id,
             link,
-            author,
-            desc,
             name,
-            repo
+            desc,
+            repo,
+            author
         };
     }
     throw new Error('无法匹配成功');
@@ -211,10 +211,10 @@ function extractInfo(body, author) {
     if (desc && name && repo) {
         return {
             type: 'Bot',
-            author,
-            desc,
             name,
-            repo
+            desc,
+            repo,
+            author
         };
     }
     throw new Error('无法匹配成功');
@@ -253,10 +253,10 @@ function extractInfo(body, author) {
             type: 'Plugin',
             id,
             link,
-            author,
-            desc,
             name,
-            repo
+            desc,
+            repo,
+            author
         };
     }
     throw new Error('无法匹配成功');

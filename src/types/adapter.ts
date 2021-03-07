@@ -1,9 +1,9 @@
 /**协议所需要的信息 */
 export interface AdapterInfo {
   type: 'Adapter'
-  /**PyPI 项目名 */
-  id: string
   /**协议 import 包名 */
+  id: string
+  /**PyPI 项目名 */
   link: string
   /**协议名称 */
   name: string
@@ -39,10 +39,10 @@ export function extractInfo(body: string, author: string): AdapterInfo {
       type: 'Adapter',
       id,
       link,
-      author,
-      desc,
       name,
-      repo
+      desc,
+      repo,
+      author
     }
   }
   throw new Error('无法匹配成功')
