@@ -9,11 +9,11 @@ import * as bot from './types/bot'
 import * as plugin from './types/plugin'
 import {Info, PublishType} from './info'
 
-/**检查是否含有指定标签
+/**检查标签是否含有指定类型
  *
  * 并返回指定的类型(Plugin Adapter Bot)
  *
- * 如果无返回则说明不含指定标签
+ * 如果无返回则说明不含指定类型
  */
 export function checkLabel(
   labels: IssuesGetResponseData['labels']
@@ -25,7 +25,25 @@ export function checkLabel(
   }
 }
 
-/**检查是否含有指定类型
+/**检查标题是否含有指定类型
+ *
+ * 并返回指定的类型(Plugin Adapter Bot)
+ *
+ * 如果无返回则说明不含指定类型
+ */
+export function checkTitle(title: string): PublishType | undefined {
+  if (title.startsWith('Adapter:')) {
+    return 'Adapter'
+  }
+  if (title.startsWith('Bot:')) {
+    return 'Bot'
+  }
+  if (title.startsWith('Plugin:')) {
+    return 'Plugin'
+  }
+}
+
+/**检查提交信息是否含有指定类型
  *
  * 并返回指定的类型(Plugin Adapter Bot)
  *
@@ -34,13 +52,13 @@ export function checkLabel(
 export function checkCommitType(
   commitMessage: string
 ): PublishType | undefined {
-  if (commitMessage.includes(':beers: publish adapter')) {
+  if (commitMessage.startsWith(':beers: publish adapter')) {
     return 'Adapter'
   }
-  if (commitMessage.includes(':beers: publish bot')) {
+  if (commitMessage.startsWith(':beers: publish bot')) {
     return 'Bot'
   }
-  if (commitMessage.includes(':beers: publish plguin')) {
+  if (commitMessage.startsWith(':beers: publish plguin')) {
     return 'Plugin'
   }
 }

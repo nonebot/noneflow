@@ -4,6 +4,7 @@ import * as exec from '@actions/exec'
 import {
   checkCommitType,
   checkLabel,
+  checkTitle,
   closeIssue,
   commitandPush,
   createPullRequest,
@@ -85,36 +86,45 @@ async function run(): Promise<void> {
       ['opened', 'reopened', 'edited'].includes(github.context.payload.action)
     ) {
       // 从 GitHub Context 中获取议题的相关信息
-      const issueNumber = github.context.payload.issue?.number
+      const issue_number = github.context.payload.issue?.number
       const issueBody = github.context.payload.issue?.body
 
-      if (!issueNumber || !issueBody) {
+      if (!issue_number || !issueBody) {
         core.setFailed('无法获取议题的信息')
         return
       }
 
-      // 检查是否含有指定标签
-      const publishType = checkLabel(github.context.payload.issue?.labels)
+      // 检查是否为指定类型的提交
+      const publishType = checkTitle(github.context.payload.issue?.title)
       if (!publishType) {
-        core.info('没有指定标签，已跳过')
+        core.info('不是商店发布议题，已跳过')
         return
       }
 
       // 创建新分支
       // 命名示例 plugin/issue123
-      const branchName = `plugin/issue${issueNumber}`
+      const branchName = `plugin/issue${issue_number}`
       await exec.exec('git', ['checkout', '-b', branchName])
 
       // 插件作者信息
       const username = github.context.payload.issue?.user.login
 
-      // 更新文件并提交更改
+      // 提取信息
       const info = extractInfo(publishType, issueBody, username)
+
+      // 自动给议题添加标签
+      await octokit.issues.addLabels({
+        ...github.context.repo,
+        issue_number,
+        labels: [info.type]
+      })
+
+      // 更新文件并提交更改
       await updateFile(info)
       await commitandPush(branchName, info)
 
       // 创建拉取请求
-      await createPullRequest(octokit, info, issueNumber, branchName, base)
+      await createPullRequest(octokit, info, issue_number, branchName, base)
     } else {
       core.info('事件不是议题开启，重新开启或修改，已跳过')
     }

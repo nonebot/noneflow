@@ -106,30 +106,33 @@ function run() {
                 github.context.payload.action &&
                 ['opened', 'reopened', 'edited'].includes(github.context.payload.action)) {
                 // 从 GitHub Context 中获取议题的相关信息
-                const issueNumber = (_d = github.context.payload.issue) === null || _d === void 0 ? void 0 : _d.number;
+                const issue_number = (_d = github.context.payload.issue) === null || _d === void 0 ? void 0 : _d.number;
                 const issueBody = (_e = github.context.payload.issue) === null || _e === void 0 ? void 0 : _e.body;
-                if (!issueNumber || !issueBody) {
+                if (!issue_number || !issueBody) {
                     core.setFailed('无法获取议题的信息');
                     return;
                 }
-                // 检查是否含有指定标签
-                const publishType = utils_1.checkLabel((_f = github.context.payload.issue) === null || _f === void 0 ? void 0 : _f.labels);
+                // 检查是否为指定类型的提交
+                const publishType = utils_1.checkTitle((_f = github.context.payload.issue) === null || _f === void 0 ? void 0 : _f.title);
                 if (!publishType) {
-                    core.info('没有指定标签，已跳过');
+                    core.info('不是商店发布议题，已跳过');
                     return;
                 }
                 // 创建新分支
                 // 命名示例 plugin/issue123
-                const branchName = `plugin/issue${issueNumber}`;
+                const branchName = `plugin/issue${issue_number}`;
                 yield exec.exec('git', ['checkout', '-b', branchName]);
                 // 插件作者信息
                 const username = (_g = github.context.payload.issue) === null || _g === void 0 ? void 0 : _g.user.login;
-                // 更新文件并提交更改
+                // 提取信息
                 const info = utils_1.extractInfo(publishType, issueBody, username);
+                // 自动给议题添加标签
+                yield octokit.issues.addLabels(Object.assign(Object.assign({}, github.context.repo), { issue_number, labels: [info.type] }));
+                // 更新文件并提交更改
                 yield utils_1.updateFile(info);
                 yield utils_1.commitandPush(branchName, info);
                 // 创建拉取请求
-                yield utils_1.createPullRequest(octokit, info, issueNumber, branchName, base);
+                yield utils_1.createPullRequest(octokit, info, issue_number, branchName, base);
             }
             else {
                 core.info('事件不是议题开启，重新开启或修改，已跳过');
@@ -297,7 +300,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.closeIssue = exports.extractInfo = exports.resolveConflictPullRequests = exports.extractIssueNumberFromRef = exports.getPullRequests = exports.createPullRequest = exports.commitandPush = exports.updateFile = exports.checkCommitType = exports.checkLabel = void 0;
+exports.closeIssue = exports.extractInfo = exports.resolveConflictPullRequests = exports.extractIssueNumberFromRef = exports.getPullRequests = exports.createPullRequest = exports.commitandPush = exports.updateFile = exports.checkCommitType = exports.checkTitle = exports.checkLabel = void 0;
 const github = __importStar(__nccwpck_require__(5438));
 const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
@@ -305,11 +308,11 @@ const fs = __importStar(__nccwpck_require__(5747));
 const adapter = __importStar(__nccwpck_require__(4139));
 const bot = __importStar(__nccwpck_require__(7930));
 const plugin = __importStar(__nccwpck_require__(3698));
-/**检查是否含有指定标签
+/**检查标签是否含有指定类型
  *
  * 并返回指定的类型(Plugin Adapter Bot)
  *
- * 如果无返回则说明不含指定标签
+ * 如果无返回则说明不含指定类型
  */
 function checkLabel(labels) {
     for (const label of labels) {
@@ -319,20 +322,38 @@ function checkLabel(labels) {
     }
 }
 exports.checkLabel = checkLabel;
-/**检查是否含有指定类型
+/**检查标题是否含有指定类型
+ *
+ * 并返回指定的类型(Plugin Adapter Bot)
+ *
+ * 如果无返回则说明不含指定类型
+ */
+function checkTitle(title) {
+    if (title.startsWith('Adapter:')) {
+        return 'Adapter';
+    }
+    if (title.startsWith('Bot:')) {
+        return 'Bot';
+    }
+    if (title.startsWith('Plugin:')) {
+        return 'Plugin';
+    }
+}
+exports.checkTitle = checkTitle;
+/**检查提交信息是否含有指定类型
  *
  * 并返回指定的类型(Plugin Adapter Bot)
  *
  * 如果无返回则说明不含指定类型
  */
 function checkCommitType(commitMessage) {
-    if (commitMessage.includes(':beers: publish adapter')) {
+    if (commitMessage.startsWith(':beers: publish adapter')) {
         return 'Adapter';
     }
-    if (commitMessage.includes(':beers: publish bot')) {
+    if (commitMessage.startsWith(':beers: publish bot')) {
         return 'Bot';
     }
-    if (commitMessage.includes(':beers: publish plguin')) {
+    if (commitMessage.startsWith(':beers: publish plguin')) {
         return 'Plugin';
     }
 }
