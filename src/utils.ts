@@ -2,12 +2,15 @@ import * as github from '@actions/github'
 import * as core from '@actions/core'
 import * as exec from '@actions/exec'
 import * as fs from 'fs'
-import {IssuesGetResponseData, PullsListResponseData} from '@octokit/types'
-import {GitHub} from '@actions/github/lib/utils'
 import * as adapter from './types/adapter'
 import * as bot from './types/bot'
 import * as plugin from './types/plugin'
 import {Info, PublishType} from './info'
+import {
+  IssuesGetResponseDataType,
+  OctokitType,
+  PullsListResponseDataType
+} from './types/github'
 
 /**检查标签是否含有指定类型
  *
@@ -16,10 +19,13 @@ import {Info, PublishType} from './info'
  * 如果无返回则说明不含指定类型
  */
 export function checkLabel(
-  labels: IssuesGetResponseData['labels']
+  labels: IssuesGetResponseDataType['labels']
 ): PublishType | undefined {
   for (const label of labels) {
-    if (['Plugin', 'Adapter', 'Bot'].includes(label.name)) {
+    if (
+      typeof label !== 'string' &&
+      ['Plugin', 'Adapter', 'Bot'].includes(label.name ?? 'None')
+    ) {
       return label.name as PublishType
     }
   }
@@ -150,7 +156,7 @@ export async function commitandPush(
  * 内容关联上对应的议题
  */
 export async function createPullRequest(
-  octokit: InstanceType<typeof GitHub>,
+  octokit: OctokitType,
   info: Info,
   issueNumber: number,
   branchName: string,
@@ -188,9 +194,9 @@ export async function createPullRequest(
  * 只支持 Plugin, Adapter, Bot
  */
 export async function getPullRequests(
-  octokit: InstanceType<typeof GitHub>,
+  octokit: OctokitType,
   type: PublishType
-): Promise<PullsListResponseData> {
+): Promise<PullsListResponseDataType> {
   const pulls = (
     await octokit.pulls.list({
       ...github.context.repo,
@@ -216,8 +222,8 @@ export function extractIssueNumberFromRef(ref: string): number | undefined {
  * 参考对应的议题重新更新对应分支
  */
 export async function resolveConflictPullRequests(
-  octokit: InstanceType<typeof GitHub>,
-  pullRequests: PullsListResponseData,
+  octokit: OctokitType,
+  pullRequests: PullsListResponseDataType,
   base: string
 ): Promise<void> {
   for (const pull of pullRequests) {
@@ -237,8 +243,8 @@ export async function resolveConflictPullRequests(
       if (issueType) {
         const info = extractInfo(
           issueType,
-          issue.data.body,
-          issue.data.user.login
+          issue.data.body ?? '',
+          issue.data.user?.login ?? ''
         )
         await updateFile(info)
         await commitandPush(pull.head.ref, info)
@@ -273,7 +279,7 @@ export function extractInfo(
 
 /**关闭指定的议题 */
 export async function closeIssue(
-  octokit: InstanceType<typeof GitHub>,
+  octokit: OctokitType,
   issue_number: number
 ): Promise<void> {
   core.info(`正在关闭议题 #${issue_number}`)

@@ -1,9 +1,9 @@
 /**插件所需要的信息 */
 export interface PluginInfo {
   type: 'Plugin'
-  /**PyPI 项目名 */
-  id: string
   /**插件 import 包名 */
+  id: string
+  /**PyPI 项目名 */
   link: string
   /**插件名称 */
   name: string
@@ -39,10 +39,10 @@ export function extractInfo(body: string, author: string): PluginInfo {
       type: 'Plugin',
       id,
       link,
-      author,
-      desc,
       name,
-      repo
+      desc,
+      repo,
+      author
     }
   }
   throw new Error('无法匹配成功')
