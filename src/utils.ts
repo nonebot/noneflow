@@ -2,12 +2,20 @@ import * as github from '@actions/github'
 import * as core from '@actions/core'
 import * as exec from '@actions/exec'
 import * as fs from 'fs'
-import {IssuesGetResponseData, PullsListResponseData} from '@octokit/types'
 import {GitHub} from '@actions/github/lib/utils'
 import * as adapter from './types/adapter'
 import * as bot from './types/bot'
 import * as plugin from './types/plugin'
 import {Info, PublishType} from './info'
+
+import {GetResponseDataTypeFromEndpointMethod} from '@octokit/types'
+const OctokitType = github.getOctokit('')
+type PullsListResponseDataType = GetResponseDataTypeFromEndpointMethod<
+  typeof OctokitType.pulls.list
+>
+type IssuesGetResponseDataType = GetResponseDataTypeFromEndpointMethod<
+  typeof OctokitType.issues.get
+>
 
 /**检查标签是否含有指定类型
  *
@@ -16,10 +24,13 @@ import {Info, PublishType} from './info'
  * 如果无返回则说明不含指定类型
  */
 export function checkLabel(
-  labels: IssuesGetResponseData['labels']
+  labels: IssuesGetResponseDataType['labels']
 ): PublishType | undefined {
   for (const label of labels) {
-    if (['Plugin', 'Adapter', 'Bot'].includes(label.name)) {
+    if (
+      typeof label !== 'string' &&
+      ['Plugin', 'Adapter', 'Bot'].includes(label.name ?? 'None')
+    ) {
       return label.name as PublishType
     }
   }
@@ -190,7 +201,7 @@ export async function createPullRequest(
 export async function getPullRequests(
   octokit: InstanceType<typeof GitHub>,
   type: PublishType
-): Promise<PullsListResponseData> {
+): Promise<PullsListResponseDataType> {
   const pulls = (
     await octokit.pulls.list({
       ...github.context.repo,
@@ -217,7 +228,7 @@ export function extractIssueNumberFromRef(ref: string): number | undefined {
  */
 export async function resolveConflictPullRequests(
   octokit: InstanceType<typeof GitHub>,
-  pullRequests: PullsListResponseData,
+  pullRequests: PullsListResponseDataType,
   base: string
 ): Promise<void> {
   for (const pull of pullRequests) {
@@ -237,8 +248,8 @@ export async function resolveConflictPullRequests(
       if (issueType) {
         const info = extractInfo(
           issueType,
-          issue.data.body,
-          issue.data.user.login
+          issue.data.body ?? '',
+          issue.data.user?.login ?? ''
         )
         await updateFile(info)
         await commitandPush(pull.head.ref, info)
