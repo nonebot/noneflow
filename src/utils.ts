@@ -2,20 +2,15 @@ import * as github from '@actions/github'
 import * as core from '@actions/core'
 import * as exec from '@actions/exec'
 import * as fs from 'fs'
-import {GitHub} from '@actions/github/lib/utils'
 import * as adapter from './types/adapter'
 import * as bot from './types/bot'
 import * as plugin from './types/plugin'
 import {Info, PublishType} from './info'
-
-import {GetResponseDataTypeFromEndpointMethod} from '@octokit/types'
-const OctokitType = github.getOctokit('')
-type PullsListResponseDataType = GetResponseDataTypeFromEndpointMethod<
-  typeof OctokitType.pulls.list
->
-type IssuesGetResponseDataType = GetResponseDataTypeFromEndpointMethod<
-  typeof OctokitType.issues.get
->
+import {
+  IssuesGetResponseDataType,
+  OctokitType,
+  PullsListResponseDataType
+} from './types/github'
 
 /**检查标签是否含有指定类型
  *
@@ -161,7 +156,7 @@ export async function commitandPush(
  * 内容关联上对应的议题
  */
 export async function createPullRequest(
-  octokit: InstanceType<typeof GitHub>,
+  octokit: OctokitType,
   info: Info,
   issueNumber: number,
   branchName: string,
@@ -199,7 +194,7 @@ export async function createPullRequest(
  * 只支持 Plugin, Adapter, Bot
  */
 export async function getPullRequests(
-  octokit: InstanceType<typeof GitHub>,
+  octokit: OctokitType,
   type: PublishType
 ): Promise<PullsListResponseDataType> {
   const pulls = (
@@ -227,7 +222,7 @@ export function extractIssueNumberFromRef(ref: string): number | undefined {
  * 参考对应的议题重新更新对应分支
  */
 export async function resolveConflictPullRequests(
-  octokit: InstanceType<typeof GitHub>,
+  octokit: OctokitType,
   pullRequests: PullsListResponseDataType,
   base: string
 ): Promise<void> {
@@ -284,7 +279,7 @@ export function extractInfo(
 
 /**关闭指定的议题 */
 export async function closeIssue(
-  octokit: InstanceType<typeof GitHub>,
+  octokit: OctokitType,
   issue_number: number
 ): Promise<void> {
   core.info(`正在关闭议题 #${issue_number}`)

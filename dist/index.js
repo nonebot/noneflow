@@ -40,15 +40,101 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const exec = __importStar(__nccwpck_require__(1514));
 const utils_1 = __nccwpck_require__(918);
+/** 处理拉取请求 */
+function processPullRequest(octokit, base) {
+    var _a, _b, _c;
+    return __awaiter(this, void 0, void 0, function* () {
+        // 只处理支持标签的拉取请求
+        const issueType = utils_1.checkLabel((_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.labels);
+        if (issueType) {
+            const ref = (_b = github.context.payload.pull_request) === null || _b === void 0 ? void 0 : _b.head.ref;
+            const relatedIssueNumber = utils_1.extractIssueNumberFromRef(ref);
+            if (relatedIssueNumber) {
+                yield utils_1.closeIssue(octokit, relatedIssueNumber);
+                core.info(`议题 #${relatedIssueNumber} 已关闭`);
+                try {
+                    yield exec.exec('git', ['push', 'origin', '--delete', ref]);
+                    core.info('已删除对应分支');
+                }
+                catch (error) {
+                    core.info('对应分支不存在或已删除');
+                }
+            }
+            if ((_c = github.context.payload.pull_request) === null || _c === void 0 ? void 0 : _c.merged) {
+                core.info('发布的拉取请求已合并，准备更新拉取请求的提交');
+                const pullRequests = yield utils_1.getPullRequests(octokit, issueType);
+                utils_1.resolveConflictPullRequests(octokit, pullRequests, base);
+            }
+            else {
+                core.info('发布的拉取请求未合并，已跳过');
+            }
+        }
+        else {
+            core.info('拉取请求与插件无关，已跳过');
+        }
+    });
+}
+/** 处理提交 */
+function processPush(octokit, base) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const publishType = utils_1.checkCommitType(github.context.payload.head_commit.message);
+        if (publishType) {
+            core.info('发现提交为发布，准备更新拉取请求的提交');
+            const pullRequests = yield utils_1.getPullRequests(octokit, publishType);
+            utils_1.resolveConflictPullRequests(octokit, pullRequests, base);
+        }
+        else {
+            core.info('该提交不是发布，已跳过');
+        }
+    });
+}
+/** 处理议题 */
+function processIssues(octokit, base) {
+    var _a, _b, _c, _d;
+    return __awaiter(this, void 0, void 0, function* () {
+        if (github.context.payload.action &&
+            ['opened', 'reopened', 'edited'].includes(github.context.payload.action)) {
+            // 从 GitHub Context 中获取议题的相关信息
+            const issue_number = (_a = github.context.payload.issue) === null || _a === void 0 ? void 0 : _a.number;
+            const issueBody = (_b = github.context.payload.issue) === null || _b === void 0 ? void 0 : _b.body;
+            if (!issue_number || !issueBody) {
+                core.setFailed('无法获取议题的信息');
+                return;
+            }
+            // 检查是否为指定类型的提交
+            const publishType = utils_1.checkTitle((_c = github.context.payload.issue) === null || _c === void 0 ? void 0 : _c.title);
+            if (!publishType) {
+                core.info('不是商店发布议题，已跳过');
+                return;
+            }
+            // 创建新分支
+            // 命名示例 plugin/issue123
+            const branchName = `plugin/issue${issue_number}`;
+            yield exec.exec('git', ['checkout', '-b', branchName]);
+            // 插件作者信息
+            const username = (_d = github.context.payload.issue) === null || _d === void 0 ? void 0 : _d.user.login;
+            // 提取信息
+            const info = utils_1.extractInfo(publishType, issueBody, username);
+            // 自动给议题添加标签
+            yield octokit.issues.addLabels(Object.assign(Object.assign({}, github.context.repo), { issue_number, labels: [info.type] }));
+            // 更新文件并提交更改
+            yield utils_1.updateFile(info);
+            yield utils_1.commitandPush(branchName, info);
+            // 创建拉取请求
+            yield utils_1.createPullRequest(octokit, info, issue_number, branchName, base);
+        }
+        else {
+            core.info('事件不是议题开启，重新开启或修改，已跳过');
+        }
+    });
+}
 function run() {
-    var _a, _b, _c, _d, _e, _f, _g;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const base = core.getInput('base', { required: true });
             const token = core.getInput('token');
             if (!token) {
-                core.info('无法获得 Token，跳过此次操作');
-                return;
+                core.setFailed('无法获得 Token，跳过此次操作');
             }
             // 初始化 GitHub 客户端
             const octokit = github.getOctokit(token);
@@ -58,84 +144,17 @@ function run() {
             // 处理 pull_request 事件
             if (github.context.eventName === 'pull_request' &&
                 github.context.payload.action === 'closed') {
-                // 只处理支持标签的拉取请求
-                const issueType = utils_1.checkLabel((_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.labels);
-                if (issueType) {
-                    const ref = (_b = github.context.payload.pull_request) === null || _b === void 0 ? void 0 : _b.head.ref;
-                    const relatedIssueNumber = utils_1.extractIssueNumberFromRef(ref);
-                    if (relatedIssueNumber) {
-                        yield utils_1.closeIssue(octokit, relatedIssueNumber);
-                        core.info(`议题 #${relatedIssueNumber} 已关闭`);
-                        try {
-                            yield exec.exec('git', ['push', 'origin', '--delete', ref]);
-                            core.info('已删除对应分支');
-                        }
-                        catch (error) {
-                            core.info('对应分支不存在或已删除');
-                        }
-                    }
-                    if ((_c = github.context.payload.pull_request) === null || _c === void 0 ? void 0 : _c.merged) {
-                        core.info('发布的拉取请求已合并，准备更新拉取请求的提交');
-                        const pullRequests = yield utils_1.getPullRequests(octokit, issueType);
-                        utils_1.resolveConflictPullRequests(octokit, pullRequests, base);
-                    }
-                    else {
-                        core.info('发布的拉取请求未合并，已跳过');
-                    }
-                }
-                else {
-                    core.info('拉取请求与插件无关，已跳过');
-                }
+                yield processPullRequest(octokit, base);
                 return;
             }
             // 处理 push 事件
             if (github.context.eventName === 'push') {
-                const publishType = utils_1.checkCommitType(github.context.payload.head_commit.message);
-                if (publishType) {
-                    core.info('发现提交为发布，准备更新拉取请求的提交');
-                    const pullRequests = yield utils_1.getPullRequests(octokit, publishType);
-                    utils_1.resolveConflictPullRequests(octokit, pullRequests, base);
-                }
-                else {
-                    core.info('该提交不是发布，已跳过');
-                }
+                yield processPush(octokit, base);
                 return;
             }
             // 处理 issues 事件
-            if (github.context.eventName === 'issues' &&
-                github.context.payload.action &&
-                ['opened', 'reopened', 'edited'].includes(github.context.payload.action)) {
-                // 从 GitHub Context 中获取议题的相关信息
-                const issue_number = (_d = github.context.payload.issue) === null || _d === void 0 ? void 0 : _d.number;
-                const issueBody = (_e = github.context.payload.issue) === null || _e === void 0 ? void 0 : _e.body;
-                if (!issue_number || !issueBody) {
-                    core.setFailed('无法获取议题的信息');
-                    return;
-                }
-                // 检查是否为指定类型的提交
-                const publishType = utils_1.checkTitle((_f = github.context.payload.issue) === null || _f === void 0 ? void 0 : _f.title);
-                if (!publishType) {
-                    core.info('不是商店发布议题，已跳过');
-                    return;
-                }
-                // 创建新分支
-                // 命名示例 plugin/issue123
-                const branchName = `plugin/issue${issue_number}`;
-                yield exec.exec('git', ['checkout', '-b', branchName]);
-                // 插件作者信息
-                const username = (_g = github.context.payload.issue) === null || _g === void 0 ? void 0 : _g.user.login;
-                // 提取信息
-                const info = utils_1.extractInfo(publishType, issueBody, username);
-                // 自动给议题添加标签
-                yield octokit.issues.addLabels(Object.assign(Object.assign({}, github.context.repo), { issue_number, labels: [info.type] }));
-                // 更新文件并提交更改
-                yield utils_1.updateFile(info);
-                yield utils_1.commitandPush(branchName, info);
-                // 创建拉取请求
-                yield utils_1.createPullRequest(octokit, info, issue_number, branchName, base);
-            }
-            else {
-                core.info('事件不是议题开启，重新开启或修改，已跳过');
+            if (github.context.eventName === 'issues') {
+                yield processIssues(octokit, base);
             }
         }
         catch (error) {
@@ -308,7 +327,6 @@ const fs = __importStar(__nccwpck_require__(5747));
 const adapter = __importStar(__nccwpck_require__(4139));
 const bot = __importStar(__nccwpck_require__(7930));
 const plugin = __importStar(__nccwpck_require__(3698));
-const OctokitType = github.getOctokit('');
 /**检查标签是否含有指定类型
  *
  * 并返回指定的类型(Plugin Adapter Bot)
@@ -318,7 +336,8 @@ const OctokitType = github.getOctokit('');
 function checkLabel(labels) {
     var _a;
     for (const label of labels) {
-        if (typeof label !== 'string' && ['Plugin', 'Adapter', 'Bot'].includes((_a = label.name) !== null && _a !== void 0 ? _a : 'None')) {
+        if (typeof label !== 'string' &&
+            ['Plugin', 'Adapter', 'Bot'].includes((_a = label.name) !== null && _a !== void 0 ? _a : 'None')) {
             return label.name;
         }
     }
