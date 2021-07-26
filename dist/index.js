@@ -44,6 +44,12 @@ const utils_1 = __nccwpck_require__(918);
 function processPullRequest(octokit, base) {
     var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
+        // 因为合并拉取请求只会触发 closed 事件
+        // 其他事件均对商店发布流程无影响
+        if (github.context.payload.action !== 'closed') {
+            core.info('事件不是关闭拉取请求，已跳过');
+            return;
+        }
         // 只处理支持标签的拉取请求
         const issueType = utils_1.checkLabel((_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.labels);
         if (issueType) {
@@ -108,8 +114,8 @@ function processIssues(octokit, base) {
                 return;
             }
             // 创建新分支
-            // 命名示例 plugin/issue123
-            const branchName = `plugin/issue${issue_number}`;
+            // 命名示例 publish/issue123
+            const branchName = `publish/issue${issue_number}`;
             yield exec.exec('git', ['checkout', '-b', branchName]);
             // 插件作者信息
             const username = (_d = github.context.payload.issue) === null || _d === void 0 ? void 0 : _d.user.login;
@@ -142,8 +148,7 @@ function run() {
             core.info(`event name: ${github.context.eventName}`);
             core.info(`action type: ${github.context.payload.action}`);
             // 处理 pull_request 事件
-            if (github.context.eventName === 'pull_request' &&
-                github.context.payload.action === 'closed') {
+            if (github.context.eventName === 'pull_request') {
                 yield processPullRequest(octokit, base);
                 return;
             }
@@ -155,6 +160,7 @@ function run() {
             // 处理 issues 事件
             if (github.context.eventName === 'issues') {
                 yield processIssues(octokit, base);
+                return;
             }
         }
         catch (error) {

@@ -14,13 +14,20 @@ import {
   resolveConflictPullRequests,
   updateFile
 } from './utils'
-import { OctokitType } from './types/github'
+import {OctokitType} from './types/github'
 
 /** 处理拉取请求 */
 async function processPullRequest(
   octokit: OctokitType,
   base: string
 ): Promise<void> {
+  // 因为合并拉取请求只会触发 closed 事件
+  // 其他事件均对商店发布流程无影响
+  if (github.context.payload.action !== 'closed') {
+    core.info('事件不是关闭拉取请求，已跳过')
+    return
+  }
+
   // 只处理支持标签的拉取请求
   const issueType = checkLabel(github.context.payload.pull_request?.labels)
   if (issueType) {
@@ -86,8 +93,8 @@ async function processIssues(
     }
 
     // 创建新分支
-    // 命名示例 plugin/issue123
-    const branchName = `plugin/issue${issue_number}`
+    // 命名示例 publish/issue123
+    const branchName = `publish/issue${issue_number}`
     await exec.exec('git', ['checkout', '-b', branchName])
 
     // 插件作者信息
@@ -116,7 +123,7 @@ async function processIssues(
 
 async function run(): Promise<void> {
   try {
-    const base: string = core.getInput('base', { required: true })
+    const base: string = core.getInput('base', {required: true})
     const token: string = core.getInput('token')
 
     if (!token) {
@@ -130,10 +137,7 @@ async function run(): Promise<void> {
     core.info(`action type: ${github.context.payload.action}`)
 
     // 处理 pull_request 事件
-    if (
-      github.context.eventName === 'pull_request' &&
-      github.context.payload.action === 'closed'
-    ) {
+    if (github.context.eventName === 'pull_request') {
       await processPullRequest(octokit, base)
       return
     }
