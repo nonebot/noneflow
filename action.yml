@@ -16,6 +16,10 @@ inputs:
   bot_path:
     required: true
     description: 'Path for bots.json'
+  mode:
+    description: 'Bot mode'
+    required: false
+    default: 'publish'
 runs:
   using: 'node12'
   main: 'dist/index.js'

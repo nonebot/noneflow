@@ -38,6 +38,87 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
+const publish_1 = __nccwpck_require__(6123);
+function run() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const base = core.getInput('base', { required: true });
+            const token = core.getInput('token');
+            const mode = core.getInput('mode');
+            if (!token) {
+                core.setFailed('无法获得 Token，跳过此次操作');
+            }
+            // 初始化 GitHub 客户端
+            const octokit = github.getOctokit(token);
+            // 打印事件信息
+            core.info(`event name: ${github.context.eventName}`);
+            core.info(`action type: ${github.context.payload.action}`);
+            // 发布相关
+            if (mode === 'publish') {
+                if (github.context.eventName === 'pull_request') {
+                    // 处理 pull_request 事件
+                    yield publish_1.processPullRequest(octokit, base);
+                    return;
+                }
+                // 处理 push 事件
+                if (github.context.eventName === 'push') {
+                    yield publish_1.processPush(octokit, base);
+                    return;
+                }
+                // 处理 issues 事件
+                if (github.context.eventName === 'issues') {
+                    yield publish_1.processIssues(octokit, base);
+                    return;
+                }
+            }
+        }
+        catch (error) {
+            core.setFailed(error.message);
+        }
+    });
+}
+run();
+
+
+/***/ }),
+
+/***/ 6123:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.processIssues = exports.processPush = exports.processPullRequest = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const github = __importStar(__nccwpck_require__(5438));
 const exec = __importStar(__nccwpck_require__(1514));
 const utils_1 = __nccwpck_require__(918);
 /** 处理拉取请求 */
@@ -80,6 +161,7 @@ function processPullRequest(octokit, base) {
         }
     });
 }
+exports.processPullRequest = processPullRequest;
 /** 处理提交 */
 function processPush(octokit, base) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -94,6 +176,7 @@ function processPush(octokit, base) {
         }
     });
 }
+exports.processPush = processPush;
 /** 处理议题 */
 function processIssues(octokit, base) {
     var _a, _b, _c, _d;
@@ -134,41 +217,7 @@ function processIssues(octokit, base) {
         }
     });
 }
-function run() {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const base = core.getInput('base', { required: true });
-            const token = core.getInput('token');
-            if (!token) {
-                core.setFailed('无法获得 Token，跳过此次操作');
-            }
-            // 初始化 GitHub 客户端
-            const octokit = github.getOctokit(token);
-            // 打印事件信息
-            core.info(`event name: ${github.context.eventName}`);
-            core.info(`action type: ${github.context.payload.action}`);
-            // 处理 pull_request 事件
-            if (github.context.eventName === 'pull_request') {
-                yield processPullRequest(octokit, base);
-                return;
-            }
-            // 处理 push 事件
-            if (github.context.eventName === 'push') {
-                yield processPush(octokit, base);
-                return;
-            }
-            // 处理 issues 事件
-            if (github.context.eventName === 'issues') {
-                yield processIssues(octokit, base);
-                return;
-            }
-        }
-        catch (error) {
-            core.setFailed(error.message);
-        }
-    });
-}
-run();
+exports.processIssues = processIssues;
 
 
 /***/ }),
