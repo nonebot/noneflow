@@ -63,7 +63,7 @@ function check(octokit) {
                     checkAdapter(octokit, info);
                     break;
                 case 'Plugin':
-                    checkPlugin(octokit, info);
+                    checkPlugin(octokit, info, issue_number);
                     break;
             }
         }
@@ -73,9 +73,10 @@ function check(octokit) {
     });
 }
 exports.check = check;
-function checkPlugin(octokit, info) {
+function checkPlugin(octokit, info, issue_number) {
     return __awaiter(this, void 0, void 0, function* () {
         core.info(`插件 ${info.name}`);
+        yield utils_1.publishComment(octokit, issue_number, `插件 ${info.name} 没有问题`);
     });
 }
 function checkBot(octokit, info) {
@@ -392,6 +393,39 @@ exports.extractInfo = extractInfo;
 
 /***/ }),
 
+/***/ 4048:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.commentTitle = void 0;
+const github = __importStar(__nccwpck_require__(5438));
+const octokit = github.getOctokit('');
+exports.commentTitle = '## Publish Check Result';
+
+
+/***/ }),
+
 /***/ 3698:
 /***/ ((__unused_webpack_module, exports) => {
 
@@ -468,7 +502,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.closeIssue = exports.extractInfo = exports.resolveConflictPullRequests = exports.extractIssueNumberFromRef = exports.getPullRequests = exports.createPullRequest = exports.commitandPush = exports.updateFile = exports.checkCommitType = exports.checkTitle = exports.checkLabel = void 0;
+exports.publishComment = exports.closeIssue = exports.extractInfo = exports.resolveConflictPullRequests = exports.extractIssueNumberFromRef = exports.getPullRequests = exports.createPullRequest = exports.commitandPush = exports.updateFile = exports.checkCommitType = exports.checkTitle = exports.checkLabel = void 0;
 const github = __importStar(__nccwpck_require__(5438));
 const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
@@ -476,6 +510,7 @@ const fs = __importStar(__nccwpck_require__(5747));
 const adapter = __importStar(__nccwpck_require__(4139));
 const bot = __importStar(__nccwpck_require__(7930));
 const plugin = __importStar(__nccwpck_require__(3698));
+const github_1 = __nccwpck_require__(4048);
 /**检查标签是否含有指定类型
  *
  * 并返回指定的类型(Plugin Adapter Bot)
@@ -707,6 +742,44 @@ function closeIssue(octokit, issue_number) {
     });
 }
 exports.closeIssue = closeIssue;
+/**发布评论  */
+function publishComment(octokit, issue_number, body) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // 给评论添加统一的标题
+        body = `${github_1.commentTitle}\n${body}`;
+        if (!reuserComment(octokit, issue_number, body)) {
+            core.info('正在创建评论');
+            yield octokit.issues.createComment(Object.assign(Object.assign({}, github.context.repo), { issue_number,
+                body }));
+        }
+    });
+}
+exports.publishComment = publishComment;
+/**重复利用评论
+ *
+ * 如果发现之前评论过，直接修改之前的评论
+ */
+function reuserComment(octokit, issue_number, body) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const comments = yield octokit.issues.listComments(Object.assign(Object.assign({}, github.context.repo), { issue_number }));
+        if (comments) {
+            // 检查相关评论是否拥有统一的标题
+            const relatedComments = comments.data.filter(comment => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.startsWith(github_1.commentTitle); });
+            if (!relatedComments) {
+                return false;
+            }
+            const last_comment = relatedComments.pop();
+            const comment_id = last_comment === null || last_comment === void 0 ? void 0 : last_comment.id;
+            if (comment_id) {
+                core.info(`正在修改评论 ${last_comment === null || last_comment === void 0 ? void 0 : last_comment.id}`);
+                octokit.issues.updateComment(Object.assign(Object.assign({}, github.context.repo), { comment_id,
+                    body }));
+                return true;
+            }
+        }
+        return false;
+    });
+}
 
 
 /***/ }),

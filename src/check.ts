@@ -1,6 +1,11 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import {checkLabel, extractInfo, extractIssueNumberFromRef} from './utils'
+import {
+  checkLabel,
+  extractInfo,
+  extractIssueNumberFromRef,
+  publishComment
+} from './utils'
 import {OctokitType} from './types/github'
 import {PluginInfo} from './types/plugin'
 import {BotInfo} from './types/bot'
@@ -34,7 +39,7 @@ export async function check(octokit: OctokitType): Promise<void> {
         checkAdapter(octokit, info)
         break
       case 'Plugin':
-        checkPlugin(octokit, info)
+        checkPlugin(octokit, info, issue_number)
         break
     }
   } else {
@@ -44,9 +49,11 @@ export async function check(octokit: OctokitType): Promise<void> {
 
 async function checkPlugin(
   octokit: OctokitType,
-  info: PluginInfo
+  info: PluginInfo,
+  issue_number: number
 ): Promise<void> {
   core.info(`插件 ${info.name}`)
+  await publishComment(octokit, issue_number, `插件 ${info.name} 没有问题`)
 }
 async function checkBot(octokit: OctokitType, info: BotInfo): Promise<void> {
   core.info(`机器人 ${info.name}`)

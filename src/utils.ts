@@ -7,6 +7,7 @@ import * as bot from './types/bot'
 import * as plugin from './types/plugin'
 import {Info, PublishType} from './info'
 import {
+  commentTitle,
   IssuesGetResponseDataType,
   OctokitType,
   PullsListResponseDataType
@@ -288,4 +289,58 @@ export async function closeIssue(
     issue_number,
     state: 'closed'
   })
+}
+
+/**发布评论  */
+export async function publishComment(
+  octokit: OctokitType,
+  issue_number: number,
+  body: string
+): Promise<void> {
+  // 给评论添加统一的标题
+  body = `${commentTitle}\n${body}`
+
+  if (!reuserComment(octokit, issue_number, body)) {
+    core.info('正在创建评论')
+    await octokit.issues.createComment({
+      ...github.context.repo,
+      issue_number,
+      body
+    })
+  }
+}
+/**重复利用评论
+ *
+ * 如果发现之前评论过，直接修改之前的评论
+ */
+async function reuserComment(
+  octokit: OctokitType,
+  issue_number: number,
+  body: string
+): Promise<boolean> {
+  const comments = await octokit.issues.listComments({
+    ...github.context.repo,
+    issue_number
+  })
+  if (comments) {
+    // 检查相关评论是否拥有统一的标题
+    const relatedComments = comments.data.filter(comment =>
+      comment.body?.startsWith(commentTitle)
+    )
+    if (!relatedComments) {
+      return false
+    }
+    const last_comment = relatedComments.pop()
+    const comment_id = last_comment?.id
+    if (comment_id) {
+      core.info(`正在修改评论 ${last_comment?.id}`)
+      octokit.issues.updateComment({
+        ...github.context.repo,
+        comment_id,
+        body
+      })
+      return true
+    }
+  }
+  return false
 }
