@@ -58,13 +58,13 @@ function check(octokit) {
             // 不同类型有不同类型的检查方法
             switch (info.type) {
                 case 'Bot':
-                    checkBot(octokit, info, issue_number);
+                    checkBot(octokit, info, pullRequestPayload.number);
                     break;
                 case 'Adapter':
-                    checkAdapter(octokit, info, issue_number);
+                    checkAdapter(octokit, info, pullRequestPayload.number);
                     break;
                 case 'Plugin':
-                    checkPlugin(octokit, info, issue_number);
+                    checkPlugin(octokit, info, pullRequestPayload.number);
                     break;
             }
         }
