@@ -300,7 +300,7 @@ export async function publishComment(
   // 给评论添加统一的标题
   body = `${commentTitle}\n${body}`
   core.info('开始创建评论')
-  if (!reuseComment(octokit, issue_number, body)) {
+  if (!(await reuseComment(octokit, issue_number, body))) {
     await octokit.issues.createComment({
       ...github.context.repo,
       issue_number,

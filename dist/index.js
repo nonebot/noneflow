@@ -731,7 +731,7 @@ function publishComment(octokit, issue_number, body) {
         // 给评论添加统一的标题
         body = `${constants_1.commentTitle}\n${body}`;
         core.info('开始创建评论');
-        if (!reuseComment(octokit, issue_number, body)) {
+        if (!(yield reuseComment(octokit, issue_number, body))) {
             yield octokit.issues.createComment(Object.assign(Object.assign({}, github.context.repo), { issue_number,
                 body }));
             core.info('评论创建完成');
