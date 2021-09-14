@@ -299,21 +299,21 @@ export async function publishComment(
 ): Promise<void> {
   // 给评论添加统一的标题
   body = `${commentTitle}\n${body}`
-
-  if (!reuserComment(octokit, issue_number, body)) {
-    core.info('正在创建评论')
+  core.info('开始创建评论')
+  if (!reuseComment(octokit, issue_number, body)) {
     await octokit.issues.createComment({
       ...github.context.repo,
       issue_number,
       body
     })
+    core.info('评论创建完成')
   }
 }
 /**重复利用评论
  *
  * 如果发现之前评论过，直接修改之前的评论
  */
-async function reuserComment(
+async function reuseComment(
   octokit: OctokitType,
   issue_number: number,
   body: string

@@ -36,10 +36,10 @@ export async function check(octokit: OctokitType): Promise<void> {
     // 不同类型有不同类型的检查方法
     switch (info.type) {
       case 'Bot':
-        checkBot(octokit, info)
+        checkBot(octokit, info, issue_number)
         break
       case 'Adapter':
-        checkAdapter(octokit, info)
+        checkAdapter(octokit, info, issue_number)
         break
       case 'Plugin':
         checkPlugin(octokit, info, issue_number)
@@ -58,12 +58,19 @@ async function checkPlugin(
   core.info(`插件 ${info.name}`)
   await publishComment(octokit, issue_number, `插件 ${info.name} 没有问题`)
 }
-async function checkBot(octokit: OctokitType, info: BotInfo): Promise<void> {
+async function checkBot(
+  octokit: OctokitType,
+  info: BotInfo,
+  issue_number: number
+): Promise<void> {
   core.info(`机器人 ${info.name}`)
+  await publishComment(octokit, issue_number, `机器人 ${info.name} 没有问题`)
 }
 async function checkAdapter(
   octokit: OctokitType,
-  info: AdapterInfo
+  info: AdapterInfo,
+  issue_number: number
 ): Promise<void> {
   core.info(`适配器 ${info.name}`)
+  await publishComment(octokit, issue_number, `适配器 ${info.name} 没有问题`)
 }

@@ -58,10 +58,10 @@ function check(octokit) {
             // 不同类型有不同类型的检查方法
             switch (info.type) {
                 case 'Bot':
-                    checkBot(octokit, info);
+                    checkBot(octokit, info, issue_number);
                     break;
                 case 'Adapter':
-                    checkAdapter(octokit, info);
+                    checkAdapter(octokit, info, issue_number);
                     break;
                 case 'Plugin':
                     checkPlugin(octokit, info, issue_number);
@@ -80,14 +80,16 @@ function checkPlugin(octokit, info, issue_number) {
         yield utils_1.publishComment(octokit, issue_number, `插件 ${info.name} 没有问题`);
     });
 }
-function checkBot(octokit, info) {
+function checkBot(octokit, info, issue_number) {
     return __awaiter(this, void 0, void 0, function* () {
         core.info(`机器人 ${info.name}`);
+        yield utils_1.publishComment(octokit, issue_number, `机器人 ${info.name} 没有问题`);
     });
 }
-function checkAdapter(octokit, info) {
+function checkAdapter(octokit, info, issue_number) {
     return __awaiter(this, void 0, void 0, function* () {
         core.info(`适配器 ${info.name}`);
+        yield utils_1.publishComment(octokit, issue_number, `适配器 ${info.name} 没有问题`);
     });
 }
 
@@ -728,10 +730,11 @@ function publishComment(octokit, issue_number, body) {
     return __awaiter(this, void 0, void 0, function* () {
         // 给评论添加统一的标题
         body = `${constants_1.commentTitle}\n${body}`;
-        if (!reuserComment(octokit, issue_number, body)) {
-            core.info('正在创建评论');
+        core.info('开始创建评论');
+        if (!reuseComment(octokit, issue_number, body)) {
             yield octokit.issues.createComment(Object.assign(Object.assign({}, github.context.repo), { issue_number,
                 body }));
+            core.info('评论创建完成');
         }
     });
 }
@@ -740,7 +743,7 @@ exports.publishComment = publishComment;
  *
  * 如果发现之前评论过，直接修改之前的评论
  */
-function reuserComment(octokit, issue_number, body) {
+function reuseComment(octokit, issue_number, body) {
     return __awaiter(this, void 0, void 0, function* () {
         const comments = yield octokit.issues.listComments(Object.assign(Object.assign({}, github.context.repo), { issue_number }));
         if (comments) {
