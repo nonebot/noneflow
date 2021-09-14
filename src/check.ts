@@ -120,7 +120,7 @@ function generateMessage(status: CheckStatus, info: Info): string {
     message += 'Everything is ready to go'
   } else if (status.pass) {
     message += `\n\nPackage is available on PyPI([${info.link}](https://pypi.org/project/${info.link}/))`
-    message += `Everything is ready to go`
+    message += `\nEverything is ready to go`
   } else {
     message += `\n\nPackage is not available on PyPI([${info.link}](https://pypi.org/project/${info.link}/))`
     message += `\nPlease publish to PyPI`
