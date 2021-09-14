@@ -129,11 +129,11 @@ function generateMessage(status, info) {
         message += 'Everything is ready to go';
     }
     else if (status.pass) {
-        message += `\nPackage is available on PyPI\nlink：https://pypi.org/project/${info.link}/`;
+        message += `\n\nPackage is available on PyPI\nlink：https://pypi.org/project/${info.link}/`;
         message += `Everything is ready to go`;
     }
     else {
-        message += `\nPackage is not available on PyPI`;
+        message += `\n\nPackage is not available on PyPI`;
         message += `\nPlease publish to PyPI`;
     }
     return message;
@@ -780,7 +780,7 @@ function publishComment(octokit, issue_number, body) {
     return __awaiter(this, void 0, void 0, function* () {
         // 给评论添加统一的标题
         body = `${constants_1.commentTitle}\n${body}`;
-        core.info('开始创建评论');
+        core.info('开始发布评论');
         if (!(yield reuseComment(octokit, issue_number, body))) {
             yield octokit.issues.createComment(Object.assign(Object.assign({}, github.context.repo), { issue_number,
                 body }));
@@ -805,7 +805,8 @@ function reuseComment(octokit, issue_number, body) {
             const last_comment = relatedComments.pop();
             const comment_id = last_comment === null || last_comment === void 0 ? void 0 : last_comment.id;
             if (comment_id) {
-                core.info(`正在修改评论 ${last_comment === null || last_comment === void 0 ? void 0 : last_comment.id}`);
+                core.info(`发现已有评论 ${last_comment === null || last_comment === void 0 ? void 0 : last_comment.id}，正在修改`);
+                body += '\n\n:recycle: This comment has been updated with latest result.';
                 octokit.issues.updateComment(Object.assign(Object.assign({}, github.context.repo), { comment_id,
                     body }));
                 return true;

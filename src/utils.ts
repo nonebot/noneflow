@@ -299,7 +299,7 @@ export async function publishComment(
 ): Promise<void> {
   // 给评论添加统一的标题
   body = `${commentTitle}\n${body}`
-  core.info('开始创建评论')
+  core.info('开始发布评论')
   if (!(await reuseComment(octokit, issue_number, body))) {
     await octokit.issues.createComment({
       ...github.context.repo,
@@ -333,7 +333,8 @@ async function reuseComment(
     const last_comment = relatedComments.pop()
     const comment_id = last_comment?.id
     if (comment_id) {
-      core.info(`正在修改评论 ${last_comment?.id}`)
+      core.info(`发现已有评论 ${last_comment?.id}，正在修改`)
+      body += '\n\n:recycle: This comment has been updated with latest result.'
       octokit.issues.updateComment({
         ...github.context.repo,
         comment_id,
