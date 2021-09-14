@@ -10,12 +10,15 @@ import {OctokitType} from './types/github'
 import {PluginInfo} from './types/plugin'
 import {BotInfo} from './types/bot'
 import {AdapterInfo} from './types/adapter'
+import {PullRequestEvent} from '@octokit/webhooks-definitions/schema'
 
 export async function check(octokit: OctokitType): Promise<void> {
+  const pullRequestPayload = github.context.payload as PullRequestEvent
+
   // 只处理支持标签的拉取请求
-  const issueType = checkLabel(github.context.payload.pull_request?.labels)
+  const issueType = checkLabel(pullRequestPayload.pull_request.labels)
   if (issueType) {
-    const ref: string = github.context.payload.pull_request?.head.ref
+    const ref: string = pullRequestPayload.pull_request.head.ref
     const issue_number = extractIssueNumberFromRef(ref)
     if (!issue_number) {
       core.setFailed('无法获取议题')

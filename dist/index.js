@@ -41,19 +41,20 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const utils_1 = __nccwpck_require__(918);
 function check(octokit) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
+        const pullRequestPayload = github.context.payload;
         // 只处理支持标签的拉取请求
-        const issueType = utils_1.checkLabel((_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.labels);
+        const issueType = utils_1.checkLabel(pullRequestPayload.pull_request.labels);
         if (issueType) {
-            const ref = (_b = github.context.payload.pull_request) === null || _b === void 0 ? void 0 : _b.head.ref;
+            const ref = pullRequestPayload.pull_request.head.ref;
             const issue_number = utils_1.extractIssueNumberFromRef(ref);
             if (!issue_number) {
                 core.setFailed('无法获取议题');
                 return;
             }
             const issue = yield octokit.issues.get(Object.assign(Object.assign({}, github.context.repo), { issue_number }));
-            const info = utils_1.extractInfo(issueType, (_c = issue.data.body) !== null && _c !== void 0 ? _c : '', (_e = (_d = issue.data.user) === null || _d === void 0 ? void 0 : _d.login) !== null && _e !== void 0 ? _e : '');
+            const info = utils_1.extractInfo(issueType, (_a = issue.data.body) !== null && _a !== void 0 ? _a : '', (_c = (_b = issue.data.user) === null || _b === void 0 ? void 0 : _b.login) !== null && _c !== void 0 ? _c : '');
             // 不同类型有不同类型的检查方法
             switch (info.type) {
                 case 'Bot':
@@ -218,18 +219,18 @@ const exec = __importStar(__nccwpck_require__(1514));
 const utils_1 = __nccwpck_require__(918);
 /** 处理拉取请求 */
 function processPullRequest(octokit, base) {
-    var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
+        const pullRequestPayload = github.context.payload;
         // 因为合并拉取请求只会触发 closed 事件
         // 其他事件均对商店发布流程无影响
-        if (github.context.payload.action !== 'closed') {
+        if (pullRequestPayload.action !== 'closed') {
             core.info('事件不是关闭拉取请求，已跳过');
             return;
         }
         // 只处理支持标签的拉取请求
-        const issueType = utils_1.checkLabel((_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.labels);
+        const issueType = utils_1.checkLabel(pullRequestPayload.pull_request.labels);
         if (issueType) {
-            const ref = (_b = github.context.payload.pull_request) === null || _b === void 0 ? void 0 : _b.head.ref;
+            const ref = pullRequestPayload.pull_request.head.ref;
             const relatedIssueNumber = utils_1.extractIssueNumberFromRef(ref);
             if (relatedIssueNumber) {
                 yield utils_1.closeIssue(octokit, relatedIssueNumber);
@@ -242,7 +243,7 @@ function processPullRequest(octokit, base) {
                     core.info('对应分支不存在或已删除');
                 }
             }
-            if ((_c = github.context.payload.pull_request) === null || _c === void 0 ? void 0 : _c.merged) {
+            if (pullRequestPayload.pull_request.merged) {
                 core.info('发布的拉取请求已合并，准备更新拉取请求的提交');
                 const pullRequests = yield utils_1.getPullRequests(octokit, issueType);
                 utils_1.resolveConflictPullRequests(octokit, pullRequests, base);
@@ -259,8 +260,10 @@ function processPullRequest(octokit, base) {
 exports.processPullRequest = processPullRequest;
 /** 处理提交 */
 function processPush(octokit, base) {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
-        const publishType = utils_1.checkCommitType(github.context.payload.head_commit.message);
+        const pushPayload = github.context.payload;
+        const publishType = utils_1.checkCommitType((_a = pushPayload.head_commit) === null || _a === void 0 ? void 0 : _a.message);
         if (publishType) {
             core.info('发现提交为发布，准备更新拉取请求的提交');
             const pullRequests = yield utils_1.getPullRequests(octokit, publishType);
@@ -274,19 +277,18 @@ function processPush(octokit, base) {
 exports.processPush = processPush;
 /** 处理议题 */
 function processIssues(octokit, base) {
-    var _a, _b, _c, _d;
     return __awaiter(this, void 0, void 0, function* () {
-        if (github.context.payload.action &&
-            ['opened', 'reopened', 'edited'].includes(github.context.payload.action)) {
+        const issuesPayload = github.context.payload;
+        if (['opened', 'reopened', 'edited'].includes(issuesPayload.action)) {
             // 从 GitHub Context 中获取议题的相关信息
-            const issue_number = (_a = github.context.payload.issue) === null || _a === void 0 ? void 0 : _a.number;
-            const issueBody = (_b = github.context.payload.issue) === null || _b === void 0 ? void 0 : _b.body;
+            const issue_number = issuesPayload.issue.number;
+            const issueBody = issuesPayload.issue.body;
             if (!issue_number || !issueBody) {
                 core.setFailed('无法获取议题的信息');
                 return;
             }
             // 检查是否为指定类型的提交
-            const publishType = utils_1.checkTitle((_c = github.context.payload.issue) === null || _c === void 0 ? void 0 : _c.title);
+            const publishType = utils_1.checkTitle(issuesPayload.issue.title);
             if (!publishType) {
                 core.info('不是商店发布议题，已跳过');
                 return;
@@ -296,7 +298,7 @@ function processIssues(octokit, base) {
             const branchName = `publish/issue${issue_number}`;
             yield exec.exec('git', ['checkout', '-b', branchName]);
             // 插件作者信息
-            const username = (_d = github.context.payload.issue) === null || _d === void 0 ? void 0 : _d.user.login;
+            const username = issuesPayload.issue.user.login;
             // 提取信息
             const info = utils_1.extractInfo(publishType, issueBody, username);
             // 自动给议题添加标签
