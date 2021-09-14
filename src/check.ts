@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import {
-  checkLabel,
+  checkTitle,
   extractInfo,
   extractIssueNumberFromRef,
   publishComment
@@ -23,9 +23,10 @@ interface CheckStatus {
 export async function check(octokit: OctokitType): Promise<void> {
   const pullRequestPayload = github.context.payload as PullRequestEvent
 
-  // 只处理支持标签的拉取请求
-  const issueType = checkLabel(pullRequestPayload.pull_request.labels)
-  if (issueType) {
+  // 检查是否为指定类型的提交
+  // 通过标题来判断，因为创建拉取请求时并没有标签
+  const publishType = checkTitle(pullRequestPayload.pull_request.title)
+  if (publishType) {
     const ref: string = pullRequestPayload.pull_request.head.ref
     const issue_number = extractIssueNumberFromRef(ref)
     if (!issue_number) {
@@ -37,7 +38,7 @@ export async function check(octokit: OctokitType): Promise<void> {
       issue_number
     })
     const info = extractInfo(
-      issueType,
+      publishType,
       issue.data.body ?? '',
       issue.data.user?.login ?? ''
     )
@@ -64,7 +65,7 @@ export async function check(octokit: OctokitType): Promise<void> {
       core.setFailed('发布没通过检查')
     }
   } else {
-    core.info('拉取请求与插件无关，已跳过')
+    core.info('拉取请求与发布无关，已跳过')
   }
 }
 

@@ -58,7 +58,7 @@ export async function processPullRequest(
       core.info('发布的拉取请求未合并，已跳过')
     }
   } else {
-    core.info('拉取请求与插件无关，已跳过')
+    core.info('拉取请求与发布无关，已跳过')
   }
 }
 /** 处理提交 */

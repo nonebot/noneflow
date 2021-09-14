@@ -45,9 +45,10 @@ function check(octokit) {
     var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
         const pullRequestPayload = github.context.payload;
-        // 只处理支持标签的拉取请求
-        const issueType = utils_1.checkLabel(pullRequestPayload.pull_request.labels);
-        if (issueType) {
+        // 检查是否为指定类型的提交
+        // 通过标题来判断，因为创建拉取请求时并没有标签
+        const publishType = utils_1.checkTitle(pullRequestPayload.pull_request.title);
+        if (publishType) {
             const ref = pullRequestPayload.pull_request.head.ref;
             const issue_number = utils_1.extractIssueNumberFromRef(ref);
             if (!issue_number) {
@@ -55,7 +56,7 @@ function check(octokit) {
                 return;
             }
             const issue = yield octokit.issues.get(Object.assign(Object.assign({}, github.context.repo), { issue_number }));
-            const info = utils_1.extractInfo(issueType, (_a = issue.data.body) !== null && _a !== void 0 ? _a : '', (_c = (_b = issue.data.user) === null || _b === void 0 ? void 0 : _b.login) !== null && _c !== void 0 ? _c : '');
+            const info = utils_1.extractInfo(publishType, (_a = issue.data.body) !== null && _a !== void 0 ? _a : '', (_c = (_b = issue.data.user) === null || _b === void 0 ? void 0 : _b.login) !== null && _c !== void 0 ? _c : '');
             let status;
             // 不同类型有不同类型的检查方法
             switch (info.type) {
@@ -80,7 +81,7 @@ function check(octokit) {
             }
         }
         else {
-            core.info('拉取请求与插件无关，已跳过');
+            core.info('拉取请求与发布无关，已跳过');
         }
     });
 }
@@ -313,7 +314,7 @@ function processPullRequest(octokit, base) {
             }
         }
         else {
-            core.info('拉取请求与插件无关，已跳过');
+            core.info('拉取请求与发布无关，已跳过');
         }
     });
 }
