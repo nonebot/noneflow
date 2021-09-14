@@ -2,6 +2,96 @@ require('./sourcemap-register.js');module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 7657:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.check = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const github = __importStar(__nccwpck_require__(5438));
+const utils_1 = __nccwpck_require__(918);
+function check(octokit) {
+    var _a, _b, _c, _d, _e;
+    return __awaiter(this, void 0, void 0, function* () {
+        // 只处理支持标签的拉取请求
+        const issueType = utils_1.checkLabel((_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.labels);
+        if (issueType) {
+            const ref = (_b = github.context.payload.pull_request) === null || _b === void 0 ? void 0 : _b.head.ref;
+            const issue_number = utils_1.extractIssueNumberFromRef(ref);
+            if (!issue_number) {
+                core.setFailed('无法获取议题');
+                return;
+            }
+            const issue = yield octokit.issues.get(Object.assign(Object.assign({}, github.context.repo), { issue_number }));
+            const info = utils_1.extractInfo(issueType, (_c = issue.data.body) !== null && _c !== void 0 ? _c : '', (_e = (_d = issue.data.user) === null || _d === void 0 ? void 0 : _d.login) !== null && _e !== void 0 ? _e : '');
+            // 不同类型有不同类型的检查方法
+            switch (info.type) {
+                case 'Bot':
+                    checkBot(octokit, info);
+                    break;
+                case 'Adapter':
+                    checkAdapter(octokit, info);
+                    break;
+                case 'Plugin':
+                    checkPlugin(octokit, info);
+                    break;
+            }
+        }
+        else {
+            core.info('拉取请求与插件无关，已跳过');
+        }
+    });
+}
+exports.check = check;
+function checkPlugin(octokit, info) {
+    return __awaiter(this, void 0, void 0, function* () {
+        core.info(`插件 ${info.name}`);
+    });
+}
+function checkBot(octokit, info) {
+    return __awaiter(this, void 0, void 0, function* () {
+        core.info(`机器人 ${info.name}`);
+    });
+}
+function checkAdapter(octokit, info) {
+    return __awaiter(this, void 0, void 0, function* () {
+        core.info(`适配器 ${info.name}`);
+    });
+}
+
+
+/***/ }),
+
 /***/ 3109:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -38,6 +128,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
+const check_1 = __nccwpck_require__(7657);
 const publish_1 = __nccwpck_require__(6123);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -70,6 +161,9 @@ function run() {
                     yield publish_1.processIssues(octokit, base);
                     return;
                 }
+            }
+            else if (mode === 'check') {
+                yield check_1.check(octokit);
             }
         }
         catch (error) {

@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
+import {check} from './check'
 import {processIssues, processPullRequest, processPush} from './publish'
 
 async function run(): Promise<void> {
@@ -37,6 +38,8 @@ async function run(): Promise<void> {
         await processIssues(octokit, base)
         return
       }
+    } else if (mode === 'check') {
+      await check(octokit)
     }
   } catch (error) {
     core.setFailed(error.message)
