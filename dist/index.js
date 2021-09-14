@@ -40,6 +40,7 @@ exports.check = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const utils_1 = __nccwpck_require__(918);
+const http_client_1 = __nccwpck_require__(9925);
 function check(octokit) {
     var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
@@ -55,17 +56,27 @@ function check(octokit) {
             }
             const issue = yield octokit.issues.get(Object.assign(Object.assign({}, github.context.repo), { issue_number }));
             const info = utils_1.extractInfo(issueType, (_a = issue.data.body) !== null && _a !== void 0 ? _a : '', (_c = (_b = issue.data.user) === null || _b === void 0 ? void 0 : _b.login) !== null && _c !== void 0 ? _c : '');
+            let status;
             // 不同类型有不同类型的检查方法
             switch (info.type) {
                 case 'Bot':
-                    checkBot(octokit, info, pullRequestPayload.number);
+                    // status = await checkBot(octokit, info)
+                    status = {
+                        published: true,
+                        pass: true
+                    };
                     break;
                 case 'Adapter':
-                    checkAdapter(octokit, info, pullRequestPayload.number);
+                    status = yield checkAdapter(octokit, info);
                     break;
                 case 'Plugin':
-                    checkPlugin(octokit, info, pullRequestPayload.number);
+                    status = yield checkPlugin(octokit, info);
                     break;
+            }
+            const message = generateMessage(status, info);
+            yield utils_1.publishComment(octokit, pullRequestPayload.number, message);
+            if (!status.pass) {
+                core.setFailed('发布没通过检查');
             }
         }
         else {
@@ -74,23 +85,58 @@ function check(octokit) {
     });
 }
 exports.check = check;
-function checkPlugin(octokit, info, issue_number) {
+function checkPlugin(octokit, info) {
     return __awaiter(this, void 0, void 0, function* () {
-        core.info(`插件 ${info.name}`);
-        yield utils_1.publishComment(octokit, issue_number, `插件 ${info.name} 没有问题`);
+        const onPyPI = yield checkPyPI(info.link);
+        return {
+            published: onPyPI,
+            pass: onPyPI
+        };
     });
 }
-function checkBot(octokit, info, issue_number) {
+// async function checkBot(
+//   octokit: OctokitType,
+//   info: BotInfo
+// ): Promise<CheckStatus> {
+//   return {
+//     published: true,
+//     pass: true
+//   }
+// }
+function checkAdapter(octokit, info) {
     return __awaiter(this, void 0, void 0, function* () {
-        core.info(`机器人 ${info.name}`);
-        yield utils_1.publishComment(octokit, issue_number, `机器人 ${info.name} 没有问题`);
+        const onPyPI = yield checkPyPI(info.link);
+        return {
+            published: onPyPI,
+            pass: onPyPI
+        };
     });
 }
-function checkAdapter(octokit, info, issue_number) {
+function checkPyPI(id) {
     return __awaiter(this, void 0, void 0, function* () {
-        core.info(`适配器 ${info.name}`);
-        yield utils_1.publishComment(octokit, issue_number, `适配器 ${info.name} 没有问题`);
+        const url = `https://pypi.org/pypi/${id}/json`;
+        const http = new http_client_1.HttpClient();
+        const res = yield http.get(url);
+        if (res.message.statusCode === 200) {
+            return true;
+        }
+        return false;
     });
+}
+function generateMessage(status, info) {
+    let message = `${info.type}: ${info.name}`;
+    if (info.type === 'Bot') {
+        message += 'Everything is ready to go';
+    }
+    else if (status.pass) {
+        message += `\nPackage is available on PyPI\nlink：https://pypi.org/project/${info.link}/`;
+        message += `Everything is ready to go`;
+    }
+    else {
+        message += `\nPackage is not available on PyPI`;
+        message += `\nPlease publish to PyPI`;
+    }
+    return message;
 }
 
 
@@ -274,10 +320,14 @@ function processPullRequest(octokit, base) {
 exports.processPullRequest = processPullRequest;
 /** 处理提交 */
 function processPush(octokit, base) {
-    var _a;
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         const pushPayload = github.context.payload;
-        const publishType = utils_1.checkCommitType((_a = pushPayload.head_commit) === null || _a === void 0 ? void 0 : _a.message);
+        if (!((_a = pushPayload.head_commit) === null || _a === void 0 ? void 0 : _a.message)) {
+            core.setFailed('提交信息不存在');
+            return;
+        }
+        const publishType = utils_1.checkCommitType((_b = pushPayload.head_commit) === null || _b === void 0 ? void 0 : _b.message);
         if (publishType) {
             core.info('发现提交为发布，准备更新拉取请求的提交');
             const pullRequests = yield utils_1.getPullRequests(octokit, publishType);

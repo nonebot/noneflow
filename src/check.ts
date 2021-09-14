@@ -8,9 +8,17 @@ import {
 } from './utils'
 import {OctokitType} from './types/github'
 import {PluginInfo} from './types/plugin'
-import {BotInfo} from './types/bot'
 import {AdapterInfo} from './types/adapter'
 import {PullRequestEvent} from '@octokit/webhooks-definitions/schema'
+import {HttpClient} from '@actions/http-client'
+import {Info} from './info'
+
+interface CheckStatus {
+  /**是否发布 */
+  published: boolean
+  /**是否满足要求 */
+  pass: boolean
+}
 
 export async function check(octokit: OctokitType): Promise<void> {
   const pullRequestPayload = github.context.payload as PullRequestEvent
@@ -33,17 +41,27 @@ export async function check(octokit: OctokitType): Promise<void> {
       issue.data.body ?? '',
       issue.data.user?.login ?? ''
     )
+    let status: CheckStatus
     // 不同类型有不同类型的检查方法
     switch (info.type) {
       case 'Bot':
-        checkBot(octokit, info, pullRequestPayload.number)
+        // status = await checkBot(octokit, info)
+        status = {
+          published: true,
+          pass: true
+        }
         break
       case 'Adapter':
-        checkAdapter(octokit, info, pullRequestPayload.number)
+        status = await checkAdapter(octokit, info)
         break
       case 'Plugin':
-        checkPlugin(octokit, info, pullRequestPayload.number)
+        status = await checkPlugin(octokit, info)
         break
+    }
+    const message = generateMessage(status, info)
+    await publishComment(octokit, pullRequestPayload.number, message)
+    if (!status.pass) {
+      core.setFailed('发布没通过检查')
     }
   } else {
     core.info('拉取请求与插件无关，已跳过')
@@ -52,25 +70,60 @@ export async function check(octokit: OctokitType): Promise<void> {
 
 async function checkPlugin(
   octokit: OctokitType,
-  info: PluginInfo,
-  issue_number: number
-): Promise<void> {
-  core.info(`插件 ${info.name}`)
-  await publishComment(octokit, issue_number, `插件 ${info.name} 没有问题`)
+  info: PluginInfo
+): Promise<CheckStatus> {
+  const onPyPI = await checkPyPI(info.link)
+
+  return {
+    published: onPyPI,
+    pass: onPyPI
+  }
 }
-async function checkBot(
-  octokit: OctokitType,
-  info: BotInfo,
-  issue_number: number
-): Promise<void> {
-  core.info(`机器人 ${info.name}`)
-  await publishComment(octokit, issue_number, `机器人 ${info.name} 没有问题`)
-}
+
+// async function checkBot(
+//   octokit: OctokitType,
+//   info: BotInfo
+// ): Promise<CheckStatus> {
+//   return {
+//     published: true,
+//     pass: true
+//   }
+// }
+
 async function checkAdapter(
   octokit: OctokitType,
-  info: AdapterInfo,
-  issue_number: number
-): Promise<void> {
-  core.info(`适配器 ${info.name}`)
-  await publishComment(octokit, issue_number, `适配器 ${info.name} 没有问题`)
+  info: AdapterInfo
+): Promise<CheckStatus> {
+  const onPyPI = await checkPyPI(info.link)
+
+  return {
+    published: onPyPI,
+    pass: onPyPI
+  }
+}
+
+async function checkPyPI(id: string): Promise<boolean> {
+  const url = `https://pypi.org/pypi/${id}/json`
+  const http = new HttpClient()
+  const res = await http.get(url)
+  if (res.message.statusCode === 200) {
+    return true
+  }
+  return false
+}
+
+function generateMessage(status: CheckStatus, info: Info): string {
+  let message = `${info.type}: ${info.name}`
+
+  if (info.type === 'Bot') {
+    message += 'Everything is ready to go'
+  } else if (status.pass) {
+    message += `\nPackage is available on PyPI\nlink：https://pypi.org/project/${info.link}/`
+    message += `Everything is ready to go`
+  } else {
+    message += `\nPackage is not available on PyPI`
+    message += `\nPlease publish to PyPI`
+  }
+
+  return message
 }

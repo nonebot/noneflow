@@ -68,7 +68,12 @@ export async function processPush(
 ): Promise<void> {
   const pushPayload = github.context.payload as PushEvent
 
-  const publishType = checkCommitType(pushPayload.head_commit?.message!)
+  if (!pushPayload.head_commit?.message) {
+    core.setFailed('提交信息不存在')
+    return
+  }
+
+  const publishType = checkCommitType(pushPayload.head_commit?.message)
   if (publishType) {
     core.info('发现提交为发布，准备更新拉取请求的提交')
     const pullRequests = await getPullRequests(octokit, publishType)
