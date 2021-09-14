@@ -10,5 +10,3 @@ export type PullsListResponseDataType = GetResponseDataTypeFromEndpointMethod<
 export type IssuesGetResponseDataType = GetResponseDataTypeFromEndpointMethod<
   typeof octokit.issues.get
 >
-
-export const commentTitle = '## Publish Check Result'

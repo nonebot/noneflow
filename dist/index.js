@@ -94,6 +94,18 @@ function checkAdapter(octokit, info) {
 
 /***/ }),
 
+/***/ 5105:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.commentTitle = void 0;
+exports.commentTitle = '## Publish Check Result';
+
+
+/***/ }),
+
 /***/ 3109:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -395,39 +407,6 @@ exports.extractInfo = extractInfo;
 
 /***/ }),
 
-/***/ 4048:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.commentTitle = void 0;
-const github = __importStar(__nccwpck_require__(5438));
-const octokit = github.getOctokit('');
-exports.commentTitle = '## Publish Check Result';
-
-
-/***/ }),
-
 /***/ 3698:
 /***/ ((__unused_webpack_module, exports) => {
 
@@ -512,7 +491,7 @@ const fs = __importStar(__nccwpck_require__(5747));
 const adapter = __importStar(__nccwpck_require__(4139));
 const bot = __importStar(__nccwpck_require__(7930));
 const plugin = __importStar(__nccwpck_require__(3698));
-const github_1 = __nccwpck_require__(4048);
+const constants_1 = __nccwpck_require__(5105);
 /**检查标签是否含有指定类型
  *
  * 并返回指定的类型(Plugin Adapter Bot)
@@ -748,7 +727,7 @@ exports.closeIssue = closeIssue;
 function publishComment(octokit, issue_number, body) {
     return __awaiter(this, void 0, void 0, function* () {
         // 给评论添加统一的标题
-        body = `${github_1.commentTitle}\n${body}`;
+        body = `${constants_1.commentTitle}\n${body}`;
         if (!reuserComment(octokit, issue_number, body)) {
             core.info('正在创建评论');
             yield octokit.issues.createComment(Object.assign(Object.assign({}, github.context.repo), { issue_number,
@@ -766,7 +745,7 @@ function reuserComment(octokit, issue_number, body) {
         const comments = yield octokit.issues.listComments(Object.assign(Object.assign({}, github.context.repo), { issue_number }));
         if (comments) {
             // 检查相关评论是否拥有统一的标题
-            const relatedComments = comments.data.filter(comment => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.startsWith(github_1.commentTitle); });
+            const relatedComments = comments.data.filter(comment => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.startsWith(constants_1.commentTitle); });
             if (!relatedComments) {
                 return false;
             }

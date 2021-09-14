@@ -7,11 +7,11 @@ import * as bot from './types/bot'
 import * as plugin from './types/plugin'
 import {Info, PublishType} from './info'
 import {
-  commentTitle,
   IssuesGetResponseDataType,
   OctokitType,
   PullsListResponseDataType
 } from './types/github'
+import {commentTitle} from './constants'
 
 /**检查标签是否含有指定类型
  *
