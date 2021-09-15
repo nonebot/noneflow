@@ -11,7 +11,7 @@ import {
   OctokitType,
   PullsListResponseDataType
 } from './types/github'
-import {commentTitle} from './constants'
+import {commentTitle, poweredByBotMessage, reuseMessage} from './constants'
 
 /**检查标签是否含有指定类型
  *
@@ -301,6 +301,7 @@ export async function publishComment(
   body = `${commentTitle}\n${body}`
   core.info('开始发布评论')
   if (!(await reuseComment(octokit, issue_number, body))) {
+    body += `\n\n---\n${poweredByBotMessage}`
     await octokit.issues.createComment({
       ...github.context.repo,
       issue_number,
@@ -334,7 +335,7 @@ async function reuseComment(
     const comment_id = last_comment?.id
     if (comment_id) {
       core.info(`发现已有评论 ${last_comment?.id}，正在修改`)
-      body += '\n\n:recycle: This comment has been updated with latest result.'
+      body += `\n\n---\n${reuseMessage}\n\n${poweredByBotMessage}`
       octokit.issues.updateComment({
         ...github.context.repo,
         comment_id,

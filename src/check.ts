@@ -113,26 +113,56 @@ async function checkUrl(url: string): Promise<boolean> {
 }
 
 export function generateMessage(status: CheckStatus, info: Info): string {
-  let message = `${info.type}: ${info.name}`
+  let message = `> ${info.type}: ${info.name}`
 
-  if (status.repo) {
-    message += `\n\n- [x] Project [homepage](${getRepoUrl(info.repo)}) exists.`
+  if (status.pass) {
+    message += '\n\n**✅ All tests passed, you are ready to go!**'
   } else {
-    message += `\n\n- [ ] Project [homepage](${getRepoUrl(info.repo)}) exists.`
+    message +=
+      '\n\n**⚠️ We have found following problem(s) in pre-publish progress:**'
   }
 
+  const errorMessage: string[] = []
+  if (!status.repo) {
+    errorMessage.push(
+      `<li>⚠️ Project <a href="${getRepoUrl(
+        info.repo
+      )}">homepage</a> returns 404.<dt>  Please make sure that your project has a publicly visible homepage.</dt></li>`
+    )
+  }
   if (info.type === 'Adapter' || info.type === 'Plugin') {
-    if (status.published) {
-      message += `\n- [x] Package [${info.link}](https://pypi.org/project/${info.link}/) is available on PyPI.`
-    } else {
-      message += `\n- [ ] Package [${info.link}](https://pypi.org/project/${info.link}/) is available on PyPI.`
+    if (!status.published) {
+      errorMessage.push(
+        `<li>⚠️ Package <a href="https://pypi.org/project/${info.link}/">${info.link}</a> is not available on PyPI.<dt>  Please publish your package to PyPI.</dt></li>`
+      )
     }
   }
 
-  if (status.pass) {
-    message += '\n\nEverything is ready to go.'
-  } else {
-    message += '\n\nSomething goes wrong here.'
+  if (errorMessage.length !== 0) {
+    message += `\n<pre><code>${errorMessage.join('\n')}</code></pre>`
+  }
+
+  const detailMessage: string[] = []
+  if (status.repo) {
+    detailMessage.push(
+      `<li>✅ Project <a href="${getRepoUrl(
+        info.repo
+      )}">homepage</a> returns 200.</li>`
+    )
+  }
+  if (info.type === 'Adapter' || info.type === 'Plugin') {
+    if (status.published) {
+      detailMessage.push(
+        `<li>✅ Package <a href="https://pypi.org/project/${info.link}/">${info.link}</a> is available on PyPI.</li>`
+      )
+    }
+  }
+
+  if (detailMessage.length !== 0) {
+    message += `\n<details>
+    <summary>Report Detail</summary>
+    <pre><code>${detailMessage.join('\n')}</code></pre>
+    </details>`
   }
 
   return message

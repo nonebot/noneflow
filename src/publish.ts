@@ -138,10 +138,10 @@ export async function processIssues(
       // 创建拉取请求
       await createPullRequest(octokit, info, issue_number, branchName, base)
     } else {
-      const message = generateMessage(checkStatus, info)
-      await publishComment(octokit, issue_number, message)
       core.warning('发布没通过检查')
     }
+    const message = generateMessage(checkStatus, info)
+    await publishComment(octokit, issue_number, message)
   } else {
     core.info('事件不是议题开启，重新开启或修改，已跳过')
   }

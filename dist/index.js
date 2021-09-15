@@ -112,26 +112,40 @@ function checkUrl(url) {
     });
 }
 function generateMessage(status, info) {
-    let message = `${info.type}: ${info.name}`;
-    if (status.repo) {
-        message += `\n\n- [x] Project [homepage](${getRepoUrl(info.repo)}) exists.`;
+    let message = `> ${info.type}: ${info.name}`;
+    if (status.pass) {
+        message += '\n\n**✅ All tests passed, you are ready to go!**';
     }
     else {
-        message += `\n\n- [ ] Project [homepage](${getRepoUrl(info.repo)}) exists.`;
+        message +=
+            '\n\n**⚠️ We have found following problem(s) in pre-publish progress:**';
+    }
+    const errorMessage = [];
+    if (!status.repo) {
+        errorMessage.push(`<li>⚠️ Project <a href="${getRepoUrl(info.repo)}">homepage</a> returns 404.<dt>  Please make sure that your project has a publicly visible homepage.</dt></li>`);
+    }
+    if (info.type === 'Adapter' || info.type === 'Plugin') {
+        if (!status.published) {
+            errorMessage.push(`<li>⚠️ Package <a href="https://pypi.org/project/${info.link}/">${info.link}</a> is not available on PyPI.<dt>  Please publish your package to PyPI.</dt></li>`);
+        }
+    }
+    if (errorMessage.length !== 0) {
+        message += `\n<pre><code>${errorMessage.join('\n')}</code></pre>`;
+    }
+    const detailMessage = [];
+    if (status.repo) {
+        detailMessage.push(`<li>✅ Project <a href="${getRepoUrl(info.repo)}">homepage</a> returns 200.</li>`);
     }
     if (info.type === 'Adapter' || info.type === 'Plugin') {
         if (status.published) {
-            message += `\n- [x] Package [${info.link}](https://pypi.org/project/${info.link}/) is available on PyPI.`;
-        }
-        else {
-            message += `\n- [ ] Package [${info.link}](https://pypi.org/project/${info.link}/) is available on PyPI.`;
+            detailMessage.push(`<li>✅ Package <a href="https://pypi.org/project/${info.link}/">${info.link}</a> is available on PyPI.</li>`);
         }
     }
-    if (status.pass) {
-        message += '\n\nEverything is ready to go.';
-    }
-    else {
-        message += '\n\nSomething goes wrong here.';
+    if (detailMessage.length !== 0) {
+        message += `\n<details>
+    <summary>Report Detail</summary>
+    <pre><code>${detailMessage.join('\n')}</code></pre>
+    </details>`;
     }
     return message;
 }
@@ -146,8 +160,10 @@ exports.generateMessage = generateMessage;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.commentTitle = void 0;
-exports.commentTitle = '## Publish Check Result';
+exports.poweredByBotMessage = exports.reuseMessage = exports.commentTitle = void 0;
+exports.commentTitle = '# 📃 Publish Check Result';
+exports.reuseMessage = '✅ This comment has been updated with latest result.';
+exports.poweredByBotMessage = '💪 Powered by NoneBot2 Publish Bot';
 
 
 /***/ }),
@@ -369,10 +385,10 @@ function processIssues(octokit, base) {
                 yield utils_1.createPullRequest(octokit, info, issue_number, branchName, base);
             }
             else {
-                const message = check_1.generateMessage(checkStatus, info);
-                yield utils_1.publishComment(octokit, issue_number, message);
                 core.warning('发布没通过检查');
             }
+            const message = check_1.generateMessage(checkStatus, info);
+            yield utils_1.publishComment(octokit, issue_number, message);
         }
         else {
             core.info('事件不是议题开启，重新开启或修改，已跳过');
@@ -783,6 +799,7 @@ function publishComment(octokit, issue_number, body) {
         body = `${constants_1.commentTitle}\n${body}`;
         core.info('开始发布评论');
         if (!(yield reuseComment(octokit, issue_number, body))) {
+            body += `\n\n---\n${constants_1.poweredByBotMessage}`;
             yield octokit.issues.createComment(Object.assign(Object.assign({}, github.context.repo), { issue_number,
                 body }));
             core.info('评论创建完成');
@@ -807,7 +824,7 @@ function reuseComment(octokit, issue_number, body) {
             const comment_id = last_comment === null || last_comment === void 0 ? void 0 : last_comment.id;
             if (comment_id) {
                 core.info(`发现已有评论 ${last_comment === null || last_comment === void 0 ? void 0 : last_comment.id}，正在修改`);
-                body += '\n\n:recycle: This comment has been updated with latest result.';
+                body += `\n\n---\n${constants_1.reuseMessage}\n\n${constants_1.poweredByBotMessage}`;
                 octokit.issues.updateComment(Object.assign(Object.assign({}, github.context.repo), { comment_id,
                     body }));
                 return true;
