@@ -12,8 +12,11 @@ import {AdapterInfo} from './types/adapter'
 import {PullRequestEvent} from '@octokit/webhooks-definitions/schema'
 import {HttpClient} from '@actions/http-client'
 import {Info} from './types/info'
+import {BotInfo} from './types/bot'
 
 interface CheckStatus {
+  /**是否能访问项目仓库/主页 */
+  repo: boolean
   /**是否发布 */
   published: boolean
   /**是否满足要求 */
@@ -46,11 +49,7 @@ export async function check(octokit: OctokitType): Promise<void> {
     // 不同类型有不同类型的检查方法
     switch (info.type) {
       case 'Bot':
-        // status = await checkBot(octokit, info)
-        status = {
-          published: true,
-          pass: true
-        }
+        status = await checkBot(octokit, info)
         break
       case 'Adapter':
         status = await checkAdapter(octokit, info)
@@ -73,57 +72,101 @@ async function checkPlugin(
   octokit: OctokitType,
   info: PluginInfo
 ): Promise<CheckStatus> {
-  const onPyPI = await checkPyPI(info.link)
+  const published = await checkPyPI(info.link)
+  const repo = await checkRepo(info.repo)
 
   return {
-    published: onPyPI,
-    pass: onPyPI
+    repo,
+    published,
+    pass: published && repo
   }
 }
 
-// async function checkBot(
-//   octokit: OctokitType,
-//   info: BotInfo
-// ): Promise<CheckStatus> {
-//   return {
-//     published: true,
-//     pass: true
-//   }
-// }
+async function checkBot(
+  octokit: OctokitType,
+  info: BotInfo
+): Promise<CheckStatus> {
+  const repo = await checkRepo(info.repo)
+
+  return {
+    repo,
+    published: true,
+    pass: repo
+  }
+}
 
 async function checkAdapter(
   octokit: OctokitType,
   info: AdapterInfo
 ): Promise<CheckStatus> {
-  const onPyPI = await checkPyPI(info.link)
+  const published = await checkPyPI(info.link)
+  const repo = await checkRepo(info.repo)
 
   return {
-    published: onPyPI,
-    pass: onPyPI
+    repo,
+    published,
+    pass: published && repo
   }
 }
 
 async function checkPyPI(id: string): Promise<boolean> {
   const url = `https://pypi.org/pypi/${id}/json`
-  const http = new HttpClient()
-  const res = await http.get(url)
-  if (res.message.statusCode === 200) {
-    return true
+  return await checkUrl(url)
+}
+
+async function checkRepo(repo: string): Promise<boolean> {
+  const url = getRepoUrl(repo)
+  return await checkUrl(url)
+}
+
+function getRepoUrl(repo: string): string {
+  if (repo.startsWith('http://') || repo.startsWith('https://')) {
+    return repo
+  } else {
+    return `https://github.com/${repo}`
   }
-  return false
+}
+
+/**
+ * 检查 URL 是否可以访问
+ *
+ * @param url 需要检查的网址
+ * @returns
+ */
+async function checkUrl(url: string): Promise<boolean> {
+  const http = new HttpClient()
+  try {
+    const res = await http.get(url)
+    if (res.message.statusCode === 200) {
+      return true
+    }
+    return false
+  } catch {
+    return false
+  }
 }
 
 function generateMessage(status: CheckStatus, info: Info): string {
   let message = `${info.type}: ${info.name}`
 
-  if (info.type === 'Bot') {
-    message += 'Everything is ready to go'
-  } else if (status.pass) {
-    message += `\n\nPackage is available on PyPI([${info.link}](https://pypi.org/project/${info.link}/))`
-    message += `\nEverything is ready to go`
+  if (status.repo) {
+    message += `\n\n- [x] Project [homepage](${getRepoUrl(info.repo)}) exists.`
   } else {
-    message += `\n\nPackage is not available on PyPI([${info.link}](https://pypi.org/project/${info.link}/))`
-    message += `\nPlease publish to PyPI`
+    message += `\n\n- [ ] Project [homepage](${getRepoUrl(info.repo)}) exists.`
+  }
+
+  if (info.type === 'Adapter' || info.type === 'Plugin') {
+    if (status.published) {
+      message += `\n- [x] Package [${info.link}](https://pypi.org/project/${info.link}/) is available on PyPI.`
+    } else {
+      message += `\n- [ ] Package [${info.link}](https://pypi.org/project/${info.link}/) is available on PyPI.`
+    }
+  }
+
+  if (status.pass) {
+    message += '\n\nEverything is ready to go.'
+  } else {
+    message += '\n\nSomething goes wrong here.'
   }
 
   return message

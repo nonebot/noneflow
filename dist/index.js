@@ -61,11 +61,7 @@ function check(octokit) {
             // 不同类型有不同类型的检查方法
             switch (info.type) {
                 case 'Bot':
-                    // status = await checkBot(octokit, info)
-                    status = {
-                        published: true,
-                        pass: true
-                    };
+                    status = yield checkBot(octokit, info);
                     break;
                 case 'Adapter':
                     status = yield checkAdapter(octokit, info);
@@ -88,54 +84,98 @@ function check(octokit) {
 exports.check = check;
 function checkPlugin(octokit, info) {
     return __awaiter(this, void 0, void 0, function* () {
-        const onPyPI = yield checkPyPI(info.link);
+        const published = yield checkPyPI(info.link);
+        const repo = yield checkRepo(info.repo);
         return {
-            published: onPyPI,
-            pass: onPyPI
+            repo,
+            published,
+            pass: published && repo
         };
     });
 }
-// async function checkBot(
-//   octokit: OctokitType,
-//   info: BotInfo
-// ): Promise<CheckStatus> {
-//   return {
-//     published: true,
-//     pass: true
-//   }
-// }
+function checkBot(octokit, info) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const repo = yield checkRepo(info.repo);
+        return {
+            repo,
+            published: true,
+            pass: repo
+        };
+    });
+}
 function checkAdapter(octokit, info) {
     return __awaiter(this, void 0, void 0, function* () {
-        const onPyPI = yield checkPyPI(info.link);
+        const published = yield checkPyPI(info.link);
+        const repo = yield checkRepo(info.repo);
         return {
-            published: onPyPI,
-            pass: onPyPI
+            repo,
+            published,
+            pass: published && repo
         };
     });
 }
 function checkPyPI(id) {
     return __awaiter(this, void 0, void 0, function* () {
         const url = `https://pypi.org/pypi/${id}/json`;
+        return yield checkUrl(url);
+    });
+}
+function checkRepo(repo) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const url = getRepoUrl(repo);
+        return yield checkUrl(url);
+    });
+}
+function getRepoUrl(repo) {
+    if (repo.startsWith('http://') || repo.startsWith('https://')) {
+        return repo;
+    }
+    else {
+        return `https://github.com/${repo}`;
+    }
+}
+/**
+ * 检查 URL 是否可以访问
+ *
+ * @param url 需要检查的网址
+ * @returns
+ */
+function checkUrl(url) {
+    return __awaiter(this, void 0, void 0, function* () {
         const http = new http_client_1.HttpClient();
-        const res = yield http.get(url);
-        if (res.message.statusCode === 200) {
-            return true;
+        try {
+            const res = yield http.get(url);
+            if (res.message.statusCode === 200) {
+                return true;
+            }
+            return false;
         }
-        return false;
+        catch (_a) {
+            return false;
+        }
     });
 }
 function generateMessage(status, info) {
     let message = `${info.type}: ${info.name}`;
-    if (info.type === 'Bot') {
-        message += 'Everything is ready to go';
-    }
-    else if (status.pass) {
-        message += `\n\nPackage is available on PyPI([${info.link}](https://pypi.org/project/${info.link}/))`;
-        message += `\nEverything is ready to go`;
+    if (status.repo) {
+        message += `\n\n- [x] Project [homepage](${getRepoUrl(info.repo)}) exists.`;
     }
     else {
-        message += `\n\nPackage is not available on PyPI([${info.link}](https://pypi.org/project/${info.link}/))`;
-        message += `\nPlease publish to PyPI`;
+        message += `\n\n- [ ] Project [homepage](${getRepoUrl(info.repo)}) exists.`;
+    }
+    if (info.type === 'Adapter' || info.type === 'Plugin') {
+        if (status.published) {
+            message += `\n- [x] Package [${info.link}](https://pypi.org/project/${info.link}/) is available on PyPI.`;
+        }
+        else {
+            message += `\n- [ ] Package [${info.link}](https://pypi.org/project/${info.link}/) is available on PyPI.`;
+        }
+    }
+    if (status.pass) {
+        message += '\n\nEverything is ready to go.';
+    }
+    else {
+        message += '\n\nSomething goes wrong here.';
     }
     return message;
 }
