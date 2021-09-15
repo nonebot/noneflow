@@ -11,6 +11,7 @@ import {
   extractInfo,
   extractIssueNumberFromRef,
   getPullRequests,
+  publishComment,
   resolveConflictPullRequests,
   updateFile
 } from './utils'
@@ -20,6 +21,7 @@ import {
   PullRequestEvent,
   PushEvent
 } from '@octokit/webhooks-definitions/schema'
+import {check, generateMessage} from './check'
 
 /** 处理拉取请求 */
 export async function processPullRequest(
@@ -106,11 +108,6 @@ export async function processIssues(
       return
     }
 
-    // 创建新分支
-    // 命名示例 publish/issue123
-    const branchName = `publish/issue${issue_number}`
-    await exec.exec('git', ['checkout', '-b', branchName])
-
     // 插件作者信息
     const username = issuesPayload.issue.user.login
 
@@ -124,12 +121,27 @@ export async function processIssues(
       labels: [info.type]
     })
 
-    // 更新文件并提交更改
-    await updateFile(info)
-    await commitandPush(branchName, info)
+    // 检查是否满足发布要求
+    const checkStatus = await check(octokit, info)
 
-    // 创建拉取请求
-    await createPullRequest(octokit, info, issue_number, branchName, base)
+    // 仅在通过检查的情况下创建拉取请求
+    if (checkStatus.pass) {
+      // 创建新分支
+      // 命名示例 publish/issue123
+      const branchName = `publish/issue${issue_number}`
+      await exec.exec('git', ['checkout', '-b', branchName])
+
+      // 更新文件并提交更改
+      await updateFile(info)
+      await commitandPush(branchName, info)
+
+      // 创建拉取请求
+      await createPullRequest(octokit, info, issue_number, branchName, base)
+    } else {
+      const message = generateMessage(checkStatus, info)
+      await publishComment(octokit, issue_number, message)
+      core.warning('发布没通过检查')
+    }
   } else {
     core.info('事件不是议题开启，重新开启或修改，已跳过')
   }

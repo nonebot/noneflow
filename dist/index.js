@@ -7,25 +7,6 @@ require('./sourcemap-register.js');module.exports =
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -36,49 +17,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.check = void 0;
-const core = __importStar(__nccwpck_require__(2186));
-const github = __importStar(__nccwpck_require__(5438));
-const utils_1 = __nccwpck_require__(918);
+exports.generateMessage = exports.check = void 0;
 const http_client_1 = __nccwpck_require__(9925);
-function check(octokit) {
-    var _a, _b, _c;
+function check(octokit, info) {
     return __awaiter(this, void 0, void 0, function* () {
-        const pullRequestPayload = github.context.payload;
-        // 检查是否为指定类型的提交
-        // 通过标题来判断，因为创建拉取请求时并没有标签
-        const publishType = utils_1.checkTitle(pullRequestPayload.pull_request.title);
-        if (publishType) {
-            const ref = pullRequestPayload.pull_request.head.ref;
-            const issue_number = utils_1.extractIssueNumberFromRef(ref);
-            if (!issue_number) {
-                core.setFailed('无法获取议题');
-                return;
-            }
-            const issue = yield octokit.issues.get(Object.assign(Object.assign({}, github.context.repo), { issue_number }));
-            const info = utils_1.extractInfo(publishType, (_a = issue.data.body) !== null && _a !== void 0 ? _a : '', (_c = (_b = issue.data.user) === null || _b === void 0 ? void 0 : _b.login) !== null && _c !== void 0 ? _c : '');
-            let status;
-            // 不同类型有不同类型的检查方法
-            switch (info.type) {
-                case 'Bot':
-                    status = yield checkBot(octokit, info);
-                    break;
-                case 'Adapter':
-                    status = yield checkAdapter(octokit, info);
-                    break;
-                case 'Plugin':
-                    status = yield checkPlugin(octokit, info);
-                    break;
-            }
-            const message = generateMessage(status, info);
-            yield utils_1.publishComment(octokit, pullRequestPayload.number, message);
-            if (!status.pass) {
-                core.setFailed('发布没通过检查');
-            }
+        let status;
+        // 不同类型有不同类型的检查方法
+        switch (info.type) {
+            case 'Bot':
+                status = yield checkBot(octokit, info);
+                break;
+            case 'Adapter':
+                status = yield checkAdapter(octokit, info);
+                break;
+            case 'Plugin':
+                status = yield checkPlugin(octokit, info);
+                break;
         }
-        else {
-            core.info('拉取请求与发布无关，已跳过');
-        }
+        return status;
     });
 }
 exports.check = check;
@@ -179,6 +135,7 @@ function generateMessage(status, info) {
     }
     return message;
 }
+exports.generateMessage = generateMessage;
 
 
 /***/ }),
@@ -231,14 +188,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
-const check_1 = __nccwpck_require__(7657);
 const publish_1 = __nccwpck_require__(6123);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const base = core.getInput('base', { required: true });
             const token = core.getInput('token');
-            const mode = core.getInput('mode');
             if (!token) {
                 core.setFailed('无法获得 Token，跳过此次操作');
             }
@@ -247,26 +202,20 @@ function run() {
             // 打印事件信息
             core.info(`event name: ${github.context.eventName}`);
             core.info(`action type: ${github.context.payload.action}`);
-            // 发布相关
-            if (mode === 'publish') {
-                if (github.context.eventName === 'pull_request') {
-                    // 处理 pull_request 事件
-                    yield publish_1.processPullRequest(octokit, base);
-                    return;
-                }
-                // 处理 push 事件
-                if (github.context.eventName === 'push') {
-                    yield publish_1.processPush(octokit, base);
-                    return;
-                }
-                // 处理 issues 事件
-                if (github.context.eventName === 'issues') {
-                    yield publish_1.processIssues(octokit, base);
-                    return;
-                }
+            if (github.context.eventName === 'pull_request') {
+                // 处理 pull_request 事件
+                yield publish_1.processPullRequest(octokit, base);
+                return;
             }
-            else if (mode === 'check') {
-                yield check_1.check(octokit);
+            // 处理 push 事件
+            if (github.context.eventName === 'push') {
+                yield publish_1.processPush(octokit, base);
+                return;
+            }
+            // 处理 issues 事件
+            if (github.context.eventName === 'issues') {
+                yield publish_1.processIssues(octokit, base);
+                return;
             }
         }
         catch (error) {
@@ -318,6 +267,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const exec = __importStar(__nccwpck_require__(1514));
 const utils_1 = __nccwpck_require__(918);
+const check_1 = __nccwpck_require__(7657);
 /** 处理拉取请求 */
 function processPullRequest(octokit, base) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -398,21 +348,31 @@ function processIssues(octokit, base) {
                 core.info('不是商店发布议题，已跳过');
                 return;
             }
-            // 创建新分支
-            // 命名示例 publish/issue123
-            const branchName = `publish/issue${issue_number}`;
-            yield exec.exec('git', ['checkout', '-b', branchName]);
             // 插件作者信息
             const username = issuesPayload.issue.user.login;
             // 提取信息
             const info = utils_1.extractInfo(publishType, issueBody, username);
             // 自动给议题添加标签
             yield octokit.issues.addLabels(Object.assign(Object.assign({}, github.context.repo), { issue_number, labels: [info.type] }));
-            // 更新文件并提交更改
-            yield utils_1.updateFile(info);
-            yield utils_1.commitandPush(branchName, info);
-            // 创建拉取请求
-            yield utils_1.createPullRequest(octokit, info, issue_number, branchName, base);
+            // 检查是否满足发布要求
+            const checkStatus = yield check_1.check(octokit, info);
+            // 仅在通过检查的情况下创建拉取请求
+            if (checkStatus.pass) {
+                // 创建新分支
+                // 命名示例 publish/issue123
+                const branchName = `publish/issue${issue_number}`;
+                yield exec.exec('git', ['checkout', '-b', branchName]);
+                // 更新文件并提交更改
+                yield utils_1.updateFile(info);
+                yield utils_1.commitandPush(branchName, info);
+                // 创建拉取请求
+                yield utils_1.createPullRequest(octokit, info, issue_number, branchName, base);
+            }
+            else {
+                const message = check_1.generateMessage(checkStatus, info);
+                yield utils_1.publishComment(octokit, issue_number, message);
+                core.warning('发布没通过检查');
+            }
         }
         else {
             core.info('事件不是议题开启，重新开启或修改，已跳过');
