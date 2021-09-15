@@ -25,46 +25,52 @@ function check(octokit, info) {
         // 不同类型有不同类型的检查方法
         switch (info.type) {
             case 'Bot':
-                status = yield checkBot(octokit, info);
+                status = yield checkBot(info);
                 break;
             case 'Adapter':
-                status = yield checkAdapter(octokit, info);
+                status = yield checkAdapter(info);
                 break;
             case 'Plugin':
-                status = yield checkPlugin(octokit, info);
+                status = yield checkPlugin(info);
                 break;
         }
         return status;
     });
 }
 exports.check = check;
-function checkPlugin(octokit, info) {
+function checkPlugin(info) {
     return __awaiter(this, void 0, void 0, function* () {
         const published = yield checkPyPI(info.link);
-        const repo = yield checkRepo(info.repo);
+        const repoStatusCode = yield checkRepo(info.repo);
+        const repo = repoStatusCode === 200;
         return {
             repo,
+            repoStatusCode,
             published,
             pass: published && repo
         };
     });
 }
-function checkBot(octokit, info) {
+function checkBot(info) {
     return __awaiter(this, void 0, void 0, function* () {
-        const repo = yield checkRepo(info.repo);
+        const repoStatusCode = yield checkRepo(info.repo);
+        const repo = repoStatusCode === 200;
         return {
             repo,
+            repoStatusCode,
             published: true,
             pass: repo
         };
     });
 }
-function checkAdapter(octokit, info) {
+function checkAdapter(info) {
     return __awaiter(this, void 0, void 0, function* () {
         const published = yield checkPyPI(info.link);
-        const repo = yield checkRepo(info.repo);
+        const repoStatusCode = yield checkRepo(info.repo);
+        const repo = repoStatusCode === 200;
         return {
             repo,
+            repoStatusCode,
             published,
             pass: published && repo
         };
@@ -73,7 +79,10 @@ function checkAdapter(octokit, info) {
 function checkPyPI(id) {
     return __awaiter(this, void 0, void 0, function* () {
         const url = `https://pypi.org/pypi/${id}/json`;
-        return yield checkUrl(url);
+        if ((yield checkUrl(url)) === 200) {
+            return true;
+        }
+        return false;
     });
 }
 function checkRepo(repo) {
@@ -94,20 +103,17 @@ function getRepoUrl(repo) {
  * 检查 URL 是否可以访问
  *
  * @param url 需要检查的网址
- * @returns
+ * @returns HTTP 状态码
  */
 function checkUrl(url) {
     return __awaiter(this, void 0, void 0, function* () {
         const http = new http_client_1.HttpClient();
         try {
             const res = yield http.get(url);
-            if (res.message.statusCode === 200) {
-                return true;
-            }
-            return false;
+            return res.message.statusCode;
         }
         catch (_a) {
-            return false;
+            return undefined;
         }
     });
 }
@@ -122,7 +128,7 @@ function generateMessage(status, info) {
     }
     const errorMessage = [];
     if (!status.repo) {
-        errorMessage.push(`<li>⚠️ Project <a href="${getRepoUrl(info.repo)}">homepage</a> returns 404.<dt>  Please make sure that your project has a publicly visible homepage.</dt></li>`);
+        errorMessage.push(`<li>⚠️ Project <a href="${getRepoUrl(info.repo)}">homepage</a> returns ${status.repoStatusCode}.<dt>  Please make sure that your project has a publicly visible homepage.</dt></li>`);
     }
     if (info.type === 'Adapter' || info.type === 'Plugin') {
         if (!status.published) {
@@ -134,7 +140,7 @@ function generateMessage(status, info) {
     }
     const detailMessage = [];
     if (status.repo) {
-        detailMessage.push(`<li>✅ Project <a href="${getRepoUrl(info.repo)}">homepage</a> returns 200.</li>`);
+        detailMessage.push(`<li>✅ Project <a href="${getRepoUrl(info.repo)}">homepage</a> returns ${status.repoStatusCode}.</li>`);
     }
     if (info.type === 'Adapter' || info.type === 'Plugin') {
         if (status.published) {

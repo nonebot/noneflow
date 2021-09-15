@@ -8,6 +8,7 @@ import {BotInfo} from './types/bot'
 interface CheckStatus {
   /**是否能访问项目仓库/主页 */
   repo: boolean
+  repoStatusCode: number | undefined
   /**是否发布 */
   published: boolean
   /**是否满足要求 */
@@ -22,54 +23,51 @@ export async function check(
   // 不同类型有不同类型的检查方法
   switch (info.type) {
     case 'Bot':
-      status = await checkBot(octokit, info)
+      status = await checkBot(info)
       break
     case 'Adapter':
-      status = await checkAdapter(octokit, info)
+      status = await checkAdapter(info)
       break
     case 'Plugin':
-      status = await checkPlugin(octokit, info)
+      status = await checkPlugin(info)
       break
   }
   return status
 }
 
-async function checkPlugin(
-  octokit: OctokitType,
-  info: PluginInfo
-): Promise<CheckStatus> {
+async function checkPlugin(info: PluginInfo): Promise<CheckStatus> {
   const published = await checkPyPI(info.link)
-  const repo = await checkRepo(info.repo)
+  const repoStatusCode = await checkRepo(info.repo)
+  const repo = repoStatusCode === 200
 
   return {
     repo,
+    repoStatusCode,
     published,
     pass: published && repo
   }
 }
 
-async function checkBot(
-  octokit: OctokitType,
-  info: BotInfo
-): Promise<CheckStatus> {
-  const repo = await checkRepo(info.repo)
+async function checkBot(info: BotInfo): Promise<CheckStatus> {
+  const repoStatusCode = await checkRepo(info.repo)
+  const repo = repoStatusCode === 200
 
   return {
     repo,
+    repoStatusCode,
     published: true,
     pass: repo
   }
 }
 
-async function checkAdapter(
-  octokit: OctokitType,
-  info: AdapterInfo
-): Promise<CheckStatus> {
+async function checkAdapter(info: AdapterInfo): Promise<CheckStatus> {
   const published = await checkPyPI(info.link)
-  const repo = await checkRepo(info.repo)
+  const repoStatusCode = await checkRepo(info.repo)
+  const repo = repoStatusCode === 200
 
   return {
     repo,
+    repoStatusCode,
     published,
     pass: published && repo
   }
@@ -77,10 +75,13 @@ async function checkAdapter(
 
 async function checkPyPI(id: string): Promise<boolean> {
   const url = `https://pypi.org/pypi/${id}/json`
-  return await checkUrl(url)
+  if ((await checkUrl(url)) === 200) {
+    return true
+  }
+  return false
 }
 
-async function checkRepo(repo: string): Promise<boolean> {
+async function checkRepo(repo: string): Promise<number | undefined> {
   const url = getRepoUrl(repo)
   return await checkUrl(url)
 }
@@ -97,18 +98,15 @@ function getRepoUrl(repo: string): string {
  * 检查 URL 是否可以访问
  *
  * @param url 需要检查的网址
- * @returns
+ * @returns HTTP 状态码
  */
-async function checkUrl(url: string): Promise<boolean> {
+async function checkUrl(url: string): Promise<number | undefined> {
   const http = new HttpClient()
   try {
     const res = await http.get(url)
-    if (res.message.statusCode === 200) {
-      return true
-    }
-    return false
+    return res.message.statusCode
   } catch {
-    return false
+    return undefined
   }
 }
 
@@ -125,9 +123,9 @@ export function generateMessage(status: CheckStatus, info: Info): string {
   const errorMessage: string[] = []
   if (!status.repo) {
     errorMessage.push(
-      `<li>⚠️ Project <a href="${getRepoUrl(
-        info.repo
-      )}">homepage</a> returns 404.<dt>  Please make sure that your project has a publicly visible homepage.</dt></li>`
+      `<li>⚠️ Project <a href="${getRepoUrl(info.repo)}">homepage</a> returns ${
+        status.repoStatusCode
+      }.<dt>  Please make sure that your project has a publicly visible homepage.</dt></li>`
     )
   }
   if (info.type === 'Adapter' || info.type === 'Plugin') {
@@ -145,9 +143,9 @@ export function generateMessage(status: CheckStatus, info: Info): string {
   const detailMessage: string[] = []
   if (status.repo) {
     detailMessage.push(
-      `<li>✅ Project <a href="${getRepoUrl(
-        info.repo
-      )}">homepage</a> returns 200.</li>`
+      `<li>✅ Project <a href="${getRepoUrl(info.repo)}">homepage</a> returns ${
+        status.repoStatusCode
+      }.</li>`
     )
   }
   if (info.type === 'Adapter' || info.type === 'Plugin') {
