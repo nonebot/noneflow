@@ -5,12 +5,13 @@ import * as fs from 'fs'
 import * as adapter from './types/adapter'
 import * as bot from './types/bot'
 import * as plugin from './types/plugin'
-import {Info, PublishType} from './info'
+import {Info, PublishType} from './types/info'
 import {
   IssuesGetResponseDataType,
   OctokitType,
   PullsListResponseDataType
 } from './types/github'
+import {commentTitle, poweredByBotMessage, reuseMessage} from './constants'
 
 /**检查标签是否含有指定类型
  *
@@ -288,4 +289,60 @@ export async function closeIssue(
     issue_number,
     state: 'closed'
   })
+}
+
+/**发布评论  */
+export async function publishComment(
+  octokit: OctokitType,
+  issue_number: number,
+  body: string
+): Promise<void> {
+  // 给评论添加统一的标题
+  body = `${commentTitle}\n${body}`
+  core.info('开始发布评论')
+  if (!(await reuseComment(octokit, issue_number, body))) {
+    body += `\n\n---\n${poweredByBotMessage}`
+    await octokit.issues.createComment({
+      ...github.context.repo,
+      issue_number,
+      body
+    })
+    core.info('评论创建完成')
+  }
+}
+/**重复利用评论
+ *
+ * 如果发现之前评论过，直接修改之前的评论
+ */
+async function reuseComment(
+  octokit: OctokitType,
+  issue_number: number,
+  body: string
+): Promise<boolean> {
+  const comments = await octokit.issues.listComments({
+    ...github.context.repo,
+    issue_number
+  })
+  if (comments) {
+    // 检查相关评论是否拥有统一的标题
+    const relatedComments = comments.data.filter(comment =>
+      comment.body?.startsWith(commentTitle)
+    )
+    if (!relatedComments) {
+      return false
+    }
+    const last_comment = relatedComments.pop()
+    const comment_id = last_comment?.id
+    if (comment_id) {
+      core.info(`发现已有评论 ${last_comment?.id}，正在修改`)
+      body += `\n\n---\n${reuseMessage}\n\n${poweredByBotMessage}`
+      octokit.issues.updateComment({
+        ...github.context.repo,
+        comment_id,
+        body
+      })
+      return true
+    }
+  }
+  return false
 }

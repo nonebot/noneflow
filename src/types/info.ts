@@ -1,6 +1,6 @@
-import {AdapterInfo} from './types/adapter'
-import {BotInfo} from './types/bot'
-import {PluginInfo} from './types/plugin'
+import {AdapterInfo} from './adapter'
+import {BotInfo} from './bot'
+import {PluginInfo} from './plugin'
 
 /** 更新文件所需信息 */
 export type Info = BotInfo | PluginInfo | AdapterInfo

@@ -2,6 +2,178 @@ require('./sourcemap-register.js');module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 7657:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.generateMessage = exports.check = void 0;
+const http_client_1 = __nccwpck_require__(9925);
+function check(octokit, info) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let status;
+        // 不同类型有不同类型的检查方法
+        switch (info.type) {
+            case 'Bot':
+                status = yield checkBot(info);
+                break;
+            case 'Adapter':
+                status = yield checkAdapter(info);
+                break;
+            case 'Plugin':
+                status = yield checkPlugin(info);
+                break;
+        }
+        return status;
+    });
+}
+exports.check = check;
+function checkPlugin(info) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const published = yield checkPyPI(info.link);
+        const repoStatusCode = yield checkRepo(info.repo);
+        const repo = repoStatusCode === 200;
+        return {
+            repo,
+            repoStatusCode,
+            published,
+            pass: published && repo
+        };
+    });
+}
+function checkBot(info) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const repoStatusCode = yield checkRepo(info.repo);
+        const repo = repoStatusCode === 200;
+        return {
+            repo,
+            repoStatusCode,
+            published: true,
+            pass: repo
+        };
+    });
+}
+function checkAdapter(info) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const published = yield checkPyPI(info.link);
+        const repoStatusCode = yield checkRepo(info.repo);
+        const repo = repoStatusCode === 200;
+        return {
+            repo,
+            repoStatusCode,
+            published,
+            pass: published && repo
+        };
+    });
+}
+function checkPyPI(id) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const url = `https://pypi.org/pypi/${id}/json`;
+        if ((yield checkUrl(url)) === 200) {
+            return true;
+        }
+        return false;
+    });
+}
+function checkRepo(repo) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const url = getRepoUrl(repo);
+        return yield checkUrl(url);
+    });
+}
+function getRepoUrl(repo) {
+    if (repo.startsWith('http://') || repo.startsWith('https://')) {
+        return repo;
+    }
+    else {
+        return `https://github.com/${repo}`;
+    }
+}
+/**
+ * 检查 URL 是否可以访问
+ *
+ * @param url 需要检查的网址
+ * @returns HTTP 状态码
+ */
+function checkUrl(url) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const http = new http_client_1.HttpClient();
+        try {
+            const res = yield http.get(url);
+            return res.message.statusCode;
+        }
+        catch (_a) {
+            return undefined;
+        }
+    });
+}
+function generateMessage(status, info) {
+    let message = `> ${info.type}: ${info.name}`;
+    if (status.pass) {
+        message += '\n\n**✅ All tests passed, you are ready to go!**';
+    }
+    else {
+        message +=
+            '\n\n**⚠️ We have found following problem(s) in pre-publish progress:**';
+    }
+    const errorMessage = [];
+    if (!status.repo) {
+        errorMessage.push(`<li>⚠️ Project <a href="${getRepoUrl(info.repo)}">homepage</a> returns ${status.repoStatusCode}.<dt>  Please make sure that your project has a publicly visible homepage.</dt></li>`);
+    }
+    if (info.type === 'Adapter' || info.type === 'Plugin') {
+        if (!status.published) {
+            errorMessage.push(`<li>⚠️ Package <a href="https://pypi.org/project/${info.link}/">${info.link}</a> is not available on PyPI.<dt>  Please publish your package to PyPI.</dt></li>`);
+        }
+    }
+    if (errorMessage.length !== 0) {
+        message += `\n<pre><code>${errorMessage.join('\n')}</code></pre>`;
+    }
+    const detailMessage = [];
+    if (status.repo) {
+        detailMessage.push(`<li>✅ Project <a href="${getRepoUrl(info.repo)}">homepage</a> returns ${status.repoStatusCode}.</li>`);
+    }
+    if (info.type === 'Adapter' || info.type === 'Plugin') {
+        if (status.published) {
+            detailMessage.push(`<li>✅ Package <a href="https://pypi.org/project/${info.link}/">${info.link}</a> is available on PyPI.</li>`);
+        }
+    }
+    if (detailMessage.length !== 0) {
+        message += `\n<details>
+    <summary>Report Detail</summary>
+    <pre><code>${detailMessage.join('\n')}</code></pre>
+    </details>`;
+    }
+    return message;
+}
+exports.generateMessage = generateMessage;
+
+
+/***/ }),
+
+/***/ 5105:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.poweredByBotMessage = exports.reuseMessage = exports.commentTitle = void 0;
+exports.commentTitle = '# 📃 Publish Check Result';
+exports.reuseMessage = ':recycle: This comment has been updated with latest result.';
+exports.poweredByBotMessage = '💪 Powered by NoneBot2 Publish Bot';
+
+
+/***/ }),
+
 /***/ 3109:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -38,102 +210,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
-const exec = __importStar(__nccwpck_require__(1514));
-const utils_1 = __nccwpck_require__(918);
-/** 处理拉取请求 */
-function processPullRequest(octokit, base) {
-    var _a, _b, _c;
-    return __awaiter(this, void 0, void 0, function* () {
-        // 因为合并拉取请求只会触发 closed 事件
-        // 其他事件均对商店发布流程无影响
-        if (github.context.payload.action !== 'closed') {
-            core.info('事件不是关闭拉取请求，已跳过');
-            return;
-        }
-        // 只处理支持标签的拉取请求
-        const issueType = utils_1.checkLabel((_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.labels);
-        if (issueType) {
-            const ref = (_b = github.context.payload.pull_request) === null || _b === void 0 ? void 0 : _b.head.ref;
-            const relatedIssueNumber = utils_1.extractIssueNumberFromRef(ref);
-            if (relatedIssueNumber) {
-                yield utils_1.closeIssue(octokit, relatedIssueNumber);
-                core.info(`议题 #${relatedIssueNumber} 已关闭`);
-                try {
-                    yield exec.exec('git', ['push', 'origin', '--delete', ref]);
-                    core.info('已删除对应分支');
-                }
-                catch (error) {
-                    core.info('对应分支不存在或已删除');
-                }
-            }
-            if ((_c = github.context.payload.pull_request) === null || _c === void 0 ? void 0 : _c.merged) {
-                core.info('发布的拉取请求已合并，准备更新拉取请求的提交');
-                const pullRequests = yield utils_1.getPullRequests(octokit, issueType);
-                utils_1.resolveConflictPullRequests(octokit, pullRequests, base);
-            }
-            else {
-                core.info('发布的拉取请求未合并，已跳过');
-            }
-        }
-        else {
-            core.info('拉取请求与插件无关，已跳过');
-        }
-    });
-}
-/** 处理提交 */
-function processPush(octokit, base) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const publishType = utils_1.checkCommitType(github.context.payload.head_commit.message);
-        if (publishType) {
-            core.info('发现提交为发布，准备更新拉取请求的提交');
-            const pullRequests = yield utils_1.getPullRequests(octokit, publishType);
-            utils_1.resolveConflictPullRequests(octokit, pullRequests, base);
-        }
-        else {
-            core.info('该提交不是发布，已跳过');
-        }
-    });
-}
-/** 处理议题 */
-function processIssues(octokit, base) {
-    var _a, _b, _c, _d;
-    return __awaiter(this, void 0, void 0, function* () {
-        if (github.context.payload.action &&
-            ['opened', 'reopened', 'edited'].includes(github.context.payload.action)) {
-            // 从 GitHub Context 中获取议题的相关信息
-            const issue_number = (_a = github.context.payload.issue) === null || _a === void 0 ? void 0 : _a.number;
-            const issueBody = (_b = github.context.payload.issue) === null || _b === void 0 ? void 0 : _b.body;
-            if (!issue_number || !issueBody) {
-                core.setFailed('无法获取议题的信息');
-                return;
-            }
-            // 检查是否为指定类型的提交
-            const publishType = utils_1.checkTitle((_c = github.context.payload.issue) === null || _c === void 0 ? void 0 : _c.title);
-            if (!publishType) {
-                core.info('不是商店发布议题，已跳过');
-                return;
-            }
-            // 创建新分支
-            // 命名示例 publish/issue123
-            const branchName = `publish/issue${issue_number}`;
-            yield exec.exec('git', ['checkout', '-b', branchName]);
-            // 插件作者信息
-            const username = (_d = github.context.payload.issue) === null || _d === void 0 ? void 0 : _d.user.login;
-            // 提取信息
-            const info = utils_1.extractInfo(publishType, issueBody, username);
-            // 自动给议题添加标签
-            yield octokit.issues.addLabels(Object.assign(Object.assign({}, github.context.repo), { issue_number, labels: [info.type] }));
-            // 更新文件并提交更改
-            yield utils_1.updateFile(info);
-            yield utils_1.commitandPush(branchName, info);
-            // 创建拉取请求
-            yield utils_1.createPullRequest(octokit, info, issue_number, branchName, base);
-        }
-        else {
-            core.info('事件不是议题开启，重新开启或修改，已跳过');
-        }
-    });
-}
+const publish_1 = __nccwpck_require__(6123);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -147,19 +224,19 @@ function run() {
             // 打印事件信息
             core.info(`event name: ${github.context.eventName}`);
             core.info(`action type: ${github.context.payload.action}`);
-            // 处理 pull_request 事件
             if (github.context.eventName === 'pull_request') {
-                yield processPullRequest(octokit, base);
+                // 处理 pull_request 事件
+                yield publish_1.processPullRequest(octokit, base);
                 return;
             }
             // 处理 push 事件
             if (github.context.eventName === 'push') {
-                yield processPush(octokit, base);
+                yield publish_1.processPush(octokit, base);
                 return;
             }
             // 处理 issues 事件
             if (github.context.eventName === 'issues') {
-                yield processIssues(octokit, base);
+                yield publish_1.processIssues(octokit, base);
                 return;
             }
         }
@@ -169,6 +246,162 @@ function run() {
     });
 }
 run();
+
+
+/***/ }),
+
+/***/ 6123:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.processIssues = exports.processPush = exports.processPullRequest = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const github = __importStar(__nccwpck_require__(5438));
+const exec = __importStar(__nccwpck_require__(1514));
+const utils_1 = __nccwpck_require__(918);
+const check_1 = __nccwpck_require__(7657);
+/** 处理拉取请求 */
+function processPullRequest(octokit, base) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const pullRequestPayload = github.context.payload;
+        // 因为合并拉取请求只会触发 closed 事件
+        // 其他事件均对商店发布流程无影响
+        if (pullRequestPayload.action !== 'closed') {
+            core.info('事件不是关闭拉取请求，已跳过');
+            return;
+        }
+        // 只处理支持标签的拉取请求
+        const issueType = utils_1.checkLabel(pullRequestPayload.pull_request.labels);
+        if (issueType) {
+            const ref = pullRequestPayload.pull_request.head.ref;
+            const relatedIssueNumber = utils_1.extractIssueNumberFromRef(ref);
+            if (relatedIssueNumber) {
+                yield utils_1.closeIssue(octokit, relatedIssueNumber);
+                core.info(`议题 #${relatedIssueNumber} 已关闭`);
+                try {
+                    yield exec.exec('git', ['push', 'origin', '--delete', ref]);
+                    core.info('已删除对应分支');
+                }
+                catch (error) {
+                    core.info('对应分支不存在或已删除');
+                }
+            }
+            if (pullRequestPayload.pull_request.merged) {
+                core.info('发布的拉取请求已合并，准备更新拉取请求的提交');
+                const pullRequests = yield utils_1.getPullRequests(octokit, issueType);
+                utils_1.resolveConflictPullRequests(octokit, pullRequests, base);
+            }
+            else {
+                core.info('发布的拉取请求未合并，已跳过');
+            }
+        }
+        else {
+            core.info('拉取请求与发布无关，已跳过');
+        }
+    });
+}
+exports.processPullRequest = processPullRequest;
+/** 处理提交 */
+function processPush(octokit, base) {
+    var _a, _b;
+    return __awaiter(this, void 0, void 0, function* () {
+        const pushPayload = github.context.payload;
+        if (!((_a = pushPayload.head_commit) === null || _a === void 0 ? void 0 : _a.message)) {
+            core.setFailed('提交信息不存在');
+            return;
+        }
+        const publishType = utils_1.checkCommitType((_b = pushPayload.head_commit) === null || _b === void 0 ? void 0 : _b.message);
+        if (publishType) {
+            core.info('发现提交为发布，准备更新拉取请求的提交');
+            const pullRequests = yield utils_1.getPullRequests(octokit, publishType);
+            utils_1.resolveConflictPullRequests(octokit, pullRequests, base);
+        }
+        else {
+            core.info('该提交不是发布，已跳过');
+        }
+    });
+}
+exports.processPush = processPush;
+/** 处理议题 */
+function processIssues(octokit, base) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const issuesPayload = github.context.payload;
+        if (['opened', 'reopened', 'edited'].includes(issuesPayload.action)) {
+            // 从 GitHub Context 中获取议题的相关信息
+            const issue_number = issuesPayload.issue.number;
+            const issueBody = issuesPayload.issue.body;
+            if (!issue_number || !issueBody) {
+                core.setFailed('无法获取议题的信息');
+                return;
+            }
+            // 检查是否为指定类型的提交
+            const publishType = utils_1.checkTitle(issuesPayload.issue.title);
+            if (!publishType) {
+                core.info('不是商店发布议题，已跳过');
+                return;
+            }
+            // 插件作者信息
+            const username = issuesPayload.issue.user.login;
+            // 提取信息
+            const info = utils_1.extractInfo(publishType, issueBody, username);
+            // 自动给议题添加标签
+            yield octokit.issues.addLabels(Object.assign(Object.assign({}, github.context.repo), { issue_number, labels: [info.type] }));
+            // 检查是否满足发布要求
+            const checkStatus = yield check_1.check(octokit, info);
+            // 仅在通过检查的情况下创建拉取请求
+            if (checkStatus.pass) {
+                // 创建新分支
+                // 命名示例 publish/issue123
+                const branchName = `publish/issue${issue_number}`;
+                yield exec.exec('git', ['checkout', '-b', branchName]);
+                // 更新文件并提交更改
+                yield utils_1.updateFile(info);
+                yield utils_1.commitandPush(branchName, info);
+                // 创建拉取请求
+                yield utils_1.createPullRequest(octokit, info, issue_number, branchName, base);
+            }
+            else {
+                core.warning('发布没通过检查');
+            }
+            const message = check_1.generateMessage(checkStatus, info);
+            yield utils_1.publishComment(octokit, issue_number, message);
+        }
+        else {
+            core.info('事件不是议题开启，重新开启或修改，已跳过');
+        }
+    });
+}
+exports.processIssues = processIssues;
 
 
 /***/ }),
@@ -325,7 +558,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.closeIssue = exports.extractInfo = exports.resolveConflictPullRequests = exports.extractIssueNumberFromRef = exports.getPullRequests = exports.createPullRequest = exports.commitandPush = exports.updateFile = exports.checkCommitType = exports.checkTitle = exports.checkLabel = void 0;
+exports.publishComment = exports.closeIssue = exports.extractInfo = exports.resolveConflictPullRequests = exports.extractIssueNumberFromRef = exports.getPullRequests = exports.createPullRequest = exports.commitandPush = exports.updateFile = exports.checkCommitType = exports.checkTitle = exports.checkLabel = void 0;
 const github = __importStar(__nccwpck_require__(5438));
 const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
@@ -333,6 +566,7 @@ const fs = __importStar(__nccwpck_require__(5747));
 const adapter = __importStar(__nccwpck_require__(4139));
 const bot = __importStar(__nccwpck_require__(7930));
 const plugin = __importStar(__nccwpck_require__(3698));
+const constants_1 = __nccwpck_require__(5105);
 /**检查标签是否含有指定类型
  *
  * 并返回指定的类型(Plugin Adapter Bot)
@@ -564,6 +798,47 @@ function closeIssue(octokit, issue_number) {
     });
 }
 exports.closeIssue = closeIssue;
+/**发布评论  */
+function publishComment(octokit, issue_number, body) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // 给评论添加统一的标题
+        body = `${constants_1.commentTitle}\n${body}`;
+        core.info('开始发布评论');
+        if (!(yield reuseComment(octokit, issue_number, body))) {
+            body += `\n\n---\n${constants_1.poweredByBotMessage}`;
+            yield octokit.issues.createComment(Object.assign(Object.assign({}, github.context.repo), { issue_number,
+                body }));
+            core.info('评论创建完成');
+        }
+    });
+}
+exports.publishComment = publishComment;
+/**重复利用评论
+ *
+ * 如果发现之前评论过，直接修改之前的评论
+ */
+function reuseComment(octokit, issue_number, body) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const comments = yield octokit.issues.listComments(Object.assign(Object.assign({}, github.context.repo), { issue_number }));
+        if (comments) {
+            // 检查相关评论是否拥有统一的标题
+            const relatedComments = comments.data.filter(comment => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.startsWith(constants_1.commentTitle); });
+            if (!relatedComments) {
+                return false;
+            }
+            const last_comment = relatedComments.pop();
+            const comment_id = last_comment === null || last_comment === void 0 ? void 0 : last_comment.id;
+            if (comment_id) {
+                core.info(`发现已有评论 ${last_comment === null || last_comment === void 0 ? void 0 : last_comment.id}，正在修改`);
+                body += `\n\n---\n${constants_1.reuseMessage}\n\n${constants_1.poweredByBotMessage}`;
+                octokit.issues.updateComment(Object.assign(Object.assign({}, github.context.repo), { comment_id,
+                    body }));
+                return true;
+            }
+        }
+        return false;
+    });
+}
 
 
 /***/ }),

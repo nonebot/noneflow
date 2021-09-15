@@ -1,6 +1,6 @@
 {
   "name": "nonebot2-plugin-issue-bot",
-  "version": "0.2.0",
+  "version": "0.4.0",
   "private": true,
   "description": "Manage plugin related issues in nonebot2 project",
   "main": "lib/main.js",
@@ -27,7 +27,9 @@
   "dependencies": {
     "@actions/core": "^1.2.6",
     "@actions/exec": "^1.0.4",
-    "@actions/github": "^4.0.0"
+    "@actions/github": "^4.0.0",
+    "@actions/http-client": "^1.0.11",
+    "@octokit/webhooks-definitions": "^3.67.3"
   },
   "devDependencies": {
     "@types/jest": "^26.0.24",
