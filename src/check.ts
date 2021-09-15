@@ -11,7 +11,7 @@ import {PluginInfo} from './types/plugin'
 import {AdapterInfo} from './types/adapter'
 import {PullRequestEvent} from '@octokit/webhooks-definitions/schema'
 import {HttpClient} from '@actions/http-client'
-import {Info} from './info'
+import {Info} from './types/info'
 
 interface CheckStatus {
   /**是否发布 */

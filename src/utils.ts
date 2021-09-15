@@ -5,7 +5,7 @@ import * as fs from 'fs'
 import * as adapter from './types/adapter'
 import * as bot from './types/bot'
 import * as plugin from './types/plugin'
-import {Info, PublishType} from './info'
+import {Info, PublishType} from './types/info'
 import {
   IssuesGetResponseDataType,
   OctokitType,
