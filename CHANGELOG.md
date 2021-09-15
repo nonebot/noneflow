@@ -7,9 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [0.4.0] - 2021-09-15
+
 ### Added
 
 - 支持检查包是否发布到 PyPI
+- 支持检查项目仓库/主页是否可以访问
 
 ## [0.3.0] - 2021-07-26
 
@@ -36,8 +39,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[Unreleased]: https://github.com/he0119/smart-home/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/he0119/smart-home/compare/v0.4.0...HEAD
 
+[0.4.0]: https://github.com/he0119/smart-home/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/he0119/smart-home/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/he0119/smart-home/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/he0119/smart-home/releases/tag/v0.1.0
