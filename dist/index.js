@@ -168,7 +168,7 @@ exports.generateMessage = generateMessage;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.poweredByBotMessage = exports.reuseMessage = exports.commentTitle = void 0;
 exports.commentTitle = '# 📃 Publish Check Result';
-exports.reuseMessage = '✅ This comment has been updated with latest result.';
+exports.reuseMessage = ':recycle: This comment has been updated with latest result.';
 exports.poweredByBotMessage = '💪 Powered by NoneBot2 Publish Bot';
 
 
