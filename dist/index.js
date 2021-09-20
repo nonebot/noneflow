@@ -217,7 +217,8 @@ function run() {
             const base = core.getInput('base', { required: true });
             const token = core.getInput('token');
             if (!token) {
-                core.setFailed('无法获得 Token，跳过此次操作');
+                core.warning('无法获得 Token，跳过此次操作');
+                return;
             }
             // 初始化 GitHub 客户端
             const octokit = github.getOctokit(token);
