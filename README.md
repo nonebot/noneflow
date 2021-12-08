@@ -45,16 +45,14 @@ jobs:
       - name: NoneBot2 Publish Bot
         uses: nonebot/nonebot2-publish-bot@main
         with:
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           config: >
-          {
-            "base": "master",
-            "path": {
-              "plugin": "docs/.vuepress/public/plugins.json",
-              "bot": "docs/.vuepress/public/bots.json",
-              "adapter": "docs/.vuepress/public/adapters.json",
+            {
+              "base": "master",
+              "plugin_path": "docs/.vuepress/public/plugins.json",
+              "bot_path": "docs/.vuepress/public/bots.json",
+              "adapter_path": "docs/.vuepress/public/adapters.json"
             }
-          }
 ```
 
 ## 测试

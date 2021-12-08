@@ -13,7 +13,6 @@ python = "^3.9"
 pydantic = "^1.8.2"
 PyGithub = "^1.55"
 
-
 [tool.poetry.dev-dependencies]
 isort = "^5.9.3"
 black = "^21.9b0"
