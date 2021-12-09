@@ -8,7 +8,12 @@ from github.Label import Label
 from github.PullRequest import PullRequest
 from github.Repository import Repository
 
-from .constants import COMMENT_TITLE, POWERED_BY_BOT_MESSAGE, REUSE_MESSAGE
+from .constants import (
+    COMMENT_TITLE,
+    COMMIT_MESSAGE,
+    POWERED_BY_BOT_MESSAGE,
+    REUSE_MESSAGE,
+)
 from .models import (
     AdapterPublishInfo,
     BotPublishInfo,
@@ -30,31 +35,31 @@ def run_shell_command(command: str):
 def get_type_by_labels(labels: list[Label]) -> Optional[PublishType]:
     """通过标签获取类型"""
     for label in labels:
-        if label.name == "bot":
+        if label.name == PublishType.BOT.value:
             return PublishType.BOT
-        if label.name == "plugin":
+        if label.name == PublishType.PLUGIN.value:
             return PublishType.PLUGIN
-        if label.name == "adapter":
+        if label.name == PublishType.ADAPTER.value:
             return PublishType.ADAPTER
 
 
 def get_type_by_title(title: str) -> Optional[PublishType]:
     """通过标题获取类型"""
-    if title.startswith("Bot:"):
+    if title.startswith(f"{PublishType.BOT.value}:"):
         return PublishType.BOT
-    if title.startswith("Plugin:"):
+    if title.startswith(f"{PublishType.PLUGIN.value}:"):
         return PublishType.PLUGIN
-    if title.startswith("Adapter:"):
+    if title.startswith(f"{PublishType.ADAPTER.value}:"):
         return PublishType.ADAPTER
 
 
 def get_type_by_commit_message(message: str) -> Optional[PublishType]:
     """通过提交信息获取类型"""
-    if message.startswith(":beers: publish bot"):
+    if message.startswith(f"{COMMIT_MESSAGE} {PublishType.BOT.value.lower()}"):
         return PublishType.BOT
-    if message.startswith(":beers: publish plugin"):
+    if message.startswith(f"{COMMIT_MESSAGE} {PublishType.PLUGIN.value.lower()}"):
         return PublishType.PLUGIN
-    if message.startswith(":beers: publish adapter"):
+    if message.startswith(f"{COMMIT_MESSAGE} {PublishType.ADAPTER.value.lower()}"):
         return PublishType.ADAPTER
 
 
