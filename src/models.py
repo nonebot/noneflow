@@ -171,7 +171,7 @@ class BotPublishInfo(PublishInfo):
         return self.is_homepage_valid
 
 
-class PyPIMixin:
+class PyPIMixin(BaseModel):
     module_name: str
     project_link: str
 
