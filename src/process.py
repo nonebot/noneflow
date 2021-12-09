@@ -26,13 +26,14 @@ from .utils import (
 def process_pull_request_event(settings: Settings, repo: Repository):
     """处理 Pull Request 事件"""
     event = PartialGitHubPullRequestEvent.parse_file(settings.github_event_path)
-    logging.info(f"当前事件{event.json()}")
+    logging.info(f"当前事件: {event.json()}")
 
     # 因为合并拉取请求只会触发 closed 事件
-    # 其他事件均对商店发布流程无影响
+    # 其他事件均对发布流程无影响
     if event.action != "closed":
         logging.info("事件不是关闭拉取请求，已跳过")
         return
+
     pull_request = repo.get_pull(event.pull_request.number)
 
     # 只处理支持标签的拉取请求
@@ -52,7 +53,7 @@ def process_pull_request_event(settings: Settings, repo: Repository):
     logging.info(f"议题 #{related_issue_number} 已关闭")
 
     try:
-        run_shell_command(f"git push origin --delete {ref}")
+        run_shell_command(["git", "push", "origin", "--delete", ref])
         logging.info(f"已删除对应分支")
     except:
         logging.info("对应分支不存在或已删除")
@@ -68,11 +69,11 @@ def process_pull_request_event(settings: Settings, repo: Repository):
 def process_push_event(settings: Settings, repo: Repository):
     """处理提交"""
     event = PartialGitHubPushEvent.parse_file(settings.github_event_path)
-    logging.info(f"当前事件{event.json()}")
+    logging.info(f"当前事件: {event.json()}")
 
     publish_type = get_type_by_commit_message(event.head_commit.message)
     if not publish_type:
-        logging.info("该提交不是发布，已跳过")
+        logging.info("提交与发布无关，已跳过")
         return
 
     logging.info("发现提交为发布，准备更新拉取请求的提交")
@@ -83,17 +84,17 @@ def process_push_event(settings: Settings, repo: Repository):
 def process_issues_event(settings: Settings, repo: Repository):
     """处理议题"""
     event = PartialGitHubIssuesEvent.parse_file(settings.github_event_path)
-    logging.info(f"当前事件{event.json()}")
+    logging.info(f"当前事件: {event.json()}")
 
     if not event.action in ["opened", "reopened", "edited"]:
         logging.info("不支持的事件，已跳过")
         return
+
     issue = repo.get_issue(event.issue.number)
 
     publish_type = get_type_by_title(issue.title)
-
     if not publish_type:
-        logging.info("")
+        logging.info("议题与发布无关，已跳过")
         return
 
     info = extract_publish_info_from_issue(issue, publish_type)
@@ -107,7 +108,7 @@ def process_issues_event(settings: Settings, repo: Repository):
         # 创建新分支
         # 命名示例 publish/issue123
         branch_name = f"publish/issue{issue.number}"
-        run_shell_command(f"git checkout -b {branch_name}")
+        run_shell_command(["git", "checkout", "-b", branch_name])
         # 更新文件并提交更改
         info.update_file(settings)
         commit_and_push(info, branch_name)
@@ -115,5 +116,7 @@ def process_issues_event(settings: Settings, repo: Repository):
         create_pull_request(
             repo, info, settings.input_config.base, branch_name, issue.number
         )
+    else:
+        logging.info("发布没通过检查，暂不创建拉取请求")
 
-    comment_issue(issue, info.validate_message())
+    comment_issue(issue, info.validation_message())
