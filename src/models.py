@@ -283,7 +283,7 @@ class AdapterPublishInfo(PublishInfo):
 
 def check_pypi(project_link: str) -> bool:
     """检查项目是否存在"""
-    url = f"https://pypi.org/pypi/${project_link}/json"
+    url = f"https://pypi.org/pypi/{project_link}/json"
     r = requests.get(url)
     return r.status_code == 200
 
@@ -338,7 +338,7 @@ def generate_message(info: PublishInfo) -> str:
     if info.homepage_status_code() == 200:
         details.append(
             f"""
-         <li>✅ Project <a href="{info.homepage}">homepage</a> returns ${info.homepage_status_code()}.</li>
+         <li>✅ Project <a href="{info.homepage}">homepage</a> returns {info.homepage_status_code()}.</li>
          """
         )
     if isinstance(info, AdapterPublishInfo) or isinstance(info, PluginPublishInfo):

@@ -102,7 +102,7 @@ def process_issues_event(settings: Settings, repo: Repository):
     if info.is_valid():
         # 创建新分支
         # 命名示例 publish/issue123
-        branch_name = f"publish/issue${issue.number}"
+        branch_name = f"publish/issue{issue.number}"
         run_shell_command(f"git checkout -b {branch_name}")
         # 更新文件并提交更改
         info.update_file(settings)
