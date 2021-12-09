@@ -1,24 +1,16 @@
-name: 'NoneBot2 Plugin Issue Bot'
-description: 'Manage plugin related issues in nonebot2 project'
-author: 'he0119'
+name: 'NoneBot2 Publish Bot'
+description: 'Manage publish related issues in nonebot2 project'
+author: 'hemengyang <hmy0119@gmail.com>'
 inputs:
   token:
-    description: 'GitHub Token'
-  base:
+    description: 'Token for the repo. Can be passed in using {{ secrets.GITHUB_TOKEN }}'
     required: true
-    description: 'The pull request base branch'
-  plugin_path:
+  config:
+    description: 'JSON with settings as described in the README'
     required: true
-    description: 'Path for plugins.json'
-  adapter_path:
-    required: true
-    description: 'Path for adapters.json'
-  bot_path:
-    required: true
-    description: 'Path for bots.json'
 runs:
-  using: 'node12'
-  main: 'dist/index.js'
+  using: 'docker'
+  image: 'Dockerfile'
 branding:
-  icon: 'box'  
+  icon: 'box'
   color: 'orange'
