@@ -26,6 +26,7 @@ from .utils import (
 def process_pull_request_event(settings: Settings, repo: Repository):
     """处理 Pull Request 事件"""
     event = PartialGitHubPullRequestEvent.parse_file(settings.github_event_path)
+    logging.info(f"当前事件{event.json()}")
 
     # 因为合并拉取请求只会触发 closed 事件
     # 其他事件均对商店发布流程无影响
@@ -67,6 +68,7 @@ def process_pull_request_event(settings: Settings, repo: Repository):
 def process_push_event(settings: Settings, repo: Repository):
     """处理提交"""
     event = PartialGitHubPushEvent.parse_file(settings.github_event_path)
+    logging.info(f"当前事件{event.json()}")
 
     publish_type = get_type_by_commit_message(event.head_commit.message)
     if not publish_type:
@@ -81,6 +83,8 @@ def process_push_event(settings: Settings, repo: Repository):
 def process_issues_event(settings: Settings, repo: Repository):
     """处理议题"""
     event = PartialGitHubIssuesEvent.parse_file(settings.github_event_path)
+    logging.info(f"当前事件{event.json()}")
+
     if not event.action in ["opened", "reopened", "edited"]:
         logging.info("不支持的事件，已跳过")
         return
