@@ -8,6 +8,7 @@ RUN set -ex; \
     poetry config virtualenvs.create false; \
     poetry install --no-root --no-dev;
 
-COPY ./app /app
+COPY ./main.py /app/
+COPY ./src /app/src
 
 CMD ["python", "/app/main.py"]

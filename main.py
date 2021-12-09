@@ -2,8 +2,8 @@ import logging
 
 from github import Github
 
-from .models import Settings
-from .process import (
+from src.models import Settings
+from src.process import (
     process_issues_event,
     process_pull_request_event,
     process_push_event,

@@ -8,8 +8,7 @@ from github.Label import Label
 from github.PullRequest import PullRequest
 from github.Repository import Repository
 
-from app.constants import COMMENT_TITLE, POWERED_BY_BOT_MESSAGE, REUSE_MESSAGE
-
+from .constants import COMMENT_TITLE, POWERED_BY_BOT_MESSAGE, REUSE_MESSAGE
 from .models import (
     AdapterPublishInfo,
     BotPublishInfo,
