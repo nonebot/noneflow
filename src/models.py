@@ -98,16 +98,18 @@ class PublishInfo(abc.ABC, BaseModel):
         raise NotImplementedError
 
     @abc.abstractmethod
+    def from_issue(self, issue: Issue) -> "PublishInfo":
+        """从议题中获取所需信息"""
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def get_type(self) -> PublishType:
         """获取发布类型"""
         raise NotImplementedError
 
     @abc.abstractmethod
     def is_valid(self) -> bool:
-        """检查是否满足要求
-
-        返回错误列表，如果为空则说明满足要求
-        """
+        """检查是否满足要求"""
         raise NotImplementedError
 
     def homepage_status_code(self) -> Optional[int]:
@@ -116,12 +118,13 @@ class PublishInfo(abc.ABC, BaseModel):
             self._homepage_status_code = check_url(self.homepage)
         return self._homepage_status_code
 
-    def homepage_is_valid(self) -> bool:
+    def is_homepage_valid(self) -> bool:
         """主页是否可用"""
         return self.homepage_status_code() == 200
 
-    def validate_message(self) -> str:
-        return generate_message(self)
+    def validation_message(self) -> str:
+        """验证信息"""
+        return generate_validation_message(self)
 
     class Config:
         underscore_attrs_are_private = True
@@ -160,7 +163,7 @@ class BotPublishInfo(PublishInfo):
         )
 
     def is_valid(self) -> bool:
-        return self.homepage_is_valid()
+        return self.is_homepage_valid()
 
 
 class PluginPublishInfo(PublishInfo):
@@ -219,7 +222,7 @@ class PluginPublishInfo(PublishInfo):
         return self._is_published
 
     def is_valid(self) -> bool:
-        return self.is_published and self.homepage_is_valid()
+        return self.is_published and self.is_homepage_valid()
 
 
 class AdapterPublishInfo(PublishInfo):
@@ -278,7 +281,7 @@ class AdapterPublishInfo(PublishInfo):
         return self._is_published
 
     def is_valid(self) -> bool:
-        return self.is_published and self.homepage_is_valid()
+        return self.is_published and self.is_homepage_valid()
 
 
 def check_pypi(project_link: str) -> bool:
@@ -300,7 +303,8 @@ def check_url(url: str) -> Optional[int]:
         pass
 
 
-def generate_message(info: PublishInfo) -> str:
+def generate_validation_message(info: PublishInfo) -> str:
+    """生成验证信息"""
     message = f"> {info.get_type().value}: {info.name}"
 
     if info.is_valid():

@@ -10,7 +10,7 @@ from github.Repository import Repository
 
 from .constants import (
     COMMENT_TITLE,
-    COMMIT_MESSAGE,
+    COMMIT_MESSAGE_PREFIX,
     POWERED_BY_BOT_MESSAGE,
     REUSE_MESSAGE,
 )
@@ -24,11 +24,12 @@ from .models import (
 )
 
 
-def run_shell_command(command: str):
+def run_shell_command(command: list[str]):
     """运行 shell 命令
 
     如果遇到错误则抛出异常
     """
+    logging.info(f"运行命令: {command}")
     subprocess.run(command, shell=True, check=True)
 
 
@@ -55,23 +56,29 @@ def get_type_by_title(title: str) -> Optional[PublishType]:
 
 def get_type_by_commit_message(message: str) -> Optional[PublishType]:
     """通过提交信息获取类型"""
-    if message.startswith(f"{COMMIT_MESSAGE} {PublishType.BOT.value.lower()}"):
+    if message.startswith(f"{COMMIT_MESSAGE_PREFIX} {PublishType.BOT.value.lower()}"):
         return PublishType.BOT
-    if message.startswith(f"{COMMIT_MESSAGE} {PublishType.PLUGIN.value.lower()}"):
+    if message.startswith(
+        f"{COMMIT_MESSAGE_PREFIX} {PublishType.PLUGIN.value.lower()}"
+    ):
         return PublishType.PLUGIN
-    if message.startswith(f"{COMMIT_MESSAGE} {PublishType.ADAPTER.value.lower()}"):
+    if message.startswith(
+        f"{COMMIT_MESSAGE_PREFIX} {PublishType.ADAPTER.value.lower()}"
+    ):
         return PublishType.ADAPTER
 
 
 def commit_and_push(info: PublishInfo, branch_name: str):
     """提交并推送"""
-    commit_message = f"{COMMIT_MESSAGE} {info.get_type().value.lower()} {info.name}"
-    run_shell_command(f"git config --global user.name {info.author}")
+    commit_message = (
+        f"{COMMIT_MESSAGE_PREFIX} {info.get_type().value.lower()} {info.name}"
+    )
+    run_shell_command(["git", "config", "--global", "user.name", info.author])
     user_email = f"{info.author}@users.noreply.github.com"
-    run_shell_command(f"git config --global user.email {user_email}")
-    run_shell_command(f"git add -A")
-    run_shell_command(f'git commit -m "{commit_message}"')
-    run_shell_command(f"git push origin {branch_name} -f")
+    run_shell_command(["git", "config", "--global", "user.email", user_email])
+    run_shell_command(["git", "add", "-A"])
+    run_shell_command(["git", "commit", "-m", commit_message])
+    run_shell_command(["git", "push", "origin", branch_name, "-f"])
 
 
 def create_pull_request(
@@ -125,9 +132,10 @@ def resolve_conflict_pull_requests(
     """
     for pull in pulls:
         # 切换到对应分支
-        run_shell_command(f"git checkout -b {pull.head.ref}")
+        run_shell_command(["git", "checkout", "-b", pull.head.ref])
         # 重置之前的提交
-        run_shell_command(f"git reset --hard {settings.input_config.base}")
+        run_shell_command(["git", "reset", "--hard", settings.input_config.base])
+
         issue_number = extract_issue_number_from_ref(pull.head.ref)
         if not issue_number:
             logging.error(f"无法获取 {pull.title} 对应的议题")
@@ -169,9 +177,11 @@ def comment_issue(issue: Issue, body: str):
     )
     if reusable_comment:
         logging.info(f"发现已有评论 {reusable_comment.id}，正在修改")
+
         body += f"\n\n---\n{REUSE_MESSAGE}\n\n{POWERED_BY_BOT_MESSAGE}"
         reusable_comment.edit(body)
         logging.info("评论修改完成")
     else:
+        body += f"\n\n---\n{POWERED_BY_BOT_MESSAGE}"
         issue.create_comment(body)
         logging.info("评论创建完成")
