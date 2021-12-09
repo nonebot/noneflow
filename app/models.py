@@ -1,5 +1,6 @@
 import abc
 import json
+import re
 from enum import Enum
 from pathlib import Path
 from typing import Optional
@@ -134,7 +135,26 @@ class BotPublishInfo(PublishInfo):
 
     @classmethod
     def from_issue(cls, issue: Issue) -> "BotPublishInfo":
-        return BotPublishInfo()
+        body = issue.body
+
+        name = re.search(r'- name: (.+)', body)
+        desc = re.search(r'- desc: (.+)', body)
+        author = issue.user.login
+        homepage = re.search(r'- homepage: (.+)', body)
+        tags = re.search(r'- tags: (.+)', body)
+        is_official = re.search(r'- is_official: (.+)', body)
+
+        if not (name and desc and author and homepage and tags and is_official):
+            raise ValueError("无法获取适配器信息")
+
+        return BotPublishInfo(
+            name = name.group(1),
+            desc = desc.group(1),
+            author = author,
+            homepage = homepage.group(1),
+            tags = tags.group(1),
+            is_official = is_official.group(1),
+        )
 
     def is_valid(self) -> bool:
         return self.homepage_is_valid()
@@ -156,7 +176,30 @@ class PluginPublishInfo(PublishInfo):
 
     @classmethod
     def from_issue(cls, issue: Issue) -> "PluginPublishInfo":
-        return PluginPublishInfo()
+        body = issue.body
+
+        module_name = re.search(r'- module_name: (.+)', body)
+        project_link = re.search(r'- project_link: (.+)', body)
+        name = re.search(r'- name: (.+)', body)
+        desc = re.search(r'- desc: (.+)', body)
+        author = issue.user.login
+        homepage = re.search(r'- homepage: (.+)', body)
+        tags = re.search(r'- tags: (.+)', body)
+        is_official = re.search(r'- is_official: (.+)', body)
+
+        if not (module_name and project_link and name and desc and author and homepage and tags and is_official):
+            raise ValueError("无法获取适配器信息")
+
+        return PluginPublishInfo(
+            module_name = module_name.group(1),
+            project_link = project_link.group(1),
+            name = name.group(1),
+            desc = desc.group(1),
+            author = author,
+            homepage = homepage.group(1),
+            tags = tags.group(1),
+            is_official = is_official.group(1),
+        )
 
     def is_published(self) -> bool:
         if self._is_published is None:
@@ -181,7 +224,30 @@ class AdapterPublishInfo(PublishInfo):
 
     @classmethod
     def from_issue(cls, issue: Issue) -> "AdapterPublishInfo":
-        return AdapterPublishInfo()
+        body = issue.body
+
+        module_name = re.search(r'- module_name: (.+)', body)
+        project_link = re.search(r'- project_link: (.+)', body)
+        name = re.search(r'- name: (.+)', body)
+        desc = re.search(r'- desc: (.+)', body)
+        author = issue.user.login
+        homepage = re.search(r'- homepage: (.+)', body)
+        tags = re.search(r'- tags: (.+)', body)
+        is_official = re.search(r'- is_official: (.+)', body)
+
+        if not (module_name and project_link and name and desc and author and homepage and tags and is_official):
+            raise ValueError("无法获取适配器信息")
+
+        return AdapterPublishInfo(
+            module_name = module_name.group(1),
+            project_link = project_link.group(1),
+            name = name.group(1),
+            desc = desc.group(1),
+            author = author,
+            homepage = homepage.group(1),
+            tags = tags.group(1),
+            is_official = is_official.group(1),
+        )
 
     def is_published(self) -> bool:
         if self._is_published is None:
