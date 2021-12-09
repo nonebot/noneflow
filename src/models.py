@@ -107,21 +107,25 @@ class PublishInfo(abc.ABC, BaseModel):
         """获取发布类型"""
         raise NotImplementedError
 
+    @property
     @abc.abstractmethod
     def is_valid(self) -> bool:
         """检查是否满足要求"""
         raise NotImplementedError
 
+    @property
     def homepage_status_code(self) -> Optional[int]:
         """主页状态码"""
         if not self._homepage_status_code:
             self._homepage_status_code = check_url(self.homepage)
         return self._homepage_status_code
 
+    @property
     def is_homepage_valid(self) -> bool:
         """主页是否可用"""
-        return self.homepage_status_code() == 200
+        return self.homepage_status_code == 200
 
+    @property
     def validation_message(self) -> str:
         """验证信息"""
         return generate_validation_message(self)
@@ -162,17 +166,26 @@ class BotPublishInfo(PublishInfo):
             is_official=is_official.group(1).strip(),
         )
 
+    @property
     def is_valid(self) -> bool:
-        return self.is_homepage_valid()
+        return self.is_homepage_valid
 
 
-class PluginPublishInfo(PublishInfo):
-    """发布插件所需信息"""
-
+class PyPIMixin:
     module_name: str
     project_link: str
 
     _is_published: Optional[bool] = None
+
+    @property
+    def is_published(self) -> bool:
+        if self._is_published is None:
+            self._is_published = check_pypi(self.project_link)
+        return self._is_published
+
+
+class PluginPublishInfo(PyPIMixin, PublishInfo):
+    """发布插件所需信息"""
 
     def get_type(self) -> PublishType:
         return PublishType.PLUGIN
@@ -216,22 +229,13 @@ class PluginPublishInfo(PublishInfo):
             is_official=is_official.group(1).strip(),
         )
 
-    def is_published(self) -> bool:
-        if self._is_published is None:
-            self._is_published = check_pypi(self.project_link)
-        return self._is_published
-
+    @property
     def is_valid(self) -> bool:
-        return self.is_published and self.is_homepage_valid()
+        return self.is_published and self.is_homepage_valid
 
 
-class AdapterPublishInfo(PublishInfo):
+class AdapterPublishInfo(PyPIMixin, PublishInfo):
     """发布适配器所需信息"""
-
-    module_name: str
-    project_link: str
-
-    _is_published: Optional[bool] = None
 
     def get_type(self) -> PublishType:
         return PublishType.ADAPTER
@@ -275,13 +279,9 @@ class AdapterPublishInfo(PublishInfo):
             is_official=is_official.group(1).strip(),
         )
 
-    def is_published(self) -> bool:
-        if self._is_published is None:
-            self._is_published = check_pypi(self.project_link)
-        return self._is_published
-
+    @property
     def is_valid(self) -> bool:
-        return self.is_published and self.is_homepage_valid()
+        return self.is_published and self.is_homepage_valid
 
 
 def check_pypi(project_link: str) -> bool:
@@ -307,7 +307,7 @@ def generate_validation_message(info: PublishInfo) -> str:
     """生成验证信息"""
     message = f"> {info.get_type().value}: {info.name}"
 
-    if info.is_valid():
+    if info.is_valid:
         message += "\n\n**✅ All tests passed, you are ready to go!**"
     else:
         message += (
@@ -315,12 +315,12 @@ def generate_validation_message(info: PublishInfo) -> str:
         )
 
     errors: list[str] = []
-    if info.homepage_status_code() != 200:
+    if info.homepage_status_code != 200:
         errors.append(
-            f"""<li>⚠️ Project <a href="{info.homepage}">homepage</a> returns {info.homepage_status_code()}.<dt>Please make sure that your project has a publicly visible homepage.</dt></li>"""
+            f"""<li>⚠️ Project <a href="{info.homepage}">homepage</a> returns {info.homepage_status_code}.<dt>Please make sure that your project has a publicly visible homepage.</dt></li>"""
         )
     if isinstance(info, AdapterPublishInfo) or isinstance(info, PluginPublishInfo):
-        if not info.is_published():
+        if not info.is_published:
             errors.append(
                 f"""<li>⚠️ Package <a href="https://pypi.org/project/{info.project_link}/">{info.project_link}</a> is not available on PyPI.<dt>Please publish your package to PyPI.</dt></li>"""
             )
@@ -329,12 +329,12 @@ def generate_validation_message(info: PublishInfo) -> str:
         message += f"\n<pre><code>{error_message}</code></pre>"
 
     details: list[str] = []
-    if info.homepage_status_code() == 200:
+    if info.homepage_status_code == 200:
         details.append(
-            f"""<li>✅ Project <a href="{info.homepage}">homepage</a> returns {info.homepage_status_code()}.</li>"""
+            f"""<li>✅ Project <a href="{info.homepage}">homepage</a> returns {info.homepage_status_code}.</li>"""
         )
     if isinstance(info, AdapterPublishInfo) or isinstance(info, PluginPublishInfo):
-        if info.is_published():
+        if info.is_published:
             details.append(
                 f"""<li>✅ Package <a href="https://pypi.org/project/{info.project_link}/">{info.project_link}</a> is available on PyPI.</li>"""
             )

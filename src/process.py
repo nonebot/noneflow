@@ -104,7 +104,7 @@ def process_issues_event(settings: Settings, repo: Repository):
 
     # 检查是否满足发布要求
     # 仅在通过检查的情况下创建拉取请求
-    if info.is_valid():
+    if info.is_valid:
         # 创建新分支
         # 命名示例 publish/issue123
         branch_name = f"publish/issue{issue.number}"
@@ -119,4 +119,4 @@ def process_issues_event(settings: Settings, repo: Repository):
     else:
         logging.info("发布没通过检查，暂不创建拉取请求")
 
-    comment_issue(issue, info.validation_message())
+    comment_issue(issue, info.validation_message)
