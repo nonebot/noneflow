@@ -7,7 +7,7 @@ from typing import Optional
 
 import requests
 from github.Issue import Issue
-from pydantic import BaseModel, BaseSettings, PrivateAttr, SecretStr
+from pydantic import BaseModel, BaseSettings, SecretStr
 
 
 class PartialGithubEventHeadCommit(BaseModel):
@@ -83,7 +83,7 @@ class PublishInfo(abc.ABC, BaseModel):
     tags: list[str]
     is_official: bool
 
-    _homepage_status_code: Optional[int] = PrivateAttr()
+    _homepage_status_code: Optional[int] = None
 
     def _update_file(self, path: Path):
         with path.open("rw", encoding="utf-8") as f:
@@ -122,6 +122,9 @@ class PublishInfo(abc.ABC, BaseModel):
     def validate_message(self) -> str:
         return generate_message(self)
 
+    class Config:
+        underscore_attrs_are_private = True
+
 
 class BotPublishInfo(PublishInfo):
     """发布机器人所需信息"""
@@ -147,12 +150,12 @@ class BotPublishInfo(PublishInfo):
             raise ValueError("无法获取机器人信息")
 
         return BotPublishInfo(
-            name=name.group(1),
-            desc=desc.group(1),
+            name=name.group(1).strip(),
+            desc=desc.group(1).strip(),
             author=author,
-            homepage=homepage.group(1),
-            tags=tags.group(1).split(","),
-            is_official=is_official.group(1),
+            homepage=homepage.group(1).strip(),
+            tags=tags.group(1).strip().split(","),
+            is_official=is_official.group(1).strip(),
         )
 
     def is_valid(self) -> bool:
@@ -162,10 +165,10 @@ class BotPublishInfo(PublishInfo):
 class PluginPublishInfo(PublishInfo):
     """发布插件所需信息"""
 
-    _is_published: Optional[bool] = PrivateAttr()
-
     module_name: str
     project_link: str
+
+    _is_published: Optional[bool] = None
 
     def get_type(self) -> PublishType:
         return PublishType.PLUGIN
@@ -199,14 +202,14 @@ class PluginPublishInfo(PublishInfo):
             raise ValueError("无法获取插件信息")
 
         return PluginPublishInfo(
-            module_name=module_name.group(1),
-            project_link=project_link.group(1),
-            name=name.group(1),
-            desc=desc.group(1),
+            module_name=module_name.group(1).strip(),
+            project_link=project_link.group(1).strip(),
+            name=name.group(1).strip(),
+            desc=desc.group(1).strip(),
             author=author,
-            homepage=homepage.group(1),
-            tags=tags.group(1).split(","),
-            is_official=is_official.group(1),
+            homepage=homepage.group(1).strip(),
+            tags=tags.group(1).strip().split(","),
+            is_official=is_official.group(1).strip(),
         )
 
     def is_published(self) -> bool:
@@ -223,6 +226,8 @@ class AdapterPublishInfo(PublishInfo):
 
     module_name: str
     project_link: str
+
+    _is_published: Optional[bool] = None
 
     def get_type(self) -> PublishType:
         return PublishType.ADAPTER
@@ -256,14 +261,14 @@ class AdapterPublishInfo(PublishInfo):
             raise ValueError("无法获取适配器信息")
 
         return AdapterPublishInfo(
-            module_name=module_name.group(1),
-            project_link=project_link.group(1),
-            name=name.group(1),
-            desc=desc.group(1),
+            module_name=module_name.group(1).strip(),
+            project_link=project_link.group(1).strip(),
+            name=name.group(1).strip(),
+            desc=desc.group(1).strip(),
             author=author,
-            homepage=homepage.group(1),
-            tags=tags.group(1).split(","),
-            is_official=is_official.group(1),
+            homepage=homepage.group(1).strip(),
+            tags=tags.group(1).strip().split(","),
+            is_official=is_official.group(1).strip(),
         )
 
     def is_published(self) -> bool:
