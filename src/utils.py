@@ -65,7 +65,7 @@ def commit_and_push(info: PublishInfo, branch_name: str):
     user_email = f"{info.author}@users.noreply.github.com"
     run_shell_command(f"git config --global user.email {user_email}")
     run_shell_command(f"git add -A")
-    run_shell_command(f"git commit -m {commit_message}")
+    run_shell_command(f'git commit -m "{commit_message}"')
     run_shell_command(f"git push origin {branch_name} -f")
 
 
