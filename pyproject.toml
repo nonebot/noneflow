@@ -23,6 +23,7 @@ black = "^21.9b0"
 # name = "aliyun"
 pytest = "^6.2.5"
 pytest-cov = "^3.0.0"
+pytest-mock = "^3.6.1"
 # url = "https://mirrors.aliyun.com/pypi/simple/"
 
 [tool.black]
