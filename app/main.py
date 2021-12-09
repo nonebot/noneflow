@@ -1,55 +1,42 @@
 import logging
-from pathlib import Path
-from typing import Optional
 
 from github import Github
-from pydantic import BaseModel, BaseSettings, SecretStr
+
+from .models import Settings
+from .process import (
+    process_issues_event,
+    process_pull_request_event,
+    process_push_event,
+)
 
 
-class PartialGithubEventHeadCommit(BaseModel):
-    message: str
-
-
-class PartialGitHubEventIssue(BaseModel):
-    number: int
-
-
-class PartialGitHubEvent(BaseModel):
-    action: Optional[str] = None
-    issue: Optional[PartialGitHubEventIssue] = None
-    pull_request: Optional[PartialGitHubEventIssue] = None
-    head_commit: Optional[PartialGithubEventHeadCommit] = None
-
-
-class Config(BaseModel):
-    base: str
-    plugin_path: str
-    bot_path: str
-    adapter_path: str
-
-
-class Settings(BaseSettings):
-    input_config: Config
-    input_token: SecretStr
-    github_repository: str
-    github_event_path: Path
-    github_event_name: Optional[str] = None
-
-
-if __name__ == "__main__":
+def main():
     FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
     logging.basicConfig(level=logging.INFO, format=FORMAT)
 
     settings = Settings()
-    logging.info(f"Using config: {settings.json()}")
+    logging.info(f"当前配置: {settings.json()}")
+
+    if not settings.input_token.get_secret_value():
+        logging.info("无法获得 Token，跳过此次操作")
+        return
 
     g = Github(settings.input_token.get_secret_value())
     repo = g.get_repo(settings.github_repository)
 
-    github_event: Optional[PartialGitHubEvent] = None
-    if settings.github_event_path.is_file():
-        contents = settings.github_event_path.read_text()
-        github_event = PartialGitHubEvent.parse_raw(contents)
-        logging.info(f"Using github event: {github_event.json()}")
+    if not settings.github_event_path.is_file():
+        logging.error(f"没有在 {settings.github_event_path} 找到 GitHub 事件文件")
+        return
+
+    if settings.github_event_name == "push":
+        process_push_event(settings, repo)
+    elif settings.github_event_name == "pull_request":
+        process_pull_request_event(settings, repo)
+    elif settings.github_event_name == "issues":
+        process_issues_event(settings, repo)
     else:
-        logging.info(f"No github event file found at {settings.github_event_path}")
+        logging.info(f"不支持的事件: {settings.github_event_name}，已跳过")
+
+
+if __name__ == "__main__":
+    main()
