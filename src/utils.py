@@ -65,7 +65,7 @@ def get_type_by_commit_message(message: str) -> Optional[PublishType]:
 
 def commit_and_push(info: PublishInfo, branch_name: str):
     """提交并推送"""
-    commit_message = f":beers: publish {info.get_type().value} {info.name}"
+    commit_message = f"{COMMIT_MESSAGE} {info.get_type().value.lower()} {info.name}"
     run_shell_command(f"git config --global user.name {info.author}")
     user_email = f"{info.author}@users.noreply.github.com"
     run_shell_command(f"git config --global user.email {user_email}")
