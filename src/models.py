@@ -144,14 +144,14 @@ class BotPublishInfo(PublishInfo):
         is_official = re.search(r"- is_official: (.+)", body)
 
         if not (name and desc and author and homepage and tags and is_official):
-            raise ValueError("无法获取适配器信息")
+            raise ValueError("无法获取机器人信息")
 
         return BotPublishInfo(
             name=name.group(1),
             desc=desc.group(1),
             author=author,
             homepage=homepage.group(1),
-            tags=tags.group(1),
+            tags=tags.group(1).split(","),
             is_official=is_official.group(1),
         )
 
@@ -196,7 +196,7 @@ class PluginPublishInfo(PublishInfo):
             and tags
             and is_official
         ):
-            raise ValueError("无法获取适配器信息")
+            raise ValueError("无法获取插件信息")
 
         return PluginPublishInfo(
             module_name=module_name.group(1),
@@ -205,7 +205,7 @@ class PluginPublishInfo(PublishInfo):
             desc=desc.group(1),
             author=author,
             homepage=homepage.group(1),
-            tags=tags.group(1),
+            tags=tags.group(1).split(","),
             is_official=is_official.group(1),
         )
 
@@ -262,7 +262,7 @@ class AdapterPublishInfo(PublishInfo):
             desc=desc.group(1),
             author=author,
             homepage=homepage.group(1),
-            tags=tags.group(1),
+            tags=tags.group(1).split(","),
             is_official=is_official.group(1),
         )
 
