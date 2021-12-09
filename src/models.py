@@ -121,8 +121,9 @@ class PublishInfo(abc.ABC, BaseModel):
         """主页是否可用"""
         return self.homepage_status_code() == 200
 
-    def validate_message(self)-> str:
+    def validate_message(self) -> str:
         return generate_message(self)
+
 
 class BotPublishInfo(PublishInfo):
     """发布机器人所需信息"""
@@ -137,23 +138,23 @@ class BotPublishInfo(PublishInfo):
     def from_issue(cls, issue: Issue) -> "BotPublishInfo":
         body = issue.body
 
-        name = re.search(r'- name: (.+)', body)
-        desc = re.search(r'- desc: (.+)', body)
+        name = re.search(r"- name: (.+)", body)
+        desc = re.search(r"- desc: (.+)", body)
         author = issue.user.login
-        homepage = re.search(r'- homepage: (.+)', body)
-        tags = re.search(r'- tags: (.+)', body)
-        is_official = re.search(r'- is_official: (.+)', body)
+        homepage = re.search(r"- homepage: (.+)", body)
+        tags = re.search(r"- tags: (.+)", body)
+        is_official = re.search(r"- is_official: (.+)", body)
 
         if not (name and desc and author and homepage and tags and is_official):
             raise ValueError("无法获取适配器信息")
 
         return BotPublishInfo(
-            name = name.group(1),
-            desc = desc.group(1),
-            author = author,
-            homepage = homepage.group(1),
-            tags = tags.group(1),
-            is_official = is_official.group(1),
+            name=name.group(1),
+            desc=desc.group(1),
+            author=author,
+            homepage=homepage.group(1),
+            tags=tags.group(1),
+            is_official=is_official.group(1),
         )
 
     def is_valid(self) -> bool:
@@ -178,27 +179,36 @@ class PluginPublishInfo(PublishInfo):
     def from_issue(cls, issue: Issue) -> "PluginPublishInfo":
         body = issue.body
 
-        module_name = re.search(r'- module_name: (.+)', body)
-        project_link = re.search(r'- project_link: (.+)', body)
-        name = re.search(r'- name: (.+)', body)
-        desc = re.search(r'- desc: (.+)', body)
+        module_name = re.search(r"- module_name: (.+)", body)
+        project_link = re.search(r"- project_link: (.+)", body)
+        name = re.search(r"- name: (.+)", body)
+        desc = re.search(r"- desc: (.+)", body)
         author = issue.user.login
-        homepage = re.search(r'- homepage: (.+)', body)
-        tags = re.search(r'- tags: (.+)', body)
-        is_official = re.search(r'- is_official: (.+)', body)
+        homepage = re.search(r"- homepage: (.+)", body)
+        tags = re.search(r"- tags: (.+)", body)
+        is_official = re.search(r"- is_official: (.+)", body)
 
-        if not (module_name and project_link and name and desc and author and homepage and tags and is_official):
+        if not (
+            module_name
+            and project_link
+            and name
+            and desc
+            and author
+            and homepage
+            and tags
+            and is_official
+        ):
             raise ValueError("无法获取适配器信息")
 
         return PluginPublishInfo(
-            module_name = module_name.group(1),
-            project_link = project_link.group(1),
-            name = name.group(1),
-            desc = desc.group(1),
-            author = author,
-            homepage = homepage.group(1),
-            tags = tags.group(1),
-            is_official = is_official.group(1),
+            module_name=module_name.group(1),
+            project_link=project_link.group(1),
+            name=name.group(1),
+            desc=desc.group(1),
+            author=author,
+            homepage=homepage.group(1),
+            tags=tags.group(1),
+            is_official=is_official.group(1),
         )
 
     def is_published(self) -> bool:
@@ -226,27 +236,36 @@ class AdapterPublishInfo(PublishInfo):
     def from_issue(cls, issue: Issue) -> "AdapterPublishInfo":
         body = issue.body
 
-        module_name = re.search(r'- module_name: (.+)', body)
-        project_link = re.search(r'- project_link: (.+)', body)
-        name = re.search(r'- name: (.+)', body)
-        desc = re.search(r'- desc: (.+)', body)
+        module_name = re.search(r"- module_name: (.+)", body)
+        project_link = re.search(r"- project_link: (.+)", body)
+        name = re.search(r"- name: (.+)", body)
+        desc = re.search(r"- desc: (.+)", body)
         author = issue.user.login
-        homepage = re.search(r'- homepage: (.+)', body)
-        tags = re.search(r'- tags: (.+)', body)
-        is_official = re.search(r'- is_official: (.+)', body)
+        homepage = re.search(r"- homepage: (.+)", body)
+        tags = re.search(r"- tags: (.+)", body)
+        is_official = re.search(r"- is_official: (.+)", body)
 
-        if not (module_name and project_link and name and desc and author and homepage and tags and is_official):
+        if not (
+            module_name
+            and project_link
+            and name
+            and desc
+            and author
+            and homepage
+            and tags
+            and is_official
+        ):
             raise ValueError("无法获取适配器信息")
 
         return AdapterPublishInfo(
-            module_name = module_name.group(1),
-            project_link = project_link.group(1),
-            name = name.group(1),
-            desc = desc.group(1),
-            author = author,
-            homepage = homepage.group(1),
-            tags = tags.group(1),
-            is_official = is_official.group(1),
+            module_name=module_name.group(1),
+            project_link=project_link.group(1),
+            name=name.group(1),
+            desc=desc.group(1),
+            author=author,
+            homepage=homepage.group(1),
+            tags=tags.group(1),
+            is_official=is_official.group(1),
         )
 
     def is_published(self) -> bool:
@@ -287,9 +306,9 @@ def generate_message(info: PublishInfo) -> str:
             "\n\n**⚠️ We have found following problem(s) in pre-publish progress:**"
         )
 
-    error_message: list[str] = []
+    errors: list[str] = []
     if info.homepage_status_code != 200:
-        error_message.append(
+        errors.append(
             f"""
             <li>
             ⚠️ Project <a href="{info.homepage}">homepage</a> returns {info.homepage_status_code}.
@@ -299,7 +318,7 @@ def generate_message(info: PublishInfo) -> str:
         )
     if isinstance(info, AdapterPublishInfo) or isinstance(info, PluginPublishInfo):
         if not info.is_published():
-            error_message.append(
+            errors.append(
                 f"""
                 <li>
                 ⚠️ Package <a href="https://pypi.org/project/{info.project_link}/">{info.project_link}</a> is not available on PyPI.
@@ -307,26 +326,32 @@ def generate_message(info: PublishInfo) -> str:
                 </li>
                 """
             )
-    if len(error_message) != 0:
-        message += f"\n<pre><code>{'\n'.join(error_message)}</code></pre>"
+    if len(errors) != 0:
+        error_message = "\n".join(errors)
+        message += f"\n<pre><code>{error_message}</code></pre>"
 
-    detail_message: list[str]  = []
+    details: list[str] = []
     if info.homepage_status_code == 200:
-        detail_message.append(f"""
+        details.append(
+            f"""
          <li>✅ Project <a href="{info.homepage}">homepage</a> returns ${info.homepage_status_code}.</li>
-         """)
+         """
+        )
     if isinstance(info, AdapterPublishInfo) or isinstance(info, PluginPublishInfo):
         if info.is_published():
-            detail_message.append(f"""
+            details.append(
+                f"""
             <li>
             ✅ Package <a href="https://pypi.org/project/{info.project_link}/">{info.project_link}</a> is available on PyPI.
             </li>
-            """ )
-    if len(detail_message) != 0:
+            """
+            )
+    if len(details) != 0:
+        detail_message = "\n".join(details)
         message += f"""
         \n<details>
         <summary>Report Detail</summary>
-        <pre><code>${'\n'.join(detail_message)}</code></pre>
+        <pre><code>{detail_message}</code></pre>
         </details>
         """
 
