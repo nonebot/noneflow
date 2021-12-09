@@ -11,9 +11,6 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    outputs:
-      environment: ${{ steps.setVersion.outputs.environment }}
-      version: ${{ steps.setVersion.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
