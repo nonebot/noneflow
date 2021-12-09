@@ -84,15 +84,18 @@ def create_pull_request(
     title = f"{info.get_type().value} {info.name}"
     # 关联相关议题，当拉取请求合并时会自动关闭对应议题
     body = f"resolve #{issue_number}"
-    # 创建拉取请求
-    pull = repo.create_pull(title=title, body=body, base=base, head=branch_name)
-    # 自动给拉取请求添加标签
-    pull.add_to_labels(info.get_type().value)
-
-
-#   } catch (error) {
-#     if (error.message.includes(`A pull request already exists for`)) {
-#       core.info('该分支的拉取请求已创建，请前往查看')
+    try:
+        # 创建拉取请求
+        pull = repo.create_pull(
+            title=title,
+            body=body,
+            base=base,
+            head=branch_name,
+        )
+        # 自动给拉取请求添加标签
+        pull.add_to_labels(info.get_type().value)
+    except:
+        logging.info("该分支的拉取请求已创建，请前往查看")
 
 
 def get_pull_requests_by_label(repo: Repository, label: str) -> list[PullRequest]:
