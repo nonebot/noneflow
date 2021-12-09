@@ -8,7 +8,16 @@ from github.Label import Label
 from github.PullRequest import PullRequest
 from github.Repository import Repository
 
-from .models import AdapterInfo, BotInfo, PluginInfo, PublishInfo, PublishType, Settings
+from app.constants import COMMENT_TITLE, POWERED_BY_BOT_MESSAGE, REUSE_MESSAGE
+
+from .models import (
+    AdapterPublishInfo,
+    BotPublishInfo,
+    PluginPublishInfo,
+    PublishInfo,
+    PublishType,
+    Settings,
+)
 
 
 def run_shell_command(command: str):
@@ -61,44 +70,30 @@ def commit_and_push(info: PublishInfo, branch_name: str):
     run_shell_command(f"git push origin {branch_name} -f")
 
 
-# /**创建拉取请求
-#  *
-#  * 同时添加对应标签
-#  * 内容关联上对应的议题
-#  */
-# export async function createPullRequest(
-#   octokit: OctokitType,
-#   info: Info,
-#   issueNumber: number,
-#   branchName: string,
-#   base: string
-# ): Promise<void> {
-#   const pullRequestTitle = `${info.type}: ${info.name}`
-#   // 关联相关议题，当拉取请求合并时会自动关闭对应议题
-#   const pullRequestbody = `resolve #${issueNumber}`
-#   try {
-#     // 创建拉取请求
-#     const pr = await octokit.pulls.create({
-#       ...github.context.repo,
-#       title: pullRequestTitle,
-#       head: branchName,
-#       base,
-#       body: pullRequestbody
-#     })
-#     // 自动给拉取请求添加标签
-#     await octokit.issues.addLabels({
-#       ...github.context.repo,
-#       issue_number: pr.data.number,
-#       labels: [info.type]
-#     })
+def create_pull_request(
+    repo: Repository,
+    info: PublishInfo,
+    base: str,
+    branch_name: str,
+    issue_number: int,
+):
+    """创建拉取请求
+
+    同时添加对应标签
+    内容关联上对应的议题
+    """
+    title = f"{info.get_type().value} {info.name}"
+    # 关联相关议题，当拉取请求合并时会自动关闭对应议题
+    body = f"resolve #{issue_number}"
+    # 创建拉取请求
+    pull = repo.create_pull(title=title, body=body, base=base, head=branch_name)
+    # 自动给拉取请求添加标签
+    pull.add_to_labels(info.get_type().value)
+
+
 #   } catch (error) {
 #     if (error.message.includes(`A pull request already exists for`)) {
 #       core.info('该分支的拉取请求已创建，请前往查看')
-#     } else {
-#       throw error
-#     }
-#   }
-# }
 
 
 def get_pull_requests_by_label(repo: Repository, label: str) -> list[PullRequest]:
@@ -147,64 +142,29 @@ def extract_publish_info_from_issue(
 ) -> PublishInfo:
     """从议题中提取发布所需数据"""
     if publish_type == PublishType.BOT:
-        return BotInfo.from_issue(issue)
+        return BotPublishInfo.from_issue(issue)
     elif publish_type == PublishType.PLUGIN:
-        return PluginInfo.from_issue(issue)
-    return AdapterInfo.from_issue(issue)
+        return PluginPublishInfo.from_issue(issue)
+    return AdapterPublishInfo.from_issue(issue)
 
 
-# /**发布评论  */
-# export async function publishComment(
-#   octokit: OctokitType,
-#   issue_number: number,
-#   body: string
-# ): Promise<void> {
-#   // 给评论添加统一的标题
-#   body = `${commentTitle}\n${body}`
-#   core.info('开始发布评论')
-#   if (!(await reuseComment(octokit, issue_number, body))) {
-#     body += `\n\n---\n${poweredByBotMessage}`
-#     await octokit.issues.createComment({
-#       ...github.context.repo,
-#       issue_number,
-#       body
-#     })
-#     core.info('评论创建完成')
-#   }
-# }
-# /**重复利用评论
-#  *
-#  * 如果发现之前评论过，直接修改之前的评论
-#  */
-# async function reuseComment(
-#   octokit: OctokitType,
-#   issue_number: number,
-#   body: string
-# ): Promise<boolean> {
-#   const comments = await octokit.issues.listComments({
-#     ...github.context.repo,
-#     issue_number
-#   })
-#   if (comments) {
-#     // 检查相关评论是否拥有统一的标题
-#     const relatedComments = comments.data.filter(comment =>
-#       comment.body?.startsWith(commentTitle)
-#     )
-#     if (!relatedComments) {
-#       return false
-#     }
-#     const last_comment = relatedComments.pop()
-#     const comment_id = last_comment?.id
-#     if (comment_id) {
-#       core.info(`发现已有评论 ${last_comment?.id}，正在修改`)
-#       body += `\n\n---\n${reuseMessage}\n\n${poweredByBotMessage}`
-#       octokit.issues.updateComment({
-#         ...github.context.repo,
-#         comment_id,
-#         body
-#       })
-#       return true
-#     }
-#   }
-#   return false
-# }
+def comment_issue(issue: Issue, body: str):
+    """在议题中发布评论"""
+    # 给评论添加统一的标题
+    body = f"{COMMENT_TITLE}\n{body}"
+    logging.info("开始发布评论")
+    comments = issue.get_comments()
+
+    # 重复利用评论
+    # 如果发现之前评论过，直接修改之前的评论
+    reusable_comment = next(
+        filter(lambda x: x.body.startswith(COMMENT_TITLE), comments), None
+    )
+    if reusable_comment:
+        logging.info(f"发现已有评论 {reusable_comment.id}，正在修改")
+        body += f"\n\n---\n${REUSE_MESSAGE}\n\n${POWERED_BY_BOT_MESSAGE}"
+        reusable_comment.edit(body)
+        logging.info("评论修改完成")
+    else:
+        issue.create_comment(body)
+        logging.info("评论创建完成")

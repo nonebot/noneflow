@@ -9,6 +9,9 @@ from .models import (
     Settings,
 )
 from .utils import (
+    comment_issue,
+    commit_and_push,
+    create_pull_request,
     extract_issue_number_from_ref,
     extract_publish_info_from_issue,
     get_pull_requests_by_label,
@@ -94,22 +97,19 @@ def process_issues_event(settings: Settings, repo: Repository):
     # 自动给议题添加标签
     issue.edit(labels=[publish_type.value])
 
+    # 检查是否满足发布要求
+    # 仅在通过检查的情况下创建拉取请求
+    if info.is_valid():
+        # 创建新分支
+        # 命名示例 publish/issue123
+        branch_name = f"publish/issue${issue.number}"
+        run_shell_command(f"git checkout -b {branch_name}")
+        # 更新文件并提交更改
+        info.update_file(settings)
+        commit_and_push(info, branch_name)
+        # 创建拉取请求
+        create_pull_request(
+            repo, info, settings.input_config.base, branch_name, issue.number
+        )
 
-#     // 检查是否满足发布要求
-#     const checkStatus = await check(octokit, info)
-
-#     // 仅在通过检查的情况下创建拉取请求
-#     if (checkStatus.pass) {
-#       // 创建新分支
-#       // 命名示例 publish/issue123
-#       const branchName = `publish/issue${issue_number}`
-#       await exec.exec('git', ['checkout', '-b', branchName])
-
-#       // 更新文件并提交更改
-#       await updateFile(info)
-#       await commitandPush(branchName, info)
-
-#       // 创建拉取请求
-#       await createPullRequest(octokit, info, issue_number, branchName, base)
-#     } else {
-#     await publishComment(octokit, issue_number, message)
+    comment_issue(issue, info.validate_message())
