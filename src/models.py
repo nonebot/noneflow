@@ -9,8 +9,6 @@ import requests
 from github.Issue import Issue
 from pydantic import BaseModel, BaseSettings, PrivateAttr, SecretStr
 
-from .models import AdapterPublishInfo, PluginPublishInfo, PublishInfo
-
 
 class PartialGithubEventHeadCommit(BaseModel):
     message: str
