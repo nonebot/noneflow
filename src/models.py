@@ -86,8 +86,9 @@ class PublishInfo(abc.ABC, BaseModel):
     _homepage_status_code: Optional[int] = None
 
     def _update_file(self, path: Path):
-        with path.open("rw", encoding="utf-8") as f:
+        with path.open("r", encoding="utf-8") as f:
             data: list[dict[str, str]] = json.load(f)
+        with path.open("w", encoding="utf-8") as f:
             data.append(self.dict())
             json.dump(data, f, ensure_ascii=False, indent=2)
 
