@@ -19,14 +19,14 @@ def test_adapter_info() -> None:
     )
 
     assert OrderedDict(info.dict()) == OrderedDict(
+        module_name="module_name",
+        project_link="project_link",
         name="name",
         desc="desc",
         author="author",
         homepage="https://www.baidu.com",
         tags=["tag"],
         is_official=False,
-        module_name="module_name",
-        project_link="project_link",
     )
 
 
@@ -50,12 +50,12 @@ def test_adapter_from_issue(mocker: MockerFixture) -> None:
     info = AdapterPublishInfo.from_issue(mock_issue)
 
     assert OrderedDict(info.dict()) == OrderedDict(
+        module_name="module_name",
+        project_link="project_link",
         name="name",
         desc="desc",
         author="author",
         homepage="https://www.baidu.com",
         tags=["tag"],
         is_official=False,
-        module_name="module_name",
-        project_link="project_link",
     )

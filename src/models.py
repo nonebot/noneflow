@@ -184,7 +184,7 @@ class PyPIMixin(BaseModel):
         return self._is_published
 
 
-class PluginPublishInfo(PyPIMixin, PublishInfo):
+class PluginPublishInfo(PublishInfo, PyPIMixin):
     """发布插件所需信息"""
 
     def get_type(self) -> PublishType:
@@ -234,7 +234,7 @@ class PluginPublishInfo(PyPIMixin, PublishInfo):
         return self.is_published and self.is_homepage_valid
 
 
-class AdapterPublishInfo(PyPIMixin, PublishInfo):
+class AdapterPublishInfo(PublishInfo, PyPIMixin):
     """发布适配器所需信息"""
 
     def get_type(self) -> PublishType:
