@@ -1,0 +1,16 @@
+name: 'NoneBot2 Publish Bot'
+description: 'Manage publish related issues in nonebot2 project'
+author: 'hemengyang <hmy0119@gmail.com>'
+inputs:
+  token:
+    description: 'Token for the repo. Can be passed in using {{ secrets.GITHUB_TOKEN }}'
+    required: true
+  config:
+    description: 'JSON with settings as described in the README'
+    required: true
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+branding:
+  icon: 'box'
+  color: 'orange'

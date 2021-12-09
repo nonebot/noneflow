@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "nonebot2-publish-bot"
+version = "0.5.0"
+description = "Manage publish related issues in nonebot2 project"
+authors = ["hemengyang <hmy0119@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/nonebot/nonebot2-publish-bot"
+repository = "https://github.com/nonebot/nonebot2-publish-bot"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pydantic = "^1.8.2"
+PyGithub = "^1.55"
+requests = "^2.26.0"
+
+[tool.poetry.dev-dependencies]
+isort = "^5.9.3"
+black = "^21.9b0"
+
+# [[tool.poetry.source]]
+# default = true
+# name = "aliyun"
+# url = "https://mirrors.aliyun.com/pypi/simple/"
+
+[tool.black]
+line-length = 88
+
+[tool.isort]
+profile = "black"
+line_length = 88
+skip_gitignore = true
+
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0"]
