@@ -2,7 +2,6 @@ import abc
 import json
 import re
 from enum import Enum
-from inspect import cleandoc
 from pathlib import Path
 from typing import Optional
 
@@ -314,29 +313,15 @@ def generate_message(info: PublishInfo) -> str:
     errors: list[str] = []
     if info.homepage_status_code() != 200:
         errors.append(
-            cleandoc(
-                f"""
-            <li>
-                ⚠️ Project <a href="{info.homepage}">homepage</a> returns {info.homepage_status_code()}.
-                <dt>Please make sure that your project has a publicly visible homepage.</dt>
-            </li>
-            """
-            )
+            f"""<li>⚠️ Project <a href="{info.homepage}">homepage</a> returns {info.homepage_status_code()}.<dt>Please make sure that your project has a publicly visible homepage.</dt></li>"""
         )
     if isinstance(info, AdapterPublishInfo) or isinstance(info, PluginPublishInfo):
         if not info.is_published():
             errors.append(
-                cleandoc(
-                    f"""
-                <li>
-                    ⚠️ Package <a href="https://pypi.org/project/{info.project_link}/">{info.project_link}</a> is not available on PyPI.
-                    <dt>Please publish your package to PyPI.</dt>
-                </li>
-                """
-                )
+                f"""<li>⚠️ Package <a href="https://pypi.org/project/{info.project_link}/">{info.project_link}</a> is not available on PyPI.<dt>Please publish your package to PyPI.</dt></li>"""
             )
     if len(errors) != 0:
-        error_message = "\n".join(errors)
+        error_message = "".join(errors)
         message += f"\n<pre><code>{error_message}</code></pre>"
 
     details: list[str] = []
@@ -350,14 +335,7 @@ def generate_message(info: PublishInfo) -> str:
                 f"""<li>✅ Package <a href="https://pypi.org/project/{info.project_link}/">{info.project_link}</a> is available on PyPI.</li>"""
             )
     if len(details) != 0:
-        detail_message = "\n".join(details)
-        message += cleandoc(
-            f"""
-        <details>
-        <summary>Report Detail</summary>
-        <pre><code>{detail_message}</code></pre>
-        </details>
-        """
-        )
+        detail_message = "".join(details)
+        message += f"""\n<details><summary>Report Detail</summary><pre><code>{detail_message}</code></pre></details>"""
 
     return message
