@@ -2,11 +2,7 @@ FROM python:3.9
 
 WORKDIR /app
 
-COPY ./pyproject.toml ./poetry.lock /app/
-RUN set -ex; \
-    python3 -m pip install poetry; \
-    poetry config virtualenvs.create false; \
-    poetry install --no-root --no-dev;
+RUN pip install "PyGithub>=1.55,<2.0" "pydantic>=v1.8.2,<2.0"
 
 COPY ./main.py /app/
 COPY ./src /app/src
