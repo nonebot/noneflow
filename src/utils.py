@@ -164,7 +164,7 @@ def comment_issue(issue: Issue, body: str):
     )
     if reusable_comment:
         logging.info(f"发现已有评论 {reusable_comment.id}，正在修改")
-        body += f"\n\n---\n${REUSE_MESSAGE}\n\n${POWERED_BY_BOT_MESSAGE}"
+        body += f"\n\n---\n{REUSE_MESSAGE}\n\n{POWERED_BY_BOT_MESSAGE}"
         reusable_comment.edit(body)
         logging.info("评论修改完成")
     else:

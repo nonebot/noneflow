@@ -311,11 +311,11 @@ def generate_message(info: PublishInfo) -> str:
         )
 
     errors: list[str] = []
-    if info.homepage_status_code != 200:
+    if info.homepage_status_code() != 200:
         errors.append(
             f"""
             <li>
-            ⚠️ Project <a href="{info.homepage}">homepage</a> returns {info.homepage_status_code}.
+            ⚠️ Project <a href="{info.homepage}">homepage</a> returns {info.homepage_status_code()}.
             <dt>Please make sure that your project has a publicly visible homepage.</dt>
             </li>
             """
@@ -335,10 +335,10 @@ def generate_message(info: PublishInfo) -> str:
         message += f"\n<pre><code>{error_message}</code></pre>"
 
     details: list[str] = []
-    if info.homepage_status_code == 200:
+    if info.homepage_status_code() == 200:
         details.append(
             f"""
-         <li>✅ Project <a href="{info.homepage}">homepage</a> returns ${info.homepage_status_code}.</li>
+         <li>✅ Project <a href="{info.homepage}">homepage</a> returns ${info.homepage_status_code()}.</li>
          """
         )
     if isinstance(info, AdapterPublishInfo) or isinstance(info, PluginPublishInfo):
