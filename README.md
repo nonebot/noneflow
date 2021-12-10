@@ -1,5 +1,7 @@
 # NoneBot2 Publish Bot
 
+[![codecov](https://codecov.io/gh/nonebot/nonebot2-publish-bot/branch/main/graph/badge.svg?token=BOIBTOCWCH)](https://codecov.io/gh/nonebot/nonebot2-publish-bot)
+
 [NoneBot2](https://github.com/nonebot/nonebot2) 插件/协议/机器人 发布机器人
 
 ## 主要功能
