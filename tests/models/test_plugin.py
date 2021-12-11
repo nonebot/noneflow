@@ -62,7 +62,7 @@ def test_plugin_from_issue(mocker: MockerFixture) -> None:
     )
 
 
-def test_bot_info_valid(mocker: MockerFixture) -> None:
+def test_plugin_info_valid(mocker: MockerFixture) -> None:
     mocker.patch("requests.get", return_value=mocker.MagicMock(status_code=200))  # type: ignore
 
     info = PluginPublishInfo(
