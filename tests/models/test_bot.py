@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+import requests
 from github.Issue import Issue
 from pytest_mock import MockerFixture
 
@@ -51,3 +52,24 @@ def test_bot_from_issue(mocker: MockerFixture) -> None:
         tags=["tag"],
         is_official=False,
     )
+
+
+def test_bot_info_valid(mocker: MockerFixture) -> None:
+    mocker.patch("requests.get", return_value=mocker.MagicMock(status_code=200))  # type: ignore
+
+    info = BotPublishInfo(
+        name="name",
+        desc="desc",
+        author="author",
+        homepage="https://www.baidu.com",
+        tags=["tag"],
+        is_official=False,
+    )
+
+    assert info.is_valid
+    assert info.validation_message
+
+    calls = [  # type: ignore
+        mocker.call("https://www.baidu.com"),  # type: ignore
+    ]
+    requests.get.assert_has_calls(calls)  # type: ignore

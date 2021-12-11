@@ -2,6 +2,7 @@ import abc
 import json
 import re
 from enum import Enum
+from functools import cache
 from pathlib import Path
 from typing import Optional
 
@@ -83,8 +84,6 @@ class PublishInfo(abc.ABC, BaseModel):
     tags: list[str]
     is_official: bool
 
-    _homepage_status_code: Optional[int] = None
-
     def _update_file(self, path: Path):
         with path.open("r", encoding="utf-8") as f:
             data: list[dict[str, str]] = json.load(f)
@@ -116,9 +115,7 @@ class PublishInfo(abc.ABC, BaseModel):
     @property
     def homepage_status_code(self) -> Optional[int]:
         """主页状态码"""
-        if not self._homepage_status_code:
-            self._homepage_status_code = check_url(self.homepage)
-        return self._homepage_status_code
+        return check_url(self.homepage)
 
     @property
     def is_homepage_valid(self) -> bool:
@@ -130,8 +127,14 @@ class PublishInfo(abc.ABC, BaseModel):
         """验证信息"""
         return generate_validation_message(self)
 
-    class Config:
-        underscore_attrs_are_private = True
+
+class PyPIMixin(BaseModel):
+    module_name: str
+    project_link: str
+
+    @property
+    def is_published(self) -> bool:
+        return check_pypi(self.project_link)
 
 
 class BotPublishInfo(PublishInfo):
@@ -169,19 +172,6 @@ class BotPublishInfo(PublishInfo):
     @property
     def is_valid(self) -> bool:
         return self.is_homepage_valid
-
-
-class PyPIMixin(BaseModel):
-    module_name: str
-    project_link: str
-
-    _is_published: Optional[bool] = None
-
-    @property
-    def is_published(self) -> bool:
-        if self._is_published is None:
-            self._is_published = check_pypi(self.project_link)
-        return self._is_published
 
 
 class PluginPublishInfo(PublishInfo, PyPIMixin):
@@ -284,6 +274,7 @@ class AdapterPublishInfo(PublishInfo, PyPIMixin):
         return self.is_published and self.is_homepage_valid
 
 
+@cache
 def check_pypi(project_link: str) -> bool:
     """检查项目是否存在"""
     url = f"https://pypi.org/pypi/{project_link}/json"
@@ -291,6 +282,7 @@ def check_pypi(project_link: str) -> bool:
     return r.status_code == 200
 
 
+@cache
 def check_url(url: str) -> Optional[int]:
     """检查网址是否可以访问
 

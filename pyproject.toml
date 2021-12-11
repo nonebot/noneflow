@@ -17,13 +17,13 @@ requests = "^2.26.0"
 [tool.poetry.dev-dependencies]
 isort = "^5.9.3"
 black = "^21.9b0"
+pytest = "^6.2.5"
+pytest-cov = "^3.0.0"
+pytest-mock = "^3.6.1"
 
 # [[tool.poetry.source]]
 # default = true
 # name = "aliyun"
-pytest = "^6.2.5"
-pytest-cov = "^3.0.0"
-pytest-mock = "^3.6.1"
 # url = "https://mirrors.aliyun.com/pypi/simple/"
 
 [tool.black]
