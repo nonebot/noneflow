@@ -67,7 +67,10 @@ def test_bot_info_valid(mocker: MockerFixture) -> None:
     )
 
     assert info.is_valid
-    assert info.validation_message
+    assert (
+        info.validation_message
+        == """> Bot: name\n\n**✅ All tests passed, you are ready to go!**\n<details><summary>Report Detail</summary><pre><code><li>✅ Project <a href="https://www.baidu.com">homepage</a> returns 200.</li></code></pre></details>"""
+    )
 
     calls = [  # type: ignore
         mocker.call("https://www.baidu.com"),  # type: ignore

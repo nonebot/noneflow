@@ -77,7 +77,10 @@ def test_adapter_info_valid(mocker: MockerFixture) -> None:
     )
 
     assert info.is_valid
-    assert info.validation_message
+    assert (
+        info.validation_message
+        == """> Adapter: name\n\n**✅ All tests passed, you are ready to go!**\n<details><summary>Report Detail</summary><pre><code><li>✅ Project <a href="https://www.baidu.com">homepage</a> returns 200.</li><li>✅ Package <a href="https://pypi.org/project/project_link/">project_link</a> is available on PyPI.</li></code></pre></details>"""
+    )
 
     calls = [  # type: ignore
         mocker.call("https://pypi.org/pypi/project_link/json"),  # type: ignore
