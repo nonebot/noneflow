@@ -3,8 +3,8 @@ name: CI
 on:
   push:
     branches:
-      - 'main'
-      - 'dev'
+      - main
+      - dev
   pull_request:
 
 jobs:
@@ -18,12 +18,15 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.9
-      - uses: Gr1N/setup-poetry@v7
-      - uses: actions/cache@v2
+      - name: Install poetry
+        uses: Gr1N/setup-poetry@v7
+      - name: Cache dependencies
+        uses: actions/cache@v2
         with:
           path: ~/.cache/pypoetry/virtualenvs
           key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
-      - run: poetry install
+      - name: Install prerequisites
+        run: poetry install
       - name: Run tests
         run: poetry run pytest --cov=src --cov-report xml --junitxml=TEST-pytest.xml
       - name: Upload Test Results
@@ -37,7 +40,7 @@ jobs:
         uses: codecov/codecov-action@v2
 
   event_file:
-    name: "Event File"
+    name: Event File
     runs-on: ubuntu-latest
     steps:
     - name: Upload
