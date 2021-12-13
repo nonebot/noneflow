@@ -32,7 +32,7 @@ def run_shell_command(command: list[str]):
     如果遇到错误则抛出异常
     """
     logging.info(f"运行命令: {command}")
-    subprocess.run(command, shell=True, check=True)
+    subprocess.run(command, check=True)
 
 
 def get_type_by_labels(labels: list[Label]) -> Optional[PublishType]:
