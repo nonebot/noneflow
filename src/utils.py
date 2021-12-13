@@ -134,9 +134,7 @@ def resolve_conflict_pull_requests(
     """
     for pull in pulls:
         # 切换到对应分支
-        run_shell_command(["git", "checkout", "-b", pull.head.ref])
-        # 重置之前的提交
-        run_shell_command(["git", "reset", "--hard", settings.input_config.base])
+        run_shell_command(["git", "switch", "-C", pull.head.ref])
 
         issue_number = extract_issue_number_from_ref(pull.head.ref)
         if not issue_number:
