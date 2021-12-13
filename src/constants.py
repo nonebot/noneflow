@@ -1,3 +1,5 @@
+import re
+
 COMMENT_TITLE = "📃 Publish Check Result"
 
 COMMIT_MESSAGE_PREFIX = ":beers: publish"
@@ -23,3 +25,12 @@ COMMENT_MESSAGE_TEMPLATE = """# {title}
 
 {footer}
 """
+
+# 匹配信息的正则表达式
+MODULE_NAME_PATTERN = re.compile(r"- module_name: (.+)")
+PROJECT_LINK_PATTERN = re.compile(r"- project_link: (.+)")
+NAME_PATTERN = re.compile(r"- name: (.+)")
+DESC_PATTERN = re.compile(r"- desc: (.+)")
+HOMEPAGE_PATTERN = re.compile(r"- homepage: (.+)")
+TAGS_PATTERN = re.compile(r"- tags: (.+)")
+IS_OFFICIAL_PATTERN = re.compile(r"- is_official: (.+)")

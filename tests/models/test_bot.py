@@ -54,6 +54,34 @@ def test_bot_from_issue(mocker: MockerFixture) -> None:
     )
 
 
+def test_bot_from_issue_trailing_whitespace(mocker: MockerFixture) -> None:
+    """测试末尾如果有空格的情况"""
+    body = """
+        <!-- DO NOT EDIT ! -->
+        <!--
+        - name: my name  
+        - desc: desc 
+        - homepage: https://www.baidu.com 
+        - tags: tag, tag 2 
+        - is_official: false 
+        -->
+    """
+    mock_issue: Issue = mocker.MagicMock()  # type: ignore
+    mock_issue.body = body  # type: ignore
+    mock_issue.user.login = "author"  # type: ignore
+
+    info = BotPublishInfo.from_issue(mock_issue)
+
+    assert OrderedDict(info.dict()) == OrderedDict(
+        name="my name",
+        desc="desc",
+        author="author",
+        homepage="https://www.baidu.com",
+        tags=["tag", "tag 2"],
+        is_official=False,
+    )
+
+
 def mocked_requests_get(url: str):
     class MockResponse:
         def __init__(self, status_code: int):

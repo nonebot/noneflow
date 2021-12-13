@@ -1,6 +1,5 @@
 import abc
 import json
-import re
 from enum import Enum
 from functools import cache
 from pathlib import Path
@@ -10,7 +9,16 @@ import requests
 from github.Issue import Issue
 from pydantic import BaseModel, BaseSettings, SecretStr
 
-from .constants import VALIDATION_MESSAGE_TEMPLATE
+from .constants import (
+    DESC_PATTERN,
+    HOMEPAGE_PATTERN,
+    IS_OFFICIAL_PATTERN,
+    MODULE_NAME_PATTERN,
+    NAME_PATTERN,
+    PROJECT_LINK_PATTERN,
+    TAGS_PATTERN,
+    VALIDATION_MESSAGE_TEMPLATE,
+)
 
 
 class PartialGithubEventHeadCommit(BaseModel):
@@ -152,12 +160,12 @@ class BotPublishInfo(PublishInfo):
     def from_issue(cls, issue: Issue) -> "BotPublishInfo":
         body = issue.body
 
-        name = re.search(r"- name: (.+)", body)
-        desc = re.search(r"- desc: (.+)", body)
+        name = NAME_PATTERN.search(body)
+        desc = DESC_PATTERN.search(body)
         author = issue.user.login
-        homepage = re.search(r"- homepage: (.+)", body)
-        tags = re.search(r"- tags: (.+)", body)
-        is_official = re.search(r"- is_official: (.+)", body)
+        homepage = HOMEPAGE_PATTERN.search(body)
+        tags = TAGS_PATTERN.search(body)
+        is_official = IS_OFFICIAL_PATTERN.search(body)
 
         if not (name and desc and author and homepage and tags and is_official):
             raise ValueError("无法获取机器人信息")
@@ -167,7 +175,7 @@ class BotPublishInfo(PublishInfo):
             desc=desc.group(1).strip(),
             author=author,
             homepage=homepage.group(1).strip(),
-            tags=tags.group(1).strip().split(","),
+            tags=list(map(lambda x: x.strip(), tags.group(1).strip().split(","))),
             is_official=is_official.group(1).strip(),
         )
 
@@ -189,14 +197,14 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     def from_issue(cls, issue: Issue) -> "PluginPublishInfo":
         body = issue.body
 
-        module_name = re.search(r"- module_name: (.+)", body)
-        project_link = re.search(r"- project_link: (.+)", body)
-        name = re.search(r"- name: (.+)", body)
-        desc = re.search(r"- desc: (.+)", body)
+        module_name = MODULE_NAME_PATTERN.search(body)
+        project_link = PROJECT_LINK_PATTERN.search(body)
+        name = NAME_PATTERN.search(body)
+        desc = DESC_PATTERN.search(body)
         author = issue.user.login
-        homepage = re.search(r"- homepage: (.+)", body)
-        tags = re.search(r"- tags: (.+)", body)
-        is_official = re.search(r"- is_official: (.+)", body)
+        homepage = HOMEPAGE_PATTERN.search(body)
+        tags = TAGS_PATTERN.search(body)
+        is_official = IS_OFFICIAL_PATTERN.search(body)
 
         if not (
             module_name
@@ -217,7 +225,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
             desc=desc.group(1).strip(),
             author=author,
             homepage=homepage.group(1).strip(),
-            tags=tags.group(1).strip().split(","),
+            tags=list(map(lambda x: x.strip(), tags.group(1).strip().split(","))),
             is_official=is_official.group(1).strip(),
         )
 
@@ -239,14 +247,14 @@ class AdapterPublishInfo(PublishInfo, PyPIMixin):
     def from_issue(cls, issue: Issue) -> "AdapterPublishInfo":
         body = issue.body
 
-        module_name = re.search(r"- module_name: (.+)", body)
-        project_link = re.search(r"- project_link: (.+)", body)
-        name = re.search(r"- name: (.+)", body)
-        desc = re.search(r"- desc: (.+)", body)
+        module_name = MODULE_NAME_PATTERN.search(body)
+        project_link = PROJECT_LINK_PATTERN.search(body)
+        name = NAME_PATTERN.search(body)
+        desc = DESC_PATTERN.search(body)
         author = issue.user.login
-        homepage = re.search(r"- homepage: (.+)", body)
-        tags = re.search(r"- tags: (.+)", body)
-        is_official = re.search(r"- is_official: (.+)", body)
+        homepage = HOMEPAGE_PATTERN.search(body)
+        tags = TAGS_PATTERN.search(body)
+        is_official = IS_OFFICIAL_PATTERN.search(body)
 
         if not (
             module_name
@@ -267,7 +275,7 @@ class AdapterPublishInfo(PublishInfo, PyPIMixin):
             desc=desc.group(1).strip(),
             author=author,
             homepage=homepage.group(1).strip(),
-            tags=tags.group(1).strip().split(","),
+            tags=list(map(lambda x: x.strip(), tags.group(1).strip().split(","))),
             is_official=is_official.group(1).strip(),
         )
 
