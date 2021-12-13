@@ -1,5 +1,6 @@
 import abc
 import json
+import logging
 from enum import Enum
 from functools import cache
 from pathlib import Path
@@ -95,11 +96,13 @@ class PublishInfo(abc.ABC, BaseModel):
     is_official: bool
 
     def _update_file(self, path: Path):
+        logging.info(f"正在更新文件: {path}")
         with path.open("r", encoding="utf-8") as f:
             data: list[dict[str, str]] = json.load(f)
         with path.open("w", encoding="utf-8") as f:
             data.append(self.dict())
             json.dump(data, f, ensure_ascii=False, indent=2)
+        logging.info(f"文件更新完成")
 
     @abc.abstractmethod
     def update_file(self, settings: Settings) -> None:
@@ -284,12 +287,11 @@ class AdapterPublishInfo(PublishInfo, PyPIMixin):
         return self.is_published and self.is_homepage_valid
 
 
-@cache
 def check_pypi(project_link: str) -> bool:
     """检查项目是否存在"""
     url = f"https://pypi.org/pypi/{project_link}/json"
-    r = requests.get(url)
-    return r.status_code == 200
+    status_code = check_url(url)
+    return status_code == 200
 
 
 @cache
@@ -298,6 +300,7 @@ def check_url(url: str) -> Optional[int]:
 
     返回状态码，如果报错则返回 None
     """
+    logging.info(f"检查网址 {url}")
     try:
         r = requests.get(url)
         return r.status_code
