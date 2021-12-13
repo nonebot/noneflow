@@ -176,14 +176,17 @@ def comment_issue(issue: Issue, body: str):
         filter(lambda x: x.body.startswith(COMMENT_TITLE), comments), None
     )
     if reusable_comment:
-        logging.info(f"发现已有评论 {reusable_comment.id}，正在修改")
         footer = f"{REUSE_MESSAGE}\n\n{POWERED_BY_BOT_MESSAGE}"
-        logging.info("评论修改完成")
     else:
         footer = f"{POWERED_BY_BOT_MESSAGE}"
-        logging.info("评论创建完成")
 
     comment = COMMENT_MESSAGE_TEMPLATE.format(
         title=COMMENT_TITLE, body=body, footer=footer
     )
-    issue.create_comment(comment)
+    if reusable_comment:
+        logging.info(f"发现已有评论 {reusable_comment.id}，正在修改")
+        reusable_comment.edit(comment)
+        logging.info("评论修改完成")
+    else:
+        issue.create_comment(comment)
+        logging.info("评论创建完成")
