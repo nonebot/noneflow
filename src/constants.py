@@ -1,6 +1,6 @@
 import re
 
-COMMENT_TITLE = "📃 Publish Check Result"
+COMMENT_TITLE = "# 📃 Publish Check Result"
 
 COMMIT_MESSAGE_PREFIX = ":beers: publish"
 
@@ -17,7 +17,7 @@ VALIDATION_MESSAGE_TEMPLATE = """> {publish_info}
 {detail_message}
 """
 
-COMMENT_MESSAGE_TEMPLATE = """# {title}
+COMMENT_MESSAGE_TEMPLATE = """{title}
 
 {body}
 
