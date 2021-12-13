@@ -10,6 +10,8 @@ import requests
 from github.Issue import Issue
 from pydantic import BaseModel, BaseSettings, SecretStr
 
+from .constants import VALIDATION_MESSAGE_TEMPLATE
+
 
 class PartialGithubEventHeadCommit(BaseModel):
     message: str
@@ -297,15 +299,14 @@ def check_url(url: str) -> Optional[int]:
 
 def generate_validation_message(info: PublishInfo) -> str:
     """生成验证信息"""
-    message = f"> {info.get_type().value}: {info.name}"
+    publish_info = f"{info.get_type().value}: {info.name}"
 
     if info.is_valid:
-        message += "\n\n**✅ All tests passed, you are ready to go!**"
+        result = "✅ All tests passed, you are ready to go!"
     else:
-        message += (
-            "\n\n**⚠️ We have found following problem(s) in pre-publish progress:**"
-        )
+        result = "⚠️ We have found following problem(s) in pre-publish progress:"
 
+    error_message = ""
     errors: list[str] = []
     if info.homepage_status_code != 200:
         errors.append(
@@ -318,8 +319,9 @@ def generate_validation_message(info: PublishInfo) -> str:
             )
     if len(errors) != 0:
         error_message = "".join(errors)
-        message += f"\n<pre><code>{error_message}</code></pre>"
+        error_message = f"<pre><code>{error_message}</code></pre>"
 
+    detail_message = ""
     details: list[str] = []
     if info.homepage_status_code == 200:
         details.append(
@@ -332,6 +334,11 @@ def generate_validation_message(info: PublishInfo) -> str:
             )
     if len(details) != 0:
         detail_message = "".join(details)
-        message += f"""\n<details><summary>Report Detail</summary><pre><code>{detail_message}</code></pre></details>"""
+        detail_message = f"""<details><summary>Report Detail</summary><pre><code>{detail_message}</code></pre></details>"""
 
-    return message
+    return VALIDATION_MESSAGE_TEMPLATE.format(
+        publish_info=publish_info,
+        result=result,
+        error_message=error_message,
+        detail_message=detail_message,
+    ).strip()

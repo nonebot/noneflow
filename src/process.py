@@ -2,6 +2,7 @@ import logging
 
 from github.Repository import Repository
 
+from .constants import BRANCH_NAME_PREFIX
 from .models import (
     PartialGitHubIssuesEvent,
     PartialGitHubPullRequestEvent,
@@ -107,7 +108,7 @@ def process_issues_event(settings: Settings, repo: Repository):
     if info.is_valid:
         # 创建新分支
         # 命名示例 publish/issue123
-        branch_name = f"publish/issue{issue.number}"
+        branch_name = f"{BRANCH_NAME_PREFIX}{issue.number}"
         run_shell_command(["git", "checkout", "-b", branch_name])
         # 更新文件并提交更改
         info.update_file(settings)

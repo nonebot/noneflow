@@ -1,7 +1,25 @@
-COMMENT_TITLE = "# 📃 Publish Check Result"
+COMMENT_TITLE = "📃 Publish Check Result"
 
-REUSE_MESSAGE = "♻️ This comment has been updated with latest result."
+COMMIT_MESSAGE_PREFIX = ":beers: publish"
+
+BRANCH_NAME_PREFIX = "publish/issue"
+
+REUSE_MESSAGE = "♻️ This comment has been updated with the latest result."
 
 POWERED_BY_BOT_MESSAGE = "💪 Powered by NoneBot2 Publish Bot"
 
-COMMIT_MESSAGE_PREFIX = ":beers: publish"
+VALIDATION_MESSAGE_TEMPLATE = """> {publish_info}
+
+**{result}**
+{error_message}
+{detail_message}
+"""
+
+COMMENT_MESSAGE_TEMPLATE = """# {title}
+
+{body}
+
+---
+
+{footer}
+"""

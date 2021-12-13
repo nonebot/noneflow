@@ -9,6 +9,8 @@ from github.PullRequest import PullRequest
 from github.Repository import Repository
 
 from .constants import (
+    BRANCH_NAME_PREFIX,
+    COMMENT_MESSAGE_TEMPLATE,
     COMMENT_TITLE,
     COMMIT_MESSAGE_PREFIX,
     POWERED_BY_BOT_MESSAGE,
@@ -118,7 +120,7 @@ def get_pull_requests_by_label(repo: Repository, label: str) -> list[PullRequest
 
 def extract_issue_number_from_ref(ref: str) -> Optional[int]:
     """从 Ref 中提取议题号"""
-    match = re.search(r"\/issue(\d+)", ref)
+    match = re.search(fr"{BRANCH_NAME_PREFIX}(\d+)", ref)
     if match:
         return int(match.group(1))
 
@@ -165,23 +167,25 @@ def extract_publish_info_from_issue(
 
 def comment_issue(issue: Issue, body: str):
     """在议题中发布评论"""
-    # 给评论添加统一的标题
-    body = f"{COMMENT_TITLE}\n{body}"
     logging.info("开始发布评论")
-    comments = issue.get_comments()
+
+    footer: str
 
     # 重复利用评论
     # 如果发现之前评论过，直接修改之前的评论
+    comments = issue.get_comments()
     reusable_comment = next(
         filter(lambda x: x.body.startswith(COMMENT_TITLE), comments), None
     )
     if reusable_comment:
         logging.info(f"发现已有评论 {reusable_comment.id}，正在修改")
-
-        body += f"\n\n---\n{REUSE_MESSAGE}\n\n{POWERED_BY_BOT_MESSAGE}"
-        reusable_comment.edit(body)
+        footer = f"{REUSE_MESSAGE}\n\n{POWERED_BY_BOT_MESSAGE}"
         logging.info("评论修改完成")
     else:
-        body += f"\n\n---\n{POWERED_BY_BOT_MESSAGE}"
-        issue.create_comment(body)
+        footer = f"{POWERED_BY_BOT_MESSAGE}"
         logging.info("评论创建完成")
+
+    comment = COMMENT_MESSAGE_TEMPLATE.format(
+        title=COMMENT_TITLE, body=body, footer=footer
+    )
+    issue.create_comment(comment)
