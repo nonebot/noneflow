@@ -178,7 +178,7 @@ class BotPublishInfo(PublishInfo):
             desc=desc.group(1).strip(),
             author=author,
             homepage=homepage.group(1).strip(),
-            tags=list(map(lambda x: x.strip(), tags.group(1).strip().split(","))),
+            tags=[tag.strip() for tag in tags.group(1).strip().split(",")],
             is_official=is_official.group(1).strip(),
         )
 
@@ -228,7 +228,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
             desc=desc.group(1).strip(),
             author=author,
             homepage=homepage.group(1).strip(),
-            tags=list(map(lambda x: x.strip(), tags.group(1).strip().split(","))),
+            tags=[tag.strip() for tag in tags.group(1).strip().split(",")],
             is_official=is_official.group(1).strip(),
         )
 
@@ -278,7 +278,7 @@ class AdapterPublishInfo(PublishInfo, PyPIMixin):
             desc=desc.group(1).strip(),
             author=author,
             homepage=homepage.group(1).strip(),
-            tags=list(map(lambda x: x.strip(), tags.group(1).strip().split(","))),
+            tags=[tag.strip() for tag in tags.group(1).strip().split(",")],
             is_official=is_official.group(1).strip(),
         )
 
