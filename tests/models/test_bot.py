@@ -1,6 +1,6 @@
+# type: ignore
 from collections import OrderedDict
 
-import requests
 from github.Issue import Issue
 from pytest_mock import MockerFixture
 
@@ -38,9 +38,9 @@ def test_bot_from_issue(mocker: MockerFixture) -> None:
         - is_official: false
         -->
         """
-    mock_issue: Issue = mocker.MagicMock()  # type: ignore
-    mock_issue.body = body  # type: ignore
-    mock_issue.user.login = "author"  # type: ignore
+    mock_issue: Issue = mocker.MagicMock()
+    mock_issue.body = body
+    mock_issue.user.login = "author"
 
     info = BotPublishInfo.from_issue(mock_issue)
 
@@ -66,9 +66,9 @@ def test_bot_from_issue_trailing_whitespace(mocker: MockerFixture) -> None:
         - is_official: false 
         -->
     """
-    mock_issue: Issue = mocker.MagicMock()  # type: ignore
-    mock_issue.body = body  # type: ignore
-    mock_issue.user.login = "author"  # type: ignore
+    mock_issue: Issue = mocker.MagicMock()
+    mock_issue.body = body
+    mock_issue.user.login = "author"
 
     info = BotPublishInfo.from_issue(mock_issue)
 
@@ -97,7 +97,7 @@ def mocked_requests_get(url: str):
 
 def test_bot_info_validation_success(mocker: MockerFixture) -> None:
     """测试验证成功的情况"""
-    mocker.patch("requests.get", side_effect=mocked_requests_get)
+    mock_requests = mocker.patch("requests.get", side_effect=mocked_requests_get)
 
     info = BotPublishInfo(
         name="name",
@@ -114,15 +114,15 @@ def test_bot_info_validation_success(mocker: MockerFixture) -> None:
         == """> Bot: name\n\n**✅ All tests passed, you are ready to go!**\n\n<details><summary>Report Detail</summary><pre><code><li>✅ Project <a href="https://v2.nonebot.dev">homepage</a> returns 200.</li></code></pre></details>"""
     )
 
-    calls = [  # type: ignore
-        mocker.call("https://v2.nonebot.dev"),  # type: ignore
+    calls = [
+        mocker.call("https://v2.nonebot.dev"),
     ]
-    requests.get.assert_has_calls(calls)  # type: ignore
+    mock_requests.assert_has_calls(calls)
 
 
 def test_bot_info_validation_failed(mocker: MockerFixture) -> None:
     """测试验证失败的情况"""
-    mocker.patch("requests.get", side_effect=mocked_requests_get)
+    mock_requests = mocker.patch("requests.get", side_effect=mocked_requests_get)
 
     info = BotPublishInfo(
         name="name",
@@ -139,7 +139,7 @@ def test_bot_info_validation_failed(mocker: MockerFixture) -> None:
         == """> Bot: name\n\n**⚠️ We have found following problem(s) in pre-publish progress:**\n<pre><code><li>⚠️ Project <a href="https://www.baidu.com">homepage</a> returns 404.<dt>Please make sure that your project has a publicly visible homepage.</dt></li></code></pre>"""
     )
 
-    calls = [  # type: ignore
-        mocker.call("https://www.baidu.com"),  # type: ignore
+    calls = [
+        mocker.call("https://www.baidu.com"),
     ]
-    requests.get.assert_has_calls(calls)  # type: ignore
+    mock_requests.assert_has_calls(calls)
