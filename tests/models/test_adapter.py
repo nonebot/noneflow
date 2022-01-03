@@ -1,10 +1,24 @@
 # type: ignore
+import json
 from collections import OrderedDict
 
+import pytest
 from github.Issue import Issue
+from pydantic import ValidationError
 from pytest_mock import MockerFixture
 
 from src.models import AdapterPublishInfo
+
+
+def generate_issue_body(
+    name: str = "name",
+    desc: str = "desc",
+    module_name: str = "module_name",
+    project_link: str = "project_link",
+    homepage: str = "https://v2.nonebot.dev",
+    tags: list = [{"label": "test", "color": "#ffffff"}],
+):
+    return f"""**协议名称：**\n\n{name}\n\n**协议功能：**\n\n{desc}\n\n**PyPI 项目名：**\n\n{project_link}\n\n**协议 import 包名：**\n\n{module_name}\n\n**协议项目仓库/主页链接：**\n\n{homepage}\n\n**标签：**\n\n{json.dumps(tags)}"""
 
 
 def test_adapter_info() -> None:
@@ -15,7 +29,7 @@ def test_adapter_info() -> None:
         desc="desc",
         author="author",
         homepage="https://www.baidu.com",
-        tags=["tag"],
+        tags=[{"label": "test", "color": "#ffffff"}],
         is_official=False,
     )
 
@@ -26,26 +40,61 @@ def test_adapter_info() -> None:
         desc="desc",
         author="author",
         homepage="https://www.baidu.com",
-        tags=["tag"],
+        tags=[{"label": "test", "color": "#ffffff"}],
         is_official=False,
     )
 
 
+def test_adapter_tags_invalid() -> None:
+    """测试标签不正确的情况"""
+    with pytest.raises(ValidationError) as e:
+        info = AdapterPublishInfo(
+            module_name="module_name",
+            project_link="project_link",
+            name="name",
+            desc="desc",
+            author="author",
+            homepage="https://www.baidu.com",
+            tags=[{"label": "test", "color": "#adbcdef"}],
+            is_official=False,
+        )
+    assert "颜色不符合规则" in str(e.value)
+
+    with pytest.raises(ValidationError) as e:
+        info = AdapterPublishInfo(
+            module_name="module_name",
+            project_link="project_link",
+            name="name",
+            desc="desc",
+            author="author",
+            homepage="https://www.baidu.com",
+            tags=[{"label": "12345678901", "color": "#adbcde"}],
+            is_official=False,
+        )
+    assert "标签名称不能超过 10 个字符" in str(e.value)
+
+    with pytest.raises(ValidationError) as e:
+        info = AdapterPublishInfo(
+            module_name="module_name",
+            project_link="project_link",
+            name="name",
+            desc="desc",
+            author="author",
+            homepage="https://www.baidu.com",
+            tags=[
+                {"label": "1", "color": "#ffffff"},
+                {"label": "2", "color": "#ffffff"},
+                {"label": "3", "color": "#ffffff"},
+                {"label": "4", "color": "#ffffff"},
+            ],
+            is_official=False,
+        )
+    assert "标签数量不能超过 3 个" in str(e.value)
+
+
 def test_adapter_from_issue(mocker: MockerFixture) -> None:
-    body = """
-        <!-- DO NOT EDIT ! -->
-        <!--
-        - module_name: module_name
-        - project_link: project_link
-        - name: name
-        - desc: desc
-        - homepage: https://www.baidu.com
-        - tags: tag
-        - is_official: false
-        -->
-        """
     mock_issue: Issue = mocker.MagicMock()
-    mock_issue.body = body
+    mock_issue.body = generate_issue_body()
     mock_issue.user.login = "author"
 
     info = AdapterPublishInfo.from_issue(mock_issue)
@@ -56,28 +105,22 @@ def test_adapter_from_issue(mocker: MockerFixture) -> None:
         name="name",
         desc="desc",
         author="author",
-        homepage="https://www.baidu.com",
-        tags=["tag"],
+        homepage="https://v2.nonebot.dev",
+        tags=[{"label": "test", "color": "#ffffff"}],
         is_official=False,
     )
 
 
 def test_adapter_from_issue_trailing_whitespace(mocker: MockerFixture) -> None:
     """测试末尾如果有空格的情况"""
-    body = """
-        <!-- DO NOT EDIT ! -->
-        <!--
-        - module_name: module_name 
-        - project_link: project_link 
-        - name: my name  
-        - desc: desc 
-        - homepage: https://www.baidu.com 
-        - tags: tag, tag 2 
-        - is_official: false 
-        -->
-    """
     mock_issue: Issue = mocker.MagicMock()
-    mock_issue.body = body
+    mock_issue.body = generate_issue_body(
+        name="name ",
+        desc="desc ",
+        module_name="module_name ",
+        project_link="project_link ",
+        homepage="https://v2.nonebot.dev ",
+    )
     mock_issue.user.login = "author"
 
     info = AdapterPublishInfo.from_issue(mock_issue)
@@ -85,11 +128,11 @@ def test_adapter_from_issue_trailing_whitespace(mocker: MockerFixture) -> None:
     assert OrderedDict(info.dict()) == OrderedDict(
         module_name="module_name",
         project_link="project_link",
-        name="my name",
+        name="name",
         desc="desc",
         author="author",
-        homepage="https://www.baidu.com",
-        tags=["tag", "tag 2"],
+        homepage="https://v2.nonebot.dev",
+        tags=[{"label": "test", "color": "#ffffff"}],
         is_official=False,
     )
 
@@ -118,7 +161,7 @@ def test_adapter_info_validation_success(mocker: MockerFixture) -> None:
         desc="desc",
         author="author",
         homepage="https://v2.nonebot.dev",
-        tags=["tag"],
+        tags=[{"label": "test", "color": "#ffffff"}],
         is_official=False,
     )
 
@@ -146,7 +189,7 @@ def test_adapter_info_validation_failed(mocker: MockerFixture) -> None:
         desc="desc",
         author="author",
         homepage="https://www.baidu.com",
-        tags=["tag"],
+        tags=[{"label": "test", "color": "#ffffff"}],
         is_official=False,
     )
 
@@ -174,7 +217,7 @@ def test_adapter_info_validation_partial_failed(mocker: MockerFixture) -> None:
         desc="desc",
         author="author",
         homepage="https://www.baidu.com",
-        tags=["tag"],
+        tags=[{"label": "test", "color": "#ffffff"}],
         is_official=False,
     )
 

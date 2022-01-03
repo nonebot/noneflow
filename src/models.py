@@ -1,6 +1,7 @@
 import abc
 import json
 import logging
+import re
 from enum import Enum
 from functools import cache
 from pathlib import Path
@@ -8,14 +9,20 @@ from typing import Optional
 
 import requests
 from github.Issue import Issue
-from pydantic import BaseModel, BaseSettings, SecretStr
+from pydantic import BaseModel, BaseSettings, SecretStr, validator
 
 from .constants import (
-    DESC_PATTERN,
-    HOMEPAGE_PATTERN,
-    IS_OFFICIAL_PATTERN,
-    MODULE_NAME_PATTERN,
-    NAME_PATTERN,
+    ADAPTER_DESC_PATTERN,
+    ADAPTER_HOMEPAGE_PATTERN,
+    ADAPTER_MODULE_NAME_PATTERN,
+    ADAPTER_NAME_PATTERN,
+    BOT_DESC_PATTERN,
+    BOT_HOMEPAGE_PATTERN,
+    BOT_NAME_PATTERN,
+    PLUGIN_DESC_PATTERN,
+    PLUGIN_HOMEPAGE_PATTERN,
+    PLUGIN_MODULE_NAME_PATTERN,
+    PLUGIN_NAME_PATTERN,
     PROJECT_LINK_PATTERN,
     TAGS_PATTERN,
     VALIDATION_MESSAGE_TEMPLATE,
@@ -85,6 +92,25 @@ class PublishType(Enum):
     ADAPTER = "Adapter"
 
 
+class Tag(BaseModel):
+    """标签"""
+
+    label: str
+    color: str
+
+    @validator("label", pre=True)
+    def label_validator(cls, v: str) -> str:
+        if len(v) > 10:
+            raise ValueError("标签名称不能超过 10 个字符")
+        return v
+
+    @validator("color", pre=True)
+    def color_validator(cls, v: str) -> str:
+        if not re.match(r"^#[0-9a-fA-F]{6}$", v):
+            raise ValueError("颜色不符合规则")
+        return v
+
+
 class PublishInfo(abc.ABC, BaseModel):
     """发布信息"""
 
@@ -92,8 +118,14 @@ class PublishInfo(abc.ABC, BaseModel):
     desc: str
     author: str
     homepage: str
-    tags: list[str]
-    is_official: bool
+    tags: list[Tag]
+    is_official: bool = False
+
+    @validator("tags", pre=True)
+    def tags_validator(cls, v: list[Tag]) -> list[Tag]:
+        if len(v) > 3:
+            raise ValueError("标签数量不能超过 3 个")
+        return v
 
     def _update_file(self, path: Path):
         logging.info(f"正在更新文件: {path}")
@@ -163,14 +195,13 @@ class BotPublishInfo(PublishInfo):
     def from_issue(cls, issue: Issue) -> "BotPublishInfo":
         body = issue.body
 
-        name = NAME_PATTERN.search(body)
-        desc = DESC_PATTERN.search(body)
+        name = BOT_NAME_PATTERN.search(body)
+        desc = BOT_DESC_PATTERN.search(body)
         author = issue.user.login
-        homepage = HOMEPAGE_PATTERN.search(body)
+        homepage = BOT_HOMEPAGE_PATTERN.search(body)
         tags = TAGS_PATTERN.search(body)
-        is_official = IS_OFFICIAL_PATTERN.search(body)
 
-        if not (name and desc and author and homepage and tags and is_official):
+        if not (name and desc and author and homepage and tags):
             raise ValueError("无法获取机器人信息")
 
         return BotPublishInfo(
@@ -178,8 +209,7 @@ class BotPublishInfo(PublishInfo):
             desc=desc.group(1).strip(),
             author=author,
             homepage=homepage.group(1).strip(),
-            tags=[tag.strip() for tag in tags.group(1).strip().split(",")],
-            is_official=is_official.group(1).strip(),
+            tags=json.loads(tags.group(1).strip()),
         )
 
     @property
@@ -200,14 +230,13 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     def from_issue(cls, issue: Issue) -> "PluginPublishInfo":
         body = issue.body
 
-        module_name = MODULE_NAME_PATTERN.search(body)
+        module_name = PLUGIN_MODULE_NAME_PATTERN.search(body)
         project_link = PROJECT_LINK_PATTERN.search(body)
-        name = NAME_PATTERN.search(body)
-        desc = DESC_PATTERN.search(body)
+        name = PLUGIN_NAME_PATTERN.search(body)
+        desc = PLUGIN_DESC_PATTERN.search(body)
         author = issue.user.login
-        homepage = HOMEPAGE_PATTERN.search(body)
+        homepage = PLUGIN_HOMEPAGE_PATTERN.search(body)
         tags = TAGS_PATTERN.search(body)
-        is_official = IS_OFFICIAL_PATTERN.search(body)
 
         if not (
             module_name
@@ -217,7 +246,6 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
             and author
             and homepage
             and tags
-            and is_official
         ):
             raise ValueError("无法获取插件信息")
 
@@ -228,8 +256,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
             desc=desc.group(1).strip(),
             author=author,
             homepage=homepage.group(1).strip(),
-            tags=[tag.strip() for tag in tags.group(1).strip().split(",")],
-            is_official=is_official.group(1).strip(),
+            tags=json.loads(tags.group(1).strip()),
         )
 
     @property
@@ -250,14 +277,13 @@ class AdapterPublishInfo(PublishInfo, PyPIMixin):
     def from_issue(cls, issue: Issue) -> "AdapterPublishInfo":
         body = issue.body
 
-        module_name = MODULE_NAME_PATTERN.search(body)
+        module_name = ADAPTER_MODULE_NAME_PATTERN.search(body)
         project_link = PROJECT_LINK_PATTERN.search(body)
-        name = NAME_PATTERN.search(body)
-        desc = DESC_PATTERN.search(body)
+        name = ADAPTER_NAME_PATTERN.search(body)
+        desc = ADAPTER_DESC_PATTERN.search(body)
         author = issue.user.login
-        homepage = HOMEPAGE_PATTERN.search(body)
+        homepage = ADAPTER_HOMEPAGE_PATTERN.search(body)
         tags = TAGS_PATTERN.search(body)
-        is_official = IS_OFFICIAL_PATTERN.search(body)
 
         if not (
             module_name
@@ -267,7 +293,6 @@ class AdapterPublishInfo(PublishInfo, PyPIMixin):
             and author
             and homepage
             and tags
-            and is_official
         ):
             raise ValueError("无法获取适配器信息")
 
@@ -278,8 +303,7 @@ class AdapterPublishInfo(PublishInfo, PyPIMixin):
             desc=desc.group(1).strip(),
             author=author,
             homepage=homepage.group(1).strip(),
-            tags=[tag.strip() for tag in tags.group(1).strip().split(",")],
-            is_official=is_official.group(1).strip(),
+            tags=json.loads(tags.group(1).strip()),
         )
 
     @property

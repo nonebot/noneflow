@@ -1,10 +1,22 @@
 # type: ignore
+import json
 from collections import OrderedDict
 
 from github.Issue import Issue
 from pytest_mock import MockerFixture
 
 from src.models import PluginPublishInfo
+
+
+def generate_issue_body(
+    name: str = "name",
+    desc: str = "desc",
+    module_name: str = "module_name",
+    project_link: str = "project_link",
+    homepage: str = "https://v2.nonebot.dev",
+    tags: list = [{"label": "test", "color": "#ffffff"}],
+):
+    return f"""**插件名称：**\n\n{name}\n\n**插件功能：**\n\n{desc}\n\n**PyPI 项目名：**\n\n{project_link}\n\n**插件 import 包名：**\n\n{module_name}\n\n**插件项目仓库/主页链接：**\n\n{homepage}\n\n**标签：**\n\n{json.dumps(tags)}"""
 
 
 def test_plugin_info() -> None:
@@ -15,7 +27,7 @@ def test_plugin_info() -> None:
         desc="desc",
         author="author",
         homepage="https://www.baidu.com",
-        tags=["tag"],
+        tags=[{"label": "test", "color": "#ffffff"}],
         is_official=False,
     )
 
@@ -26,26 +38,14 @@ def test_plugin_info() -> None:
         desc="desc",
         author="author",
         homepage="https://www.baidu.com",
-        tags=["tag"],
+        tags=[{"label": "test", "color": "#ffffff"}],
         is_official=False,
     )
 
 
 def test_plugin_from_issue(mocker: MockerFixture) -> None:
-    body = """
-        <!-- DO NOT EDIT ! -->
-        <!--
-        - module_name: module_name
-        - project_link: project_link
-        - name: name
-        - desc: desc
-        - homepage: https://www.baidu.com
-        - tags: tag
-        - is_official: false
-        -->
-        """
     mock_issue: Issue = mocker.MagicMock()
-    mock_issue.body = body
+    mock_issue.body = generate_issue_body(homepage="https://www.baidu.com")
     mock_issue.user.login = "author"
 
     info = PluginPublishInfo.from_issue(mock_issue)
@@ -57,27 +57,21 @@ def test_plugin_from_issue(mocker: MockerFixture) -> None:
         desc="desc",
         author="author",
         homepage="https://www.baidu.com",
-        tags=["tag"],
+        tags=[{"label": "test", "color": "#ffffff"}],
         is_official=False,
     )
 
 
 def test_plugin_from_issue_trailing_whitespace(mocker: MockerFixture) -> None:
     """测试末尾如果有空格的情况"""
-    body = """
-        <!-- DO NOT EDIT ! -->
-        <!--
-        - module_name: module_name 
-        - project_link: project_link 
-        - name: my name  
-        - desc: desc 
-        - homepage: https://www.baidu.com 
-        - tags: tag, tag 2 
-        - is_official: false 
-        -->
-    """
     mock_issue: Issue = mocker.MagicMock()
-    mock_issue.body = body
+    mock_issue.body = generate_issue_body(
+        module_name="module_name ",
+        project_link="project_link ",
+        name="name ",
+        desc="desc ",
+        homepage="https://www.baidu.com ",
+    )
     mock_issue.user.login = "author"
 
     info = PluginPublishInfo.from_issue(mock_issue)
@@ -85,11 +79,11 @@ def test_plugin_from_issue_trailing_whitespace(mocker: MockerFixture) -> None:
     assert OrderedDict(info.dict()) == OrderedDict(
         module_name="module_name",
         project_link="project_link",
-        name="my name",
+        name="name",
         desc="desc",
         author="author",
         homepage="https://www.baidu.com",
-        tags=["tag", "tag 2"],
+        tags=[{"label": "test", "color": "#ffffff"}],
         is_official=False,
     )
 
@@ -118,7 +112,7 @@ def test_plugin_info_validation_success(mocker: MockerFixture) -> None:
         desc="desc",
         author="author",
         homepage="https://v2.nonebot.dev",
-        tags=["tag"],
+        tags=[{"label": "test", "color": "#ffffff"}],
         is_official=False,
     )
 
@@ -146,7 +140,7 @@ def test_plugin_info_validation_failed(mocker: MockerFixture) -> None:
         desc="desc",
         author="author",
         homepage="https://www.baidu.com",
-        tags=["tag"],
+        tags=[{"label": "test", "color": "#ffffff"}],
         is_official=False,
     )
 
@@ -174,7 +168,7 @@ def test_plugin_info_validation_partial_failed(mocker: MockerFixture) -> None:
         desc="desc",
         author="author",
         homepage="https://www.baidu.com",
-        tags=["tag"],
+        tags=[{"label": "test", "color": "#ffffff"}],
         is_official=False,
     )
 
