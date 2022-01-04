@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [0.5.0] - 2022-01-04
+
+### Changed
+
+- 利用 Python 重写 Action
+- 更新至 beta1 的发布格式
+
 ## [0.4.0] - 2021-09-15
 
 ### Added
@@ -39,8 +46,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[Unreleased]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.5.0...HEAD
 
+[0.5.0]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.1.0...v0.2.0
