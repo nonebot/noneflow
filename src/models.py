@@ -5,11 +5,11 @@ import re
 from enum import Enum
 from functools import cache
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional, Union
 
 import requests
 from github.Issue import Issue
-from pydantic import BaseModel, BaseSettings, SecretStr, validator
+from pydantic import BaseModel, BaseSettings, SecretStr, ValidationError, validator
 
 from .constants import (
     ADAPTER_DESC_PATTERN,
@@ -27,6 +27,24 @@ from .constants import (
     TAGS_PATTERN,
     VALIDATION_MESSAGE_TEMPLATE,
 )
+
+
+class MyValidationError(ValueError):
+    """验证错误错误"""
+
+    def __init__(
+        self,
+        type: "PublishType",
+        raw_data: dict[str, Any],
+        errors: list[dict[str, Any]],
+    ) -> None:
+        self.type = type
+        self.raw_data = raw_data
+        self.errors = errors
+
+    @property
+    def message(self) -> str:
+        return generate_validation_message(self)
 
 
 class PartialGithubEventHeadCommit(BaseModel):
@@ -107,7 +125,7 @@ class Tag(BaseModel):
     @validator("color", pre=True)
     def color_validator(cls, v: str) -> str:
         if not re.match(r"^#[0-9a-fA-F]{6}$", v):
-            raise ValueError("颜色不符合规则")
+            raise ValueError("标签颜色不符合十六进制颜色码规则")
         return v
 
 
@@ -120,6 +138,15 @@ class PublishInfo(abc.ABC, BaseModel):
     homepage: str
     tags: list[Tag]
     is_official: bool = False
+
+    @validator("homepage", pre=True)
+    def homepage_validator(cls, v: str) -> str:
+        status_code = check_url(v)
+        if status_code != 200:
+            raise ValueError(
+                f"""⚠️ 项目 <a href="{v}">主页</a> 返回状态码 {status_code}。<dt>请确保您的项目主页可访问。</dt>"""
+            )
+        return v
 
     @validator("tags", pre=True)
     def tags_validator(cls, v: list[Tag]) -> list[Tag]:
@@ -146,26 +173,11 @@ class PublishInfo(abc.ABC, BaseModel):
         """从议题中获取所需信息"""
         raise NotImplementedError
 
-    @abc.abstractmethod
-    def get_type(self) -> PublishType:
+    @classmethod
+    @abc.abstractclassmethod
+    def get_type(cls) -> PublishType:
         """获取发布类型"""
         raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def is_valid(self) -> bool:
-        """检查是否满足要求"""
-        raise NotImplementedError
-
-    @property
-    def homepage_status_code(self) -> Optional[int]:
-        """主页状态码"""
-        return check_url(self.homepage)
-
-    @property
-    def is_homepage_valid(self) -> bool:
-        """主页是否可用"""
-        return self.homepage_status_code == 200
 
     @property
     def validation_message(self) -> str:
@@ -177,15 +189,20 @@ class PyPIMixin(BaseModel):
     module_name: str
     project_link: str
 
-    @property
-    def is_published(self) -> bool:
-        return check_pypi(self.project_link)
+    @validator("project_link", pre=True)
+    def project_link_validator(cls, v: str) -> str:
+        if not check_pypi(v):
+            raise ValueError(
+                f'⚠️ 包 <a href="https://pypi.org/project/{v}/">{v}</a> 未发布至 PyPI。<dt>请将您的包发布至 PyPI。</dt>'
+            )
+        return v
 
 
 class BotPublishInfo(PublishInfo):
     """发布机器人所需信息"""
 
-    def get_type(self) -> PublishType:
+    @classmethod
+    def get_type(cls) -> PublishType:
         return PublishType.BOT
 
     def update_file(self, settings: Settings) -> None:
@@ -204,23 +221,25 @@ class BotPublishInfo(PublishInfo):
         if not (name and desc and author and homepage and tags):
             raise ValueError("无法获取机器人信息")
 
-        return BotPublishInfo(
-            name=name.group(1).strip(),
-            desc=desc.group(1).strip(),
-            author=author,
-            homepage=homepage.group(1).strip(),
-            tags=json.loads(tags.group(1).strip()),
-        )
+        raw_data = {
+            "name": name.group(1).strip(),
+            "desc": desc.group(1).strip(),
+            "author": author,
+            "homepage": homepage.group(1).strip(),
+            "tags": json.loads(tags.group(1).strip()),
+        }
 
-    @property
-    def is_valid(self) -> bool:
-        return self.is_homepage_valid
+        try:
+            return BotPublishInfo(**raw_data)
+        except ValidationError as e:
+            raise MyValidationError(cls.get_type(), raw_data, e.errors())
 
 
 class PluginPublishInfo(PublishInfo, PyPIMixin):
     """发布插件所需信息"""
 
-    def get_type(self) -> PublishType:
+    @classmethod
+    def get_type(cls) -> PublishType:
         return PublishType.PLUGIN
 
     def update_file(self, settings: Settings) -> None:
@@ -249,25 +268,27 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
         ):
             raise ValueError("无法获取插件信息")
 
-        return PluginPublishInfo(
-            module_name=module_name.group(1).strip(),
-            project_link=project_link.group(1).strip(),
-            name=name.group(1).strip(),
-            desc=desc.group(1).strip(),
-            author=author,
-            homepage=homepage.group(1).strip(),
-            tags=json.loads(tags.group(1).strip()),
-        )
+        raw_data = {
+            "module_name": module_name.group(1).strip(),
+            "project_link": project_link.group(1).strip(),
+            "name": name.group(1).strip(),
+            "desc": desc.group(1).strip(),
+            "author": author,
+            "homepage": homepage.group(1).strip(),
+            "tags": json.loads(tags.group(1).strip()),
+        }
 
-    @property
-    def is_valid(self) -> bool:
-        return self.is_published and self.is_homepage_valid
+        try:
+            return PluginPublishInfo(**raw_data)
+        except ValidationError as e:
+            raise MyValidationError(cls.get_type(), raw_data, e.errors())
 
 
 class AdapterPublishInfo(PublishInfo, PyPIMixin):
     """发布适配器所需信息"""
 
-    def get_type(self) -> PublishType:
+    @classmethod
+    def get_type(cls) -> PublishType:
         return PublishType.ADAPTER
 
     def update_file(self, settings: Settings) -> None:
@@ -296,19 +317,20 @@ class AdapterPublishInfo(PublishInfo, PyPIMixin):
         ):
             raise ValueError("无法获取适配器信息")
 
-        return AdapterPublishInfo(
-            module_name=module_name.group(1).strip(),
-            project_link=project_link.group(1).strip(),
-            name=name.group(1).strip(),
-            desc=desc.group(1).strip(),
-            author=author,
-            homepage=homepage.group(1).strip(),
-            tags=json.loads(tags.group(1).strip()),
-        )
+        raw_data = {
+            "module_name": module_name.group(1).strip(),
+            "project_link": project_link.group(1).strip(),
+            "name": name.group(1).strip(),
+            "desc": desc.group(1).strip(),
+            "author": author,
+            "homepage": homepage.group(1).strip(),
+            "tags": json.loads(tags.group(1).strip()),
+        }
 
-    @property
-    def is_valid(self) -> bool:
-        return self.is_published and self.is_homepage_valid
+        try:
+            return AdapterPublishInfo(**raw_data)
+        except ValidationError as e:
+            raise MyValidationError(cls.get_type(), raw_data, e.errors())
 
 
 def check_pypi(project_link: str) -> bool:
@@ -332,44 +354,77 @@ def check_url(url: str) -> Optional[int]:
         pass
 
 
-def generate_validation_message(info: PublishInfo) -> str:
+def generate_validation_message(info: Union[PublishInfo, MyValidationError]) -> str:
     """生成验证信息"""
-    publish_info = f"{info.get_type().value}: {info.name}"
+    if isinstance(info, MyValidationError):
+        # 如果有错误
+        publish_info: str = f"{info.type.value}: {info.raw_data['name']}"
+        result = "⚠️ 在发布检查过程中，我们发现以下问题:"
 
-    if info.is_valid:
-        result = "✅ All tests passed, you are ready to go!"
-    else:
-        result = "⚠️ We have found following problem(s) in pre-publish progress:"
+        errors: list[str] = []
+        for error in info.errors:
+            if error["loc"][0] == "tags":
+                errors.append(f"<li>第 {error['loc'][1]+1} 个{error['msg']}</li>")
+            else:
+                errors.append(f"<li>{error['msg']}</li>")
 
-    error_message = ""
-    errors: list[str] = []
-    if info.homepage_status_code != 200:
-        errors.append(
-            f"""<li>⚠️ Project <a href="{info.homepage}">homepage</a> returns {info.homepage_status_code}.<dt>Please make sure that your project has a publicly visible homepage.</dt></li>"""
-        )
-    if isinstance(info, AdapterPublishInfo) or isinstance(info, PluginPublishInfo):
-        if not info.is_published:
-            errors.append(
-                f"""<li>⚠️ Package <a href="https://pypi.org/project/{info.project_link}/">{info.project_link}</a> is not available on PyPI.<dt>Please publish your package to PyPI.</dt></li>"""
-            )
-    if len(errors) != 0:
         error_message = "".join(errors)
         error_message = f"<pre><code>{error_message}</code></pre>"
+    else:
+        # 一切正常时
+        publish_info = f"{info.get_type().value}: {info.name}"
+        result = "✅ 所有测试通过，一切准备就绪!"
+        error_message = ""
 
     detail_message = ""
     details: list[str] = []
-    if info.homepage_status_code == 200:
+
+    # 验证失败的项
+    error_keys = (
+        [error["loc"][0] for error in info.errors]
+        if isinstance(info, MyValidationError)
+        else []
+    )
+
+    # 标签
+    tags = []
+    if isinstance(info, PublishInfo):
+        tags = [f"{tag.label}-{tag.color}" for tag in info.tags]
+    elif "tags" not in error_keys:
+        tags = [f"{tag['label']}-{tag['color']}" for tag in info.raw_data["tags"]]
+
+    if tags:
+        details.append(f"<li>✅ 标签: {', '.join(tags)}</li>")
+
+    # 主页
+    homepage = ""
+    if isinstance(info, PublishInfo):
+        homepage = info.homepage
+    elif "homepage" not in error_keys:
+        homepage = info.raw_data["homepage"]
+    if homepage:
         details.append(
-            f"""<li>✅ Project <a href="{info.homepage}">homepage</a> returns {info.homepage_status_code}.</li>"""
+            f"""<li>✅ 项目 <a href="{homepage}">主页</a> 返回状态码 {check_url(homepage)}.</li>"""
         )
+
+    # 发布情况
+    project_link = ""
     if isinstance(info, AdapterPublishInfo) or isinstance(info, PluginPublishInfo):
-        if info.is_published:
-            details.append(
-                f"""<li>✅ Package <a href="https://pypi.org/project/{info.project_link}/">{info.project_link}</a> is available on PyPI.</li>"""
-            )
+        project_link = info.project_link
+    elif (
+        isinstance(info, MyValidationError)
+        and info.type in [PublishType.PLUGIN, PublishType.ADAPTER]
+        and "project_link" not in error_keys
+    ):
+        project_link = info.raw_data["project_link"]
+    if project_link:
+        details.append(
+            f"""<li>✅ 包 <a href="https://pypi.org/project/{project_link}/">{project_link}</a> 已发布至 PyPI</li>"""
+        )
+
     if len(details) != 0:
         detail_message = "".join(details)
-        detail_message = f"""<details><summary>Report Detail</summary><pre><code>{detail_message}</code></pre></details>"""
+        detail_message = f"""<details><summary>测试详情</summary><pre><code>{detail_message}</code></pre></details>"""
 
     return VALIDATION_MESSAGE_TEMPLATE.format(
         publish_info=publish_info,

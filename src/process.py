@@ -4,6 +4,7 @@ from github.Repository import Repository
 
 from .constants import BRANCH_NAME_PREFIX
 from .models import (
+    MyValidationError,
     PartialGitHubIssuesEvent,
     PartialGitHubPullRequestEvent,
     PartialGitHubPushEvent,
@@ -98,14 +99,13 @@ def process_issues_event(settings: Settings, repo: Repository):
         logging.info("议题与发布无关，已跳过")
         return
 
-    info = extract_publish_info_from_issue(issue, publish_type)
-
     # 自动给议题添加标签
     issue.edit(labels=[publish_type.value])
 
     # 检查是否满足发布要求
     # 仅在通过检查的情况下创建拉取请求
-    if info.is_valid:
+    try:
+        info = extract_publish_info_from_issue(issue, publish_type)
         # 创建新分支
         # 命名示例 publish/issue123
         branch_name = f"{BRANCH_NAME_PREFIX}{issue.number}"
@@ -117,7 +117,9 @@ def process_issues_event(settings: Settings, repo: Repository):
         create_pull_request(
             repo, info, settings.input_config.base, branch_name, issue.number
         )
-    else:
+        message = info.validation_message
+    except MyValidationError as e:
+        message = e.message
         logging.info("发布没通过检查，暂不创建拉取请求")
 
-    comment_issue(issue, info.validation_message)
+    comment_issue(issue, message)

@@ -1,12 +1,12 @@
 import re
 
-COMMENT_TITLE = "# 📃 Publish Check Result"
+COMMENT_TITLE = "# 📃 商店发布检查结果"
 
 COMMIT_MESSAGE_PREFIX = ":beers: publish"
 
 BRANCH_NAME_PREFIX = "publish/issue"
 
-REUSE_MESSAGE = "♻️ This comment has been updated with the latest result."
+REUSE_MESSAGE = "♻️ 评论已更新至最新检查结果"
 
 POWERED_BY_BOT_MESSAGE = "💪 Powered by NoneBot2 Publish Bot"
 
