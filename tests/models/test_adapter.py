@@ -99,7 +99,7 @@ def test_adapter_info_validation_success(mocker: MockerFixture) -> None:
 
     assert (
         info.validation_message
-        == """> Adapter: name\n\n**✅ 所有测试通过，一切准备就绪!**\n\n<details><summary>测试详情</summary><pre><code><li>✅ 标签: test-#ffffff</li><li>✅ 项目 <a href="https://v2.nonebot.dev">主页</a> 返回状态码 200.</li><li>✅ 包 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI</li></code></pre></details>"""
+        == """> Adapter: name\n\n**✅ 所有测试通过，一切准备就绪!**\n\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff</li><li>✅ 项目 <a href="https://v2.nonebot.dev">主页</a> 返回状态码 200.</li><li>✅ 包 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI</li></code></pre></details>"""
     )
 
     calls = [
@@ -149,7 +149,7 @@ def test_adapter_info_validation_partial_failed(mocker: MockerFixture) -> None:
 
     assert (
         e.value.message
-        == """> Adapter: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题:**\n<pre><code><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保您的项目主页可访问。</dt></li></code></pre>\n<details><summary>测试详情</summary><pre><code><li>✅ 标签: test-#ffffff</li><li>✅ 包 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI</li></code></pre></details>"""
+        == """> Adapter: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题:**\n<pre><code><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保您的项目主页可访问。</dt></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff</li><li>✅ 包 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI</li></code></pre></details>"""
     )
 
     calls = [

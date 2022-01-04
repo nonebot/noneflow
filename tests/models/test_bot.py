@@ -89,7 +89,7 @@ def test_bot_info_validation_success(mocker: MockerFixture) -> None:
 
     assert (
         info.validation_message
-        == """> Bot: name\n\n**✅ 所有测试通过，一切准备就绪!**\n\n<details><summary>测试详情</summary><pre><code><li>✅ 标签: test-#ffffff</li><li>✅ 项目 <a href="https://v2.nonebot.dev">主页</a> 返回状态码 200.</li></code></pre></details>"""
+        == """> Bot: name\n\n**✅ 所有测试通过，一切准备就绪!**\n\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff</li><li>✅ 项目 <a href="https://v2.nonebot.dev">主页</a> 返回状态码 200.</li></code></pre></details>"""
     )
 
     calls = [

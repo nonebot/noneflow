@@ -10,6 +10,10 @@ REUSE_MESSAGE = "♻️ 评论已更新至最新检查结果"
 
 POWERED_BY_BOT_MESSAGE = "💪 Powered by NoneBot2 Publish Bot"
 
+DETAIL_MESSAGE_TEMPLATE = (
+    "<details><summary>详情</summary><pre><code>{detail_message}</code></pre></details>"
+)
+
 VALIDATION_MESSAGE_TEMPLATE = """> {publish_info}
 
 **{result}**

@@ -19,6 +19,7 @@ from .constants import (
     BOT_DESC_PATTERN,
     BOT_HOMEPAGE_PATTERN,
     BOT_NAME_PATTERN,
+    DETAIL_MESSAGE_TEMPLATE,
     PLUGIN_DESC_PATTERN,
     PLUGIN_HOMEPAGE_PATTERN,
     PLUGIN_MODULE_NAME_PATTERN,
@@ -424,7 +425,7 @@ def generate_validation_message(info: Union[PublishInfo, MyValidationError]) -> 
 
     if len(details) != 0:
         detail_message = "".join(details)
-        detail_message = f"""<details><summary>测试详情</summary><pre><code>{detail_message}</code></pre></details>"""
+        detail_message = DETAIL_MESSAGE_TEMPLATE.format(detail_message=detail_message)
 
     return VALIDATION_MESSAGE_TEMPLATE.format(
         publish_info=publish_info,
