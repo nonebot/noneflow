@@ -150,11 +150,13 @@ class PublishInfo(abc.ABC, BaseModel):
         return v
 
     @validator("tags", pre=True)
-    def tags_validator(cls, v: str) -> list[Tag]:
+    def tags_validator(cls, v: str) -> list[dict[str, str]]:
         try:
-            tags = json.loads(v)
+            tags: Union[list[dict[str, str]], Any] = json.loads(v)
         except json.JSONDecodeError:
             raise ValueError("⚠️ 标签解码失败。<dt>请确保标签格式正确。</dt>")
+        if not isinstance(tags, list):
+            raise ValueError("⚠️ 标签格式错误。<dt>请确保标签为列表。</dt>")
         if len(tags) > 3:
             raise ValueError("⚠️ 标签数量过多。<dt>请确保标签数量不超过 3 个。</dt>")
         return tags
