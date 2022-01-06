@@ -46,7 +46,7 @@ def test_adapter_tags_color_invalid(mocker: MockerFixture) -> None:
             desc="desc",
             author="author",
             homepage="https://v2.nonebot.dev",
-            tags=[{"label": "test", "color": "#adbcdef"}],
+            tags=json.dumps([{"label": "test", "color": "#adbcdef"}]),
             is_official=False,
         )
     assert "标签颜色不符合十六进制颜色码规则" in str(e.value)
@@ -64,7 +64,7 @@ def test_adapter_tags_label_invalid(mocker: MockerFixture) -> None:
             desc="desc",
             author="author",
             homepage="https://v2.nonebot.dev",
-            tags=[{"label": "12345678901", "color": "#adbcde"}],
+            tags=json.dumps([{"label": "12345678901", "color": "#adbcde"}]),
             is_official=False,
         )
     assert "标签名称不能超过 10 个字符" in str(e.value)
@@ -82,12 +82,32 @@ def test_adapter_tags_number_invalid(mocker: MockerFixture) -> None:
             desc="desc",
             author="author",
             homepage="https://v2.nonebot.dev",
-            tags=[
-                {"label": "1", "color": "#ffffff"},
-                {"label": "2", "color": "#ffffff"},
-                {"label": "3", "color": "#ffffff"},
-                {"label": "4", "color": "#ffffff"},
-            ],
+            tags=json.dumps(
+                [
+                    {"label": "1", "color": "#ffffff"},
+                    {"label": "2", "color": "#ffffff"},
+                    {"label": "3", "color": "#ffffff"},
+                    {"label": "4", "color": "#ffffff"},
+                ]
+            ),
             is_official=False,
         )
     assert "标签数量不能超过 3 个" in str(e.value)
+
+
+def test_adapter_tags_json_invalid(mocker: MockerFixture) -> None:
+    """测试标签 json 格式不正确的情况"""
+    mock_requests = mocker.patch("requests.get", side_effect=mocked_requests_get)
+
+    with pytest.raises(ValidationError) as e:
+        info = AdapterPublishInfo(
+            module_name="module_name",
+            project_link="project_link",
+            name="name",
+            desc="desc",
+            author="author",
+            homepage="https://v2.nonebot.dev",
+            tags=json.dumps([{"label": "1", "color": "#ffffff"}]) + "1",
+            is_official=False,
+        )
+    assert "标签不符合 JSON 格式" in str(e.value)

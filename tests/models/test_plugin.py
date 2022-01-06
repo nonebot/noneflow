@@ -97,7 +97,7 @@ def test_plugin_info_validation_success(mocker: MockerFixture) -> None:
         desc="desc",
         author="author",
         homepage="https://v2.nonebot.dev",
-        tags=[{"label": "test", "color": "#ffffff"}],
+        tags=json.dumps([{"label": "test", "color": "#ffffff"}]),
         is_official=False,
     )
 

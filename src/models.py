@@ -150,10 +150,14 @@ class PublishInfo(abc.ABC, BaseModel):
         return v
 
     @validator("tags", pre=True)
-    def tags_validator(cls, v: list[Tag]) -> list[Tag]:
-        if len(v) > 3:
+    def tags_validator(cls, v: str) -> list[Tag]:
+        try:
+            tags = json.loads(v)
+        except json.JSONDecodeError:
+            raise ValueError("标签不符合 JSON 格式")
+        if len(tags) > 3:
             raise ValueError("标签数量不能超过 3 个")
-        return v
+        return tags
 
     def _update_file(self, path: Path):
         logging.info(f"正在更新文件: {path}")
@@ -227,7 +231,7 @@ class BotPublishInfo(PublishInfo):
             "desc": desc.group(1).strip(),
             "author": author,
             "homepage": homepage.group(1).strip(),
-            "tags": json.loads(tags.group(1).strip()),
+            "tags": tags.group(1).strip(),
         }
 
         try:
@@ -276,7 +280,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
             "desc": desc.group(1).strip(),
             "author": author,
             "homepage": homepage.group(1).strip(),
-            "tags": json.loads(tags.group(1).strip()),
+            "tags": tags.group(1).strip(),
         }
 
         try:
@@ -325,7 +329,7 @@ class AdapterPublishInfo(PublishInfo, PyPIMixin):
             "desc": desc.group(1).strip(),
             "author": author,
             "homepage": homepage.group(1).strip(),
-            "tags": json.loads(tags.group(1).strip()),
+            "tags": tags.group(1).strip(),
         }
 
         try:
@@ -392,7 +396,12 @@ def generate_validation_message(info: Union[PublishInfo, MyValidationError]) -> 
     if isinstance(info, PublishInfo):
         tags = [f"{tag.label}-{tag.color}" for tag in info.tags]
     elif "tags" not in error_keys:
-        tags = [f"{tag['label']}-{tag['color']}" for tag in info.raw_data["tags"]]
+        # 原始 tags 为 json 字符串
+        # 需要先转换才能读取
+        tags = [
+            f"{tag['label']}-{tag['color']}"
+            for tag in json.loads(info.raw_data["tags"])
+        ]
 
     if tags:
         details.append(f"<li>✅ 标签: {', '.join(tags)}</li>")
