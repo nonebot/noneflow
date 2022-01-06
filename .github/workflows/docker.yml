@@ -1,6 +1,9 @@
 name: Docker Image
 
 on:
+  push:
+    paths:
+      - 'poetry.lock'
   workflow_dispatch:
 
 jobs:
