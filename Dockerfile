@@ -1,8 +1,6 @@
-FROM python:3.9
+FROM ghcr.io/nonebot/nonebot2-publish-bot:sha-6c7f19c
 
 WORKDIR /app
-
-RUN pip install "PyGithub>=1.55,<2.0" "pydantic>=v1.8.2,<2.0" "requests>=2.26.0,<3.0"
 
 COPY ./main.py /app/
 COPY ./src /app/src
