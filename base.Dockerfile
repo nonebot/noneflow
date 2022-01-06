@@ -8,6 +8,6 @@ RUN apt-get update \
 COPY poetry.lock pyproject.toml ./
 RUN set -ex; \
   curl -sSL https://install.python-poetry.org | python -; \
-  $HOME/.poetry/bin/poetry config virtualenvs.create false; \
-  $HOME/.poetry/bin/poetry install --no-dev; \
-  rm -rf $HOME/.poetry;
+  $HOME/.local/bin/poetry config virtualenvs.create false; \
+  $HOME/.local/bin/poetry install --no-dev; \
+  curl -sSL https://install.python-poetry.org | python - --uninstall;
