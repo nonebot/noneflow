@@ -1,6 +1,7 @@
 # type: ignore
 import json
 from collections import OrderedDict
+from typing import Union
 
 from github.Issue import Issue
 from pytest_mock import MockerFixture
@@ -12,9 +13,11 @@ def generate_issue_body(
     name: str = "name",
     desc: str = "desc",
     homepage: str = "https://v2.nonebot.dev",
-    tags: list = [{"label": "test", "color": "#ffffff"}],
+    tags: Union[list, str] = [{"label": "test", "color": "#ffffff"}],
 ):
-    return f"""**机器人名称：**\n\n{name}\n\n**机器人功能：**\n\n{desc}\n\n**机器人项目仓库/主页链接：**\n\n{homepage}\n\n**标签：**\n\n{json.dumps(tags)}"""
+    if isinstance(tags, list):
+        tags = json.dumps(tags)
+    return f"""**机器人名称：**\n\n{name}\n\n**机器人功能：**\n\n{desc}\n\n**机器人项目仓库/主页链接：**\n\n{homepage}\n\n**标签：**\n\n{tags}"""
 
 
 def mocked_requests_get(url: str):
@@ -116,7 +119,31 @@ def test_bot_info_validation_failed(mocker: MockerFixture) -> None:
     except MyValidationError as e:
         assert (
             e.message
-            == """> Bot: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题:**\n<pre><code><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保您的项目主页可访问。</dt></li><li>第 2 个标签名称不能超过 10 个字符</li><li>第 2 个标签颜色不符合十六进制颜色码规则</li></code></pre>"""
+            == """> Bot: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题:**\n<pre><code><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保您的项目主页可访问。</dt></li><li>⚠️ 第 2 个标签名称过长<dt>请确保标签名称不超过 10 个字符。</dt></li><li>⚠️ 第 2 个标签颜色错误<dt>请确保标签颜色符合十六进制颜色码规则。</dt></li></code></pre>"""
+        )
+
+    calls = [
+        mocker.call("https://www.baidu.com"),
+    ]
+    mock_requests.assert_has_calls(calls)
+
+
+def test_bot_info_validation_failed_json_error(mocker: MockerFixture) -> None:
+    """测试验证失败的情况，JSON 解析错误"""
+    mock_requests = mocker.patch("requests.get", side_effect=mocked_requests_get)
+    mock_issue: Issue = mocker.MagicMock()
+    mock_issue.body = generate_issue_body(
+        homepage="https://www.baidu.com",
+        tags="not a json",
+    )
+    mock_issue.user.login = "author"
+
+    try:
+        info = BotPublishInfo.from_issue(mock_issue)
+    except MyValidationError as e:
+        assert (
+            e.message
+            == """> Bot: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题:**\n<pre><code><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保您的项目主页可访问。</dt></li><li>⚠️ 标签解码失败。<dt>请确保标签格式正确。</dt></li></code></pre>"""
         )
 
     calls = [

@@ -120,13 +120,13 @@ class Tag(BaseModel):
     @validator("label", pre=True)
     def label_validator(cls, v: str) -> str:
         if len(v) > 10:
-            raise ValueError("标签名称不能超过 10 个字符")
+            raise ValueError("标签名称过长<dt>请确保标签名称不超过 10 个字符。</dt>")
         return v
 
     @validator("color", pre=True)
     def color_validator(cls, v: str) -> str:
         if not re.match(r"^#[0-9a-fA-F]{6}$", v):
-            raise ValueError("标签颜色不符合十六进制颜色码规则")
+            raise ValueError("标签颜色错误<dt>请确保标签颜色符合十六进制颜色码规则。</dt>")
         return v
 
 
@@ -154,9 +154,9 @@ class PublishInfo(abc.ABC, BaseModel):
         try:
             tags = json.loads(v)
         except json.JSONDecodeError:
-            raise ValueError("标签不符合 JSON 格式")
+            raise ValueError("⚠️ 标签解码失败。<dt>请确保标签格式正确。</dt>")
         if len(tags) > 3:
-            raise ValueError("标签数量不能超过 3 个")
+            raise ValueError("⚠️ 标签数量过多。<dt>请确保标签数量不超过 3 个。</dt>")
         return tags
 
     def _update_file(self, path: Path):
@@ -368,8 +368,8 @@ def generate_validation_message(info: Union[PublishInfo, MyValidationError]) -> 
 
         errors: list[str] = []
         for error in info.errors:
-            if error["loc"][0] == "tags":
-                errors.append(f"<li>第 {error['loc'][1]+1} 个{error['msg']}</li>")
+            if error["loc"][0] == "tags" and len(error["loc"]) == 3:
+                errors.append(f"<li>⚠️ 第 {error['loc'][1]+1} 个{error['msg']}</li>")
             else:
                 errors.append(f"<li>{error['msg']}</li>")
 

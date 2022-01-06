@@ -49,7 +49,7 @@ def test_adapter_tags_color_invalid(mocker: MockerFixture) -> None:
             tags=json.dumps([{"label": "test", "color": "#adbcdef"}]),
             is_official=False,
         )
-    assert "标签颜色不符合十六进制颜色码规则" in str(e.value)
+    assert "标签颜色错误<dt>请确保标签颜色符合十六进制颜色码规则。</dt>" in str(e.value)
 
 
 def test_adapter_tags_label_invalid(mocker: MockerFixture) -> None:
@@ -67,7 +67,7 @@ def test_adapter_tags_label_invalid(mocker: MockerFixture) -> None:
             tags=json.dumps([{"label": "12345678901", "color": "#adbcde"}]),
             is_official=False,
         )
-    assert "标签名称不能超过 10 个字符" in str(e.value)
+    assert "标签名称过长<dt>请确保标签名称不超过 10 个字符。</dt>" in str(e.value)
 
 
 def test_adapter_tags_number_invalid(mocker: MockerFixture) -> None:
@@ -92,7 +92,7 @@ def test_adapter_tags_number_invalid(mocker: MockerFixture) -> None:
             ),
             is_official=False,
         )
-    assert "标签数量不能超过 3 个" in str(e.value)
+    assert "⚠️ 标签数量过多。<dt>请确保标签数量不超过 3 个。</dt>" in str(e.value)
 
 
 def test_adapter_tags_json_invalid(mocker: MockerFixture) -> None:
@@ -110,4 +110,4 @@ def test_adapter_tags_json_invalid(mocker: MockerFixture) -> None:
             tags=json.dumps([{"label": "1", "color": "#ffffff"}]) + "1",
             is_official=False,
         )
-    assert "标签不符合 JSON 格式" in str(e.value)
+    assert "⚠️ 标签解码失败。<dt>请确保标签格式正确。</dt>" in str(e.value)
