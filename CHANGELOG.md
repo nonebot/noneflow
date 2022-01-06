@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [0.5.1] - 2022-01-06
+
+### Added
+
+- 添加针对 json 格式的检查
+
+### Fixed
+
+- 修复标签相关的报错
+
+### Change
+
+- 使用自建的镜像以提升速度
+
 ## [0.5.0] - 2022-01-04
 
 ### Changed
@@ -46,8 +60,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[Unreleased]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.5.1...HEAD
 
+[0.5.1]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.2.0...v0.3.0
