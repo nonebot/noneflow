@@ -371,7 +371,12 @@ def generate_validation_message(info: Union[PublishInfo, MyValidationError]) -> 
         errors: list[str] = []
         for error in info.errors:
             if error["loc"][0] == "tags" and len(error["loc"]) == 3:
-                errors.append(f"<li>⚠️ 第 {error['loc'][1]+1} 个{error['msg']}</li>")
+                if error["type"] == "value_error.missing":
+                    errors.append(
+                        f"<li>⚠️ 第 {error['loc'][1]+1} 个标签缺少 {error['loc'][2]} 字段。<dt>请确保标签字段完整。</dt></li>"
+                    )
+                else:
+                    errors.append(f"<li>⚠️ 第 {error['loc'][1]+1} 个{error['msg']}</li>")
             else:
                 errors.append(f"<li>{error['msg']}</li>")
 

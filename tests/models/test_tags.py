@@ -34,6 +34,24 @@ def mocked_requests_get(url: str):
     return MockResponse(404)
 
 
+def test_adapter_tags_color_missing(mocker: MockerFixture) -> None:
+    """测试标签缺少颜色的情况"""
+    mock_requests = mocker.patch("requests.get", side_effect=mocked_requests_get)
+
+    with pytest.raises(ValidationError) as e:
+        info = AdapterPublishInfo(
+            module_name="module_name",
+            project_link="project_link",
+            name="name",
+            desc="desc",
+            author="author",
+            homepage="https://v2.nonebot.dev",
+            tags=json.dumps([{"label": "test"}]),
+            is_official=False,
+        )
+    assert "color\n  field required (type=value_error.missing)" in str(e.value)
+
+
 def test_adapter_tags_color_invalid(mocker: MockerFixture) -> None:
     """测试标签颜色不正确的情况"""
     mock_requests = mocker.patch("requests.get", side_effect=mocked_requests_get)
