@@ -110,7 +110,7 @@ def test_process_issues(mocker: MockerFixture, tmp_path: Path) -> None:
 
     # 检查是否创建了拉取请求
     mock_repo.create_pull.assert_called_with(
-        title="Bot test",
+        title="Bot: test",
         body="resolve #1",
         base="master",
         head="publish/issue1",
