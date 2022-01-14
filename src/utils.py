@@ -19,6 +19,7 @@ from .constants import (
 from .models import (
     AdapterPublishInfo,
     BotPublishInfo,
+    MyValidationError,
     PluginPublishInfo,
     PublishInfo,
     PublishType,
@@ -146,10 +147,13 @@ def resolve_conflict_pull_requests(
         publish_type = get_type_by_labels(issue.labels)
 
         if publish_type:
-            info = extract_publish_info_from_issue(issue, publish_type)
-            info.update_file(settings)
-            commit_and_push(info, pull.head.ref)
-            logging.info("拉取请求更新完毕")
+            try:
+                info = extract_publish_info_from_issue(issue, publish_type)
+                info.update_file(settings)
+                commit_and_push(info, pull.head.ref)
+                logging.info("拉取请求更新完毕")
+            except MyValidationError:
+                logging.info("发布没通过检查，已跳过")
 
 
 def extract_publish_info_from_issue(
