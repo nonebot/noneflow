@@ -48,8 +48,11 @@ def check_load(project_link: str, module_name: str) -> Optional[str]:
     else:
         python_path = f"{BASE_CACHE_DIR}/venv/bin/python"
 
+    # 设置虚拟环境
+    run_shell_command(["python", "-m", "venv", f"{BASE_CACHE_DIR}/venv"])
+
+    # 安装插件
     try:
-        run_shell_command(["python", "-m", "venv", f"{BASE_CACHE_DIR}/venv"])
         logging.info("正在安装插件")
         run_shell_command(
             [
@@ -66,6 +69,7 @@ def check_load(project_link: str, module_name: str) -> Optional[str]:
         logging.info(e.stderr.decode())
         return "插件安装失败"
 
+    # 加载插件
     try:
         logging.info("正在加载插件")
         run_shell_command([python_path, f"{BASE_CACHE_DIR}/runner.py"])
