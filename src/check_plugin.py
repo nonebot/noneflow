@@ -37,7 +37,7 @@ def check_load(project_link: str, module_name: str) -> Optional[str]:
     """检查插件是否能正常加载"""
     logging.info(f"检查插件 {project_link=}, {module_name=}")
     if not project_link or not module_name:
-        return "项目信息不全"
+        return "插件信息不全"
 
     os.makedirs(BASE_CACHE_DIR, exist_ok=True)
     with open(BASE_CACHE_DIR / "runner.py", "w") as f:
@@ -60,12 +60,12 @@ def check_load(project_link: str, module_name: str) -> Optional[str]:
                 "-m",
                 "pip",
                 "install",
+                "nonebot2>=2.0.0b1",
                 project_link,
             ]
         )
     except CalledProcessError as e:
         logging.info("插件安装失败")
-        logging.info(e.output.decode())
         logging.info(e.stderr.decode())
         return "插件安装失败"
 
