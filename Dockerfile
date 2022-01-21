@@ -1,4 +1,4 @@
-FROM ghcr.io/nonebot/nonebot2-publish-bot:sha-8141dde
+FROM ghcr.io/nonebot/nonebot2-publish-bot:0.5.2
 
 WORKDIR /app
 
