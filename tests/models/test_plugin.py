@@ -35,6 +35,8 @@ def mocked_requests_get(url: str):
 
 def test_plugin_from_issue(mocker: MockerFixture) -> None:
     """测试从 issue 中构造 PluginPublishInfo 的情况"""
+    mock_check_load = mocker.patch("src.models.check_load")
+    mock_check_load.return_value = None
     mock_requests = mocker.patch("requests.get", side_effect=mocked_requests_get)
     mock_issue: Issue = mocker.MagicMock()
     mock_issue.body = generate_issue_body()
@@ -43,8 +45,8 @@ def test_plugin_from_issue(mocker: MockerFixture) -> None:
     info = PluginPublishInfo.from_issue(mock_issue)
 
     assert OrderedDict(info.dict()) == OrderedDict(
-        module_name="module_name",
         project_link="project_link",
+        module_name="module_name",
         name="name",
         desc="desc",
         author="author",
@@ -57,10 +59,13 @@ def test_plugin_from_issue(mocker: MockerFixture) -> None:
         mocker.call("https://v2.nonebot.dev"),
     ]
     mock_requests.assert_has_calls(calls)
+    mock_check_load.assert_called_once_with("project_link", "module_name")
 
 
 def test_plugin_from_issue_trailing_whitespace(mocker: MockerFixture) -> None:
     """测试末尾如果有空格的情况"""
+    mock_check_load = mocker.patch("src.models.check_load")
+    mock_check_load.return_value = None
     mock_requests = mocker.patch("requests.get", side_effect=mocked_requests_get)
     mock_issue: Issue = mocker.MagicMock()
     mock_issue.body = generate_issue_body(
@@ -75,8 +80,8 @@ def test_plugin_from_issue_trailing_whitespace(mocker: MockerFixture) -> None:
     info = PluginPublishInfo.from_issue(mock_issue)
 
     assert OrderedDict(info.dict()) == OrderedDict(
-        module_name="module_name",
         project_link="project_link",
+        module_name="module_name",
         name="name",
         desc="desc",
         author="author",
@@ -85,10 +90,14 @@ def test_plugin_from_issue_trailing_whitespace(mocker: MockerFixture) -> None:
         is_official=False,
     )
 
+    mock_check_load.assert_called_once_with("project_link", "module_name")
+
 
 def test_plugin_info_validation_success(mocker: MockerFixture) -> None:
     """测试验证成功的情况"""
     mock_requests = mocker.patch("requests.get", side_effect=mocked_requests_get)
+    mock_check_load = mocker.patch("src.models.check_load")
+    mock_check_load.return_value = None
 
     info = PluginPublishInfo(
         module_name="module_name",
@@ -103,7 +112,7 @@ def test_plugin_info_validation_success(mocker: MockerFixture) -> None:
 
     assert (
         info.validation_message
-        == """> Plugin: name\n\n**✅ 所有测试通过，一切准备就绪!**\n\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff</li><li>✅ 项目 <a href="https://v2.nonebot.dev">主页</a> 返回状态码 200.</li><li>✅ 包 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI</li></code></pre></details>"""
+        == """> Plugin: name\n\n**✅ 所有测试通过，一切准备就绪!**\n\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff</li><li>✅ 项目 <a href="https://v2.nonebot.dev">主页</a> 返回状态码 200.</li><li>✅ 包 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI</li><li>✅ 插件 module_name 加载成功</li></code></pre></details>"""
     )
 
     calls = [
@@ -111,6 +120,7 @@ def test_plugin_info_validation_success(mocker: MockerFixture) -> None:
         mocker.call("https://v2.nonebot.dev"),
     ]
     mock_requests.assert_has_calls(calls)
+    mock_check_load.assert_called_once_with("project_link", "module_name")
 
 
 def test_plugin_info_validation_failed(mocker: MockerFixture) -> None:
@@ -132,7 +142,7 @@ def test_plugin_info_validation_failed(mocker: MockerFixture) -> None:
 
     assert (
         e.value.message
-        == """> Plugin: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题:**\n<pre><code><li>⚠️ 包 <a href="https://pypi.org/project/project_link_failed/">project_link_failed</a> 未发布至 PyPI。<dt>请将您的包发布至 PyPI。</dt></li><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保您的项目主页可访问。</dt></li><li>⚠️ 第 2 个标签名称过长<dt>请确保标签名称不超过 10 个字符。</dt></li><li>⚠️ 第 2 个标签颜色错误<dt>请确保标签颜色符合十六进制颜色码规则。</dt></li></code></pre>"""
+        == """> Plugin: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题:**\n<pre><code><li>⚠️ 包 <a href="https://pypi.org/project/project_link_failed/">project_link_failed</a> 未发布至 PyPI。<dt>请将您的包发布至 PyPI。</dt></li><li>⚠️ 插件加载失败: 项目信息不全。<dt>请确保插件能成功加载。</dt></li><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保您的项目主页可访问。</dt></li><li>⚠️ 第 2 个标签名称过长<dt>请确保标签名称不超过 10 个字符。</dt></li><li>⚠️ 第 2 个标签颜色错误<dt>请确保标签颜色符合十六进制颜色码规则。</dt></li></code></pre>"""
     )
     calls = [
         mocker.call("https://pypi.org/pypi/project_link_failed/json"),
@@ -143,6 +153,8 @@ def test_plugin_info_validation_failed(mocker: MockerFixture) -> None:
 
 def test_plugin_info_validation_partial_failed(mocker: MockerFixture) -> None:
     """测试验证一部分失败的情况"""
+    mock_check_load = mocker.patch("src.models.check_load")
+    mock_check_load.return_value = None
     mock_requests = mocker.patch("requests.get", side_effect=mocked_requests_get)
     mock_issue: Issue = mocker.MagicMock()
     mock_issue.body = generate_issue_body(
@@ -155,10 +167,11 @@ def test_plugin_info_validation_partial_failed(mocker: MockerFixture) -> None:
 
     assert (
         e.value.message
-        == """> Plugin: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题:**\n<pre><code><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保您的项目主页可访问。</dt></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff</li><li>✅ 包 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI</li></code></pre></details>"""
+        == """> Plugin: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题:**\n<pre><code><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保您的项目主页可访问。</dt></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff</li><li>✅ 包 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI</li><li>✅ 插件 module_name 加载成功</li></code></pre></details>"""
     )
     calls = [
         mocker.call("https://pypi.org/pypi/project_link/json"),
         mocker.call("https://www.baidu.com"),
     ]
     mock_requests.assert_has_calls(calls)
+    mock_check_load.assert_called_once_with("project_link", "module_name")

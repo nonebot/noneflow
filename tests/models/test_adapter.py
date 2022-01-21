@@ -4,7 +4,6 @@ from collections import OrderedDict
 
 import pytest
 from github.Issue import Issue
-from pydantic import ValidationError
 from pytest_mock import MockerFixture
 
 from src.models import AdapterPublishInfo, MyValidationError
@@ -44,8 +43,8 @@ def test_adapter_from_issue(mocker: MockerFixture) -> None:
     info = AdapterPublishInfo.from_issue(mock_issue)
 
     assert OrderedDict(info.dict()) == OrderedDict(
-        module_name="module_name",
         project_link="project_link",
+        module_name="module_name",
         name="name",
         desc="desc",
         author="author",
@@ -71,8 +70,8 @@ def test_adapter_from_issue_trailing_whitespace(mocker: MockerFixture) -> None:
     info = AdapterPublishInfo.from_issue(mock_issue)
 
     assert OrderedDict(info.dict()) == OrderedDict(
-        module_name="module_name",
         project_link="project_link",
+        module_name="module_name",
         name="name",
         desc="desc",
         author="author",

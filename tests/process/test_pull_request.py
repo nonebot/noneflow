@@ -52,7 +52,9 @@ def test_process_pull_request(mocker: MockerFixture, tmp_path: Path) -> None:
 
     # 测试 git 命令
     mock_subprocess_run.assert_called_once_with(
-        ["git", "push", "origin", "--delete", "publish/issue1"], check=True
+        ["git", "push", "origin", "--delete", "publish/issue1"],
+        check=True,
+        capture_output=True,
     )
 
     mock_get_pull_requests_by_label.assert_called_once_with(mock_repo, "Bot")
