@@ -1,7 +1,7 @@
 import logging
 import re
 import subprocess
-from typing import Optional
+from typing import Optional, Union
 
 from github.Issue import Issue
 from github.Label import Label
@@ -147,24 +147,27 @@ def resolve_conflict_pull_requests(
         publish_type = get_type_by_labels(issue.labels)
 
         if publish_type:
-            try:
-                info = extract_publish_info_from_issue(issue, publish_type)
+            info = extract_publish_info_from_issue(issue, publish_type)
+            if isinstance(info, PublishInfo):
                 info.update_file(settings)
                 commit_and_push(info, pull.head.ref)
                 logging.info("拉取请求更新完毕")
-            except MyValidationError:
+            else:
                 logging.info("发布没通过检查，已跳过")
 
 
 def extract_publish_info_from_issue(
     issue: Issue, publish_type: PublishType
-) -> PublishInfo:
+) -> Union[PublishInfo, MyValidationError]:
     """从议题中提取发布所需数据"""
-    if publish_type == PublishType.BOT:
-        return BotPublishInfo.from_issue(issue)
-    elif publish_type == PublishType.PLUGIN:
-        return PluginPublishInfo.from_issue(issue)
-    return AdapterPublishInfo.from_issue(issue)
+    try:
+        if publish_type == PublishType.BOT:
+            return BotPublishInfo.from_issue(issue)
+        elif publish_type == PublishType.PLUGIN:
+            return PluginPublishInfo.from_issue(issue)
+        return AdapterPublishInfo.from_issue(issue)
+    except MyValidationError as e:
+        return e
 
 
 def comment_issue(issue: Issue, body: str):

@@ -5,11 +5,14 @@ import re
 from enum import Enum
 from functools import cache
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 import requests
 from github.Issue import Issue
 from pydantic import BaseModel, BaseSettings, SecretStr, ValidationError, validator
+
+if TYPE_CHECKING:
+    from pydantic.error_wrappers import ErrorDict
 
 from .constants import (
     ADAPTER_DESC_PATTERN,
@@ -37,7 +40,7 @@ class MyValidationError(ValueError):
         self,
         type: "PublishType",
         raw_data: dict[str, Any],
-        errors: list[dict[str, Any]],
+        errors: list["ErrorDict"],
     ) -> None:
         self.type = type
         self.raw_data = raw_data
@@ -237,7 +240,7 @@ class BotPublishInfo(PublishInfo):
         }
 
         try:
-            return BotPublishInfo(**raw_data)
+            return BotPublishInfo(**raw_data)  # type: ignore
         except ValidationError as e:
             raise MyValidationError(cls.get_type(), raw_data, e.errors())
 
@@ -286,7 +289,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
         }
 
         try:
-            return PluginPublishInfo(**raw_data)
+            return PluginPublishInfo(**raw_data)  # type: ignore
         except ValidationError as e:
             raise MyValidationError(cls.get_type(), raw_data, e.errors())
 
@@ -335,7 +338,7 @@ class AdapterPublishInfo(PublishInfo, PyPIMixin):
         }
 
         try:
-            return AdapterPublishInfo(**raw_data)
+            return AdapterPublishInfo(**raw_data)  # type: ignore
         except ValidationError as e:
             raise MyValidationError(cls.get_type(), raw_data, e.errors())
 
@@ -373,10 +376,10 @@ def generate_validation_message(info: Union[PublishInfo, MyValidationError]) -> 
             if error["loc"][0] == "tags" and len(error["loc"]) == 3:
                 if error["type"] == "value_error.missing":
                     errors.append(
-                        f"<li>⚠️ 第 {error['loc'][1]+1} 个标签缺少 {error['loc'][2]} 字段。<dt>请确保标签字段完整。</dt></li>"
+                        f"<li>⚠️ 第 {error['loc'][1]+1} 个标签缺少 {error['loc'][2]} 字段。<dt>请确保标签字段完整。</dt></li>"  # type: ignore
                     )
                 else:
-                    errors.append(f"<li>⚠️ 第 {error['loc'][1]+1} 个{error['msg']}</li>")
+                    errors.append(f"<li>⚠️ 第 {error['loc'][1]+1} 个{error['msg']}</li>")  # type: ignore
             else:
                 errors.append(f"<li>{error['msg']}</li>")
 
