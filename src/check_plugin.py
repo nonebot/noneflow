@@ -35,6 +35,7 @@ if not valid:
 
 def check_load(project_link: str, module_name: str) -> Optional[str]:
     """检查插件是否能正常加载"""
+    logging.info(f"检查插件 {project_link=}, {module_name=}")
     if not project_link or not module_name:
         return "项目信息不全"
 
@@ -49,6 +50,7 @@ def check_load(project_link: str, module_name: str) -> Optional[str]:
 
     try:
         run_shell_command(["python", "-m", "venv", f"{BASE_CACHE_DIR}/venv"])
+        logging.info("正在安装插件")
         run_shell_command(
             [
                 python_path,
@@ -59,12 +61,16 @@ def check_load(project_link: str, module_name: str) -> Optional[str]:
             ]
         )
     except CalledProcessError as e:
+        logging.info("插件安装失败")
         logging.info(e.output.decode())
+        logging.info(e.stderr.decode())
         return "插件安装失败"
 
     try:
+        logging.info("正在加载插件")
         run_shell_command([python_path, f"{BASE_CACHE_DIR}/runner.py"])
     except CalledProcessError as e:
+        logging.info("加载插件失败")
         output = e.output.decode()
         logging.info(output)
         return output.splitlines()[-1]
