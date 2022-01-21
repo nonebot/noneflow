@@ -45,7 +45,7 @@ def check_load(project_link: str, module_name: str) -> Optional[str]:
     if sys.platform == "win32":
         python_path = f"{BASE_CACHE_DIR}/venv/Scripts/python"
     else:
-        python_path = f"{BASE_CACHE_DIR}/bin/python"
+        python_path = f"{BASE_CACHE_DIR}/venv/bin/python"
 
     try:
         run_shell_command(["python", "-m", "venv", f"{BASE_CACHE_DIR}/venv"])
