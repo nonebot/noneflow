@@ -1,5 +1,6 @@
 """ 检查插件 """
 import logging
+import os
 import sys
 from pathlib import Path
 from subprocess import CalledProcessError
@@ -37,6 +38,7 @@ def check_load(project_link: str, module_name: str) -> Optional[str]:
     if not project_link or not module_name:
         return "项目信息不全"
 
+    os.makedirs(BASE_CACHE_DIR, exist_ok=True)
     with open(BASE_CACHE_DIR / "runner.py", "w") as f:
         f.write(RUNNER.format(module_name))
 
