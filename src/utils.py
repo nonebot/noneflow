@@ -1,12 +1,7 @@
 import logging
 import re
 import subprocess
-from typing import Optional, Union
-
-from github.Issue import Issue
-from github.Label import Label
-from github.PullRequest import PullRequest
-from github.Repository import Repository
+from typing import TYPE_CHECKING, Optional, Union
 
 from .constants import (
     BRANCH_NAME_PREFIX,
@@ -23,8 +18,15 @@ from .models import (
     PluginPublishInfo,
     PublishInfo,
     PublishType,
-    Settings,
 )
+
+if TYPE_CHECKING:
+    from github.Issue import Issue
+    from github.Label import Label
+    from github.PullRequest import PullRequest
+    from github.Repository import Repository
+
+    from .models import Settings
 
 
 def run_shell_command(command: list[str]):
@@ -36,7 +38,7 @@ def run_shell_command(command: list[str]):
     subprocess.run(command, check=True)
 
 
-def get_type_by_labels(labels: list[Label]) -> Optional[PublishType]:
+def get_type_by_labels(labels: list["Label"]) -> Optional[PublishType]:
     """通过标签获取类型"""
     for label in labels:
         if label.name == PublishType.BOT.value:
@@ -85,7 +87,7 @@ def commit_and_push(info: PublishInfo, branch_name: str):
 
 
 def create_pull_request(
-    repo: Repository,
+    repo: "Repository",
     info: PublishInfo,
     base: str,
     branch_name: str,
@@ -113,7 +115,7 @@ def create_pull_request(
         logging.info("该分支的拉取请求已创建，请前往查看")
 
 
-def get_pull_requests_by_label(repo: Repository, label: str) -> list[PullRequest]:
+def get_pull_requests_by_label(repo: "Repository", label: str) -> list["PullRequest"]:
     """获取所有带有指定标签的拉取请求"""
     pulls = list(repo.get_pulls(state="open"))
     return [pull for pull in pulls if label in [label.name for label in pull.labels]]
@@ -127,7 +129,7 @@ def extract_issue_number_from_ref(ref: str) -> Optional[int]:
 
 
 def resolve_conflict_pull_requests(
-    settings: Settings, pulls: list[PullRequest], repo: Repository
+    settings: "Settings", pulls: list["PullRequest"], repo: "Repository"
 ):
     """根据关联的议题提交来解决冲突
 
@@ -157,7 +159,7 @@ def resolve_conflict_pull_requests(
 
 
 def extract_publish_info_from_issue(
-    issue: Issue, publish_type: PublishType
+    issue: "Issue", publish_type: PublishType
 ) -> Union[PublishInfo, MyValidationError]:
     """从议题中提取发布所需数据"""
     try:
@@ -170,7 +172,7 @@ def extract_publish_info_from_issue(
         return e
 
 
-def comment_issue(issue: Issue, body: str):
+def comment_issue(issue: "Issue", body: str):
     """在议题中发布评论"""
     logging.info("开始发布评论")
 

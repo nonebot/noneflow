@@ -1,6 +1,5 @@
 import logging
-
-from github.Repository import Repository
+from typing import TYPE_CHECKING
 
 from .constants import BRANCH_NAME_PREFIX
 from .models import (
@@ -8,7 +7,6 @@ from .models import (
     PartialGitHubPullRequestEvent,
     PartialGitHubPushEvent,
     PublishInfo,
-    Settings,
 )
 from .utils import (
     comment_issue,
@@ -24,8 +22,13 @@ from .utils import (
     run_shell_command,
 )
 
+if TYPE_CHECKING:
+    from github.Repository import Repository
 
-def process_pull_request_event(settings: Settings, repo: Repository):
+    from .models import Settings
+
+
+def process_pull_request_event(settings: "Settings", repo: "Repository"):
     """处理 Pull Request 事件"""
     event = PartialGitHubPullRequestEvent.parse_file(settings.github_event_path)
     logging.info(f"当前事件: {event.json()}")
@@ -68,7 +71,7 @@ def process_pull_request_event(settings: Settings, repo: Repository):
         logging.info("发布的拉取请求未合并，已跳过")
 
 
-def process_push_event(settings: Settings, repo: Repository):
+def process_push_event(settings: "Settings", repo: "Repository"):
     """处理提交"""
     event = PartialGitHubPushEvent.parse_file(settings.github_event_path)
     logging.info(f"当前事件: {event.json()}")
@@ -83,7 +86,7 @@ def process_push_event(settings: Settings, repo: Repository):
     resolve_conflict_pull_requests(settings, pull_requests, repo)
 
 
-def process_issues_event(settings: Settings, repo: Repository):
+def process_issues_event(settings: "Settings", repo: "Repository"):
     """处理议题"""
     event = PartialGitHubIssuesEvent.parse_file(settings.github_event_path)
     logging.info(f"当前事件: {event.json()}")

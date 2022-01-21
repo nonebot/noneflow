@@ -8,10 +8,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, Union
 
 import requests
-from github.Issue import Issue
 from pydantic import BaseModel, BaseSettings, SecretStr, ValidationError, validator
 
 if TYPE_CHECKING:
+    from github.Issue import Issue
     from pydantic.error_wrappers import ErrorDict
 
 from .constants import (
@@ -179,7 +179,7 @@ class PublishInfo(abc.ABC, BaseModel):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def from_issue(self, issue: Issue) -> "PublishInfo":
+    def from_issue(self, issue: "Issue") -> "PublishInfo":
         """从议题中获取所需信息"""
         raise NotImplementedError
 
@@ -219,7 +219,7 @@ class BotPublishInfo(PublishInfo):
         self._update_file(settings.input_config.bot_path)
 
     @classmethod
-    def from_issue(cls, issue: Issue) -> "BotPublishInfo":
+    def from_issue(cls, issue: "Issue") -> "BotPublishInfo":
         body = issue.body
 
         name = BOT_NAME_PATTERN.search(body)
@@ -256,7 +256,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
         self._update_file(settings.input_config.plugin_path)
 
     @classmethod
-    def from_issue(cls, issue: Issue) -> "PluginPublishInfo":
+    def from_issue(cls, issue: "Issue") -> "PluginPublishInfo":
         body = issue.body
 
         module_name = PLUGIN_MODULE_NAME_PATTERN.search(body)
@@ -305,7 +305,7 @@ class AdapterPublishInfo(PublishInfo, PyPIMixin):
         self._update_file(settings.input_config.adapter_path)
 
     @classmethod
-    def from_issue(cls, issue: Issue) -> "AdapterPublishInfo":
+    def from_issue(cls, issue: "Issue") -> "AdapterPublishInfo":
         body = issue.body
 
         module_name = ADAPTER_MODULE_NAME_PATTERN.search(body)

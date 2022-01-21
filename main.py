@@ -14,7 +14,7 @@ def main():
     FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
     logging.basicConfig(level=logging.INFO, format=FORMAT)
 
-    settings = Settings()
+    settings = Settings()  # type: ignore
     logging.info(f"当前配置: {settings.json()}")
 
     if not settings.input_token.get_secret_value():
