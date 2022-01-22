@@ -10,8 +10,6 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 import requests
 from pydantic import BaseModel, BaseSettings, SecretStr, ValidationError, validator
 
-from .check_plugin import check_load
-
 if TYPE_CHECKING:
     from github.Issue import Issue
     from pydantic.error_wrappers import ErrorDict
@@ -198,8 +196,8 @@ class PublishInfo(abc.ABC, BaseModel):
 
 
 class PyPIMixin(BaseModel):
-    project_link: str
     module_name: str
+    project_link: str
 
     @validator("project_link", pre=True)
     def project_link_validator(cls, v: str) -> str:
@@ -250,13 +248,6 @@ class BotPublishInfo(PublishInfo):
 class PluginPublishInfo(PublishInfo, PyPIMixin):
     """发布插件所需信息"""
 
-    @validator("module_name", pre=True)
-    def plugin_load_validator(cls, module_name: str, values: dict[str, str]):
-        project_link = values.get("project_link", "")
-        if message := check_load(project_link, module_name):
-            raise ValueError(f"⚠️ 插件加载失败: {message}。<dt>请确保插件能成功加载。</dt>")
-        return module_name
-
     @classmethod
     def get_type(cls) -> PublishType:
         return PublishType.PLUGIN
@@ -288,8 +279,8 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
             raise ValueError("无法获取插件信息")
 
         raw_data = {
-            "project_link": project_link.group(1).strip(),
             "module_name": module_name.group(1).strip(),
+            "project_link": project_link.group(1).strip(),
             "name": name.group(1).strip(),
             "desc": desc.group(1).strip(),
             "author": author,
@@ -337,8 +328,8 @@ class AdapterPublishInfo(PublishInfo, PyPIMixin):
             raise ValueError("无法获取适配器信息")
 
         raw_data = {
-            "project_link": project_link.group(1).strip(),
             "module_name": module_name.group(1).strip(),
+            "project_link": project_link.group(1).strip(),
             "name": name.group(1).strip(),
             "desc": desc.group(1).strip(),
             "author": author,
@@ -450,19 +441,6 @@ def generate_validation_message(info: Union[PublishInfo, MyValidationError]) -> 
         details.append(
             f"""<li>✅ 包 <a href="https://pypi.org/project/{project_link}/">{project_link}</a> 已发布至 PyPI</li>"""
         )
-
-    # 插件加载情况
-    module_name = ""
-    if isinstance(info, PluginPublishInfo) and info.get_type() == PublishType.PLUGIN:
-        module_name = info.module_name
-    elif (
-        isinstance(info, MyValidationError)
-        and info.type == PublishType.PLUGIN
-        and "module_name" not in error_keys
-    ):
-        module_name = info.raw_data["module_name"]
-    if module_name:
-        details.append(f"""<li>✅ 插件 {module_name} 加载成功</li>""")
 
     if len(details) != 0:
         detail_message = "".join(details)

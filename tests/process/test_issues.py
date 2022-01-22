@@ -73,16 +73,8 @@ def test_process_issues(mocker: MockerFixture, tmp_path: Path) -> None:
     # 测试 git 命令
     mock_subprocess_run.assert_has_calls(
         [
-            mocker.call(
-                ["git", "switch", "-C", "publish/issue1"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "config", "--global", "user.name", "test"],
-                check=True,
-                capture_output=True,
-            ),
+            mocker.call(["git", "switch", "-C", "publish/issue1"], check=True),
+            mocker.call(["git", "config", "--global", "user.name", "test"], check=True),
             mocker.call(
                 [
                     "git",
@@ -92,19 +84,12 @@ def test_process_issues(mocker: MockerFixture, tmp_path: Path) -> None:
                     "test@users.noreply.github.com",
                 ],
                 check=True,
-                capture_output=True,
             ),
-            mocker.call(["git", "add", "-A"], check=True, capture_output=True),
+            mocker.call(["git", "add", "-A"], check=True),
             mocker.call(
-                ["git", "commit", "-m", ":beers: publish bot test"],
-                check=True,
-                capture_output=True,
+                ["git", "commit", "-m", ":beers: publish bot test"], check=True
             ),
-            mocker.call(
-                ["git", "push", "origin", "publish/issue1", "-f"],
-                check=True,
-                capture_output=True,
-            ),
+            mocker.call(["git", "push", "origin", "publish/issue1", "-f"], check=True),
         ]
     )
 

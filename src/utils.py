@@ -1,5 +1,6 @@
 import logging
 import re
+import subprocess
 from typing import TYPE_CHECKING, Optional, Union
 
 from .constants import (
@@ -18,7 +19,6 @@ from .models import (
     PublishInfo,
     PublishType,
 )
-from .shell_tool import run_shell_command
 
 if TYPE_CHECKING:
     from github.Issue import Issue
@@ -27,6 +27,15 @@ if TYPE_CHECKING:
     from github.Repository import Repository
 
     from .models import Settings
+
+
+def run_shell_command(command: list[str]):
+    """运行 shell 命令
+
+    如果遇到错误则抛出异常
+    """
+    logging.info(f"运行命令: {command}")
+    subprocess.run(command, check=True)
 
 
 def get_type_by_labels(labels: list["Label"]) -> Optional[PublishType]:

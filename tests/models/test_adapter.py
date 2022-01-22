@@ -43,8 +43,8 @@ def test_adapter_from_issue(mocker: MockerFixture) -> None:
     info = AdapterPublishInfo.from_issue(mock_issue)
 
     assert OrderedDict(info.dict()) == OrderedDict(
-        project_link="project_link",
         module_name="module_name",
+        project_link="project_link",
         name="name",
         desc="desc",
         author="author",
@@ -70,8 +70,8 @@ def test_adapter_from_issue_trailing_whitespace(mocker: MockerFixture) -> None:
     info = AdapterPublishInfo.from_issue(mock_issue)
 
     assert OrderedDict(info.dict()) == OrderedDict(
-        project_link="project_link",
         module_name="module_name",
+        project_link="project_link",
         name="name",
         desc="desc",
         author="author",
