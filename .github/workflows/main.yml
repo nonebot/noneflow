@@ -38,13 +38,3 @@ jobs:
             **/TEST-*.xml
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
-
-  event_file:
-    name: Event File
-    runs-on: ubuntu-latest
-    steps:
-    - name: Upload
-      uses: actions/upload-artifact@v2
-      with:
-        name: Event File
-        path: ${{ github.event_path }}
