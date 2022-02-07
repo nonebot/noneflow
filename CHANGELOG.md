@@ -71,8 +71,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[Unreleased]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.5.2...HEAD
-
+[unreleased]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.5.2...HEAD
 [0.5.2]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.4.0...v0.5.0

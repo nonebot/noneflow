@@ -27,7 +27,7 @@
 简单的示例
 
 ```yaml
-name: 'NoneBot2 Publish Bot'
+name: "NoneBot2 Publish Bot"
 
 on:
   push:
