@@ -2,11 +2,10 @@ name: Docker Image
 
 on:
   push:
-    paths:
-      - 'poetry.lock'
+    branches:
+      - "main"
   release:
     types: [published]
-  workflow_dispatch:
 
 jobs:
   docker:
@@ -33,7 +32,7 @@ jobs:
           images: ghcr.io/nonebot/nonebot2-publish-bot
           tags: |
             type=semver,pattern={{version}}
-            type=sha
+            type=ref,event=branch
 
       - name: Build and Publish
         uses: docker/build-push-action@v2
