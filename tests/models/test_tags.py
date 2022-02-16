@@ -147,3 +147,21 @@ def test_adapter_tags_json_not_list(mocker: MockerFixture) -> None:
             is_official=False,
         )
     assert "⚠️ 标签格式错误。<dt>请确保标签为列表。</dt>" in str(e.value)
+
+
+def test_adapter_tags_json_not_dict(mocker: MockerFixture) -> None:
+    """测试标签 json 是列表但列表里不全是字典的情况"""
+    mock_requests = mocker.patch("requests.get", side_effect=mocked_requests_get)
+
+    with pytest.raises(ValidationError) as e:
+        info = AdapterPublishInfo(
+            module_name="module_name",
+            project_link="project_link",
+            name="name",
+            desc="desc",
+            author="author",
+            homepage="https://v2.nonebot.dev",
+            tags=json.dumps([{"label": "1", "color": "#ffffff"}, "1"]),
+            is_official=False,
+        )
+    assert "⚠️ 标签格式错误。<dt>请确保标签列表内均为字典。</dt>" in str(e.value)

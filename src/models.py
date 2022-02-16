@@ -155,11 +155,13 @@ class PublishInfo(abc.ABC, BaseModel):
     @validator("tags", pre=True)
     def tags_validator(cls, v: str) -> list[dict[str, str]]:
         try:
-            tags: Union[list[dict[str, str]], Any] = json.loads(v)
+            tags: Union[list[Any], Any] = json.loads(v)
         except json.JSONDecodeError:
             raise ValueError("⚠️ 标签解码失败。<dt>请确保标签格式正确。</dt>")
         if not isinstance(tags, list):
             raise ValueError("⚠️ 标签格式错误。<dt>请确保标签为列表。</dt>")
+        if len(tags) > 0 and any(map(lambda x: not isinstance(x, dict), tags)):
+            raise ValueError("⚠️ 标签格式错误。<dt>请确保标签列表内均为字典。</dt>")
         if len(tags) > 3:
             raise ValueError("⚠️ 标签数量过多。<dt>请确保标签数量不超过 3 个。</dt>")
         return tags
@@ -184,7 +186,7 @@ class PublishInfo(abc.ABC, BaseModel):
         raise NotImplementedError
 
     @classmethod
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def get_type(cls) -> PublishType:
         """获取发布类型"""
         raise NotImplementedError
