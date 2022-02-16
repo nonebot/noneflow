@@ -1,5 +1,7 @@
 import re
 
+PUBLISH_BOT_MARKER = "<!-- PUBLISH_BOT -->"
+
 COMMENT_TITLE = "# 📃 商店发布检查结果"
 
 COMMIT_MESSAGE_PREFIX = ":beers: publish"

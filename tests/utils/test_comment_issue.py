@@ -15,19 +15,19 @@ def test_comment_issue(mocker: MockerFixture):
 
     mock_comment.edit.assert_not_called()
     mock_issue.create_comment.assert_called_once_with(
-        "# 📃 商店发布检查结果\n\ntest\n\n---\n\n💪 Powered by NoneBot2 Publish Bot\n"
+        "# 📃 商店发布检查结果\n\ntest\n\n---\n\n💪 Powered by NoneBot2 Publish Bot\n<!-- PUBLISH_BOT -->\n"
     )
 
 
 def test_comment_issue_reuse(mocker: MockerFixture):
     mock_issue: Issue = mocker.MagicMock()  # type: ignore
     mock_comment = mocker.MagicMock()
-    mock_comment.body = "# 📃 商店发布检查结果"
+    mock_comment.body = "任意的东西\n<!-- PUBLISH_BOT -->\n"
     mock_issue.get_comments.return_value = [mock_comment]
 
     comment_issue(mock_issue, "test")
 
     mock_issue.create_comment.assert_not_called()
     mock_comment.edit.assert_called_once_with(
-        "# 📃 商店发布检查结果\n\ntest\n\n---\n\n♻️ 评论已更新至最新检查结果\n\n💪 Powered by NoneBot2 Publish Bot\n"
+        "# 📃 商店发布检查结果\n\ntest\n\n---\n\n♻️ 评论已更新至最新检查结果\n\n💪 Powered by NoneBot2 Publish Bot\n<!-- PUBLISH_BOT -->\n"
     )

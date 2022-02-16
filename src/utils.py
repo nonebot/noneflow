@@ -9,6 +9,7 @@ from .constants import (
     COMMENT_TITLE,
     COMMIT_MESSAGE_PREFIX,
     POWERED_BY_BOT_MESSAGE,
+    PUBLISH_BOT_MARKER,
     REUSE_MESSAGE,
 )
 from .models import (
@@ -182,12 +183,15 @@ def comment_issue(issue: "Issue", body: str):
     # 如果发现之前评论过，直接修改之前的评论
     comments = issue.get_comments()
     reusable_comment = next(
-        filter(lambda x: x.body.startswith(COMMENT_TITLE), comments), None
+        filter(lambda x: PUBLISH_BOT_MARKER in x.body, comments), None
     )
     if reusable_comment:
         footer = f"{REUSE_MESSAGE}\n\n{POWERED_BY_BOT_MESSAGE}"
     else:
         footer = f"{POWERED_BY_BOT_MESSAGE}"
+
+    # 添加发布机器人评论的标志
+    footer += f"\n{PUBLISH_BOT_MARKER}"
 
     comment = COMMENT_MESSAGE_TEMPLATE.format(
         title=COMMENT_TITLE, body=body, footer=footer
