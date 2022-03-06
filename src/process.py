@@ -54,7 +54,9 @@ def process_pull_request_event(settings: "Settings", repo: "Repository"):
         return
 
     issue = repo.get_issue(related_issue_number)
-    issue.edit(state="closed")
+    if issue.state == "open":
+        logging.info(f"正在关闭议题 #{related_issue_number}")
+        issue.edit(state="closed")
     logging.info(f"议题 #{related_issue_number} 已关闭")
 
     try:
