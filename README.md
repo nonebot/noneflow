@@ -20,7 +20,6 @@
 
 - 项目主页能够访问
 - 项目发布至 PyPI
-- 插件能正常加载
 
 ## 使用方法
 
@@ -30,9 +29,6 @@
 name: "NoneBot2 Publish Bot"
 
 on:
-  push:
-    branches:
-      - master
   issues:
     types: [opened, reopened, edited]
   pull_request:

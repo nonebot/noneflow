@@ -2,12 +2,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from .constants import BRANCH_NAME_PREFIX
-from .models import (
-    PartialGitHubIssuesEvent,
-    PartialGitHubPullRequestEvent,
-    PartialGitHubPushEvent,
-    PublishInfo,
-)
+from .models import PartialGitHubIssuesEvent, PartialGitHubPullRequestEvent, PublishInfo
 from .utils import (
     comment_issue,
     commit_and_push,
@@ -15,7 +10,6 @@ from .utils import (
     extract_issue_number_from_ref,
     extract_publish_info_from_issue,
     get_pull_requests_by_label,
-    get_type_by_commit_message,
     get_type_by_labels,
     get_type_by_title,
     resolve_conflict_pull_requests,
@@ -71,21 +65,6 @@ def process_pull_request_event(settings: "Settings", repo: "Repository"):
         resolve_conflict_pull_requests(settings, pull_requests, repo)
     else:
         logging.info("发布的拉取请求未合并，已跳过")
-
-
-def process_push_event(settings: "Settings", repo: "Repository"):
-    """处理提交"""
-    event = PartialGitHubPushEvent.parse_file(settings.github_event_path)
-    logging.info(f"当前事件: {event.json()}")
-
-    publish_type = get_type_by_commit_message(event.head_commit.message)
-    if not publish_type:
-        logging.info("提交与发布无关，已跳过")
-        return
-
-    logging.info("发现提交为发布，准备更新拉取请求的提交")
-    pull_requests = get_pull_requests_by_label(repo, publish_type.value)
-    resolve_conflict_pull_requests(settings, pull_requests, repo)
 
 
 def process_issues_event(settings: "Settings", repo: "Repository"):
