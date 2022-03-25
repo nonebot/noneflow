@@ -24,7 +24,7 @@ def main():
         logging.error(f"没有在 {settings.github_event_path} 找到 GitHub 事件文件")
         return
 
-    if settings.github_event_name == "pull_request":
+    if settings.github_event_name in ["pull_request", "pull_request_target"]:
         process_pull_request_event(settings, repo)
     elif settings.github_event_name == "issues":
         process_issues_event(settings, repo)
