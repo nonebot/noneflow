@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 修复缺失信息时的错误匹配
+
 ### Removed
 
 - 移除插件加载验证

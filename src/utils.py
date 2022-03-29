@@ -124,7 +124,7 @@ def get_pull_requests_by_label(repo: "Repository", label: str) -> list["PullRequ
 
 def extract_issue_number_from_ref(ref: str) -> Optional[int]:
     """从 Ref 中提取议题号"""
-    match = re.search(fr"{BRANCH_NAME_PREFIX}(\d+)", ref)
+    match = re.search(rf"{BRANCH_NAME_PREFIX}(\d+)", ref)
     if match:
         return int(match.group(1))
 

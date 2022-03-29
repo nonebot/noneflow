@@ -33,19 +33,21 @@ COMMENT_MESSAGE_TEMPLATE = """{title}
 """
 
 # 匹配信息的正则表达式
-PROJECT_LINK_PATTERN = re.compile(r"\*\*PyPI 项目名：\*\*\s+(.+)")
-TAGS_PATTERN = re.compile(r"\*\*标签：\*\*\s+(.+)")
+ISSUE_PATTERN = r"\*\*{}：\*\*\s+(.+)(?=(?:\s+\*\*|$))"
+# 基本信息
+PROJECT_LINK_PATTERN = re.compile(ISSUE_PATTERN.format("PyPI 项目名"))
+TAGS_PATTERN = re.compile(ISSUE_PATTERN.format("标签"))
 # 机器人
-BOT_NAME_PATTERN = re.compile(r"\*\*机器人名称：\*\*\s+(.+)")
-BOT_DESC_PATTERN = re.compile(r"\*\*机器人功能：\*\*\s+(.+)")
-BOT_HOMEPAGE_PATTERN = re.compile(r"\*\*机器人项目仓库/主页链接：\*\*\s+(.+)")
+BOT_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("机器人名称"))
+BOT_DESC_PATTERN = re.compile(ISSUE_PATTERN.format("机器人功能"))
+BOT_HOMEPAGE_PATTERN = re.compile(ISSUE_PATTERN.format("机器人项目仓库/主页链接"))
 # 插件
-PLUGIN_NAME_PATTERN = re.compile(r"\*\*插件名称：\*\*\s+(.+)")
-PLUGIN_DESC_PATTERN = re.compile(r"\*\*插件功能：\*\*\s+(.+)")
-PLUGIN_MODULE_NAME_PATTERN = re.compile(r"\*\*插件 import 包名：\*\*\s+(.+)")
-PLUGIN_HOMEPAGE_PATTERN = re.compile(r"\*\*插件项目仓库/主页链接：\*\*\s+(.+)")
+PLUGIN_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("插件名称"))
+PLUGIN_DESC_PATTERN = re.compile(ISSUE_PATTERN.format("插件功能"))
+PLUGIN_MODULE_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("插件 import 包名"))
+PLUGIN_HOMEPAGE_PATTERN = re.compile(ISSUE_PATTERN.format("插件项目仓库/主页链接"))
 # 协议
-ADAPTER_NAME_PATTERN = re.compile(r"\*\*协议名称：\*\*\s+(.+)")
-ADAPTER_DESC_PATTERN = re.compile(r"\*\*协议功能：\*\*\s+(.+)")
-ADAPTER_MODULE_NAME_PATTERN = re.compile(r"\*\*协议 import 包名：\*\*\s+(.+)")
-ADAPTER_HOMEPAGE_PATTERN = re.compile(r"\*\*协议项目仓库/主页链接：\*\*\s+(.+)")
+ADAPTER_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("协议名称"))
+ADAPTER_DESC_PATTERN = re.compile(ISSUE_PATTERN.format("协议功能"))
+ADAPTER_MODULE_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("协议 import 包名"))
+ADAPTER_HOMEPAGE_PATTERN = re.compile(ISSUE_PATTERN.format("协议项目仓库/主页链接"))
