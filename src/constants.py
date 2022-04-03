@@ -33,7 +33,7 @@ COMMENT_MESSAGE_TEMPLATE = """{title}
 """
 
 # 匹配信息的正则表达式
-ISSUE_PATTERN = r"\*\*{}：\*\*\s+(.+)(?=(?:\s+\*\*|$))"
+ISSUE_PATTERN = r"\*\*{}：\*\*\s+(\S.+)(?=(?:\s+\*\*|$))"
 # 基本信息
 PROJECT_LINK_PATTERN = re.compile(ISSUE_PATTERN.format("PyPI 项目名"))
 TAGS_PATTERN = re.compile(ISSUE_PATTERN.format("标签"))
