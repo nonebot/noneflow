@@ -145,11 +145,12 @@ class PublishInfo(abc.ABC, BaseModel):
 
     @validator("homepage", pre=True)
     def homepage_validator(cls, v: str) -> str:
-        status_code = check_url(v)
-        if status_code != 200:
-            raise ValueError(
-                f"""⚠️ 项目 <a href="{v}">主页</a> 返回状态码 {status_code}。<dt>请确保您的项目主页可访问。</dt>"""
-            )
+        if v:
+            status_code = check_url(v)
+            if status_code != 200:
+                raise ValueError(
+                    f"""⚠️ 项目 <a href="{v}">主页</a> 返回状态码 {status_code}。<dt>请确保您的项目主页可访问。</dt>"""
+                )
         return v
 
     @validator("tags", pre=True)
@@ -203,7 +204,7 @@ class PyPIMixin(BaseModel):
 
     @validator("project_link", pre=True)
     def project_link_validator(cls, v: str) -> str:
-        if not check_pypi(v):
+        if v and not check_pypi(v):
             raise ValueError(
                 f'⚠️ 包 <a href="https://pypi.org/project/{v}/">{v}</a> 未发布至 PyPI。<dt>请将您的包发布至 PyPI。</dt>'
             )
