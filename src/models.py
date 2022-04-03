@@ -230,15 +230,12 @@ class BotPublishInfo(PublishInfo):
         homepage = BOT_HOMEPAGE_PATTERN.search(body)
         tags = TAGS_PATTERN.search(body)
 
-        if not (name and desc and author and homepage and tags):
-            raise ValueError("无法获取机器人信息")
-
         raw_data = {
-            "name": name.group(1).strip(),
-            "desc": desc.group(1).strip(),
+            "name": name.group(1).strip() if name else None,
+            "desc": desc.group(1).strip() if desc else None,
             "author": author,
-            "homepage": homepage.group(1).strip(),
-            "tags": tags.group(1).strip(),
+            "homepage": homepage.group(1).strip() if homepage else None,
+            "tags": tags.group(1).strip() if tags else None,
         }
 
         try:
@@ -269,25 +266,14 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
         homepage = PLUGIN_HOMEPAGE_PATTERN.search(body)
         tags = TAGS_PATTERN.search(body)
 
-        if not (
-            module_name
-            and project_link
-            and name
-            and desc
-            and author
-            and homepage
-            and tags
-        ):
-            raise ValueError("无法获取插件信息")
-
         raw_data = {
-            "module_name": module_name.group(1).strip(),
-            "project_link": project_link.group(1).strip(),
-            "name": name.group(1).strip(),
-            "desc": desc.group(1).strip(),
+            "module_name": module_name.group(1).strip() if module_name else None,
+            "project_link": project_link.group(1).strip() if project_link else None,
+            "name": name.group(1).strip() if name else None,
+            "desc": desc.group(1).strip() if desc else None,
             "author": author,
-            "homepage": homepage.group(1).strip(),
-            "tags": tags.group(1).strip(),
+            "homepage": homepage.group(1).strip() if homepage else None,
+            "tags": tags.group(1).strip() if tags else None,
         }
 
         try:
@@ -318,25 +304,14 @@ class AdapterPublishInfo(PublishInfo, PyPIMixin):
         homepage = ADAPTER_HOMEPAGE_PATTERN.search(body)
         tags = TAGS_PATTERN.search(body)
 
-        if not (
-            module_name
-            and project_link
-            and name
-            and desc
-            and author
-            and homepage
-            and tags
-        ):
-            raise ValueError("无法获取适配器信息")
-
         raw_data = {
-            "module_name": module_name.group(1).strip(),
-            "project_link": project_link.group(1).strip(),
-            "name": name.group(1).strip(),
-            "desc": desc.group(1).strip(),
+            "module_name": module_name.group(1).strip() if module_name else None,
+            "project_link": project_link.group(1).strip() if project_link else None,
+            "name": name.group(1).strip() if name else None,
+            "desc": desc.group(1).strip() if desc else None,
             "author": author,
-            "homepage": homepage.group(1).strip(),
-            "tags": tags.group(1).strip(),
+            "homepage": homepage.group(1).strip() if homepage else None,
+            "tags": tags.group(1).strip() if tags else None,
         }
 
         try:
@@ -370,7 +345,7 @@ def generate_validation_message(info: Union[PublishInfo, MyValidationError]) -> 
     """生成验证信息"""
     if isinstance(info, MyValidationError):
         # 如果有错误
-        publish_info: str = f"{info.type.value}: {info.raw_data['name']}"
+        publish_info: str = f"{info.type.value}: {info.raw_data['name'] or ''}"
         result = "⚠️ 在发布检查过程中，我们发现以下问题:"
 
         errors: list[str] = []
@@ -382,6 +357,10 @@ def generate_validation_message(info: Union[PublishInfo, MyValidationError]) -> 
                     )
                 else:
                     errors.append(f"<li>⚠️ 第 {error['loc'][1]+1} 个{error['msg']}</li>")  # type: ignore
+            elif error["type"].startswith("type_error"):
+                errors.append(
+                    f"<li>⚠️ {error['loc'][0]}: 无法匹配到数据。<dt>请确保填写该项目。</dt></li>"
+                )
             else:
                 errors.append(f"<li>{error['msg']}</li>")
 
