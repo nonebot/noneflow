@@ -83,8 +83,8 @@ def process_issues_event(settings: "Settings", repo: "Repository"):
         logging.info("议题与发布无关，已跳过")
         return
 
-    if issue.state == "closed":
-        logging.info("议题关闭，已跳过")
+    if issue.state != "open":
+        logging.info("议题未开启，已跳过")
         return
 
     # 自动给议题添加标签

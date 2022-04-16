@@ -34,6 +34,7 @@ def test_process_issues(mocker: MockerFixture, tmp_path: Path) -> None:
 
     mock_repo.get_issue().title = "Bot: test"
     mock_repo.get_issue().number = 1
+    mock_repo.get_issue().state = "open"
     mock_repo.get_issue().body = """**机器人名称：**\n\ntest\n\n**机器人功能：**\n\ndesc\n\n**机器人项目仓库/主页链接：**\n\nhttps://v2.nonebot.dev\n\n**标签：**\n\n[{"label": "test", "color": "#ffffff"}]"""
     mock_repo.get_issue().user.login = "test"
     mock_comment = mocker.MagicMock()
