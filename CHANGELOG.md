@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ### Fixed
 
 - 修复缺失信息时的错误匹配
+- 修复当议题关闭仍然创建拉取请求的问题
 
 ### Removed
 
