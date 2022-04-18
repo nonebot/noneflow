@@ -137,6 +137,8 @@ def resolve_conflict_pull_requests(
     参考对应的议题重新更新对应分支
     """
     for pull in pulls:
+        # 回到主分支
+        run_shell_command(["git", "checkout", settings.input_config.base])
         # 切换到对应分支
         run_shell_command(["git", "switch", "-C", pull.head.ref])
 
