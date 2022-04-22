@@ -1,13 +1,11 @@
 # type: ignore
 import json
-from collections import OrderedDict
 
 import pytest
-from github.Issue import Issue
 from pydantic import ValidationError
 from pytest_mock import MockerFixture
 
-from src.models import AdapterPublishInfo, MyValidationError
+from src.models import AdapterPublishInfo
 
 
 def generate_issue_body(

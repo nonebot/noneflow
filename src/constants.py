@@ -32,6 +32,17 @@ COMMENT_MESSAGE_TEMPLATE = """{title}
 {footer}
 """
 
+# PyPI 格式
+PYPI_PACKAGE_NAME_PATTERN = re.compile(
+    r"^([A-Z0-9]|[A-Z0-9][A-Z0-9._-]*[A-Z0-9])$",
+    re.IGNORECASE,
+)
+# import 包名格式
+PYTHON_MODULE_NAME_REGEX = re.compile(
+    r"^([A-Z]|[A-Z][A-Z0-9._-]*[A-Z0-9])$",
+    re.IGNORECASE,
+)
+
 # 匹配信息的正则表达式
 ISSUE_PATTERN = r"\*\*{}：\*\*\s+([^\s*].*?)(?=(?:\s+\*\*|$))"
 # 基本信息

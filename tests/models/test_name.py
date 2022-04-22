@@ -1,0 +1,68 @@
+# type: ignore
+import json
+
+import pytest
+from pydantic import ValidationError
+from pytest_mock import MockerFixture
+
+from src.models import AdapterPublishInfo
+
+
+def generate_issue_body(
+    name: str = "name",
+    desc: str = "desc",
+    module_name: str = "module_name",
+    project_link: str = "project_link",
+    homepage: str = "https://v2.nonebot.dev",
+    tags: list = [{"label": "test", "color": "#ffffff"}],
+):
+    return f"""**协议名称：**\n\n{name}\n\n**协议功能：**\n\n{desc}\n\n**PyPI 项目名：**\n\n{project_link}\n\n**协议 import 包名：**\n\n{module_name}\n\n**协议项目仓库/主页链接：**\n\n{homepage}\n\n**标签：**\n\n{json.dumps(tags)}"""
+
+
+def mocked_requests_get(url: str):
+    class MockResponse:
+        def __init__(self, status_code: int):
+            self.status_code = status_code
+
+    if url == "https://pypi.org/pypi/project_link/json":
+        return MockResponse(200)
+    if url == "https://v2.nonebot.dev":
+        return MockResponse(200)
+
+    return MockResponse(404)
+
+
+def test_pypi_project_name_invalid(mocker: MockerFixture) -> None:
+    """测试 PyPI 项目名错误的情况"""
+    mock_requests = mocker.patch("requests.get", side_effect=mocked_requests_get)
+
+    with pytest.raises(ValidationError) as e:
+        info = AdapterPublishInfo(
+            module_name="module_name",
+            project_link="project_link/",
+            name="name",
+            desc="desc",
+            author="author",
+            homepage="https://v2.nonebot.dev",
+            tags=json.dumps([]),
+            is_official=False,
+        )
+    assert "⚠️ PyPI 项目名 project_link/ 不符合规范。<dt>请确保项目名正确。</dt>" in str(e.value)
+
+
+def test_module_name_invalid(mocker: MockerFixture) -> None:
+    """测试模块名称不正确的情况"""
+    mock_requests = mocker.patch("requests.get", side_effect=mocked_requests_get)
+
+    with pytest.raises(ValidationError) as e:
+        info = AdapterPublishInfo(
+            module_name="1module_name",
+            project_link="project_link",
+            name="name",
+            desc="desc",
+            author="author",
+            homepage="https://v2.nonebot.dev",
+            tags=json.dumps([]),
+            is_official=False,
+        )
+    assert "⚠️ 包名 1module_name 不符合规范。<dt>请确保包名正确。</dt>" in str(e.value)

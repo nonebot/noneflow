@@ -28,6 +28,8 @@ from .constants import (
     PLUGIN_MODULE_NAME_PATTERN,
     PLUGIN_NAME_PATTERN,
     PROJECT_LINK_PATTERN,
+    PYPI_PACKAGE_NAME_PATTERN,
+    PYTHON_MODULE_NAME_REGEX,
     TAGS_PATTERN,
     VALIDATION_MESSAGE_TEMPLATE,
 )
@@ -202,8 +204,17 @@ class PyPIMixin(BaseModel):
     module_name: str
     project_link: str
 
+    @validator("module_name", pre=True)
+    def module_name_validator(cls, v: str) -> str:
+        if not PYTHON_MODULE_NAME_REGEX.match(v):
+            raise ValueError(f"⚠️ 包名 {v} 不符合规范。<dt>请确保包名正确。</dt>")
+        return v
+
     @validator("project_link", pre=True)
     def project_link_validator(cls, v: str) -> str:
+        if not PYPI_PACKAGE_NAME_PATTERN.match(v):
+            raise ValueError(f"⚠️ PyPI 项目名 {v} 不符合规范。<dt>请确保项目名正确。</dt>")
+
         if v and not check_pypi(v):
             raise ValueError(
                 f'⚠️ 包 <a href="https://pypi.org/project/{v}/">{v}</a> 未发布至 PyPI。<dt>请将您的包发布至 PyPI。</dt>'
