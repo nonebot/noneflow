@@ -183,8 +183,9 @@ class PublishInfo(abc.ABC, BaseModel):
         """更新文件"""
         raise NotImplementedError
 
+    @classmethod
     @abc.abstractmethod
-    def from_issue(self, issue: "Issue") -> "PublishInfo":
+    def from_issue(cls, issue: "Issue") -> "PublishInfo":
         """从议题中获取所需信息"""
         raise NotImplementedError
 
