@@ -232,7 +232,7 @@ class PublishInfo(abc.ABC, BaseModel):
             )
         ):
             raise ValueError(
-                f"⚠️ PyPI 项目名 {project_link} 加包名 {module_name} 的值与商店重复。<dt>请确保相同项目和包没有发布。</dt>"
+                f"⚠️ PyPI 项目名 {project_link} 加包名 {module_name} 的值与商店重复。<dt>请确保没有重复发布。</dt>"
             )
         return values
 

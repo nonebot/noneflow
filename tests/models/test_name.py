@@ -86,6 +86,6 @@ def test_name_duplication(mocker: MockerFixture) -> None:
             is_official=False,
         )
     assert (
-        "⚠️ PyPI 项目名 project_link1 加包名 module_name1 的值与商店重复。<dt>请确保相同项目和包没有发布。</dt>"
+        "⚠️ PyPI 项目名 project_link1 加包名 module_name1 的值与商店重复。<dt>请确保没有重复发布。</dt>"
         in str(e.value)
     )
