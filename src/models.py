@@ -8,7 +8,14 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, Union
 
 import requests
-from pydantic import BaseModel, BaseSettings, SecretStr, ValidationError, validator
+from pydantic import (
+    BaseModel,
+    BaseSettings,
+    SecretStr,
+    ValidationError,
+    root_validator,
+    validator,
+)
 
 import src.globals as g
 
@@ -201,6 +208,33 @@ class PublishInfo(abc.ABC, BaseModel):
     def validation_message(self) -> str:
         """验证信息"""
         return generate_validation_message(self)
+
+    @root_validator
+    def prevent_duplication(cls, values: dict[str, Any]) -> dict[str, Any]:
+        _type = cls.get_type()
+        if _type == PublishType.BOT:
+            return values
+
+        module_name = values.get("module_name")
+        project_link = values.get("project_link")
+        if _type == PublishType.PLUGIN:
+            with g.settings.input_config.plugin_path.open("r", encoding="utf-8") as f:
+                data: list[dict[str, str]] = json.load(f)
+        else:
+            with g.settings.input_config.adapter_path.open("r", encoding="utf-8") as f:
+                data: list[dict[str, str]] = json.load(f)
+
+        if any(
+            map(
+                lambda x: x["module_name"] == module_name
+                and x["project_link"] == project_link,
+                data,
+            )
+        ):
+            raise ValueError(
+                f"⚠️ PyPI 项目名 {project_link} 加包名 {module_name} 的值与商店重复。<dt>请确保相同项目和包没有发布。</dt>"
+            )
+        return values
 
 
 class PyPIMixin(BaseModel):

@@ -26,6 +26,8 @@ def mocked_requests_get(url: str):
 
     if url == "https://pypi.org/pypi/project_link/json":
         return MockResponse(200)
+    if url == "https://pypi.org/pypi/project_link1/json":
+        return MockResponse(200)
     if url == "https://v2.nonebot.dev":
         return MockResponse(200)
 
@@ -66,3 +68,24 @@ def test_module_name_invalid(mocker: MockerFixture) -> None:
             is_official=False,
         )
     assert "⚠️ 包名 1module_name 不符合规范。<dt>请确保包名正确。</dt>" in str(e.value)
+
+
+def test_name_duplication(mocker: MockerFixture) -> None:
+    """测试名称重复的情况"""
+    mock_requests = mocker.patch("requests.get", side_effect=mocked_requests_get)
+
+    with pytest.raises(ValidationError) as e:
+        info = AdapterPublishInfo(
+            module_name="module_name1",
+            project_link="project_link1",
+            name="name",
+            desc="desc",
+            author="author",
+            homepage="https://v2.nonebot.dev",
+            tags=json.dumps([]),
+            is_official=False,
+        )
+    assert (
+        "⚠️ PyPI 项目名 project_link1 加包名 module_name1 的值与商店重复。<dt>请确保相同项目和包没有发布。</dt>"
+        in str(e.value)
+    )
