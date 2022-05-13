@@ -3,6 +3,8 @@ import re
 import subprocess
 from typing import TYPE_CHECKING, Optional, Union
 
+import src.globals as g
+
 from .constants import (
     BRANCH_NAME_PREFIX,
     COMMENT_MESSAGE_TEMPLATE,
@@ -26,8 +28,6 @@ if TYPE_CHECKING:
     from github.Label import Label
     from github.PullRequest import PullRequest
     from github.Repository import Repository
-
-    from .models import Settings
 
 
 def run_shell_command(command: list[str]):
@@ -129,16 +129,14 @@ def extract_issue_number_from_ref(ref: str) -> Optional[int]:
         return int(match.group(1))
 
 
-def resolve_conflict_pull_requests(
-    settings: "Settings", pulls: list["PullRequest"], repo: "Repository"
-):
+def resolve_conflict_pull_requests(pulls: list["PullRequest"], repo: "Repository"):
     """根据关联的议题提交来解决冲突
 
     参考对应的议题重新更新对应分支
     """
     for pull in pulls:
         # 回到主分支
-        run_shell_command(["git", "checkout", settings.input_config.base])
+        run_shell_command(["git", "checkout", g.settings.input_config.base])
         # 切换到对应分支
         run_shell_command(["git", "switch", "-C", pull.head.ref])
 
@@ -154,7 +152,7 @@ def resolve_conflict_pull_requests(
         if publish_type:
             info = extract_publish_info_from_issue(issue, publish_type)
             if isinstance(info, PublishInfo):
-                info.update_file(settings)
+                info.update_file()
                 commit_and_push(info, pull.head.ref)
                 logging.info("拉取请求更新完毕")
             else:

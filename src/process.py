@@ -62,7 +62,7 @@ def process_pull_request_event(repo: "Repository"):
     if pull_request.merged:
         logging.info("发布的拉取请求已合并，准备更新拉取请求的提交")
         pull_requests = get_pull_requests_by_label(repo, publish_type.value)
-        resolve_conflict_pull_requests(g.settings, pull_requests, repo)
+        resolve_conflict_pull_requests(pull_requests, repo)
     else:
         logging.info("发布的拉取请求未合并，已跳过")
 
