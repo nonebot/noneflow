@@ -7,10 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Added
+
+- 添加检测是否重复发布
+
 ### Fixed
 
 - 修复缺失信息时的错误匹配
 - 修复当议题关闭仍然创建拉取请求的问题
+- 修复解决冲突时没有重置的问题
 
 ### Removed
 
