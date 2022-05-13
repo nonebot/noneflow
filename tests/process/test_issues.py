@@ -6,7 +6,6 @@ from typing import Any
 from github.Repository import Repository
 from pytest_mock import MockerFixture
 
-from src.models import Config, Settings
 from src.process import process_issues_event
 
 
@@ -27,9 +26,10 @@ def check_json_data(file: Path, data: Any) -> None:
 
 
 def test_process_issues(mocker: MockerFixture, tmp_path: Path) -> None:
+    import src.globals as g
+
     mocker.patch("requests.get", side_effect=mocked_requests_get)
     mock_subprocess_run = mocker.patch("subprocess.run")
-    mock_settings: Settings = mocker.MagicMock()
     mock_repo: Repository = mocker.MagicMock()
 
     mock_repo.get_issue().title = "Bot: test"
@@ -41,10 +41,10 @@ def test_process_issues(mocker: MockerFixture, tmp_path: Path) -> None:
     mock_comment.body = "Bot: test"
     mock_repo.get_issue().get_comments.return_value = [mock_comment]
 
-    with open(tmp_path / "bot.json", "w") as f:
+    with open(tmp_path / "bots.json", "w") as f:
         json.dump([], f)
 
-    with open(tmp_path / "event.json", "w") as f:
+    with open(tmp_path / "events.json", "w") as f:
         json.dump(
             {
                 "action": "opened",
@@ -55,17 +55,9 @@ def test_process_issues(mocker: MockerFixture, tmp_path: Path) -> None:
             f,
         )
 
-    mock_settings.github_event_path = str(tmp_path / "event.json")
-    mock_settings.input_config = Config(
-        base="master",
-        plugin_path=tmp_path / "plugin.json",
-        bot_path=tmp_path / "bot.json",
-        adapter_path=tmp_path / "adapter.json",
-    )
+    check_json_data(g.settings.input_config.bot_path, [])
 
-    check_json_data(mock_settings.input_config.bot_path, [])
-
-    process_issues_event(mock_settings, mock_repo)
+    process_issues_event(mock_repo)
 
     mock_repo.get_issue.assert_called_with(1)
     # 测试自动添加标签
@@ -96,7 +88,7 @@ def test_process_issues(mocker: MockerFixture, tmp_path: Path) -> None:
 
     # 检查文件是否正确
     check_json_data(
-        mock_settings.input_config.bot_path,
+        g.settings.input_config.bot_path,
         [
             {
                 "name": "test",

@@ -5,11 +5,12 @@ from pathlib import Path
 from github.Repository import Repository
 from pytest_mock import MockerFixture
 
-from src.models import Config, Settings
 from src.process import process_pull_request_event
 
 
 def test_process_pull_request(mocker: MockerFixture, tmp_path: Path) -> None:
+    import src.globals as g
+
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_get_pull_requests_by_label = mocker.patch(
         "src.process.get_pull_requests_by_label"
@@ -25,7 +26,7 @@ def test_process_pull_request(mocker: MockerFixture, tmp_path: Path) -> None:
     mock_repo.get_pull().head.ref = "publish/issue1"
     mock_repo.get_pull().merged = True
 
-    with open(tmp_path / "event.json", "w") as f:
+    with open(tmp_path / "events.json", "w") as f:
         json.dump(
             {
                 "action": "closed",
@@ -36,16 +37,7 @@ def test_process_pull_request(mocker: MockerFixture, tmp_path: Path) -> None:
             f,
         )
 
-    mock_settings: Settings = mocker.MagicMock()
-    mock_settings.github_event_path = str(tmp_path / "event.json")
-    mock_settings.input_config = Config(
-        base="master",
-        plugin_path=tmp_path / "plugin.json",
-        bot_path=tmp_path / "bot.json",
-        adapter_path=tmp_path / "adapter.json",
-    )
-
-    process_pull_request_event(mock_settings, mock_repo)
+    process_pull_request_event(mock_repo)
 
     mock_repo.get_pull.assert_called_with(2)
     mock_repo.get_issue.assert_called_with(1)

@@ -8,7 +8,16 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, Union
 
 import requests
-from pydantic import BaseModel, BaseSettings, SecretStr, ValidationError, validator
+from pydantic import (
+    BaseModel,
+    BaseSettings,
+    SecretStr,
+    ValidationError,
+    root_validator,
+    validator,
+)
+
+import src.globals as g
 
 if TYPE_CHECKING:
     from github.Issue import Issue
@@ -179,12 +188,13 @@ class PublishInfo(abc.ABC, BaseModel):
         logging.info(f"文件更新完成")
 
     @abc.abstractmethod
-    def update_file(self, settings: Settings) -> None:
+    def update_file(self) -> None:
         """更新文件"""
         raise NotImplementedError
 
+    @classmethod
     @abc.abstractmethod
-    def from_issue(self, issue: "Issue") -> "PublishInfo":
+    def from_issue(cls, issue: "Issue") -> "PublishInfo":
         """从议题中获取所需信息"""
         raise NotImplementedError
 
@@ -198,6 +208,33 @@ class PublishInfo(abc.ABC, BaseModel):
     def validation_message(self) -> str:
         """验证信息"""
         return generate_validation_message(self)
+
+    @root_validator
+    def prevent_duplication(cls, values: dict[str, Any]) -> dict[str, Any]:
+        _type = cls.get_type()
+        if _type == PublishType.BOT:
+            return values
+
+        module_name = values.get("module_name")
+        project_link = values.get("project_link")
+        if _type == PublishType.PLUGIN:
+            with g.settings.input_config.plugin_path.open("r", encoding="utf-8") as f:
+                data: list[dict[str, str]] = json.load(f)
+        else:
+            with g.settings.input_config.adapter_path.open("r", encoding="utf-8") as f:
+                data: list[dict[str, str]] = json.load(f)
+
+        if any(
+            map(
+                lambda x: x["module_name"] == module_name
+                and x["project_link"] == project_link,
+                data,
+            )
+        ):
+            raise ValueError(
+                f"⚠️ PyPI 项目名 {project_link} 加包名 {module_name} 的值与商店重复。<dt>请确保没有重复发布。</dt>"
+            )
+        return values
 
 
 class PyPIMixin(BaseModel):
@@ -229,8 +266,8 @@ class BotPublishInfo(PublishInfo):
     def get_type(cls) -> PublishType:
         return PublishType.BOT
 
-    def update_file(self, settings: Settings) -> None:
-        self._update_file(settings.input_config.bot_path)
+    def update_file(self) -> None:
+        self._update_file(g.settings.input_config.bot_path)
 
     @classmethod
     def from_issue(cls, issue: "Issue") -> "BotPublishInfo":
@@ -263,8 +300,8 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     def get_type(cls) -> PublishType:
         return PublishType.PLUGIN
 
-    def update_file(self, settings: Settings) -> None:
-        self._update_file(settings.input_config.plugin_path)
+    def update_file(self) -> None:
+        self._update_file(g.settings.input_config.plugin_path)
 
     @classmethod
     def from_issue(cls, issue: "Issue") -> "PluginPublishInfo":
@@ -301,8 +338,8 @@ class AdapterPublishInfo(PublishInfo, PyPIMixin):
     def get_type(cls) -> PublishType:
         return PublishType.ADAPTER
 
-    def update_file(self, settings: Settings) -> None:
-        self._update_file(settings.input_config.adapter_path)
+    def update_file(self) -> None:
+        self._update_file(g.settings.input_config.adapter_path)
 
     @classmethod
     def from_issue(cls, issue: "Issue") -> "AdapterPublishInfo":
