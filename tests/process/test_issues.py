@@ -62,10 +62,13 @@ def test_process_issues(mocker: MockerFixture, tmp_path: Path) -> None:
         bot_path=tmp_path / "bot.json",
         adapter_path=tmp_path / "adapter.json",
     )
+    import src.globals as g
+
+    g.settings = mock_settings
 
     check_json_data(mock_settings.input_config.bot_path, [])
 
-    process_issues_event(mock_settings, mock_repo)
+    process_issues_event(mock_repo)
 
     mock_repo.get_issue.assert_called_with(1)
     # 测试自动添加标签

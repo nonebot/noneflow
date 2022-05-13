@@ -44,8 +44,11 @@ def test_process_pull_request(mocker: MockerFixture, tmp_path: Path) -> None:
         bot_path=tmp_path / "bot.json",
         adapter_path=tmp_path / "adapter.json",
     )
+    import src.globals as g
 
-    process_pull_request_event(mock_settings, mock_repo)
+    g.settings = mock_settings
+
+    process_pull_request_event(mock_repo)
 
     mock_repo.get_pull.assert_called_with(2)
     mock_repo.get_issue.assert_called_with(1)

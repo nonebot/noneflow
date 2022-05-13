@@ -10,6 +10,8 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 import requests
 from pydantic import BaseModel, BaseSettings, SecretStr, ValidationError, validator
 
+import src.globals as g
+
 if TYPE_CHECKING:
     from github.Issue import Issue
     from pydantic.error_wrappers import ErrorDict
@@ -179,7 +181,7 @@ class PublishInfo(abc.ABC, BaseModel):
         logging.info(f"文件更新完成")
 
     @abc.abstractmethod
-    def update_file(self, settings: Settings) -> None:
+    def update_file(self) -> None:
         """更新文件"""
         raise NotImplementedError
 
@@ -230,8 +232,8 @@ class BotPublishInfo(PublishInfo):
     def get_type(cls) -> PublishType:
         return PublishType.BOT
 
-    def update_file(self, settings: Settings) -> None:
-        self._update_file(settings.input_config.bot_path)
+    def update_file(self) -> None:
+        self._update_file(g.settings.input_config.bot_path)
 
     @classmethod
     def from_issue(cls, issue: "Issue") -> "BotPublishInfo":
@@ -264,8 +266,8 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     def get_type(cls) -> PublishType:
         return PublishType.PLUGIN
 
-    def update_file(self, settings: Settings) -> None:
-        self._update_file(settings.input_config.plugin_path)
+    def update_file(self) -> None:
+        self._update_file(g.settings.input_config.plugin_path)
 
     @classmethod
     def from_issue(cls, issue: "Issue") -> "PluginPublishInfo":
@@ -302,8 +304,8 @@ class AdapterPublishInfo(PublishInfo, PyPIMixin):
     def get_type(cls) -> PublishType:
         return PublishType.ADAPTER
 
-    def update_file(self, settings: Settings) -> None:
-        self._update_file(settings.input_config.adapter_path)
+    def update_file(self) -> None:
+        self._update_file(g.settings.input_config.adapter_path)
 
     @classmethod
     def from_issue(cls, issue: "Issue") -> "AdapterPublishInfo":
