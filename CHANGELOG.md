@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [1.0.0] - 2022-05-21
+
 ### Added
 
 - 添加检测是否重复发布
@@ -90,7 +92,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.5.2...HEAD
+[unreleased]: https://github.com/nonebot/nonebot2-publish-bot/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.5.2...v1.0.0
 [0.5.2]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.4.0...v0.5.0
