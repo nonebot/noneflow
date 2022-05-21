@@ -27,6 +27,8 @@ def mocked_requests_get(url: str):
 
     if url == "https://pypi.org/pypi/project_link/json":
         return MockResponse(200)
+    if url == "https://pypi.org/pypi/project_link1/json":
+        return MockResponse(200)
     if url == "https://v2.nonebot.dev":
         return MockResponse(200)
 
@@ -154,5 +156,30 @@ def test_adapter_info_validation_partial_failed(mocker: MockerFixture) -> None:
     calls = [
         mocker.call("https://pypi.org/pypi/project_link/json"),
         mocker.call("https://www.baidu.com"),
+    ]
+    mock_requests.assert_has_calls(calls)
+
+
+def test_adapter_info_name_validation_failed(mocker: MockerFixture) -> None:
+    """测试名称重复检测失败的情况"""
+    mock_requests = mocker.patch("requests.get", side_effect=mocked_requests_get)
+    mock_issue: Issue = mocker.MagicMock()
+    mock_issue.body = generate_issue_body(
+        module_name="module_name1",
+        project_link="project_link1",
+    )
+    mock_issue.user.login = "author"
+
+    with pytest.raises(MyValidationError) as e:
+        AdapterPublishInfo.from_issue(mock_issue)
+
+    assert (
+        e.value.message
+        == """> Adapter: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题:**\n<pre><code><li>⚠️ PyPI 项目名 project_link1 加包名 module_name1 的值与商店重复。<dt>请确保没有重复发布。</dt></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff</li><li>✅ 项目 <a href="https://v2.nonebot.dev">主页</a> 返回状态码 200.</li><li>✅ 包 <a href="https://pypi.org/project/project_link1/">project_link1</a> 已发布至 PyPI</li></code></pre></details>"""
+    )
+
+    calls = [
+        mocker.call("https://pypi.org/pypi/project_link1/json"),
+        mocker.call("https://v2.nonebot.dev"),
     ]
     mock_requests.assert_has_calls(calls)

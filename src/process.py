@@ -1,6 +1,8 @@
 import logging
 from typing import TYPE_CHECKING
 
+import src.globals as g
+
 from .constants import BRANCH_NAME_PREFIX
 from .models import PartialGitHubIssuesEvent, PartialGitHubPullRequestEvent, PublishInfo
 from .utils import (
@@ -19,12 +21,10 @@ from .utils import (
 if TYPE_CHECKING:
     from github.Repository import Repository
 
-    from .models import Settings
 
-
-def process_pull_request_event(settings: "Settings", repo: "Repository"):
+def process_pull_request_event(repo: "Repository"):
     """处理 Pull Request 事件"""
-    event = PartialGitHubPullRequestEvent.parse_file(settings.github_event_path)
+    event = PartialGitHubPullRequestEvent.parse_file(g.settings.github_event_path)
     logging.info(f"当前事件: {event.json()}")
 
     # 因为合并拉取请求只会触发 closed 事件
@@ -62,14 +62,14 @@ def process_pull_request_event(settings: "Settings", repo: "Repository"):
     if pull_request.merged:
         logging.info("发布的拉取请求已合并，准备更新拉取请求的提交")
         pull_requests = get_pull_requests_by_label(repo, publish_type.value)
-        resolve_conflict_pull_requests(settings, pull_requests, repo)
+        resolve_conflict_pull_requests(pull_requests, repo)
     else:
         logging.info("发布的拉取请求未合并，已跳过")
 
 
-def process_issues_event(settings: "Settings", repo: "Repository"):
+def process_issues_event(repo: "Repository"):
     """处理议题"""
-    event = PartialGitHubIssuesEvent.parse_file(settings.github_event_path)
+    event = PartialGitHubIssuesEvent.parse_file(g.settings.github_event_path)
     logging.info(f"当前事件: {event.json()}")
 
     if not event.action in ["opened", "reopened", "edited"]:
@@ -99,11 +99,11 @@ def process_issues_event(settings: "Settings", repo: "Repository"):
         branch_name = f"{BRANCH_NAME_PREFIX}{issue.number}"
         run_shell_command(["git", "switch", "-C", branch_name])
         # 更新文件并提交更改
-        info.update_file(settings)
-        commit_and_push(info, branch_name)
+        info.update_file()
+        commit_and_push(info, branch_name, issue.number)
         # 创建拉取请求
         create_pull_request(
-            repo, info, settings.input_config.base, branch_name, issue.number
+            repo, info, g.settings.input_config.base, branch_name, issue.number
         )
         message = info.validation_message
     else:
