@@ -100,7 +100,7 @@ def process_issues_event(repo: "Repository"):
         run_shell_command(["git", "switch", "-C", branch_name])
         # 更新文件并提交更改
         info.update_file()
-        commit_and_push(info, branch_name)
+        commit_and_push(info, branch_name, issue.number)
         # 创建拉取请求
         create_pull_request(
             repo, info, g.settings.input_config.base, branch_name, issue.number

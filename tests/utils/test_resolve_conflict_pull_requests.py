@@ -75,7 +75,7 @@ def test_resolve_conflict_pull_requests(mocker: MockerFixture, tmp_path: Path) -
             ),
             mocker.call(["git", "add", "-A"], check=True),
             mocker.call(
-                ["git", "commit", "-m", ":beers: publish bot test"], check=True
+                ["git", "commit", "-m", ":beers: publish bot test (#1)"], check=True
             ),
             mocker.call(["git", "push", "origin", "publish/issue1", "-f"], check=True),
         ]

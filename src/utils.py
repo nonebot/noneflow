@@ -74,11 +74,10 @@ def get_type_by_commit_message(message: str) -> Optional[PublishType]:
         return PublishType.ADAPTER
 
 
-def commit_and_push(info: PublishInfo, branch_name: str):
+def commit_and_push(info: PublishInfo, branch_name: str, issue_number: int):
     """提交并推送"""
-    commit_message = (
-        f"{COMMIT_MESSAGE_PREFIX} {info.get_type().value.lower()} {info.name}"
-    )
+    commit_message = f"{COMMIT_MESSAGE_PREFIX} {info.get_type().value.lower()} {info.name} (#{issue_number})"
+
     run_shell_command(["git", "config", "--global", "user.name", info.author])
     user_email = f"{info.author}@users.noreply.github.com"
     run_shell_command(["git", "config", "--global", "user.email", user_email])
@@ -153,7 +152,7 @@ def resolve_conflict_pull_requests(pulls: list["PullRequest"], repo: "Repository
             info = extract_publish_info_from_issue(issue, publish_type)
             if isinstance(info, PublishInfo):
                 info.update_file()
-                commit_and_push(info, pull.head.ref)
+                commit_and_push(info, pull.head.ref, issue_number)
                 logging.info("拉取请求更新完毕")
             else:
                 logging.info("发布没通过检查，已跳过")
