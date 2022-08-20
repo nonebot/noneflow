@@ -94,6 +94,11 @@ def process_issues_event(repo: "Repository"):
     # 仅在通过检查的情况下创建拉取请求
     info = extract_publish_info_from_issue(issue, publish_type)
     if isinstance(info, PublishInfo):
+        # 拉取请求与议题的标题
+        title = f"{info.get_type().value}: {info.name}"
+        # 修改议题标题
+        if issue.title != title:
+            issue.edit(title=title)
         # 创建新分支
         # 命名示例 publish/issue123
         branch_name = f"{BRANCH_NAME_PREFIX}{issue.number}"
@@ -103,7 +108,7 @@ def process_issues_event(repo: "Repository"):
         commit_and_push(info, branch_name, issue.number)
         # 创建拉取请求
         create_pull_request(
-            repo, info, g.settings.input_config.base, branch_name, issue.number
+            repo, info, g.settings.input_config.base, branch_name, issue.number, title
         )
         message = info.validation_message
     else:

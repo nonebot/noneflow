@@ -92,13 +92,13 @@ def create_pull_request(
     base: str,
     branch_name: str,
     issue_number: int,
+    title: str,
 ):
     """创建拉取请求
 
     同时添加对应标签
     内容关联上对应的议题
     """
-    title = f"{info.get_type().value}: {info.name}"
     # 关联相关议题，当拉取请求合并时会自动关闭对应议题
     body = f"resolve #{issue_number}"
     try:
