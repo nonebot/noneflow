@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 修复未同时修改议题与拉取请求标题的问题
+
 ## [1.0.0] - 2022-05-21
 
 ### Added
