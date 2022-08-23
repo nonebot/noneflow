@@ -99,6 +99,7 @@ def process_issues_event(repo: "Repository"):
         # 修改议题标题
         if issue.title != title:
             issue.edit(title=title)
+            logging.info(f"议题标题已修改为 {title}")
         # 创建新分支
         # 命名示例 publish/issue123
         branch_name = f"{BRANCH_NAME_PREFIX}{issue.number}"
