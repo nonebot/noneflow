@@ -124,6 +124,7 @@ def test_edit_title(mocker: MockerFixture, tmp_path: Path) -> None:
     mocker.patch("requests.get", side_effect=mocked_requests_get)
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_repo: Repository = mocker.MagicMock()
+    mock_repo.owner.login = "test"
 
     mock_repo.get_issue().title = "Bot: test"
     mock_repo.get_issue().number = 1
@@ -216,7 +217,7 @@ def test_edit_title(mocker: MockerFixture, tmp_path: Path) -> None:
     )
 
     # 检查是否修改了标题
-    mock_repo.get_pulls.assert_called_with(head="publish/issue1")
+    mock_repo.get_pulls.assert_called_with(head="test:publish/issue1")
     mock_pull.edit.assert_called_with(title="Bot: test1")
 
     # 检查是否创建了评论

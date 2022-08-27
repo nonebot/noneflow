@@ -116,7 +116,9 @@ def create_pull_request(
     except GithubException:
         logging.info("该分支的拉取请求已创建，请前往查看")
 
-        pull: "PullRequest" = repo.get_pulls(head=branch_name)[0]
+        pull: "PullRequest" = repo.get_pulls(head=f"{repo.owner.login}:{branch_name}")[
+            0
+        ]
         if pull.title != title:
             pull.edit(title=title)
             logging.info(f"拉取请求标题已修改为 {title}")
