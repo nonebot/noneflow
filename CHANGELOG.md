@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Added
+
+- 只有当文件发生变化后才强制推送
+
 ### Fixed
 
 - 修复未同时修改议题与拉取请求标题的问题

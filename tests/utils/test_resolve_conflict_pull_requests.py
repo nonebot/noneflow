@@ -30,6 +30,9 @@ def test_resolve_conflict_pull_requests(mocker: MockerFixture, tmp_path: Path) -
 
     mocker.patch("requests.get", side_effect=mocked_requests_get)
     mock_subprocess_run = mocker.patch("subprocess.run")
+    mock_result = mocker.MagicMock()
+    mock_subprocess_run.side_effect = lambda *args, **kwargs: mock_result
+
     mock_repo: Repository = mocker.MagicMock()
 
     mock_repo.get_issue().title = "Bot: test"
@@ -60,9 +63,17 @@ def test_resolve_conflict_pull_requests(mocker: MockerFixture, tmp_path: Path) -
     # 测试 git 命令
     mock_subprocess_run.assert_has_calls(
         [
-            mocker.call(["git", "checkout", "master"], check=True),
-            mocker.call(["git", "switch", "-C", "publish/issue1"], check=True),
-            mocker.call(["git", "config", "--global", "user.name", "test"], check=True),
+            mocker.call(["git", "checkout", "master"], check=True, capture_output=True),
+            mocker.call(
+                ["git", "switch", "-C", "publish/issue1"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                ["git", "config", "--global", "user.name", "test"],
+                check=True,
+                capture_output=True,
+            ),
             mocker.call(
                 [
                     "git",
@@ -72,12 +83,25 @@ def test_resolve_conflict_pull_requests(mocker: MockerFixture, tmp_path: Path) -
                     "test@users.noreply.github.com",
                 ],
                 check=True,
+                capture_output=True,
             ),
-            mocker.call(["git", "add", "-A"], check=True),
+            mocker.call(["git", "add", "-A"], check=True, capture_output=True),
             mocker.call(
-                ["git", "commit", "-m", ":beers: publish bot test (#1)"], check=True
+                ["git", "commit", "-m", ":beers: publish bot test (#1)"],
+                check=True,
+                capture_output=True,
             ),
-            mocker.call(["git", "push", "origin", "publish/issue1", "-f"], check=True),
+            mocker.call(["git", "fetch", "origin"], check=True, capture_output=True),
+            mocker.call(
+                ["git", "diff", "origin/publish/issue1", "publish/issue1"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                ["git", "push", "origin", "publish/issue1", "-f"],
+                check=True,
+                capture_output=True,
+            ),
         ]
     )
 

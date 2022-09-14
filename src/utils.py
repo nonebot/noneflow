@@ -38,7 +38,9 @@ def run_shell_command(command: list[str]):
     如果遇到错误则抛出异常
     """
     logging.info(f"运行命令: {command}")
-    subprocess.run(command, check=True)
+    r = subprocess.run(command, check=True, capture_output=True)
+    logging.debug(f"命令输出: \n{r.stdout.decode()}")
+    return r
 
 
 def get_type_by_labels(labels: list["Label"]) -> Optional[PublishType]:
@@ -85,7 +87,17 @@ def commit_and_push(info: PublishInfo, branch_name: str, issue_number: int):
     run_shell_command(["git", "config", "--global", "user.email", user_email])
     run_shell_command(["git", "add", "-A"])
     run_shell_command(["git", "commit", "-m", commit_message])
-    run_shell_command(["git", "push", "origin", branch_name, "-f"])
+
+    try:
+        run_shell_command(["git", "fetch", "origin"])
+        result = run_shell_command(
+            ["git", "diff", f"origin/{branch_name}", branch_name]
+        )
+        if result.stdout:
+            raise Exception
+    except:
+        logging.info("检测到本地分支与远程分支不一致，尝试强制推送")
+        run_shell_command(["git", "push", "origin", branch_name, "-f"])
 
 
 def create_pull_request(
