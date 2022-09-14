@@ -112,6 +112,7 @@ class Settings(BaseSettings):
     github_repository: str
     github_event_name: Optional[str] = None
     github_event_path: Path
+    runner_debug: bool
 
 
 class PublishType(Enum):

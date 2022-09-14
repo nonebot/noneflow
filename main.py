@@ -8,10 +8,14 @@ from src.process import process_issues_event, process_pull_request_event
 
 
 def main():
-    FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
-    logging.basicConfig(level=logging.INFO, format=FORMAT)
-
     g.settings = Settings()  # type: ignore
+
+    FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
+    if g.settings.runner_debug:
+        logging.basicConfig(level=logging.DEBUG, format=FORMAT)
+    else:
+        logging.basicConfig(level=logging.INFO, format=FORMAT)
+
     logging.info(f"当前配置: {g.settings.json()}")
 
     if not g.settings.input_token.get_secret_value():

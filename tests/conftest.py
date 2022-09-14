@@ -76,4 +76,5 @@ def setup_globals(tmp_path: Path):
         ),
         github_repository="",
         github_event_path=tmp_path / "events.json",
+        runner_debug=False,
     )
