@@ -186,6 +186,8 @@ class PublishInfo(abc.ABC, BaseModel):
         with path.open("w", encoding="utf-8") as f:
             data.append(self.dict())
             json.dump(data, f, ensure_ascii=False, indent=2)
+            # 结尾加上换行符，不然会被 pre-commit fix
+            f.write("\n")
         logging.info(f"文件更新完成")
 
     @abc.abstractmethod
