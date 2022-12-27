@@ -309,7 +309,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     def plugin_test_result_validator(cls, v: bool) -> bool:
         if not v and g.settings.plugin_output:
             raise ValueError(
-                f"<details><summary>⚠️ 插件加载测试未通过。</summary>{html.escape(g.settings.plugin_output)}</details>"
+                f"⚠️ 插件加载测试未通过。<details>测试输出<summary></summary>{html.escape(g.settings.plugin_output)}</details>"
             )
         return v
 
