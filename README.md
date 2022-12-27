@@ -35,9 +35,24 @@ on:
     types: [closed]
 
 jobs:
+  plugin_test:
+    runs-on: ubuntu-latest
+    name: nonebot2 plugin test
+    permissions:
+      issues: read
+    outputs:
+      result: ${{ steps.plugin-test.outputs.RESULT }}
+      output: ${{ steps.plugin-test.outputs.OUTPUT }}
+    steps:
+      - name: NoneBot2 Plugin Test
+        id: plugin-test
+        uses: docker://ghcr.io/he0119/nonebot2-store-test:master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
   publish_bot:
     runs-on: ubuntu-latest
     name: nonebot2 publish bot
+    needs: plugin_test
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -52,6 +67,9 @@ jobs:
               "bot_path": "docs/.vuepress/public/bots.json",
               "adapter_path": "docs/.vuepress/public/adapters.json"
             }
+        env:
+          PLUGIN_RESULT: ${{ needs.plugin_test.outputs.result }}
+          PLUGIN_OUTPUT: ${{ needs.plugin_test.outputs.output }}
 ```
 
 ## 测试

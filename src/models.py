@@ -1,4 +1,5 @@
 import abc
+import html
 import json
 import logging
 import re
@@ -113,6 +114,8 @@ class Settings(BaseSettings):
     github_event_name: Optional[str] = None
     github_event_path: Path
     runner_debug: Optional[bool]
+    plugin_result: Optional[bool]
+    plugin_output: Optional[str]
 
 
 class PublishType(Enum):
@@ -184,7 +187,7 @@ class PublishInfo(abc.ABC, BaseModel):
         with path.open("r", encoding="utf-8") as f:
             data: list[dict[str, str]] = json.load(f)
         with path.open("w", encoding="utf-8") as f:
-            data.append(self.dict())
+            data.append(self.dict(exclude={"plugin_test_result"}))
             json.dump(data, f, ensure_ascii=False, indent=2)
             # 结尾加上换行符，不然会被 pre-commit fix
             f.write("\n")
@@ -299,6 +302,17 @@ class BotPublishInfo(PublishInfo):
 class PluginPublishInfo(PublishInfo, PyPIMixin):
     """发布插件所需信息"""
 
+    plugin_test_result: bool
+    """插件测试结果"""
+
+    @validator("plugin_test_result", pre=True)
+    def plugin_test_result_validator(cls, v: str) -> str:
+        if v != "True" and g.settings.plugin_output:
+            raise ValueError(
+                f"<details><summary>⚠️ 插件加载测试未通过。</summary>{html.escape(g.settings.plugin_output)}</details>"
+            )
+        return v
+
     @classmethod
     def get_type(cls) -> PublishType:
         return PublishType.PLUGIN
@@ -326,6 +340,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
             "author": author,
             "homepage": homepage.group(1).strip() if homepage else None,
             "tags": tags.group(1).strip() if tags else None,
+            "plugin_test_result": g.settings.plugin_result,
         }
 
         try:
@@ -474,6 +489,19 @@ def generate_validation_message(info: Union[PublishInfo, MyValidationError]) -> 
         details.append(
             f"""<li>✅ 包 <a href="https://pypi.org/project/{project_link}/">{project_link}</a> 已发布至 PyPI</li>"""
         )
+
+    # 插件加载测试情况
+    plugin_test_result = False
+    if isinstance(info, PluginPublishInfo) and info.plugin_test_result:
+        plugin_test_result = True
+    elif (
+        isinstance(info, MyValidationError)
+        and info.type == PublishType.PLUGIN
+        and "plugin_test_result" not in error_keys
+    ):
+        plugin_test_result = True
+    if plugin_test_result:
+        details.append(f"<li>✅ 插件加载测试通过</li>")
 
     if len(details) != 0:
         detail_message = "".join(details)
