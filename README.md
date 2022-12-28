@@ -44,11 +44,16 @@ jobs:
       result: ${{ steps.plugin-test.outputs.RESULT }}
       output: ${{ steps.plugin-test.outputs.OUTPUT }}
     steps:
-      - name: NoneBot2 Plugin Test
-        id: plugin-test
-        uses: docker://ghcr.io/he0119/nonebot2-store-test:master
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          python-version: "3.10"
+      - name: Test Plugin
+        id: plugin-test
+        run: |
+          curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2-publish-bot/main/plugin_test.py -o plugin_test.py
+          python plugin_test.py
   publish_bot:
     runs-on: ubuntu-latest
     name: nonebot2 publish bot
