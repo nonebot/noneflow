@@ -146,7 +146,7 @@ def test_plugin_info_validation_failed(mocker: MockerFixture) -> None:
 
     assert (
         e.value.message
-        == """> Plugin: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题:**\n<pre><code><li>⚠️ 包 <a href="https://pypi.org/project/project_link_failed/">project_link_failed</a> 未发布至 PyPI。<dt>请将您的包发布至 PyPI。</dt></li><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保您的项目主页可访问。</dt></li><li>⚠️ 第 2 个标签名称过长<dt>请确保标签名称不超过 10 个字符。</dt></li><li>⚠️ 第 2 个标签颜色错误<dt>请确保标签颜色符合十六进制颜色码规则。</dt></li><li>⚠️ 插件加载测试未通过。<details>测试输出<summary></summary>test output</details></li></code></pre>"""
+        == """> Plugin: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题:**\n<pre><code><li>⚠️ 包 <a href="https://pypi.org/project/project_link_failed/">project_link_failed</a> 未发布至 PyPI。<dt>请将您的包发布至 PyPI。</dt></li><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保您的项目主页可访问。</dt></li><li>⚠️ 第 2 个标签名称过长<dt>请确保标签名称不超过 10 个字符。</dt></li><li>⚠️ 第 2 个标签颜色错误<dt>请确保标签颜色符合十六进制颜色码规则。</dt></li><li>⚠️ 插件加载测试未通过。<details><summary>测试输出</summary>test output</details></li></code></pre>"""
     )
     calls = [
         mocker.call("https://pypi.org/pypi/project_link_failed/json"),
@@ -174,7 +174,7 @@ def test_plugin_info_validation_partial_failed(mocker: MockerFixture) -> None:
 
     assert (
         e.value.message
-        == """> Plugin: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题:**\n<pre><code><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保您的项目主页可访问。</dt></li><li>⚠️ 插件加载测试未通过。<details>测试输出<summary></summary>test output</details></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff</li><li>✅ 包 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI</li></code></pre></details>"""
+        == """> Plugin: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题:**\n<pre><code><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保您的项目主页可访问。</dt></li><li>⚠️ 插件加载测试未通过。<details><summary>测试输出</summary>test output</details></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff</li><li>✅ 包 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI</li></code></pre></details>"""
     )
     calls = [
         mocker.call("https://pypi.org/pypi/project_link/json"),

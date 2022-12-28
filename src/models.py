@@ -309,7 +309,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
         if v != "True":
             output = os.environ.get("PLUGIN_TEST_OUTPUT") or ""
             raise ValueError(
-                f"⚠️ 插件加载测试未通过。<details>测试输出<summary></summary>{html.escape(output)}</details>"
+                f"⚠️ 插件加载测试未通过。<details><summary>测试输出</summary>{html.escape(output)}</details>"
             )
         return v
 
