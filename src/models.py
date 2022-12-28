@@ -413,7 +413,7 @@ def generate_validation_message(info: Union[PublishInfo, MyValidationError]) -> 
     if isinstance(info, MyValidationError):
         # 如果有错误
         publish_info: str = f"{info.type.value}: {info.raw_data['name'] or ''}"
-        result = "⚠️ 在发布检查过程中，我们发现以下问题:"
+        result = "⚠️ 在发布检查过程中，我们发现以下问题："
 
         errors: list[str] = []
         for error in info.errors:
@@ -436,7 +436,7 @@ def generate_validation_message(info: Union[PublishInfo, MyValidationError]) -> 
     else:
         # 一切正常时
         publish_info = f"{info.get_type().value}: {info.name}"
-        result = "✅ 所有测试通过，一切准备就绪!"
+        result = "✅ 所有测试通过，一切准备就绪！"
         error_message = ""
 
     detail_message = ""
@@ -462,7 +462,7 @@ def generate_validation_message(info: Union[PublishInfo, MyValidationError]) -> 
         ]
 
     if tags:
-        details.append(f"<li>✅ 标签: {', '.join(tags)}</li>")
+        details.append(f"<li>✅ 标签: {', '.join(tags)}。</li>")
 
     # 主页
     homepage = ""
@@ -472,7 +472,7 @@ def generate_validation_message(info: Union[PublishInfo, MyValidationError]) -> 
         homepage = info.raw_data["homepage"]
     if homepage:
         details.append(
-            f"""<li>✅ 项目 <a href="{homepage}">主页</a> 返回状态码 {check_url(homepage)}.</li>"""
+            f"""<li>✅ 项目 <a href="{homepage}">主页</a> 返回状态码 {check_url(homepage)}。</li>"""
         )
 
     # 发布情况
@@ -487,7 +487,7 @@ def generate_validation_message(info: Union[PublishInfo, MyValidationError]) -> 
         project_link = info.raw_data["project_link"]
     if project_link:
         details.append(
-            f"""<li>✅ 包 <a href="https://pypi.org/project/{project_link}/">{project_link}</a> 已发布至 PyPI</li>"""
+            f"""<li>✅ 包 <a href="https://pypi.org/project/{project_link}/">{project_link}</a> 已发布至 PyPI。</li>"""
         )
 
     # 插件加载测试情况
@@ -501,7 +501,7 @@ def generate_validation_message(info: Union[PublishInfo, MyValidationError]) -> 
     ):
         plugin_test_result = True
     if plugin_test_result:
-        details.append(f"<li>✅ 插件加载测试通过</li>")
+        details.append(f"<li>✅ 插件加载测试通过。</li>")
 
     if len(details) != 0:
         detail_message = "".join(details)
