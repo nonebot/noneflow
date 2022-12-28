@@ -1,3 +1,8 @@
+""" 插件加载测试 
+
+主要测试代码来自 https://github.com/Lancercmd/nonebot2-store-test
+"""
+
 import json
 import os
 import re
