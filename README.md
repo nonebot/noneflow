@@ -68,8 +68,8 @@ jobs:
               "adapter_path": "docs/.vuepress/public/adapters.json"
             }
         env:
-          PLUGIN_RESULT: ${{ needs.plugin_test.outputs.result }}
-          PLUGIN_OUTPUT: ${{ needs.plugin_test.outputs.output }}
+          PLUGIN_TEST_RESULT: ${{ needs.plugin_test.outputs.result }}
+          PLUGIN_TEST_OUTPUT: ${{ needs.plugin_test.outputs.output }}
 ```
 
 ## 测试

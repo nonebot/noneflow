@@ -2,6 +2,7 @@ import abc
 import html
 import json
 import logging
+import os
 import re
 from enum import Enum
 from functools import cache
@@ -114,8 +115,6 @@ class Settings(BaseSettings):
     github_event_name: Optional[str] = None
     github_event_path: Path
     runner_debug: Optional[bool]
-    plugin_result: Optional[bool]
-    plugin_output: Optional[str]
 
 
 class PublishType(Enum):
@@ -306,10 +305,11 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     """插件测试结果"""
 
     @validator("plugin_test_result", pre=True)
-    def plugin_test_result_validator(cls, v: bool) -> bool:
-        if not v and g.settings.plugin_output:
+    def plugin_test_result_validator(cls, v: str) -> str:
+        if v != "True":
+            output = os.environ.get("PLUGIN_TEST_OUTPUT") or ""
             raise ValueError(
-                f"⚠️ 插件加载测试未通过。<details>测试输出<summary></summary>{html.escape(g.settings.plugin_output)}</details>"
+                f"⚠️ 插件加载测试未通过。<details>测试输出<summary></summary>{html.escape(output)}</details>"
             )
         return v
 
@@ -340,7 +340,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
             "author": author,
             "homepage": homepage.group(1).strip() if homepage else None,
             "tags": tags.group(1).strip() if tags else None,
-            "plugin_test_result": g.settings.plugin_result,
+            "plugin_test_result": os.environ.get("PLUGIN_TEST_RESULT", "False"),
         }
 
         try:
