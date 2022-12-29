@@ -101,6 +101,16 @@ class PartialGitHubPushEvent(BaseModel):
     head_commit: PartialGithubEventHeadCommit
 
 
+class PartialGitHubIssueCommentEvent(BaseModel):
+    """议题评论事件
+
+    https://docs.github.com/cn/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#issue_comment
+    """
+
+    action: str
+    issue: PartialGitHubEventIssue
+
+
 class Config(BaseModel):
     base: str
     plugin_path: Path
@@ -307,6 +317,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     @validator("plugin_test_result", pre=True)
     def plugin_test_result_validator(cls, v: str) -> str:
         if g.skip_plugin_test:
+            logging.info("已跳过插件测试")
             return v
 
         if v != "True":

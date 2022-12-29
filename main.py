@@ -3,7 +3,11 @@ import logging
 from github import Github
 
 import src.globals as g
-from src.models import Settings
+from src.models import (
+    PartialGitHubIssueCommentEvent,
+    PartialGitHubIssuesEvent,
+    Settings,
+)
 from src.process import process_issues_event, process_pull_request_event
 
 
@@ -32,7 +36,22 @@ def main():
     if g.settings.github_event_name in ["pull_request", "pull_request_target"]:
         process_pull_request_event(repo)
     elif g.settings.github_event_name == "issues":
-        process_issues_event(repo)
+        event = PartialGitHubIssuesEvent.parse_file(g.settings.github_event_path)
+        logging.info(f"当前事件: {event.json()}")
+
+        if not event.action in ["opened", "reopened", "edited"]:
+            logging.info("不支持的事件，已跳过")
+            return
+        process_issues_event(repo, event.issue.number)
+    elif g.settings.github_event_name == "issue_comment":
+        event = PartialGitHubIssueCommentEvent.parse_file(g.settings.github_event_path)
+        logging.info(f"当前事件: {event.json()}")
+
+        if not event.action != "created":
+            logging.info("不支持的事件，已跳过")
+            return
+
+        process_issues_event(repo, event.issue.number)
     else:
         logging.info(f"不支持的事件: {g.settings.github_event_name}，已跳过")
 

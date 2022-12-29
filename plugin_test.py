@@ -115,7 +115,7 @@ def main():
         event = json.load(f)
 
     event_name = os.environ.get("GITHUB_EVENT_NAME")
-    if event_name != "issues":
+    if event_name not in ["issues", "issue_comment"]:
         print(f"不支持的事件: {event_name}，已跳过")
         return
 

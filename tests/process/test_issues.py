@@ -47,20 +47,9 @@ def test_process_issues(mocker: MockerFixture, tmp_path: Path) -> None:
     with open(tmp_path / "bots.json", "w") as f:
         json.dump([], f)
 
-    with open(tmp_path / "events.json", "w") as f:
-        json.dump(
-            {
-                "action": "opened",
-                "issue": {
-                    "number": 1,
-                },
-            },
-            f,
-        )
-
     check_json_data(g.settings.input_config.bot_path, [])
 
-    process_issues_event(mock_repo)
+    process_issues_event(mock_repo, 1)
 
     mock_repo.get_issue.assert_called_with(1)
     # 测试自动添加标签
@@ -173,20 +162,9 @@ def test_edit_title(mocker: MockerFixture, tmp_path: Path) -> None:
     with open(tmp_path / "bots.json", "w") as f:
         json.dump([], f)
 
-    with open(tmp_path / "events.json", "w") as f:
-        json.dump(
-            {
-                "action": "opened",
-                "issue": {
-                    "number": 1,
-                },
-            },
-            f,
-        )
-
     check_json_data(g.settings.input_config.bot_path, [])
 
-    process_issues_event(mock_repo)
+    process_issues_event(mock_repo, 1)
 
     mock_repo.get_issue.assert_called_with(1)
     # 测试自动添加标签

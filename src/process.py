@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 import src.globals as g
 
 from .constants import BRANCH_NAME_PREFIX
-from .models import PartialGitHubIssuesEvent, PartialGitHubPullRequestEvent, PublishInfo
+from .models import PartialGitHubPullRequestEvent, PublishInfo
 from .utils import (
     comment_issue,
     commit_and_push,
@@ -68,16 +68,9 @@ def process_pull_request_event(repo: "Repository"):
         logging.info("发布的拉取请求未合并，已跳过")
 
 
-def process_issues_event(repo: "Repository"):
+def process_issues_event(repo: "Repository", issue_number: int):
     """处理议题"""
-    event = PartialGitHubIssuesEvent.parse_file(g.settings.github_event_path)
-    logging.info(f"当前事件: {event.json()}")
-
-    if not event.action in ["opened", "reopened", "edited"]:
-        logging.info("不支持的事件，已跳过")
-        return
-
-    issue = repo.get_issue(event.issue.number)
+    issue = repo.get_issue(issue_number)
 
     if issue.state != "open":
         logging.info("议题未开启，已跳过")

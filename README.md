@@ -33,6 +33,8 @@ on:
     types: [opened, reopened, edited]
   pull_request:
     types: [closed]
+  issue_comment:
+    types: [created]
 
 jobs:
   plugin_test:
