@@ -47,7 +47,7 @@ def main():
         event = PartialGitHubIssueCommentEvent.parse_file(g.settings.github_event_path)
         logging.info(f"当前事件: {event.json()}")
 
-        if not event.action != "created":
+        if event.action != "created":
             logging.info("不支持的事件，已跳过")
             return
 
