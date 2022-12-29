@@ -1,4 +1,4 @@
-FROM python:3.9 as requirements-stage
+FROM python:3.10 as requirements-stage
 
 WORKDIR /tmp
 
@@ -12,7 +12,7 @@ ENV PATH="${PATH}:/root/.local/bin"
 
 RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
 
-FROM python:3.9-slim-bullseye
+FROM python:3.10-slim-bullseye
 
 WORKDIR /app
 
