@@ -119,18 +119,24 @@ def main():
         print(f"不支持的事件: {event_name}，已跳过")
         return
 
-    title = event["issue"]["title"]
-    issue_body = event["issue"]["body"]
-    state = event["issue"]["state"]
+    issue = event["issue"]
 
+    pull_request = issue.get("pull_request")
+    if pull_request:
+        print("评论在拉取请求下，已跳过")
+        return
+
+    state = issue.get("state")
     if state != "open":
         print("议题未开启，已跳过")
         return
 
+    title = issue.get("title")
     if not title.startswith("Plugin"):
         print("议题与插件发布无关，已跳过")
         return
 
+    issue_body = issue.get("body")
     project_link = PROJECT_LINK_PATTERN.search(issue_body)
     module_name = MODULE_NAME_PATTERN.search(issue_body)
 

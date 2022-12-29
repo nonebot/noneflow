@@ -72,6 +72,10 @@ def process_issues_event(repo: "Repository", issue_number: int):
     """处理议题"""
     issue = repo.get_issue(issue_number)
 
+    if issue.pull_request:
+        logging.info("评论在拉取请求下，已跳过")
+        return
+
     if issue.state != "open":
         logging.info("议题未开启，已跳过")
         return

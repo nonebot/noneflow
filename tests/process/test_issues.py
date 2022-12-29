@@ -35,6 +35,7 @@ def test_process_issues(mocker: MockerFixture, tmp_path: Path) -> None:
 
     mock_repo: Repository = mocker.MagicMock()
 
+    mock_repo.get_issue().pull_request = None
     mock_repo.get_issue().title = "Bot: test"
     mock_repo.get_issue().number = 1
     mock_repo.get_issue().state = "open"
@@ -141,6 +142,8 @@ def test_edit_title(mocker: MockerFixture, tmp_path: Path) -> None:
 
     mock_repo: Repository = mocker.MagicMock()
     mock_repo.owner.login = "test"
+
+    mock_repo.get_issue().pull_request = None
 
     mock_repo.get_issue().title = "Bot: test"
     mock_repo.get_issue().number = 1
