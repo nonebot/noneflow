@@ -35,29 +35,9 @@ on:
     types: [closed]
 
 jobs:
-  plugin_test:
-    runs-on: ubuntu-latest
-    name: nonebot2 plugin test
-    permissions:
-      issues: read
-    outputs:
-      result: ${{ steps.plugin-test.outputs.RESULT }}
-      output: ${{ steps.plugin-test.outputs.OUTPUT }}
-    steps:
-      - name: Install poetry
-        run: pipx install poetry
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
-      - name: Test Plugin
-        id: plugin-test
-        run: |
-          curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2-publish-bot/main/plugin_test.py -o plugin_test.py
-          python plugin_test.py
   publish_bot:
     runs-on: ubuntu-latest
     name: nonebot2 publish bot
-    needs: plugin_test
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -72,9 +52,6 @@ jobs:
               "bot_path": "docs/.vuepress/public/bots.json",
               "adapter_path": "docs/.vuepress/public/adapters.json"
             }
-        env:
-          PLUGIN_TEST_RESULT: ${{ needs.plugin_test.outputs.result }}
-          PLUGIN_TEST_OUTPUT: ${{ needs.plugin_test.outputs.output }}
 ```
 
 ## 测试

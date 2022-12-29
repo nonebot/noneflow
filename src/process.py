@@ -78,13 +78,13 @@ def process_issues_event(repo: "Repository"):
 
     issue = repo.get_issue(event.issue.number)
 
-    if issue.state != "open":
-        logging.info("议题未开启，已跳过")
-        return
-
     publish_type = get_type_by_title(issue.title)
     if not publish_type:
         logging.info("议题与发布无关，已跳过")
+        return
+
+    if issue.state != "open":
+        logging.info("议题未开启，已跳过")
         return
 
     # 自动给议题添加标签
