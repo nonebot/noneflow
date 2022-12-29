@@ -121,6 +121,11 @@ def main():
 
     title = event["issue"]["title"]
     issue_body = event["issue"]["body"]
+    state = event["issue"]["state"]
+
+    if state != "open":
+        print("议题未开启，已跳过")
+        return
 
     if not title.startswith("Plugin"):
         print("议题与插件发布无关，已跳过")
