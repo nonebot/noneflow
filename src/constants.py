@@ -2,6 +2,8 @@ import re
 
 PUBLISH_BOT_MARKER = "<!-- PUBLISH_BOT -->"
 
+SKIP_PLUGIN_TEST_COMMENT = "/skip"
+
 COMMENT_TITLE = "# 📃 商店发布检查结果"
 
 COMMIT_MESSAGE_PREFIX = ":beers: publish"

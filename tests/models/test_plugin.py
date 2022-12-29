@@ -181,3 +181,35 @@ def test_plugin_info_validation_partial_failed(mocker: MockerFixture) -> None:
         mocker.call("https://www.baidu.com"),
     ]
     mock_requests.assert_has_calls(calls)
+
+
+def test_plugin_info_skip_plugin_test(mocker: MockerFixture) -> None:
+    """测试跳过插件测试的情况"""
+    import os
+
+    import src.globals as g
+
+    g.skip_plugin_test = True
+
+    os.environ["PLUGIN_TEST_RESULT"] = "False"
+    os.environ["PLUGIN_TEST_OUTPUT"] = "test output"
+
+    mock_requests = mocker.patch("requests.get", side_effect=mocked_requests_get)
+    mock_issue: Issue = mocker.MagicMock()
+    mock_issue.body = generate_issue_body(
+        homepage="https://www.baidu.com",
+    )
+    mock_issue.user.login = "author"
+
+    with pytest.raises(MyValidationError) as e:
+        info = PluginPublishInfo.from_issue(mock_issue)
+
+    assert (
+        e.value.message
+        == """> Plugin: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保您的项目主页可访问。</dt></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff。</li><li>✅ 包 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li><li>✅ 插件加载测试已跳过。</li></code></pre></details>"""
+    )
+    calls = [
+        mocker.call("https://pypi.org/pypi/project_link/json"),
+        mocker.call("https://www.baidu.com"),
+    ]
+    mock_requests.assert_has_calls(calls)

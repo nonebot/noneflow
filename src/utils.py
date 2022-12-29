@@ -15,6 +15,7 @@ from .constants import (
     POWERED_BY_BOT_MESSAGE,
     PUBLISH_BOT_MARKER,
     REUSE_MESSAGE,
+    SKIP_PLUGIN_TEST_COMMENT,
 )
 from .models import (
     AdapterPublishInfo,
@@ -223,3 +224,16 @@ def comment_issue(issue: "Issue", body: str):
     else:
         issue.create_comment(comment)
         logging.info("评论创建完成")
+
+
+def should_skip_plugin_test(issue: "Issue") -> bool:
+    """判断是否跳过插件测试"""
+    comments = issue.get_comments()
+    for comment in comments:
+        author_association = comment.raw_data.get("author_association")
+        if comment.body == SKIP_PLUGIN_TEST_COMMENT and author_association in [
+            "OWNER",
+            "MEMBER",
+        ]:
+            return True
+    return False
