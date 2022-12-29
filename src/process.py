@@ -16,6 +16,7 @@ from .utils import (
     get_type_by_title,
     resolve_conflict_pull_requests,
     run_shell_command,
+    should_skip_plugin_test,
 )
 
 if TYPE_CHECKING:
@@ -89,6 +90,9 @@ def process_issues_event(repo: "Repository"):
 
     # 自动给议题添加标签
     issue.edit(labels=[publish_type.value])
+
+    # 是否需要跳过插件测试
+    g.skip_plugin_test = should_skip_plugin_test(issue)
 
     # 检查是否满足发布要求
     # 仅在通过检查的情况下创建拉取请求

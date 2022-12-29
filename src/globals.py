@@ -5,3 +5,5 @@ if TYPE_CHECKING:
 
 
 settings: "Settings"
+skip_plugin_test: bool = False
+""" 是否跳过插件测试 """

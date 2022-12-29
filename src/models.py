@@ -306,6 +306,9 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
 
     @validator("plugin_test_result", pre=True)
     def plugin_test_result_validator(cls, v: str) -> str:
+        if g.skip_plugin_test:
+            return v
+
         if v != "True":
             output = os.environ.get("PLUGIN_TEST_OUTPUT") or ""
             raise ValueError(
@@ -500,8 +503,10 @@ def generate_validation_message(info: Union[PublishInfo, MyValidationError]) -> 
         and "plugin_test_result" not in error_keys
     ):
         plugin_test_result = True
-    if plugin_test_result:
-        details.append(f"<li>✅ 插件加载测试通过。</li>")
+    if g.skip_plugin_test:
+        details.append("<li>✅ 插件加载测试已跳过。</li>")
+    elif plugin_test_result:
+        details.append("<li>✅ 插件加载测试通过。</li>")
 
     if len(details) != 0:
         detail_message = "".join(details)
