@@ -167,6 +167,9 @@ class Bot:
 
         参考对应的议题重新更新对应分支
         """
+        # 跳过插件测试，因为这个时候插件测试任务没有运行
+        g.skip_plugin_test = True
+
         for pull in pulls:
             # 回到主分支
             run_shell_command(["git", "checkout", g.settings.input_config.base])
