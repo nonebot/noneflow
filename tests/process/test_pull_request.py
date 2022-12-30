@@ -1,46 +1,40 @@
-# type: ignore
-import json
 from pathlib import Path
 
-from github.Repository import Repository
 from pytest_mock import MockerFixture
-
-from src.process import process_pull_request_event
 
 
 def test_process_pull_request(mocker: MockerFixture, tmp_path: Path) -> None:
-    import src.globals as g
+    from src import Bot
+
+    bot = Bot()
+    bot.github = mocker.MagicMock()
 
     mock_subprocess_run = mocker.patch("subprocess.run")
-    mock_get_pull_requests_by_label = mocker.patch(
-        "src.process.get_pull_requests_by_label"
-    )
-    mock_resolve_conflict_pull_requests = mocker.patch(
-        "src.process.resolve_conflict_pull_requests"
-    )
-    mock_repo: Repository = mocker.MagicMock()
+    bot.get_pull_requests_by_label = mocker.MagicMock()
+    bot.get_pull_requests_by_label.return_value = []
+    bot.resolve_conflict_pull_requests = mocker.MagicMock()
 
     mock_label = mocker.MagicMock()
     mock_label.name = "Bot"
-    mock_repo.get_pull().labels = [mock_label]
-    mock_repo.get_pull().head.ref = "publish/issue1"
-    mock_repo.get_pull().merged = True
 
-    with open(tmp_path / "events.json", "w") as f:
-        json.dump(
-            {
-                "action": "closed",
-                "pull_request": {
-                    "number": 2,
-                },
-            },
-            f,
-        )
+    mock_event = mocker.MagicMock()
+    mock_event.pull_request.labels = [mock_label]
+    mock_event.pull_request.head.ref = "publish/issue1"
+    mock_event.pull_request.merged = True
 
-    process_pull_request_event(mock_repo)
+    mock_issues_resp = mocker.MagicMock()
+    bot.github.rest.issues.get.return_value = mock_issues_resp
+    mock_issue = mocker.MagicMock()
+    mock_issue.state = "open"
+    mock_issues_resp.parsed_data = mock_issue
 
-    mock_repo.get_pull.assert_called_with(2)
-    mock_repo.get_issue.assert_called_with(1)
+    bot.process_pull_request_event(mock_event)
+
+    bot.github.rest.issues.get.assert_called_once_with("owner", "repo", 1)
+
+    bot.github.rest.issues.update.assert_called_once_with(
+        "owner", "repo", 1, state="closed", state_reason="completed"
+    )
 
     # 测试 git 命令
     mock_subprocess_run.assert_called_once_with(
@@ -49,5 +43,51 @@ def test_process_pull_request(mocker: MockerFixture, tmp_path: Path) -> None:
         capture_output=True,
     )
 
-    mock_get_pull_requests_by_label.assert_called_once_with(mock_repo, "Bot")
-    mock_resolve_conflict_pull_requests.assert_called_once()
+    # 处理冲突的拉取请求
+    bot.get_pull_requests_by_label.assert_called_once_with("Bot")
+    bot.resolve_conflict_pull_requests.assert_called_once_with([])
+
+
+def test_process_pull_request_not_merged(mocker: MockerFixture, tmp_path: Path) -> None:
+    from src import Bot
+
+    bot = Bot()
+    bot.github = mocker.MagicMock()
+
+    mock_subprocess_run = mocker.patch("subprocess.run")
+    bot.get_pull_requests_by_label = mocker.MagicMock()
+    bot.get_pull_requests_by_label.return_value = []
+    bot.resolve_conflict_pull_requests = mocker.MagicMock()
+
+    mock_label = mocker.MagicMock()
+    mock_label.name = "Bot"
+
+    mock_event = mocker.MagicMock()
+    mock_event.pull_request.labels = [mock_label]
+    mock_event.pull_request.head.ref = "publish/issue1"
+    mock_event.pull_request.merged = False
+
+    mock_issues_resp = mocker.MagicMock()
+    bot.github.rest.issues.get.return_value = mock_issues_resp
+    mock_issue = mocker.MagicMock()
+    mock_issue.state = "open"
+    mock_issues_resp.parsed_data = mock_issue
+
+    bot.process_pull_request_event(mock_event)
+
+    bot.github.rest.issues.get.assert_called_once_with("owner", "repo", 1)
+
+    bot.github.rest.issues.update.assert_called_once_with(
+        "owner", "repo", 1, state="closed", state_reason="not_planned"
+    )
+
+    # 测试 git 命令
+    mock_subprocess_run.assert_called_once_with(
+        ["git", "push", "origin", "--delete", "publish/issue1"],
+        check=True,
+        capture_output=True,
+    )
+
+    # 处理冲突的拉取请求
+    bot.get_pull_requests_by_label.assert_not_called()
+    bot.resolve_conflict_pull_requests.assert_not_called()

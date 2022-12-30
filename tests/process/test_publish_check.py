@@ -1,15 +1,11 @@
-# type: ignore
 import json
 from pathlib import Path
 from typing import Any
 
-from github.Repository import Repository
 from pytest_mock import MockerFixture
 
-from src.process import process_issues_event
 
-
-def mocked_requests_get(url: str):
+def mocked_httpx_get(url: str):
     class MockResponse:
         def __init__(self, status_code: int):
             self.status_code = status_code
@@ -25,36 +21,51 @@ def check_json_data(file: Path, data: Any) -> None:
         assert json.load(f) == data
 
 
-def test_process_issues(mocker: MockerFixture, tmp_path: Path) -> None:
+def test_process_publish_check(mocker: MockerFixture, tmp_path: Path) -> None:
     import src.globals as g
+    from src import Bot
 
-    mocker.patch("requests.get", side_effect=mocked_requests_get)
+    bot = Bot()
+    bot.github = mocker.MagicMock()
+
+    mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_result = mocker.MagicMock()
     mock_subprocess_run.side_effect = lambda *args, **kwargs: mock_result
 
-    mock_repo: Repository = mocker.MagicMock()
+    mock_issues_resp = mocker.MagicMock()
+    bot.github.rest.issues.get.return_value = mock_issues_resp
+    mock_issue = mocker.MagicMock()
+    mock_issue.pull_request = None
+    mock_issue.title = "Bot: test"
+    mock_issue.number = 1
+    mock_issue.state = "open"
+    mock_issue.body = """**机器人名称：**\n\ntest\n\n**机器人功能：**\n\ndesc\n\n**机器人项目仓库/主页链接：**\n\nhttps://v2.nonebot.dev\n\n**标签：**\n\n[{"label": "test", "color": "#ffffff"}]"""
+    mock_issue.user.login = "test"
+    mock_issues_resp.parsed_data = mock_issue
 
-    mock_repo.get_issue().pull_request = None
-    mock_repo.get_issue().title = "Bot: test"
-    mock_repo.get_issue().number = 1
-    mock_repo.get_issue().state = "open"
-    mock_repo.get_issue().body = """**机器人名称：**\n\ntest\n\n**机器人功能：**\n\ndesc\n\n**机器人项目仓库/主页链接：**\n\nhttps://v2.nonebot.dev\n\n**标签：**\n\n[{"label": "test", "color": "#ffffff"}]"""
-    mock_repo.get_issue().user.login = "test"
+    mock_list_comments_resp = mocker.MagicMock()
+    bot.github.rest.issues.list_comments.return_value = mock_list_comments_resp
     mock_comment = mocker.MagicMock()
     mock_comment.body = "Bot: test"
-    mock_repo.get_issue().get_comments.return_value = [mock_comment]
+    mock_list_comments_resp.parsed_data = [mock_comment]
+
+    mock_pulls_resp = mocker.MagicMock()
+    mock_pulls_resp.status_code = 200
+    bot.github.rest.pulls.create.return_value = mock_pulls_resp
+    mock_pull = mocker.MagicMock()
+    mock_pull.number = 2
+    mock_pulls_resp.parsed_data = mock_pull
 
     with open(tmp_path / "bots.json", "w") as f:
         json.dump([], f)
 
     check_json_data(g.settings.input_config.bot_path, [])
 
-    process_issues_event(mock_repo, 1)
+    bot.process_publish_check(1)
 
-    mock_repo.get_issue.assert_called_with(1)
-    # 测试自动添加标签
-    mock_repo.get_issue().edit.assert_called_with(labels=["Bot"])
+    # 通过 issue number 获取 issue
+    bot.github.rest.issues.get.assert_called_with("owner", "repo", 1)
 
     # 测试 git 命令
     mock_subprocess_run.assert_has_calls(
@@ -97,7 +108,7 @@ def test_process_issues(mocker: MockerFixture, tmp_path: Path) -> None:
                 check=True,
                 capture_output=True,
             ),
-        ]
+        ]  # type: ignore
     )
 
     # 检查文件是否正确
@@ -116,67 +127,78 @@ def test_process_issues(mocker: MockerFixture, tmp_path: Path) -> None:
     )
 
     # 检查是否创建了拉取请求
-    mock_repo.create_pull.assert_called_with(
+    bot.github.rest.pulls.create.assert_called_with(
+        "owner",
+        "repo",
         title="Bot: test",
         body="resolve #1",
         base="master",
         head="publish/issue1",
     )
-    mock_repo.create_pull().add_to_labels.assert_called_with("Bot")
+
+    # 测试自动添加标签
+    bot.github.rest.issues.add_labels.assert_has_calls(
+        [
+            mocker.call("owner", "repo", 1, labels=["Bot"]),  # 给议题添加标签
+            mocker.call("owner", "repo", 2, labels=["Bot"]),  # 给拉取请求添加标签
+        ]
+    )
 
     # 检查是否创建了评论
-    mock_repo.get_issue().create_comment.assert_called_with(
-        """# 📃 商店发布检查结果\n\n> Bot: test\n\n**✅ 所有测试通过，一切准备就绪！**\n\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff。</li><li>✅ 项目 <a href="https://v2.nonebot.dev">主页</a> 返回状态码 200。</li></code></pre></details>\n\n---\n\n💪 Powered by NoneBot2 Publish Bot\n<!-- PUBLISH_BOT -->\n"""
+    bot.github.rest.issues.create_comment.assert_called_with(
+        "owner",
+        "repo",
+        1,
+        body="""# 📃 商店发布检查结果\n\n> Bot: test\n\n**✅ 所有测试通过，一切准备就绪！**\n\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff。</li><li>✅ 项目 <a href="https://v2.nonebot.dev">主页</a> 返回状态码 200。</li></code></pre></details>\n\n---\n\n💪 Powered by NoneBot2 Publish Bot\n<!-- PUBLISH_BOT -->\n""",
     )
 
 
 def test_edit_title(mocker: MockerFixture, tmp_path: Path) -> None:
-    from github import GithubException
-
     import src.globals as g
+    from src import Bot
 
-    mocker.patch("requests.get", side_effect=mocked_requests_get)
+    bot = Bot()
+    bot.github = mocker.MagicMock()
+
+    mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_result = mocker.MagicMock()
     mock_subprocess_run.side_effect = lambda *args, **kwargs: mock_result
 
-    mock_repo: Repository = mocker.MagicMock()
-    mock_repo.owner.login = "test"
+    mock_issues_resp = mocker.MagicMock()
+    bot.github.rest.issues.get.return_value = mock_issues_resp
+    mock_issue = mocker.MagicMock()
+    mock_issue.pull_request = None
+    mock_issue.title = "Bot: test"
+    mock_issue.number = 1
+    mock_issue.state = "open"
+    mock_issue.body = """**机器人名称：**\n\ntest1\n\n**机器人功能：**\n\ndesc\n\n**机器人项目仓库/主页链接：**\n\nhttps://v2.nonebot.dev\n\n**标签：**\n\n[{"label": "test", "color": "#ffffff"}]"""
+    mock_issue.user.login = "test"
+    mock_issues_resp.parsed_data = mock_issue
 
-    mock_repo.get_issue().pull_request = None
-
-    mock_repo.get_issue().title = "Bot: test"
-    mock_repo.get_issue().number = 1
-    mock_repo.get_issue().state = "open"
-    mock_repo.get_issue().body = """**机器人名称：**\n\ntest1\n\n**机器人功能：**\n\ndesc\n\n**机器人项目仓库/主页链接：**\n\nhttps://v2.nonebot.dev\n\n**标签：**\n\n[{"label": "test", "color": "#ffffff"}]"""
-    mock_repo.get_issue().user.login = "test"
-
+    mock_list_comments_resp = mocker.MagicMock()
+    bot.github.rest.issues.list_comments.return_value = mock_list_comments_resp
     mock_comment = mocker.MagicMock()
     mock_comment.body = "Bot: test"
-    mock_repo.get_issue().get_comments.return_value = [mock_comment]
+    mock_list_comments_resp.parsed_data = [mock_comment]
 
+    mock_pulls_resp = mocker.MagicMock()
+    mock_pulls_resp.status_code = 403
+    bot.github.rest.pulls.list.return_value = mock_pulls_resp
     mock_pull = mocker.MagicMock()
+    mock_pull.number = 2
     mock_pull.title = "Bot: test"
-    mock_repo.get_pulls.return_value = [mock_pull]
-    mock_repo.create_pull.side_effect = GithubException(
-        status=422, data={"message": "title already exists"}, headers=None
-    )
+    mock_pulls_resp.parsed_data = [mock_pull]
 
     with open(tmp_path / "bots.json", "w") as f:
         json.dump([], f)
 
     check_json_data(g.settings.input_config.bot_path, [])
 
-    process_issues_event(mock_repo, 1)
+    bot.process_publish_check(1)
 
-    mock_repo.get_issue.assert_called_with(1)
-    # 测试自动添加标签
-    mock_repo.get_issue().edit.assert_has_calls(
-        [
-            mocker.call(labels=["Bot"]),
-            mocker.call(title="Bot: test1"),
-        ]
-    )
+    # 通过 issue number 获取 issue
+    bot.github.rest.issues.get.assert_called_with("owner", "repo", 1)
 
     # 测试 git 命令
     mock_subprocess_run.assert_has_calls(
@@ -219,7 +241,7 @@ def test_edit_title(mocker: MockerFixture, tmp_path: Path) -> None:
                 check=True,
                 capture_output=True,
             ),
-        ]
+        ]  # type: ignore
     )
 
     # 检查文件是否正确
@@ -238,18 +260,37 @@ def test_edit_title(mocker: MockerFixture, tmp_path: Path) -> None:
     )
 
     # 检查是否创建了拉取请求
-    mock_repo.create_pull.assert_called_with(
+    bot.github.rest.pulls.create.assert_called_with(
+        "owner",
+        "repo",
         title="Bot: test1",
         body="resolve #1",
         base="master",
         head="publish/issue1",
     )
 
-    # 检查是否修改了标题
-    mock_repo.get_pulls.assert_called_with(head="test:publish/issue1")
-    mock_pull.edit.assert_called_with(title="Bot: test1")
+    # 测试自动添加标签
+    bot.github.rest.issues.add_labels.assert_has_calls(
+        [
+            mocker.call("owner", "repo", 1, labels=["Bot"]),  # 给议题添加标签
+        ]
+    )
+
+    # # 检查是否修改了标题
+    bot.github.rest.issues.update.assert_called_with(
+        "owner", "repo", 1, title="Bot: test1"
+    )
+    bot.github.rest.pulls.list.assert_called_with(
+        "owner", "repo", head="owner:publish/issue1"
+    )
+    bot.github.rest.pulls.update.assert_called_with(
+        "owner", "repo", 2, title="Bot: test1"
+    )
 
     # 检查是否创建了评论
-    mock_repo.get_issue().create_comment.assert_called_with(
-        """# 📃 商店发布检查结果\n\n> Bot: test1\n\n**✅ 所有测试通过，一切准备就绪！**\n\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff。</li><li>✅ 项目 <a href="https://v2.nonebot.dev">主页</a> 返回状态码 200。</li></code></pre></details>\n\n---\n\n💪 Powered by NoneBot2 Publish Bot\n<!-- PUBLISH_BOT -->\n"""
+    bot.github.rest.issues.create_comment.assert_called_with(
+        "owner",
+        "repo",
+        1,
+        body="""# 📃 商店发布检查结果\n\n> Bot: test1\n\n**✅ 所有测试通过，一切准备就绪！**\n\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff。</li><li>✅ 项目 <a href="https://v2.nonebot.dev">主页</a> 返回状态码 200。</li></code></pre></details>\n\n---\n\n💪 Powered by NoneBot2 Publish Bot\n<!-- PUBLISH_BOT -->\n""",
     )

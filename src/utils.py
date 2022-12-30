@@ -32,7 +32,7 @@ def run_shell_command(command: list[str]):
 def get_type_by_labels(
     labels: list["Label"]
     | list["WebhookLabel"]
-    | list["IssuePropLabelsItemsOneof1" | str],
+    | list[Union[str, "IssuePropLabelsItemsOneof1"]],
 ) -> Optional[PublishType]:
     """通过标签获取类型"""
     for label in labels:
@@ -87,6 +87,8 @@ def commit_and_push(info: PublishInfo, branch_name: str, issue_number: int):
         )
         if result.stdout:
             raise Exception
+        else:
+            logging.info("检测到本地分支与远程分支一致，跳过推送")
     except:
         logging.info("检测到本地分支与远程分支不一致，尝试强制推送")
         run_shell_command(["git", "push", "origin", branch_name, "-f"])

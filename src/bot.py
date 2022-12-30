@@ -282,10 +282,13 @@ class Bot:
         )
         if reusable_comment:
             logging.info(f"发现已有评论 {reusable_comment.id}，正在修改")
-            self.github.rest.issues.update_comment(
-                self.owner, self.name, reusable_comment.id, body=comment
-            )
-            logging.info("评论修改完成")
+            if reusable_comment.body != comment:
+                self.github.rest.issues.update_comment(
+                    self.owner, self.name, reusable_comment.id, body=comment
+                )
+                logging.info("评论修改完成")
+            else:
+                logging.info("评论内容无变化，跳过修改")
         else:
             self.github.rest.issues.create_comment(
                 self.owner, self.name, issue_number, body=comment
