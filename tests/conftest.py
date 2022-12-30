@@ -3,18 +3,19 @@ from pathlib import Path
 
 import pytest
 
-from src.models import Config, Settings, check_url
-
 
 @pytest.fixture(autouse=True, scope="function")
 def clear_cache():
     """每次运行前都清除 cache"""
+    from src.models import check_url
+
     check_url.cache_clear()
 
 
 @pytest.fixture(autouse=True, scope="function")
 def setup_globals(tmp_path: Path):
     import src.globals as g
+    from src.models import Config, Settings
 
     adapter_path = tmp_path / "adapters.json"
     with adapter_path.open("w") as f:
@@ -74,7 +75,7 @@ def setup_globals(tmp_path: Path):
             bot_path=bot_path,
             plugin_path=plugin_path,
         ),
-        github_repository="",
+        github_repository="owner/repo",
         github_event_path=tmp_path / "events.json",
         runner_debug=False,
     )

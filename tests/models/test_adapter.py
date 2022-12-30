@@ -1,12 +1,8 @@
-# type: ignore
 import json
 from collections import OrderedDict
 
 import pytest
-from github.Issue import Issue
 from pytest_mock import MockerFixture
-
-from src.models import AdapterPublishInfo, MyValidationError
 
 
 def generate_issue_body(
@@ -20,7 +16,7 @@ def generate_issue_body(
     return f"""**协议名称：**\n\n{name}\n\n**协议功能：**\n\n{desc}\n\n**PyPI 项目名：**\n\n{project_link}\n\n**协议 import 包名：**\n\n{module_name}\n\n**协议项目仓库/主页链接：**\n\n{homepage}\n\n**标签：**\n\n{json.dumps(tags)}"""
 
 
-def mocked_requests_get(url: str):
+def mocked_httpx_get(url: str):
     class MockResponse:
         def __init__(self, status_code: int):
             self.status_code = status_code
@@ -37,8 +33,10 @@ def mocked_requests_get(url: str):
 
 def test_adapter_from_issue(mocker: MockerFixture) -> None:
     """测试从 issue 中构造 AdapterPublishInfo 的情况"""
-    mock_requests = mocker.patch("requests.get", side_effect=mocked_requests_get)
-    mock_issue: Issue = mocker.MagicMock()
+    from src.models import AdapterPublishInfo
+
+    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
+    mock_issue = mocker.MagicMock()
     mock_issue.body = generate_issue_body()
     mock_issue.user.login = "author"
 
@@ -58,8 +56,10 @@ def test_adapter_from_issue(mocker: MockerFixture) -> None:
 
 def test_adapter_from_issue_trailing_whitespace(mocker: MockerFixture) -> None:
     """测试末尾如果有空格的情况"""
-    mock_requests = mocker.patch("requests.get", side_effect=mocked_requests_get)
-    mock_issue: Issue = mocker.MagicMock()
+    from src.models import AdapterPublishInfo
+
+    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
+    mock_issue = mocker.MagicMock()
     mock_issue.body = generate_issue_body(
         name="name ",
         desc="desc ",
@@ -85,7 +85,9 @@ def test_adapter_from_issue_trailing_whitespace(mocker: MockerFixture) -> None:
 
 def test_adapter_info_validation_success(mocker: MockerFixture) -> None:
     """测试验证成功的情况"""
-    mock_requests = mocker.patch("requests.get", side_effect=mocked_requests_get)
+    from src.models import AdapterPublishInfo
+
+    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
 
     info = AdapterPublishInfo(
         module_name="module_name",
@@ -94,7 +96,7 @@ def test_adapter_info_validation_success(mocker: MockerFixture) -> None:
         desc="desc",
         author="author",
         homepage="https://v2.nonebot.dev",
-        tags=json.dumps([{"label": "test", "color": "#ffffff"}]),
+        tags=json.dumps([{"label": "test", "color": "#ffffff"}]),  # type: ignore
         is_official=False,
     )
 
@@ -107,13 +109,15 @@ def test_adapter_info_validation_success(mocker: MockerFixture) -> None:
         mocker.call("https://pypi.org/pypi/project_link/json"),
         mocker.call("https://v2.nonebot.dev"),
     ]
-    mock_requests.assert_has_calls(calls)
+    mock_httpx.assert_has_calls(calls)  # type: ignore
 
 
 def test_adapter_info_validation_failed(mocker: MockerFixture) -> None:
     """测试验证失败的情况"""
-    mock_requests = mocker.patch("requests.get", side_effect=mocked_requests_get)
-    mock_issue: Issue = mocker.MagicMock()
+    from src.models import AdapterPublishInfo, MyValidationError
+
+    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
+    mock_issue = mocker.MagicMock()
     mock_issue.body = generate_issue_body(
         project_link="project_link_failed",
         homepage="https://www.baidu.com",
@@ -133,13 +137,15 @@ def test_adapter_info_validation_failed(mocker: MockerFixture) -> None:
         mocker.call("https://pypi.org/pypi/project_link_failed/json"),
         mocker.call("https://www.baidu.com"),
     ]
-    mock_requests.assert_has_calls(calls)
+    mock_httpx.assert_has_calls(calls)  # type: ignore
 
 
 def test_adapter_info_validation_partial_failed(mocker: MockerFixture) -> None:
     """测试验证一部分失败的情况"""
-    mock_requests = mocker.patch("requests.get", side_effect=mocked_requests_get)
-    mock_issue: Issue = mocker.MagicMock()
+    from src.models import AdapterPublishInfo, MyValidationError
+
+    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
+    mock_issue = mocker.MagicMock()
     mock_issue.body = generate_issue_body(
         homepage="https://www.baidu.com",
     )
@@ -157,13 +163,15 @@ def test_adapter_info_validation_partial_failed(mocker: MockerFixture) -> None:
         mocker.call("https://pypi.org/pypi/project_link/json"),
         mocker.call("https://www.baidu.com"),
     ]
-    mock_requests.assert_has_calls(calls)
+    mock_httpx.assert_has_calls(calls)  # type: ignore
 
 
 def test_adapter_info_name_validation_failed(mocker: MockerFixture) -> None:
     """测试名称重复检测失败的情况"""
-    mock_requests = mocker.patch("requests.get", side_effect=mocked_requests_get)
-    mock_issue: Issue = mocker.MagicMock()
+    from src.models import AdapterPublishInfo, MyValidationError
+
+    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
+    mock_issue = mocker.MagicMock()
     mock_issue.body = generate_issue_body(
         module_name="module_name1",
         project_link="project_link1",
@@ -182,4 +190,4 @@ def test_adapter_info_name_validation_failed(mocker: MockerFixture) -> None:
         mocker.call("https://pypi.org/pypi/project_link1/json"),
         mocker.call("https://v2.nonebot.dev"),
     ]
-    mock_requests.assert_has_calls(calls)
+    mock_httpx.assert_has_calls(calls)  # type: ignore

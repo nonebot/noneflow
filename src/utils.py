@@ -3,20 +3,7 @@ import re
 import subprocess
 from typing import TYPE_CHECKING, Optional, Union
 
-from github import GithubException
-
-import src.globals as g
-
-from .constants import (
-    BRANCH_NAME_PREFIX,
-    COMMENT_MESSAGE_TEMPLATE,
-    COMMENT_TITLE,
-    COMMIT_MESSAGE_PREFIX,
-    POWERED_BY_BOT_MESSAGE,
-    PUBLISH_BOT_MARKER,
-    REUSE_MESSAGE,
-    SKIP_PLUGIN_TEST_COMMENT,
-)
+from .constants import BRANCH_NAME_PREFIX, COMMIT_MESSAGE_PREFIX
 from .models import (
     AdapterPublishInfo,
     BotPublishInfo,
@@ -27,10 +14,14 @@ from .models import (
 )
 
 if TYPE_CHECKING:
-    from github.Issue import Issue
-    from github.Label import Label
-    from github.PullRequest import PullRequest
-    from github.Repository import Repository
+    from githubkit.rest.models import Issue, IssuePropLabelsItemsOneof1, Label
+    from githubkit.webhooks.models import Issue as WebhookIssue
+    from githubkit.webhooks.models import (
+        IssueCommentCreatedPropIssue,
+        IssuesOpenedPropIssue,
+        IssuesReopenedPropIssue,
+    )
+    from githubkit.webhooks.models import Label as WebhookLabel
 
 
 def run_shell_command(command: list[str]):
@@ -44,9 +35,15 @@ def run_shell_command(command: list[str]):
     return r
 
 
-def get_type_by_labels(labels: list["Label"]) -> Optional[PublishType]:
+def get_type_by_labels(
+    labels: list["Label"]
+    | list["WebhookLabel"]
+    | list[Union[str, "IssuePropLabelsItemsOneof1"]],
+) -> Optional[PublishType]:
     """通过标签获取类型"""
     for label in labels:
+        if isinstance(label, str):
+            continue
         if label.name == PublishType.BOT.value:
             return PublishType.BOT
         if label.name == PublishType.PLUGIN.value:
@@ -103,48 +100,6 @@ def commit_and_push(info: PublishInfo, branch_name: str, issue_number: int):
         run_shell_command(["git", "push", "origin", branch_name, "-f"])
 
 
-def create_pull_request(
-    repo: "Repository",
-    info: PublishInfo,
-    base: str,
-    branch_name: str,
-    issue_number: int,
-    title: str,
-):
-    """创建拉取请求
-
-    同时添加对应标签
-    内容关联上对应的议题
-    """
-    # 关联相关议题，当拉取请求合并时会自动关闭对应议题
-    body = f"resolve #{issue_number}"
-    try:
-        # 创建拉取请求
-        pull = repo.create_pull(
-            title=title,
-            body=body,
-            base=base,
-            head=branch_name,
-        )
-        # 自动给拉取请求添加标签
-        pull.add_to_labels(info.get_type().value)
-    except GithubException:
-        logging.info("该分支的拉取请求已创建，请前往查看")
-
-        pull: "PullRequest" = repo.get_pulls(head=f"{repo.owner.login}:{branch_name}")[
-            0
-        ]
-        if pull.title != title:
-            pull.edit(title=title)
-            logging.info(f"拉取请求标题已修改为 {title}")
-
-
-def get_pull_requests_by_label(repo: "Repository", label: str) -> list["PullRequest"]:
-    """获取所有带有指定标签的拉取请求"""
-    pulls = list(repo.get_pulls(state="open"))
-    return [pull for pull in pulls if label in [label.name for label in pull.labels]]
-
-
 def extract_issue_number_from_ref(ref: str) -> Optional[int]:
     """从 Ref 中提取议题号"""
     match = re.search(rf"{BRANCH_NAME_PREFIX}(\d+)", ref)
@@ -152,38 +107,9 @@ def extract_issue_number_from_ref(ref: str) -> Optional[int]:
         return int(match.group(1))
 
 
-def resolve_conflict_pull_requests(pulls: list["PullRequest"], repo: "Repository"):
-    """根据关联的议题提交来解决冲突
-
-    参考对应的议题重新更新对应分支
-    """
-    for pull in pulls:
-        # 回到主分支
-        run_shell_command(["git", "checkout", g.settings.input_config.base])
-        # 切换到对应分支
-        run_shell_command(["git", "switch", "-C", pull.head.ref])
-
-        issue_number = extract_issue_number_from_ref(pull.head.ref)
-        if not issue_number:
-            logging.error(f"无法获取 {pull.title} 对应的议题")
-            return
-
-        logging.info(f"正在处理 {pull.title}")
-        issue = repo.get_issue(issue_number)
-        publish_type = get_type_by_labels(issue.labels)
-
-        if publish_type:
-            info = extract_publish_info_from_issue(issue, publish_type)
-            if isinstance(info, PublishInfo):
-                info.update_file()
-                commit_and_push(info, pull.head.ref, issue_number)
-                logging.info("拉取请求更新完毕")
-            else:
-                logging.info("发布没通过检查，已跳过")
-
-
 def extract_publish_info_from_issue(
-    issue: "Issue", publish_type: PublishType
+    issue: "IssuesOpenedPropIssue | IssuesReopenedPropIssue | IssueCommentCreatedPropIssue | Issue | WebhookIssue",
+    publish_type: PublishType,
 ) -> Union[PublishInfo, MyValidationError]:
     """从议题中提取发布所需数据"""
     try:
@@ -194,51 +120,3 @@ def extract_publish_info_from_issue(
         return AdapterPublishInfo.from_issue(issue)
     except MyValidationError as e:
         return e
-
-
-def comment_issue(issue: "Issue", body: str):
-    """在议题中发布评论"""
-    logging.info("开始发布评论")
-
-    footer: str
-
-    # 重复利用评论
-    # 如果发现之前评论过，直接修改之前的评论
-    comments = issue.get_comments()
-    reusable_comment = next(
-        filter(lambda x: PUBLISH_BOT_MARKER in x.body, comments), None
-    )
-    if reusable_comment:
-        footer = f"{REUSE_MESSAGE}\n\n{POWERED_BY_BOT_MESSAGE}"
-    else:
-        footer = f"{POWERED_BY_BOT_MESSAGE}"
-
-    # 添加发布机器人评论的标志
-    footer += f"\n{PUBLISH_BOT_MARKER}"
-
-    comment = COMMENT_MESSAGE_TEMPLATE.format(
-        title=COMMENT_TITLE, body=body, footer=footer
-    )
-    if reusable_comment:
-        logging.info(f"发现已有评论 {reusable_comment.id}，正在修改")
-        if reusable_comment.body != comment:
-            reusable_comment.edit(comment)
-            logging.info("评论修改完成")
-        else:
-            logging.info("评论内容无变化，跳过修改")
-    else:
-        issue.create_comment(comment)
-        logging.info("评论创建完成")
-
-
-def should_skip_plugin_test(issue: "Issue") -> bool:
-    """判断是否跳过插件测试"""
-    comments = issue.get_comments()
-    for comment in comments:
-        author_association = comment.raw_data.get("author_association")
-        if comment.body == SKIP_PLUGIN_TEST_COMMENT and author_association in [
-            "OWNER",
-            "MEMBER",
-        ]:
-            return True
-    return False

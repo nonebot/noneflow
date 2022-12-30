@@ -1,15 +1,11 @@
-# type: ignore
 import json
 from pathlib import Path
 from typing import Any
 
-from github.Repository import Repository
 from pytest_mock import MockerFixture
 
-from src.utils import resolve_conflict_pull_requests
 
-
-def mocked_requests_get(url: str):
+def mocked_httpx_get(url: str):
     class MockResponse:
         def __init__(self, status_code: int):
             self.status_code = status_code
@@ -27,26 +23,31 @@ def check_json_data(file: Path, data: Any) -> None:
 
 def test_resolve_conflict_pull_requests(mocker: MockerFixture, tmp_path: Path) -> None:
     import src.globals as g
+    from src import Bot
 
-    mocker.patch("requests.get", side_effect=mocked_requests_get)
+    bot = Bot()
+    bot.github = mocker.MagicMock()
+
+    mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_result = mocker.MagicMock()
     mock_subprocess_run.side_effect = lambda *args, **kwargs: mock_result
 
-    mock_repo: Repository = mocker.MagicMock()
-
-    mock_repo.get_issue().title = "Bot: test"
-    mock_repo.get_issue().number = 1
-    mock_repo.get_issue().state = "open"
-    mock_repo.get_issue().body = """**机器人名称：**\n\ntest\n\n**机器人功能：**\n\ndesc\n\n**机器人项目仓库/主页链接：**\n\nhttps://v2.nonebot.dev\n\n**标签：**\n\n[{"label": "test", "color": "#ffffff"}]"""
-    mock_repo.get_issue().user.login = "test"
-    mock_comment = mocker.MagicMock()
-    mock_comment.body = "Bot: test"
-    mock_repo.get_issue().get_comments.return_value = [mock_comment]
-
     mock_label = mocker.MagicMock()
     mock_label.name = "Bot"
-    mock_repo.get_issue().labels = [mock_label]
+
+    mock_issue = mocker.MagicMock()
+    mock_issue.pull_request = None
+    mock_issue.title = "Bot: test"
+    mock_issue.number = 1
+    mock_issue.state = "open"
+    mock_issue.body = """**机器人名称：**\n\ntest\n\n**机器人功能：**\n\ndesc\n\n**机器人项目仓库/主页链接：**\n\nhttps://v2.nonebot.dev\n\n**标签：**\n\n[{"label": "test", "color": "#ffffff"}]"""
+    mock_issue.user.login = "test"
+    mock_issue.labels = [mock_label]
+
+    mock_issues_resp = mocker.MagicMock()
+    bot.github.rest.issues.get.return_value = mock_issues_resp
+    mock_issues_resp.parsed_data = mock_issue
 
     mock_pull = mocker.MagicMock()
     mock_pull.head.ref = "publish/issue1"
@@ -56,9 +57,9 @@ def test_resolve_conflict_pull_requests(mocker: MockerFixture, tmp_path: Path) -
 
     check_json_data(g.settings.input_config.bot_path, [])
 
-    resolve_conflict_pull_requests([mock_pull], mock_repo)
+    bot.resolve_conflict_pull_requests([mock_pull])
 
-    mock_repo.get_issue.assert_called_with(1)
+    bot.github.rest.issues.get.assert_called_with("owner", "repo", 1)
 
     # 测试 git 命令
     mock_subprocess_run.assert_has_calls(
@@ -102,7 +103,7 @@ def test_resolve_conflict_pull_requests(mocker: MockerFixture, tmp_path: Path) -
                 check=True,
                 capture_output=True,
             ),
-        ]
+        ]  # type: ignore
     )
 
     # 检查文件是否正确
