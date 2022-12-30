@@ -331,7 +331,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     def plugin_test_result_validator(cls, v: str) -> str:
         if g.skip_plugin_test:
             logging.info("已跳过插件测试")
-            return v
+            return "True"
 
         if v != "True":
             output = os.environ.get("PLUGIN_TEST_OUTPUT") or ""

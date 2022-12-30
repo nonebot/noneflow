@@ -61,6 +61,41 @@ def test_plugin_from_issue(mocker: MockerFixture) -> None:
     mock_httpx.assert_has_calls(calls)  # type: ignore
 
 
+def test_plugin_from_issue_plugin_test_empty(mocker: MockerFixture) -> None:
+    """测试插件测试结果为空的情况"""
+    import os
+
+    import src.globals as g
+    from src.models import PluginPublishInfo
+
+    g.skip_plugin_test = True
+
+    os.environ["PLUGIN_TEST_RESULT"] = ""
+
+    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
+    mock_issue = mocker.MagicMock()
+    mock_issue.body = generate_issue_body()
+    mock_issue.user.login = "author"
+
+    info = PluginPublishInfo.from_issue(mock_issue)
+
+    assert OrderedDict(info.dict(exclude={"plugin_test_result"})) == OrderedDict(
+        module_name="module_name",
+        project_link="project_link",
+        name="name",
+        desc="desc",
+        author="author",
+        homepage="https://v2.nonebot.dev",
+        tags=[{"label": "test", "color": "#ffffff"}],
+        is_official=False,
+    )
+    calls = [
+        mocker.call("https://pypi.org/pypi/project_link/json"),
+        mocker.call("https://v2.nonebot.dev"),
+    ]
+    mock_httpx.assert_has_calls(calls)  # type: ignore
+
+
 def test_plugin_from_issue_trailing_whitespace(mocker: MockerFixture) -> None:
     """测试末尾如果有空格的情况"""
     import os
