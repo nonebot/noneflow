@@ -9,6 +9,7 @@ from functools import cache
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, Union
 
+import httpx
 from pydantic import (
     BaseModel,
     BaseSettings,
@@ -21,7 +22,7 @@ from pydantic import (
 import src.globals as g
 
 if TYPE_CHECKING:
-    from github.Issue import Issue
+    from githubkit.rest.models import Issue
     from pydantic.error_wrappers import ErrorDict
 
 from .constants import (
@@ -285,11 +286,11 @@ class BotPublishInfo(PublishInfo):
 
     @classmethod
     def from_issue(cls, issue: "Issue") -> "BotPublishInfo":
-        body = issue.body
+        body = issue.body if issue.body else ""
 
         name = BOT_NAME_PATTERN.search(body)
         desc = BOT_DESC_PATTERN.search(body)
-        author = issue.user.login
+        author = issue.user.login if issue.user else None
         homepage = BOT_HOMEPAGE_PATTERN.search(body)
         tags = TAGS_PATTERN.search(body)
 
@@ -302,7 +303,7 @@ class BotPublishInfo(PublishInfo):
         }
 
         try:
-            return BotPublishInfo(**raw_data)  # type: ignore
+            return BotPublishInfo(**raw_data)
         except ValidationError as e:
             raise MyValidationError(cls.get_type(), raw_data, e.errors())
 
@@ -335,13 +336,13 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
 
     @classmethod
     def from_issue(cls, issue: "Issue") -> "PluginPublishInfo":
-        body = issue.body
+        body = issue.body if issue.body else ""
 
         module_name = PLUGIN_MODULE_NAME_PATTERN.search(body)
         project_link = PROJECT_LINK_PATTERN.search(body)
         name = PLUGIN_NAME_PATTERN.search(body)
         desc = PLUGIN_DESC_PATTERN.search(body)
-        author = issue.user.login
+        author = issue.user.login if issue.user else None
         homepage = PLUGIN_HOMEPAGE_PATTERN.search(body)
         tags = TAGS_PATTERN.search(body)
 
@@ -357,7 +358,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
         }
 
         try:
-            return PluginPublishInfo(**raw_data)  # type: ignore
+            return PluginPublishInfo(**raw_data)
         except ValidationError as e:
             raise MyValidationError(cls.get_type(), raw_data, e.errors())
 
@@ -374,13 +375,13 @@ class AdapterPublishInfo(PublishInfo, PyPIMixin):
 
     @classmethod
     def from_issue(cls, issue: "Issue") -> "AdapterPublishInfo":
-        body = issue.body
+        body = issue.body if issue.body else ""
 
         module_name = ADAPTER_MODULE_NAME_PATTERN.search(body)
         project_link = PROJECT_LINK_PATTERN.search(body)
         name = ADAPTER_NAME_PATTERN.search(body)
         desc = ADAPTER_DESC_PATTERN.search(body)
-        author = issue.user.login
+        author = issue.user.login if issue.user else None
         homepage = ADAPTER_HOMEPAGE_PATTERN.search(body)
         tags = TAGS_PATTERN.search(body)
 
@@ -395,7 +396,7 @@ class AdapterPublishInfo(PublishInfo, PyPIMixin):
         }
 
         try:
-            return AdapterPublishInfo(**raw_data)  # type: ignore
+            return AdapterPublishInfo(**raw_data)
         except ValidationError as e:
             raise MyValidationError(cls.get_type(), raw_data, e.errors())
 
@@ -415,7 +416,7 @@ def check_url(url: str) -> Optional[int]:
     """
     logging.info(f"检查网址 {url}")
     try:
-        r = requests.get(url)
+        r = httpx.get(url)
         return r.status_code
     except:
         pass
