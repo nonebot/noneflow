@@ -96,6 +96,8 @@ def commit_and_push(info: PublishInfo, branch_name: str, issue_number: int):
         )
         if result.stdout:
             raise Exception
+        else:
+            logging.info("检测到本地分支与远程分支一致，跳过推送")
     except:
         logging.info("检测到本地分支与远程分支不一致，尝试强制推送")
         run_shell_command(["git", "push", "origin", branch_name, "-f"])
@@ -219,8 +221,11 @@ def comment_issue(issue: "Issue", body: str):
     )
     if reusable_comment:
         logging.info(f"发现已有评论 {reusable_comment.id}，正在修改")
-        reusable_comment.edit(comment)
-        logging.info("评论修改完成")
+        if reusable_comment.body != comment:
+            reusable_comment.edit(comment)
+            logging.info("评论修改完成")
+        else:
+            logging.info("评论内容无变化，跳过修改")
     else:
         issue.create_comment(comment)
         logging.info("评论创建完成")
