@@ -200,6 +200,7 @@ class Bot:
                     commit_and_push(info, pull.head.ref, issue_number)
                     logging.info("拉取请求更新完毕")
                 else:
+                    logging.info(info.message)
                     logging.info("发布没通过检查，已跳过")
 
     def should_skip_plugin_test(self, issue_number: int) -> bool:
