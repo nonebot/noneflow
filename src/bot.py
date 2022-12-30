@@ -47,9 +47,12 @@ class Bot:
             logging.error(f"没有在 {g.settings.github_event_path} 找到 GitHub 事件文件")
             return
 
-        event = parse(
-            g.settings.github_event_name, g.settings.github_event_path.read_text()
-        )
+        event_name = g.settings.github_event_name
+        # webhook 事件中没有 pull_request_target，但是 actions 里有
+        # githubkit.exception.WebhookTypeNotFound: pull_request_target
+        if event_name == "pull_request_target":
+            event_name = "pull_request"
+        event = parse(event_name, g.settings.github_event_path.read_text())
 
         if isinstance(event, PullRequestClosed):
             self.process_pull_request_event(event)
