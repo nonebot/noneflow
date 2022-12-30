@@ -33,8 +33,6 @@ def test_process_publish_check(mocker: MockerFixture, tmp_path: Path) -> None:
     mock_result = mocker.MagicMock()
     mock_subprocess_run.side_effect = lambda *args, **kwargs: mock_result
 
-    mock_issues_resp = mocker.MagicMock()
-    bot.github.rest.issues.get.return_value = mock_issues_resp
     mock_issue = mocker.MagicMock()
     mock_issue.pull_request = None
     mock_issue.title = "Bot: test"
@@ -42,7 +40,9 @@ def test_process_publish_check(mocker: MockerFixture, tmp_path: Path) -> None:
     mock_issue.state = "open"
     mock_issue.body = """**机器人名称：**\n\ntest\n\n**机器人功能：**\n\ndesc\n\n**机器人项目仓库/主页链接：**\n\nhttps://v2.nonebot.dev\n\n**标签：**\n\n[{"label": "test", "color": "#ffffff"}]"""
     mock_issue.user.login = "test"
-    mock_issues_resp.parsed_data = mock_issue
+
+    mock_event = mocker.MagicMock()
+    mock_event.issue = mock_issue
 
     mock_list_comments_resp = mocker.MagicMock()
     bot.github.rest.issues.list_comments.return_value = mock_list_comments_resp
@@ -62,10 +62,7 @@ def test_process_publish_check(mocker: MockerFixture, tmp_path: Path) -> None:
 
     check_json_data(g.settings.input_config.bot_path, [])
 
-    bot.process_publish_check(1)
-
-    # 通过 issue number 获取 issue
-    bot.github.rest.issues.get.assert_called_with("owner", "repo", 1)
+    bot.process_publish_check(mock_event)
 
     # 测试 git 命令
     mock_subprocess_run.assert_has_calls(
@@ -165,8 +162,6 @@ def test_edit_title(mocker: MockerFixture, tmp_path: Path) -> None:
     mock_result = mocker.MagicMock()
     mock_subprocess_run.side_effect = lambda *args, **kwargs: mock_result
 
-    mock_issues_resp = mocker.MagicMock()
-    bot.github.rest.issues.get.return_value = mock_issues_resp
     mock_issue = mocker.MagicMock()
     mock_issue.pull_request = None
     mock_issue.title = "Bot: test"
@@ -174,7 +169,9 @@ def test_edit_title(mocker: MockerFixture, tmp_path: Path) -> None:
     mock_issue.state = "open"
     mock_issue.body = """**机器人名称：**\n\ntest1\n\n**机器人功能：**\n\ndesc\n\n**机器人项目仓库/主页链接：**\n\nhttps://v2.nonebot.dev\n\n**标签：**\n\n[{"label": "test", "color": "#ffffff"}]"""
     mock_issue.user.login = "test"
-    mock_issues_resp.parsed_data = mock_issue
+
+    mock_event = mocker.MagicMock()
+    mock_event.issue = mock_issue
 
     mock_list_comments_resp = mocker.MagicMock()
     bot.github.rest.issues.list_comments.return_value = mock_list_comments_resp
@@ -195,10 +192,7 @@ def test_edit_title(mocker: MockerFixture, tmp_path: Path) -> None:
 
     check_json_data(g.settings.input_config.bot_path, [])
 
-    bot.process_publish_check(1)
-
-    # 通过 issue number 获取 issue
-    bot.github.rest.issues.get.assert_called_with("owner", "repo", 1)
+    bot.process_publish_check(mock_event)
 
     # 测试 git 命令
     mock_subprocess_run.assert_has_calls(

@@ -15,6 +15,12 @@ from .models import (
 
 if TYPE_CHECKING:
     from githubkit.rest.models import Issue, IssuePropLabelsItemsOneof1, Label
+    from githubkit.webhooks.models import Issue as WebhookIssue
+    from githubkit.webhooks.models import (
+        IssueCommentCreatedPropIssue,
+        IssuesOpenedPropIssue,
+        IssuesReopenedPropIssue,
+    )
     from githubkit.webhooks.models import Label as WebhookLabel
 
 
@@ -102,7 +108,8 @@ def extract_issue_number_from_ref(ref: str) -> Optional[int]:
 
 
 def extract_publish_info_from_issue(
-    issue: "Issue", publish_type: PublishType
+    issue: "IssuesOpenedPropIssue | IssuesReopenedPropIssue | IssueCommentCreatedPropIssue | Issue | WebhookIssue",
+    publish_type: PublishType,
 ) -> Union[PublishInfo, MyValidationError]:
     """从议题中提取发布所需数据"""
     try:

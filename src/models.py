@@ -24,6 +24,13 @@ import src.globals as g
 if TYPE_CHECKING:
     from githubkit.rest.models import Issue
     from pydantic.error_wrappers import ErrorDict
+    from githubkit.rest.models import Issue
+    from githubkit.webhooks.models import Issue as WebhookIssue
+    from githubkit.webhooks.models import (
+        IssueCommentCreatedPropIssue,
+        IssuesOpenedPropIssue,
+        IssuesReopenedPropIssue,
+    )
 
 from .constants import (
     ADAPTER_DESC_PATTERN,
@@ -208,7 +215,10 @@ class PublishInfo(abc.ABC, BaseModel):
 
     @classmethod
     @abc.abstractmethod
-    def from_issue(cls, issue: "Issue") -> "PublishInfo":
+    def from_issue(
+        cls,
+        issue: "IssuesOpenedPropIssue | IssuesReopenedPropIssue | IssueCommentCreatedPropIssue | Issue | WebhookIssue",
+    ) -> "PublishInfo":
         """从议题中获取所需信息"""
         raise NotImplementedError
 
@@ -284,7 +294,10 @@ class BotPublishInfo(PublishInfo):
         self._update_file(g.settings.input_config.bot_path)
 
     @classmethod
-    def from_issue(cls, issue: "Issue") -> "BotPublishInfo":
+    def from_issue(
+        cls,
+        issue: "IssuesOpenedPropIssue | IssuesReopenedPropIssue | IssueCommentCreatedPropIssue | Issue | WebhookIssue",
+    ) -> "BotPublishInfo":
         body = issue.body if issue.body else ""
 
         name = BOT_NAME_PATTERN.search(body)
@@ -334,7 +347,10 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
         self._update_file(g.settings.input_config.plugin_path)
 
     @classmethod
-    def from_issue(cls, issue: "Issue") -> "PluginPublishInfo":
+    def from_issue(
+        cls,
+        issue: "IssuesOpenedPropIssue | IssuesReopenedPropIssue | IssueCommentCreatedPropIssue | Issue | WebhookIssue",
+    ) -> "PluginPublishInfo":
         body = issue.body if issue.body else ""
 
         module_name = PLUGIN_MODULE_NAME_PATTERN.search(body)
@@ -373,7 +389,10 @@ class AdapterPublishInfo(PublishInfo, PyPIMixin):
         self._update_file(g.settings.input_config.adapter_path)
 
     @classmethod
-    def from_issue(cls, issue: "Issue") -> "AdapterPublishInfo":
+    def from_issue(
+        cls,
+        issue: "IssuesOpenedPropIssue | IssuesReopenedPropIssue | IssueCommentCreatedPropIssue | Issue | WebhookIssue",
+    ) -> "AdapterPublishInfo":
         body = issue.body if issue.body else ""
 
         module_name = ADAPTER_MODULE_NAME_PATTERN.search(body)

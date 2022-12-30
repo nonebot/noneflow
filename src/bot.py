@@ -50,10 +50,10 @@ class Bot:
 
         if isinstance(event, PullRequestClosed):
             self.process_pull_request_event(event)
-        elif isinstance(event, (IssuesOpened, IssuesReopened, IssuesEdited)):
-            self.process_issues_event(event)
-        elif isinstance(event, IssueCommentCreated):
-            self.process_issue_comment_event(event)
+        elif isinstance(
+            event, (IssuesOpened, IssuesReopened, IssuesEdited, IssueCommentCreated)
+        ):
+            self.process_publish_check(event)
         else:
             logging.info(f"不支持的事件: {event}，已跳过")
 
@@ -99,22 +99,14 @@ class Bot:
         else:
             logging.info("发布的拉取请求未合并，已跳过")
 
-    def process_issues_event(self, event: IssuesOpened | IssuesReopened | IssuesEdited):
-        issue_number = event.issue.number
-        self.process_publish_check(issue_number)
-
-    def process_issue_comment_event(self, event: IssueCommentCreated):
-        issue_number = event.issue.number
-        self.process_publish_check(issue_number)
-
-    def process_publish_check(self, issue_number: int):
-        issue = self.github.rest.issues.get(
-            self.owner, self.name, issue_number
-        ).parsed_data
-
-        if issue.pull_request:
+    def process_publish_check(
+        self, event: IssuesOpened | IssuesReopened | IssuesEdited | IssueCommentCreated
+    ):
+        if event.issue.pull_request:
             logging.info("评论在拉取请求下，已跳过")
             return
+
+        issue = event.issue
 
         if issue.state != "open":
             logging.info("议题未开启，已跳过")
@@ -127,11 +119,11 @@ class Bot:
 
         # 自动给议题添加标签
         self.github.rest.issues.add_labels(
-            self.owner, self.name, issue_number, labels=[publish_type.value]
+            self.owner, self.name, issue.number, labels=[publish_type.value]
         )
 
         # 是否需要跳过插件测试
-        g.skip_plugin_test = self.should_skip_plugin_test(issue_number)
+        g.skip_plugin_test = self.should_skip_plugin_test(issue.number)
 
         # 检查是否满足发布要求
         # 仅在通过检查的情况下创建拉取请求
@@ -142,7 +134,7 @@ class Bot:
             # 修改议题标题
             if issue.title != title:
                 self.github.rest.issues.update(
-                    self.owner, self.name, issue_number, title=title
+                    self.owner, self.name, issue.number, title=title
                 )
                 logging.info(f"议题标题已修改为 {title}")
             # 创建新分支
