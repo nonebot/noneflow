@@ -56,7 +56,7 @@ class Bot:
         ):
             self.process_publish_check(event)
         else:
-            logging.info(f"不支持的事件: {event}，已跳过")
+            logging.info(f"不支持的事件: {event!r}，已跳过")
 
     def process_pull_request_event(self, event: PullRequestClosed):
         # 只处理支持标签的拉取请求
