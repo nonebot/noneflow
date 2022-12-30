@@ -129,6 +129,7 @@ class Settings(BaseSettings):
     input_token: SecretStr
     input_config: Config
     github_repository: str
+    github_event_name: str
     github_event_path: Path
     runner_debug: bool = False
 

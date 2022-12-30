@@ -76,6 +76,7 @@ def setup_globals(tmp_path: Path):
             plugin_path=plugin_path,
         ),
         github_repository="owner/repo",
+        github_event_name="",
         github_event_path=tmp_path / "events.json",
         runner_debug=False,
     )

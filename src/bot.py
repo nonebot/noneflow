@@ -9,7 +9,7 @@ from githubkit.webhooks import (
     IssuesOpened,
     IssuesReopened,
     PullRequestClosed,
-    parse_without_name,
+    parse,
 )
 
 import src.globals as g
@@ -47,7 +47,9 @@ class Bot:
             logging.error(f"没有在 {g.settings.github_event_path} 找到 GitHub 事件文件")
             return
 
-        event = parse_without_name(g.settings.github_event_path.read_text())
+        event = parse(
+            g.settings.github_event_name, g.settings.github_event_path.read_text()
+        )
 
         if isinstance(event, PullRequestClosed):
             self.process_pull_request_event(event)
