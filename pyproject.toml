@@ -11,7 +11,8 @@ repository = "https://github.com/nonebot/nonebot2-publish-bot"
 [tool.poetry.dependencies]
 python = "^3.9"
 pydantic = "^1.8.2"
-PyGithub = "^1.55"
+githubkit = "^0.9.4"
+httpx = "^0.23.1"
 
 [tool.poetry.dev-dependencies]
 isort = "^5.9.3"

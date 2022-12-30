@@ -9,7 +9,6 @@ from functools import cache
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, Union
 
-import requests
 from pydantic import (
     BaseModel,
     BaseSettings,
@@ -124,7 +123,7 @@ class Settings(BaseSettings):
     github_repository: str
     github_event_name: Optional[str] = None
     github_event_path: Path
-    runner_debug: Optional[bool]
+    runner_debug: bool = False
 
 
 class PublishType(Enum):
