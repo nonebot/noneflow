@@ -2,6 +2,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from githubkit import GitHub
+from githubkit.exception import RequestFailed
 from githubkit.webhooks import (
     IssueCommentCreated,
     IssuesEdited,
@@ -220,22 +221,23 @@ class Bot:
         """
         # 关联相关议题，当拉取请求合并时会自动关闭对应议题
         body = f"resolve #{issue_number}"
-        # 创建拉取请求
-        resp = self.github.rest.pulls.create(
-            self.owner,
-            self.name,
-            title=title,
-            body=body,
-            base=g.settings.input_config.base,
-            head=branch_name,
-        )
-        if resp.status_code == 200:
+
+        try:
+            # 创建拉取请求
+            resp = self.github.rest.pulls.create(
+                self.owner,
+                self.name,
+                title=title,
+                body=body,
+                base=g.settings.input_config.base,
+                head=branch_name,
+            )
             pull = resp.parsed_data
             # 自动给拉取请求添加标签
             self.github.rest.issues.add_labels(
                 self.owner, self.name, pull.number, labels=[info.get_type().value]
             )
-        else:
+        except RequestFailed:
             logging.info("该分支的拉取请求已创建，请前往查看")
 
             pull = self.github.rest.pulls.list(

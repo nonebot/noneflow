@@ -151,6 +151,8 @@ def test_process_publish_check(mocker: MockerFixture, tmp_path: Path) -> None:
 
 
 def test_edit_title(mocker: MockerFixture, tmp_path: Path) -> None:
+    from githubkit.exception import RequestFailed
+
     import src.globals as g
     from src import Bot
 
@@ -179,8 +181,9 @@ def test_edit_title(mocker: MockerFixture, tmp_path: Path) -> None:
     mock_comment.body = "Bot: test"
     mock_list_comments_resp.parsed_data = [mock_comment]
 
+    bot.github.rest.pulls.create.side_effect = RequestFailed(mocker.MagicMock())
+
     mock_pulls_resp = mocker.MagicMock()
-    mock_pulls_resp.status_code = 403
     bot.github.rest.pulls.list.return_value = mock_pulls_resp
     mock_pull = mocker.MagicMock()
     mock_pull.number = 2
