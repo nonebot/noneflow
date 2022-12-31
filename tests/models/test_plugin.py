@@ -25,6 +25,8 @@ def mocked_httpx_get(url: str):
         return MockResponse(200)
     if url == "https://v2.nonebot.dev":
         return MockResponse(200)
+    if url == "exception":
+        raise Exception("test exception")
 
     return MockResponse(404)
 
@@ -33,6 +35,7 @@ def test_plugin_from_issue(mocker: MockerFixture) -> None:
     """测试从 issue 中构造 PluginPublishInfo 的情况"""
     import os
 
+    import src.globals as g
     from src.models import PluginPublishInfo
 
     os.environ["PLUGIN_TEST_RESULT"] = "True"
@@ -54,6 +57,12 @@ def test_plugin_from_issue(mocker: MockerFixture) -> None:
         tags=[{"label": "test", "color": "#ffffff"}],
         is_official=False,
     )
+
+    info.update_file()
+
+    with g.settings.input_config.plugin_path.open("r") as f:
+        data = json.load(f)[1]
+        assert data == info.dict(exclude={"plugin_test_result"})
     calls = [
         mocker.call("https://pypi.org/pypi/project_link/json"),
         mocker.call("https://v2.nonebot.dev"),
@@ -181,7 +190,7 @@ def test_plugin_info_validation_failed(mocker: MockerFixture) -> None:
     mock_issue.user.login = "author"
 
     with pytest.raises(MyValidationError) as e:
-        info = PluginPublishInfo.from_issue(mock_issue)
+        PluginPublishInfo.from_issue(mock_issue)
 
     assert (
         e.value.message
@@ -211,7 +220,7 @@ def test_plugin_info_validation_partial_failed(mocker: MockerFixture) -> None:
     mock_issue.user.login = "author"
 
     with pytest.raises(MyValidationError) as e:
-        info = PluginPublishInfo.from_issue(mock_issue)
+        PluginPublishInfo.from_issue(mock_issue)
 
     assert (
         e.value.message
@@ -244,7 +253,7 @@ def test_plugin_info_skip_plugin_test(mocker: MockerFixture) -> None:
     mock_issue.user.login = "author"
 
     with pytest.raises(MyValidationError) as e:
-        info = PluginPublishInfo.from_issue(mock_issue)
+        PluginPublishInfo.from_issue(mock_issue)
 
     assert (
         e.value.message
@@ -253,5 +262,33 @@ def test_plugin_info_skip_plugin_test(mocker: MockerFixture) -> None:
     calls = [
         mocker.call("https://pypi.org/pypi/project_link/json"),
         mocker.call("https://www.baidu.com"),
+    ]
+    mock_httpx.assert_has_calls(calls)  # type: ignore
+
+
+def test_plugin_info_validation_failed_http_exception(mocker: MockerFixture) -> None:
+    """测试验证失败的情况，HTTP 请求报错"""
+    import os
+
+    from src.models import MyValidationError, PluginPublishInfo
+
+    os.environ["PLUGIN_TEST_RESULT"] = "False"
+    os.environ["PLUGIN_TEST_OUTPUT"] = "test output"
+
+    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
+    mock_issue = mocker.MagicMock()
+    mock_issue.body = generate_issue_body(homepage="exception")
+    mock_issue.user.login = "author"
+
+    with pytest.raises(MyValidationError) as e:
+        PluginPublishInfo.from_issue(mock_issue)
+
+    assert (
+        e.value.message
+        == """> Plugin: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ 项目 <a href="exception">主页</a> 返回状态码 None。<dt>请确保您的项目主页可访问。</dt></li><li>⚠️ 插件加载测试未通过。<details><summary>测试输出</summary>test output</details></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff。</li><li>✅ 包 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li></code></pre></details>"""
+    )
+    calls = [
+        mocker.call("https://pypi.org/pypi/project_link/json"),
+        mocker.call("exception"),
     ]
     mock_httpx.assert_has_calls(calls)  # type: ignore

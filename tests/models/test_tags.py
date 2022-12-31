@@ -36,7 +36,7 @@ def test_adapter_tags_color_missing(mocker: MockerFixture) -> None:
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
 
     with pytest.raises(ValidationError) as e:
-        info = AdapterPublishInfo(
+        AdapterPublishInfo(
             module_name="module_name",
             project_link="project_link",
             name="name",
@@ -48,6 +48,13 @@ def test_adapter_tags_color_missing(mocker: MockerFixture) -> None:
         )
     assert "color\n  field required (type=value_error.missing)" in str(e.value)
 
+    mock_httpx.assert_has_calls(
+        [
+            mocker.call("https://pypi.org/pypi/project_link/json"),
+            mocker.call("https://v2.nonebot.dev"),
+        ]  # type: ignore
+    )
+
 
 def test_adapter_tags_color_invalid(mocker: MockerFixture) -> None:
     """测试标签颜色不正确的情况"""
@@ -56,7 +63,7 @@ def test_adapter_tags_color_invalid(mocker: MockerFixture) -> None:
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
 
     with pytest.raises(ValidationError) as e:
-        info = AdapterPublishInfo(
+        AdapterPublishInfo(
             module_name="module_name",
             project_link="project_link",
             name="name",
@@ -68,6 +75,13 @@ def test_adapter_tags_color_invalid(mocker: MockerFixture) -> None:
         )
     assert "标签颜色错误<dt>请确保标签颜色符合十六进制颜色码规则。</dt>" in str(e.value)
 
+    mock_httpx.assert_has_calls(
+        [
+            mocker.call("https://pypi.org/pypi/project_link/json"),
+            mocker.call("https://v2.nonebot.dev"),
+        ]  # type: ignore
+    )
+
 
 def test_adapter_tags_label_invalid(mocker: MockerFixture) -> None:
     """测试标签名称不正确的情况"""
@@ -76,7 +90,7 @@ def test_adapter_tags_label_invalid(mocker: MockerFixture) -> None:
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
 
     with pytest.raises(ValidationError) as e:
-        info = AdapterPublishInfo(
+        AdapterPublishInfo(
             module_name="module_name",
             project_link="project_link",
             name="name",
@@ -88,6 +102,13 @@ def test_adapter_tags_label_invalid(mocker: MockerFixture) -> None:
         )
     assert "标签名称过长<dt>请确保标签名称不超过 10 个字符。</dt>" in str(e.value)
 
+    mock_httpx.assert_has_calls(
+        [
+            mocker.call("https://pypi.org/pypi/project_link/json"),
+            mocker.call("https://v2.nonebot.dev"),
+        ]  # type: ignore
+    )
+
 
 def test_adapter_tags_number_invalid(mocker: MockerFixture) -> None:
     """测试标签数量不正确的情况"""
@@ -96,7 +117,7 @@ def test_adapter_tags_number_invalid(mocker: MockerFixture) -> None:
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
 
     with pytest.raises(ValidationError) as e:
-        info = AdapterPublishInfo(
+        AdapterPublishInfo(
             module_name="module_name",
             project_link="project_link",
             name="name",
@@ -115,6 +136,13 @@ def test_adapter_tags_number_invalid(mocker: MockerFixture) -> None:
         )
     assert "⚠️ 标签数量过多。<dt>请确保标签数量不超过 3 个。</dt>" in str(e.value)
 
+    mock_httpx.assert_has_calls(
+        [
+            mocker.call("https://pypi.org/pypi/project_link/json"),
+            mocker.call("https://v2.nonebot.dev"),
+        ]  # type: ignore
+    )
+
 
 def test_adapter_tags_json_invalid(mocker: MockerFixture) -> None:
     """测试标签 json 格式不正确的情况"""
@@ -123,7 +151,7 @@ def test_adapter_tags_json_invalid(mocker: MockerFixture) -> None:
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
 
     with pytest.raises(ValidationError) as e:
-        info = AdapterPublishInfo(
+        AdapterPublishInfo(
             module_name="module_name",
             project_link="project_link",
             name="name",
@@ -135,6 +163,13 @@ def test_adapter_tags_json_invalid(mocker: MockerFixture) -> None:
         )
     assert "⚠️ 标签解码失败。<dt>请确保标签格式正确。</dt>" in str(e.value)
 
+    mock_httpx.assert_has_calls(
+        [
+            mocker.call("https://pypi.org/pypi/project_link/json"),
+            mocker.call("https://v2.nonebot.dev"),
+        ]  # type: ignore
+    )
+
 
 def test_adapter_tags_json_not_list(mocker: MockerFixture) -> None:
     """测试标签 json 不是列表的情况"""
@@ -143,7 +178,7 @@ def test_adapter_tags_json_not_list(mocker: MockerFixture) -> None:
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
 
     with pytest.raises(ValidationError) as e:
-        info = AdapterPublishInfo(
+        AdapterPublishInfo(
             module_name="module_name",
             project_link="project_link",
             name="name",
@@ -155,6 +190,13 @@ def test_adapter_tags_json_not_list(mocker: MockerFixture) -> None:
         )
     assert "⚠️ 标签格式错误。<dt>请确保标签为列表。</dt>" in str(e.value)
 
+    mock_httpx.assert_has_calls(
+        [
+            mocker.call("https://pypi.org/pypi/project_link/json"),
+            mocker.call("https://v2.nonebot.dev"),
+        ]  # type: ignore
+    )
+
 
 def test_adapter_tags_json_not_dict(mocker: MockerFixture) -> None:
     """测试标签 json 是列表但列表里不全是字典的情况"""
@@ -163,7 +205,7 @@ def test_adapter_tags_json_not_dict(mocker: MockerFixture) -> None:
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
 
     with pytest.raises(ValidationError) as e:
-        info = AdapterPublishInfo(
+        AdapterPublishInfo(
             module_name="module_name",
             project_link="project_link",
             name="name",
@@ -174,3 +216,10 @@ def test_adapter_tags_json_not_dict(mocker: MockerFixture) -> None:
             is_official=False,
         )
     assert "⚠️ 标签格式错误。<dt>请确保标签列表内均为字典。</dt>" in str(e.value)
+
+    mock_httpx.assert_has_calls(
+        [
+            mocker.call("https://pypi.org/pypi/project_link/json"),
+            mocker.call("https://v2.nonebot.dev"),
+        ]  # type: ignore
+    )

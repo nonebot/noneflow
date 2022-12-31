@@ -38,7 +38,7 @@ def test_pypi_project_name_invalid(mocker: MockerFixture) -> None:
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
 
     with pytest.raises(ValidationError) as e:
-        info = AdapterPublishInfo(
+        AdapterPublishInfo(
             module_name="module_name",
             project_link="project_link/",
             name="name",
@@ -60,7 +60,7 @@ def test_module_name_invalid(mocker: MockerFixture) -> None:
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
 
     with pytest.raises(ValidationError) as e:
-        info = AdapterPublishInfo(
+        AdapterPublishInfo(
             module_name="1module_name",
             project_link="project_link",
             name="name",
@@ -87,7 +87,7 @@ def test_name_duplication(mocker: MockerFixture) -> None:
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
 
     with pytest.raises(ValidationError) as e:
-        info = AdapterPublishInfo(
+        AdapterPublishInfo(
             module_name="module_name1",
             project_link="project_link1",
             name="name",
