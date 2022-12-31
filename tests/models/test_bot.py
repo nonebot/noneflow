@@ -31,6 +31,7 @@ def mocked_httpx_get(url: str):
 
 def test_bot_from_issue(mocker: MockerFixture) -> None:
     """测试从 issue 中构造 BotPublishInfo"""
+    import src.globals as g
     from src.models import BotPublishInfo
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
@@ -48,6 +49,12 @@ def test_bot_from_issue(mocker: MockerFixture) -> None:
         tags=[{"label": "test", "color": "#ffffff"}],
         is_official=False,
     )
+
+    info.update_file()
+
+    with g.settings.input_config.bot_path.open("r") as f:
+        data = json.load(f)[1]
+        assert data == info.dict()
     mock_httpx.assert_called_once_with("https://v2.nonebot.dev")
 
 

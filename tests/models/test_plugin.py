@@ -33,6 +33,7 @@ def test_plugin_from_issue(mocker: MockerFixture) -> None:
     """测试从 issue 中构造 PluginPublishInfo 的情况"""
     import os
 
+    import src.globals as g
     from src.models import PluginPublishInfo
 
     os.environ["PLUGIN_TEST_RESULT"] = "True"
@@ -54,6 +55,12 @@ def test_plugin_from_issue(mocker: MockerFixture) -> None:
         tags=[{"label": "test", "color": "#ffffff"}],
         is_official=False,
     )
+
+    info.update_file()
+
+    with g.settings.input_config.plugin_path.open("r") as f:
+        data = json.load(f)[1]
+        assert data == info.dict(exclude={"plugin_test_result"})
     calls = [
         mocker.call("https://pypi.org/pypi/project_link/json"),
         mocker.call("https://v2.nonebot.dev"),

@@ -33,6 +33,7 @@ def mocked_httpx_get(url: str):
 
 def test_adapter_from_issue(mocker: MockerFixture) -> None:
     """测试从 issue 中构造 AdapterPublishInfo 的情况"""
+    import src.globals as g
     from src.models import AdapterPublishInfo
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
@@ -51,6 +52,18 @@ def test_adapter_from_issue(mocker: MockerFixture) -> None:
         homepage="https://v2.nonebot.dev",
         tags=[{"label": "test", "color": "#ffffff"}],
         is_official=False,
+    )
+
+    info.update_file()
+
+    with g.settings.input_config.adapter_path.open("r") as f:
+        data = json.load(f)[1]
+        assert data == info.dict()
+    mock_httpx.assert_has_calls(
+        [
+            mocker.call("https://pypi.org/pypi/project_link/json"),
+            mocker.call("https://v2.nonebot.dev"),
+        ]  # type: ignore
     )
 
 
@@ -80,6 +93,13 @@ def test_adapter_from_issue_trailing_whitespace(mocker: MockerFixture) -> None:
         homepage="https://v2.nonebot.dev",
         tags=[{"label": "test", "color": "#ffffff"}],
         is_official=False,
+    )
+
+    mock_httpx.assert_has_calls(
+        [
+            mocker.call("https://pypi.org/pypi/project_link/json"),
+            mocker.call("https://v2.nonebot.dev"),
+        ]  # type: ignore
     )
 
 
