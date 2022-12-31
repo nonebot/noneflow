@@ -27,6 +27,8 @@ def mocked_httpx_get(url: str):
         return MockResponse(200)
     if url == "https://v2.nonebot.dev":
         return MockResponse(200)
+    if url == "exception":
+        raise Exception("test exception")
 
     return MockResponse(404)
 
@@ -209,5 +211,29 @@ def test_adapter_info_name_validation_failed(mocker: MockerFixture) -> None:
     calls = [
         mocker.call("https://pypi.org/pypi/project_link1/json"),
         mocker.call("https://v2.nonebot.dev"),
+    ]
+    mock_httpx.assert_has_calls(calls)  # type: ignore
+
+
+def test_adapter_info_validation_failed_http_exception(mocker: MockerFixture) -> None:
+    """测试验证失败的情况，HTTP 请求报错"""
+    from src.models import AdapterPublishInfo, MyValidationError
+
+    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
+    mock_issue = mocker.MagicMock()
+    mock_issue.body = generate_issue_body(homepage="exception")
+    mock_issue.user.login = "author"
+
+    with pytest.raises(MyValidationError) as e:
+        AdapterPublishInfo.from_issue(mock_issue)
+
+    assert (
+        e.value.message
+        == """> Adapter: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ 项目 <a href="exception">主页</a> 返回状态码 None。<dt>请确保您的项目主页可访问。</dt></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff。</li><li>✅ 包 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li></code></pre></details>"""
+    )
+
+    calls = [
+        mocker.call("https://pypi.org/pypi/project_link/json"),
+        mocker.call("exception"),
     ]
     mock_httpx.assert_has_calls(calls)  # type: ignore

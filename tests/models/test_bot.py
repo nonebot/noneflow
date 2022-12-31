@@ -2,6 +2,7 @@ import json
 from collections import OrderedDict
 from typing import Union
 
+import pytest
 from pytest_mock import MockerFixture
 
 
@@ -25,6 +26,8 @@ def mocked_httpx_get(url: str):
         return MockResponse(200)
     if url == "https://v2.nonebot.dev":
         return MockResponse(200)
+    if url == "exception":
+        raise Exception("test exception")
 
     return MockResponse(404)
 
@@ -125,13 +128,13 @@ def test_bot_info_validation_failed(mocker: MockerFixture) -> None:
     )
     mock_issue.user.login = "author"
 
-    try:
-        info = BotPublishInfo.from_issue(mock_issue)
-    except MyValidationError as e:
-        assert (
-            e.message
-            == """> Bot: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保您的项目主页可访问。</dt></li><li>⚠️ 第 2 个标签名称过长<dt>请确保标签名称不超过 10 个字符。</dt></li><li>⚠️ 第 2 个标签颜色错误<dt>请确保标签颜色符合十六进制颜色码规则。</dt></li></code></pre>"""
-        )
+    with pytest.raises(MyValidationError) as e:
+        BotPublishInfo.from_issue(mock_issue)
+
+    assert (
+        e.value.message
+        == """> Bot: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保您的项目主页可访问。</dt></li><li>⚠️ 第 2 个标签名称过长<dt>请确保标签名称不超过 10 个字符。</dt></li><li>⚠️ 第 2 个标签颜色错误<dt>请确保标签颜色符合十六进制颜色码规则。</dt></li></code></pre>"""
+    )
 
     calls = [
         mocker.call("https://www.baidu.com"),
@@ -151,13 +154,13 @@ def test_bot_info_validation_failed_json_error(mocker: MockerFixture) -> None:
     )
     mock_issue.user.login = "author"
 
-    try:
-        info = BotPublishInfo.from_issue(mock_issue)
-    except MyValidationError as e:
-        assert (
-            e.message
-            == """> Bot: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保您的项目主页可访问。</dt></li><li>⚠️ 标签解码失败。<dt>请确保标签格式正确。</dt></li></code></pre>"""
-        )
+    with pytest.raises(MyValidationError) as e:
+        BotPublishInfo.from_issue(mock_issue)
+
+    assert (
+        e.value.message
+        == """> Bot: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保您的项目主页可访问。</dt></li><li>⚠️ 标签解码失败。<dt>请确保标签格式正确。</dt></li></code></pre>"""
+    )
 
     calls = [
         mocker.call("https://www.baidu.com"),
@@ -177,13 +180,13 @@ def test_bot_info_validation_failed_tag_field_missing(mocker: MockerFixture) -> 
     )
     mock_issue.user.login = "author"
 
-    try:
-        info = BotPublishInfo.from_issue(mock_issue)
-    except MyValidationError as e:
-        assert (
-            e.message
-            == """> Bot: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保您的项目主页可访问。</dt></li><li>⚠️ 第 1 个标签缺少 color 字段。<dt>请确保标签字段完整。</dt></li></code></pre>"""
-        )
+    with pytest.raises(MyValidationError) as e:
+        BotPublishInfo.from_issue(mock_issue)
+
+    assert (
+        e.value.message
+        == """> Bot: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保您的项目主页可访问。</dt></li><li>⚠️ 第 1 个标签缺少 color 字段。<dt>请确保标签字段完整。</dt></li></code></pre>"""
+    )
 
     calls = [
         mocker.call("https://www.baidu.com"),
@@ -200,15 +203,38 @@ def test_bot_info_validation_failed_name_tags_missing(mocker: MockerFixture) -> 
     mock_issue.body = generate_issue_body(name="", tags="")
     mock_issue.user.login = "author"
 
-    try:
-        info = BotPublishInfo.from_issue(mock_issue)
-    except MyValidationError as e:
-        assert (
-            e.message
-            == """> Bot: \n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ name: 无法匹配到数据。<dt>请确保填写该项目。</dt></li><li>⚠️ tags: 无法匹配到数据。<dt>请确保填写该项目。</dt></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 项目 <a href="https://v2.nonebot.dev">主页</a> 返回状态码 200。</li></code></pre></details>"""
-        )
+    with pytest.raises(MyValidationError) as e:
+        BotPublishInfo.from_issue(mock_issue)
+
+    assert (
+        e.value.message
+        == """> Bot: \n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ name: 无法匹配到数据。<dt>请确保填写该项目。</dt></li><li>⚠️ tags: 无法匹配到数据。<dt>请确保填写该项目。</dt></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 项目 <a href="https://v2.nonebot.dev">主页</a> 返回状态码 200。</li></code></pre></details>"""
+    )
 
     calls = [
         mocker.call("https://v2.nonebot.dev"),
+    ]
+    mock_httpx.assert_has_calls(calls)  # type: ignore
+
+
+def test_bot_info_validation_failed_http_exception(mocker: MockerFixture) -> None:
+    """测试验证失败的情况，HTTP 请求报错"""
+    from src.models import BotPublishInfo, MyValidationError
+
+    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
+    mock_issue = mocker.MagicMock()
+    mock_issue.body = generate_issue_body(homepage="exception")
+    mock_issue.user.login = "author"
+
+    with pytest.raises(MyValidationError) as e:
+        BotPublishInfo.from_issue(mock_issue)
+
+    assert (
+        e.value.message
+        == """> Bot: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ 项目 <a href="exception">主页</a> 返回状态码 None。<dt>请确保您的项目主页可访问。</dt></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff。</li></code></pre></details>"""
+    )
+
+    calls = [
+        mocker.call("exception"),
     ]
     mock_httpx.assert_has_calls(calls)  # type: ignore
