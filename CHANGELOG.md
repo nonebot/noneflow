@@ -7,13 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [1.1.0] - 2022-05-21
+
 ### Added
 
 - 只有当文件发生变化后才强制推送
+- 通过单独的测试脚本添加插件加载测试
+- 评论内容无变化的时候，跳过修改
 
 ### Fixed
 
 - 修复未同时修改议题与拉取请求标题的问题
+
+### Changed
+
+- 文件结尾加上换行符
+- 抛弃 PyGithub 投入 githubkit 的怀抱
 
 ## [1.0.0] - 2022-05-21
 
@@ -100,7 +109,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/nonebot2-publish-bot/compare/v1.0.0...HEAD
+[unreleased]: https://github.com/nonebot/nonebot2-publish-bot/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/nonebot/nonebot2-publish-bot/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.5.2...v1.0.0
 [0.5.2]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.5.0...v0.5.1
