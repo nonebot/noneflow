@@ -112,7 +112,11 @@ class Bot:
             logging.info("评论在拉取请求下，已跳过")
             return
 
-        issue = event.issue
+        # 因为 Actions 会排队，触发事件相关的议题在 Actions 执行时可能已经被关闭
+        # 所以需要获取最新的议题状态
+        issue = self.github.rest.issues.get(
+            self.owner, self.name, event.issue.number
+        ).parsed_data
 
         if issue.state != "open":
             logging.info("议题未开启，已跳过")

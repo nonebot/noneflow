@@ -45,6 +45,10 @@ def test_process_publish_check(mocker: MockerFixture, tmp_path: Path) -> None:
     mock_event = mocker.MagicMock()
     mock_event.issue = mock_issue
 
+    mock_issues_resp = mocker.MagicMock()
+    mock_issues_resp.parsed_data = mock_issue
+    bot.github.rest.issues.get.return_value = mock_issues_resp
+
     mock_comment = mocker.MagicMock()
     mock_comment.body = "Bot: test"
     mock_list_comments_resp = mocker.MagicMock()
@@ -63,6 +67,9 @@ def test_process_publish_check(mocker: MockerFixture, tmp_path: Path) -> None:
     check_json_data(g.settings.input_config.bot_path, [])
 
     bot.process_publish_check(mock_event)
+
+    # 获取最新的议题信息
+    bot.github.rest.issues.get.assert_called_with("owner", "repo", 1)
 
     # 测试 git 命令
     mock_subprocess_run.assert_has_calls(
@@ -179,6 +186,10 @@ def test_edit_title(mocker: MockerFixture, tmp_path: Path) -> None:
     mock_event = mocker.MagicMock()
     mock_event.issue = mock_issue
 
+    mock_issues_resp = mocker.MagicMock()
+    mock_issues_resp.parsed_data = mock_issue
+    bot.github.rest.issues.get.return_value = mock_issues_resp
+
     mock_comment = mocker.MagicMock()
     mock_comment.body = "Bot: test"
     mock_list_comments_resp = mocker.MagicMock()
@@ -200,6 +211,9 @@ def test_edit_title(mocker: MockerFixture, tmp_path: Path) -> None:
     check_json_data(g.settings.input_config.bot_path, [])
 
     bot.process_publish_check(mock_event)
+
+    # 获取最新的议题信息
+    bot.github.rest.issues.get.assert_called_with("owner", "repo", 1)
 
     # 测试 git 命令
     mock_subprocess_run.assert_has_calls(
@@ -321,6 +335,10 @@ def test_process_publish_check_not_pass(mocker: MockerFixture, tmp_path: Path) -
     mock_event = mocker.MagicMock()
     mock_event.issue = mock_issue
 
+    mock_issues_resp = mocker.MagicMock()
+    mock_issues_resp.parsed_data = mock_issue
+    bot.github.rest.issues.get.return_value = mock_issues_resp
+
     mock_comment = mocker.MagicMock()
     mock_comment.body = "Bot: test"
     mock_list_comments_resp = mocker.MagicMock()
@@ -333,6 +351,9 @@ def test_process_publish_check_not_pass(mocker: MockerFixture, tmp_path: Path) -
     check_json_data(g.settings.input_config.bot_path, [])
 
     bot.process_publish_check(mock_event)
+
+    # 获取最新的议题信息
+    bot.github.rest.issues.get.assert_called_with("owner", "repo", 1)
 
     # 测试 git 命令
     mock_subprocess_run.assert_not_called()
