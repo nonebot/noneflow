@@ -61,8 +61,9 @@ class PluginTest:
                 stderr=subprocess.PIPE,
             )
             _, stderr = await proc.communicate()
+            code = proc.returncode
 
-            self._create = not "ERROR" in stderr.decode()
+            self._create = not code
             if self._create:
                 print(f"项目 {self.project_link} 创建成功。")
             else:
