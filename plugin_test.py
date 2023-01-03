@@ -64,7 +64,7 @@ class PluginTest:
 
             self._create = not "ERROR" in stderr.decode()
             if self._create:
-                self.log_output(f"项目 {self.project_link} 创建成功。")
+                print(f"项目 {self.project_link} 创建成功。")
             else:
                 self.log_output(f"项目 {self.project_link} 创建失败：")
                 for i in stderr.decode().strip().splitlines():
