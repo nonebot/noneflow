@@ -9,6 +9,19 @@
             "type": "python",
             "request": "launch",
             "module": "pytest"
+        },
+        {
+            "name": "Plugin Test",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/plugin_test.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+              "GITHUB_EVENT_NAME": "issue_comment",
+              "GITHUB_EVENT_PATH": "${workspaceFolder}/tests/plugin-test/issue-comment.json",
+              "GITHUB_OUTPUT": "plugin_test/output.txt",
+            }
         }
     ]
 }

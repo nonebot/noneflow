@@ -37,14 +37,21 @@ class PluginTest:
         self._create = False
         self._run = False
 
+        self._output_lines: List[str] = []
+
     async def run(self):
         await self.create_poetry_project()
         if self._create:
+            await self.show_package_info()
             await self.run_poetry_project()
 
         # 输出测试结果
         with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-            f.write(f"RESULT={self._run}")
+            f.write(f"RESULT={self._run}\n")
+        # 输出测试输出
+        output = "\n".join(self._output_lines)
+        with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+            f.write(f"OUTPUT<<EOF\n{output}\nEOF\n")
 
     async def create_poetry_project(self) -> None:
         if not self._path.exists():
@@ -54,17 +61,39 @@ class PluginTest:
                 stderr=subprocess.PIPE,
             )
             _, stderr = await proc.communicate()
-            if not "ERROR" in stderr.decode():
-                print(f"Created project {self.module_name} from PyPI peacefully.")
+
             self._create = not "ERROR" in stderr.decode()
+            if self._create:
+                self.log_output(f"项目 {self.project_link} 创建成功。")
+            else:
+                self.log_output(f"项目 {self.project_link} 创建失败：")
+                for i in stderr.decode().strip().splitlines():
+                    self.log_output(f"    {i}")
         else:
-            print(f"Project {self.module_name} already exists.")
+            self.log_output(f"项目 {self.project_link} 已存在，跳过创建。")
             self._create = True
+
+    async def show_package_info(self) -> None:
+        if self._path.exists():
+            proc = await create_subprocess_shell(
+                f"cd {self._path.resolve()} && poetry show {self.project_link}",
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            stdout, _ = await proc.communicate()
+            code = proc.returncode
+            if not code:
+                self.log_output(f"插件 {self.project_link} 的信息如下：")
+                for i in stdout.decode().strip().splitlines():
+                    self.log_output(f"    {i}")
+            else:
+                self.log_output(f"插件 {self.project_link} 信息获取失败。")
 
     async def run_poetry_project(self) -> None:
         if self._path.exists():
             with open(self._path / "runner.py", "w") as f:
                 f.write(RUNNER.format(self.module_name))
+
             proc = await create_subprocess_shell(
                 f"cd {self._path.resolve()} && poetry run python runner.py",
                 stdout=subprocess.PIPE,
@@ -72,37 +101,25 @@ class PluginTest:
             )
             stdout, stderr = await proc.communicate()
             code = proc.returncode
-            output_lines: List[str] = []
-            if not code:
-                print(f"Run project {self.module_name} from PyPI peacefully.")
-                output_lines.append(
-                    f"Run project {self.module_name} from PyPI peacefully."
-                )
+
+            self._run = not code
+            if self._run:
+                self.log_output(f"插件 {self.module_name} 加载正常。")
             else:
-                print(f"Error while running project {self.module_name} from PyPI:")
-                output_lines.append(
-                    f"Error while running project {self.module_name} from PyPI:"
-                )
+                self.log_output(f"插件 {self.module_name} 加载出错：")
                 _err = stderr.decode().strip()
                 if len(_err.splitlines()) > 1:
                     for i in _err.splitlines():
-                        print(f"    {i}")
-                        output_lines.append(f"    {i}")
+                        self.log_output(f"    {i}")
                 elif not _err:
-                    print(stdout.decode().strip())
-                    output_lines.append(stdout.decode().strip())
+                    self.log_output(stdout.decode().strip())
                 else:
-                    print(_err)
-                    output_lines.append(_err)
+                    self.log_output(_err)
 
-            # 输出测试输出
-            output = "\n".join(output_lines)
-            with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-                f.write(f"OUTPUT<<EOF\n{output}\nEOF\n")
-
-            self._run = not code
-        else:
-            print(f"Project {self.module_name} does not exist.")
+    def log_output(self, output: str) -> None:
+        """记录输出，同时打印到控制台"""
+        print(output)
+        self._output_lines.append(output)
 
 
 def main():
