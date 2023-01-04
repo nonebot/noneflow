@@ -27,12 +27,12 @@
 简单的示例
 
 ```yaml
-name: "NoneBot2 Publish Bot"
+name: NoneBot2 Publish Bot
 
 on:
   issues:
     types: [opened, reopened, edited]
-  pull_request:
+  pull_request_target:
     types: [closed]
   issue_comment:
     types: [created]
@@ -52,10 +52,11 @@ jobs:
       result: ${{ steps.plugin-test.outputs.RESULT }}
       output: ${{ steps.plugin-test.outputs.OUTPUT }}
     steps:
-      - name: Install poetry
+      - name: Install Poetry
         if: ${{ !startsWith(github.event_name, 'pull_request') }}
         run: pipx install poetry
-      - uses: actions/setup-python@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
           python-version: "3.10"
       - name: Test Plugin
@@ -68,18 +69,20 @@ jobs:
     name: nonebot2 publish bot
     needs: plugin_test
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_TOKEN }}
       - name: NoneBot2 Publish Bot
         uses: docker://ghcr.io/nonebot/nonebot2-publish-bot:main
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }}
           config: >
             {
               "base": "master",
-              "plugin_path": "docs/.vuepress/public/plugins.json",
-              "bot_path": "docs/.vuepress/public/bots.json",
-              "adapter_path": "docs/.vuepress/public/adapters.json"
+              "plugin_path": "website/static/plugins.json",
+              "bot_path": "website/static/bots.json",
+              "adapter_path": "website/static/adapters.json"
             }
         env:
           PLUGIN_TEST_RESULT: ${{ needs.plugin_test.outputs.result }}
