@@ -45,6 +45,7 @@ jobs:
   plugin_test:
     runs-on: ubuntu-latest
     name: nonebot2 plugin test
+    if: github.event_name != 'issue_comment' || !github.event.issue.pull_request
     permissions:
       issues: read
     outputs:
@@ -52,6 +53,7 @@ jobs:
       output: ${{ steps.plugin-test.outputs.OUTPUT }}
     steps:
       - name: Install poetry
+        if: ${{ !startsWith(github.event_name, 'pull_request') }}
         run: pipx install poetry
       - uses: actions/setup-python@v4
         with:
@@ -67,7 +69,7 @@ jobs:
     needs: plugin_test
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: NoneBot2 Publish Bot
         uses: docker://ghcr.io/nonebot/nonebot2-publish-bot:main
         with:

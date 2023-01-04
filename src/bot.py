@@ -247,6 +247,7 @@ class Bot:
             self.github.rest.issues.add_labels(
                 self.owner, self.name, pull.number, labels=[info.get_type().value]
             )
+            logging.info("拉取请求创建完毕")
         except RequestFailed:
             logging.info("该分支的拉取请求已创建，请前往查看")
 
