@@ -37,6 +37,10 @@ on:
   issue_comment:
     types: [created]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.issue.number || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   plugin_test:
     runs-on: ubuntu-latest
