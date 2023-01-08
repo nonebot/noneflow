@@ -22,6 +22,7 @@ from .constants import (
     PUBLISH_BOT_MARKER,
     REUSE_MESSAGE,
     SKIP_PLUGIN_TEST_COMMENT,
+    TIPS_MESSAGE,
 )
 from .models import PublishInfo
 from .utils import (
@@ -286,7 +287,7 @@ class Bot:
         footer += f"\n{PUBLISH_BOT_MARKER}"
 
         comment = COMMENT_MESSAGE_TEMPLATE.format(
-            title=COMMENT_TITLE, body=body, footer=footer
+            title=COMMENT_TITLE, body=body, tips=TIPS_MESSAGE, footer=footer
         )
         if reusable_comment:
             logging.info(f"发现已有评论 {reusable_comment.id}，正在修改")
