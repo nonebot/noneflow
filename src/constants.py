@@ -10,6 +10,10 @@ COMMIT_MESSAGE_PREFIX = ":beers: publish"
 
 BRANCH_NAME_PREFIX = "publish/issue"
 
+TIPS_MESSAGE = (
+    "💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。\n💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。"
+)
+
 REUSE_MESSAGE = "♻️ 评论已更新至最新检查结果"
 
 POWERED_BY_BOT_MESSAGE = "💪 Powered by NoneBot2 Publish Bot"
@@ -30,6 +34,8 @@ COMMENT_MESSAGE_TEMPLATE = """{title}
 {body}
 
 ---
+
+{tips}
 
 {footer}
 """
