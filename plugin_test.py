@@ -18,7 +18,7 @@ MODULE_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("插件 import 包名"))
 
 RUNNER = """from nonebot import init, load_plugin
 
-init()
+init(driver="~none")
 valid = load_plugin("{}")
 if not valid:
     exit(1)
