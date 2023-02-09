@@ -81,3 +81,5 @@ jobs:
 
       - name: Upload Files
         run: gh release upload --clobber ${{ env.TAG_NAME }} plugin_test.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
