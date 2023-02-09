@@ -21,7 +21,7 @@ RUN apt-get update \
     && apt-get purge -y --auto-remove \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git config --global --add safe.directory /github/workspace
+RUN git config --global safe.directory '*'
 
 COPY --from=requirements-stage /tmp/requirements.txt /app/requirements.txt
 
