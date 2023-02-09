@@ -34,9 +34,9 @@ def run_shell_command(command: list[str]):
         r = subprocess.run(command, check=True, capture_output=True)
         logging.debug(f"命令输出: \n{r.stdout.decode()}")
     except subprocess.CalledProcessError as e:
-        logging.error("命令运行失败")
-        logging.error(f"命令输出: \n{e.stdout.decode()}")
-        logging.error(f"命令错误: \n{e.stderr.decode()}")
+        logging.debug("命令运行失败")
+        logging.debug(f"命令输出: \n{e.stdout.decode()}")
+        logging.debug(f"命令错误: \n{e.stderr.decode()}")
         raise
     return r
 
