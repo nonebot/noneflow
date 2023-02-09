@@ -1,6 +1,5 @@
 import json
 from collections import OrderedDict
-from typing import Union
 
 import pytest
 from pytest_mock import MockerFixture
@@ -10,7 +9,7 @@ def generate_issue_body(
     name: str = "name",
     desc: str = "desc",
     homepage: str = "https://v2.nonebot.dev",
-    tags: Union[list, str] = [{"label": "test", "color": "#ffffff"}],
+    tags: list | str = [{"label": "test", "color": "#ffffff"}],
 ):
     if isinstance(tags, list):
         tags = json.dumps(tags)

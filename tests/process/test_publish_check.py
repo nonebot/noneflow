@@ -17,7 +17,7 @@ def mocked_httpx_get(url: str):
 
 
 def check_json_data(file: Path, data: Any) -> None:
-    with open(file, "r") as f:
+    with open(file) as f:
         assert json.load(f) == data
 
 

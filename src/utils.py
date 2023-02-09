@@ -1,7 +1,7 @@
 import logging
 import re
 import subprocess
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Union
 
 from .constants import BRANCH_NAME_PREFIX, COMMIT_MESSAGE_PREFIX
 from .models import (
@@ -39,7 +39,7 @@ def get_type_by_labels(
     labels: list["Label"]
     | list["WebhookLabel"]
     | list[Union[str, "IssuePropLabelsItemsOneof1"]],
-) -> Optional[PublishType]:
+) -> PublishType | None:
     """通过标签获取类型"""
     for label in labels:
         if isinstance(label, str):
@@ -52,7 +52,7 @@ def get_type_by_labels(
             return PublishType.ADAPTER
 
 
-def get_type_by_title(title: str) -> Optional[PublishType]:
+def get_type_by_title(title: str) -> PublishType | None:
     """通过标题获取类型"""
     if title.startswith(f"{PublishType.BOT.value}:"):
         return PublishType.BOT
@@ -62,7 +62,7 @@ def get_type_by_title(title: str) -> Optional[PublishType]:
         return PublishType.ADAPTER
 
 
-def get_type_by_commit_message(message: str) -> Optional[PublishType]:
+def get_type_by_commit_message(message: str) -> PublishType | None:
     """通过提交信息获取类型"""
     if message.startswith(f"{COMMIT_MESSAGE_PREFIX} {PublishType.BOT.value.lower()}"):
         return PublishType.BOT
@@ -100,7 +100,7 @@ def commit_and_push(info: PublishInfo, branch_name: str, issue_number: int):
         run_shell_command(["git", "push", "origin", branch_name, "-f"])
 
 
-def extract_issue_number_from_ref(ref: str) -> Optional[int]:
+def extract_issue_number_from_ref(ref: str) -> int | None:
     """从 Ref 中提取议题号"""
     match = re.search(rf"{BRANCH_NAME_PREFIX}(\d+)", ref)
     if match:
@@ -110,7 +110,7 @@ def extract_issue_number_from_ref(ref: str) -> Optional[int]:
 def extract_publish_info_from_issue(
     issue: "IssuesOpenedPropIssue | IssuesReopenedPropIssue | IssueCommentCreatedPropIssue | Issue | WebhookIssue",
     publish_type: PublishType,
-) -> Union[PublishInfo, MyValidationError]:
+) -> PublishInfo | MyValidationError:
     """从议题中提取发布所需数据"""
     try:
         if publish_type == PublishType.BOT:

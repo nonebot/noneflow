@@ -7,7 +7,7 @@ import re
 from enum import Enum
 from functools import cache
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 import httpx
 from pydantic import (
@@ -187,7 +187,7 @@ class PublishInfo(abc.ABC, BaseModel):
     @validator("tags", pre=True)
     def tags_validator(cls, v: str) -> list[dict[str, str]]:
         try:
-            tags: Union[list[Any], Any] = json.loads(v)
+            tags: list[Any] | Any = json.loads(v)
         except json.JSONDecodeError:
             raise ValueError("⚠️ 标签解码失败。<dt>请确保标签格式正确。</dt>")
         if not isinstance(tags, list):
@@ -428,7 +428,7 @@ def check_pypi(project_link: str) -> bool:
 
 
 @cache
-def check_url(url: str) -> Optional[int]:
+def check_url(url: str) -> int | None:
     """检查网址是否可以访问
 
     返回状态码，如果报错则返回 None
@@ -441,7 +441,7 @@ def check_url(url: str) -> Optional[int]:
         pass
 
 
-def generate_validation_message(info: Union[PublishInfo, MyValidationError]) -> str:
+def generate_validation_message(info: PublishInfo | MyValidationError) -> str:
     """生成验证信息"""
     if isinstance(info, MyValidationError):
         # 如果有错误
