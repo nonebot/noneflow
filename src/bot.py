@@ -55,6 +55,10 @@ class Bot:
             event_name = "pull_request"
         event = parse(event_name, g.settings.github_event_path.read_text())
 
+        # 绕过检查
+        # https://github.blog/2022-04-18-highlights-from-git-2-36/#stricter-repository-ownership-checks
+        run_shell_command(["git", "config", "--global", "safe.directory", "*"])
+
         if isinstance(event, PullRequestClosed):
             self.process_pull_request_event(event)
         elif isinstance(
