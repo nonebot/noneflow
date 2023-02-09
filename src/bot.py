@@ -142,12 +142,6 @@ class Bot:
         if isinstance(info, PublishInfo):
             # 拉取请求与议题的标题
             title = f"{info.get_type().value}: {info.name}"
-            # 修改议题标题
-            if issue.title != title:
-                self.github.rest.issues.update(
-                    self.owner, self.name, issue.number, title=title
-                )
-                logging.info(f"议题标题已修改为 {title}")
             # 创建新分支
             # 命名示例 publish/issue123
             branch_name = f"{BRANCH_NAME_PREFIX}{issue.number}"
@@ -157,6 +151,14 @@ class Bot:
             commit_and_push(info, branch_name, issue.number)
             # 创建拉取请求
             self.create_pull_request(info, branch_name, issue.number, title)
+            # 修改议题标题
+            # 需要等创建完拉取请求并打上标签后执行
+            # 不然会因为修改议题触发 Actions 导致标签没有正常打上
+            if issue.title != title:
+                self.github.rest.issues.update(
+                    self.owner, self.name, issue.number, title=title
+                )
+                logging.info(f"议题标题已修改为 {title}")
             message = info.validation_message
         else:
             message = info.message

@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - rc3 默认不自带 fastapi，修改为 none 驱动
 - 修复插件测试中创建项目失败时，没有正确判断的问题
 - 修复 Actions 排队后未能正确跳过关闭的议题的问题
+- 修复拉取请求标签没有打上的问题
 
 ### Changed
 
