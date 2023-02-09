@@ -76,5 +76,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Set Tag Name
+        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
       - name: Upload Files
         run: gh release upload --clobber ${{ env.TAG_NAME }} plugin_test.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
