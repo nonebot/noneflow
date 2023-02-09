@@ -8,7 +8,6 @@ import os
 import re
 from asyncio import create_subprocess_shell, run, subprocess
 from pathlib import Path
-from typing import List
 
 # 匹配信息的正则表达式
 ISSUE_PATTERN = r"\*\*{}：\*\*\s+([^\s*].*?)(?=(?:\s+\*\*|$))"
@@ -37,7 +36,7 @@ class PluginTest:
         self._create = False
         self._run = False
 
-        self._output_lines: List[str] = []
+        self._output_lines: list[str] = []
 
     async def run(self):
         await self.create_poetry_project()
