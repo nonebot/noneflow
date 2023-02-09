@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Added
+
+- 输出当前插件的信息
+- 添加修改提示
+
+### Fixed
+
+- rc3 默认不自带 fastapi，修改为 none 驱动
+- 修复插件测试中创建项目失败时，没有正确判断的问题
+- 修复 Actions 排队后未能正确跳过关闭的议题的问题
+
+### Changed
+
+- 优化运行条件，减少不必要的运行
+
 ## [1.1.0] - 2022-05-21
 
 ### Added
