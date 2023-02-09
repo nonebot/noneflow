@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [1.1.1] - 2023-02-09
+
 ### Added
 
 - 输出当前插件的信息
@@ -125,7 +127,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/nonebot2-publish-bot/compare/v1.1.0...HEAD
+[unreleased]: https://github.com/nonebot/nonebot2-publish-bot/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/nonebot/nonebot2-publish-bot/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/nonebot/nonebot2-publish-bot/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.5.2...v1.0.0
 [0.5.2]: https://github.com/nonebot/nonebot2-publish-bot/compare/v0.5.1...v0.5.2
