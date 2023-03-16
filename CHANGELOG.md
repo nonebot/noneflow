@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [1.2.0] - 2023-03-16
+
+### Added
+
+- 测试插件是否在 import 前使用 require 声明依赖
+
 ## [1.1.2] - 2023-02-10
 
 ### Added
@@ -138,7 +144,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/nonebot2-publish-bot/compare/v1.1.2...HEAD
+[unreleased]: https://github.com/nonebot/nonebot2-publish-bot/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/nonebot/nonebot2-publish-bot/compare/v1.1.2...v1.2.0
 [1.1.2]: https://github.com/nonebot/nonebot2-publish-bot/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/nonebot/nonebot2-publish-bot/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/nonebot/nonebot2-publish-bot/compare/v1.0.0...v1.1.0
