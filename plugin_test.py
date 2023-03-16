@@ -58,6 +58,7 @@ class PluginTest:
         await self.create_poetry_project()
         if self._create:
             await self.show_package_info()
+            await self.show_plugin_dependencies()
             await self.run_poetry_project()
 
         # 输出测试结果
