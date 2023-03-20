@@ -70,7 +70,7 @@ class PluginTest:
             f.write(f"OUTPUT<<EOF\n{output}\nEOF\n")
         # 输出至作业摘要
         with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
-            summary = f"插件 {self.project_link} 测试结果：{'成功' if self._run else '失败'}\n"
+            summary = f"插件 {self.project_link} 加载测试结果：{'通过' if self._run else '未通过'}\n"
             summary += f"<details><summary>测试输出</summary><pre><code>{output}</code></pre></details>"
             f.write(f"{summary}")
 
