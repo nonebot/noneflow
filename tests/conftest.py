@@ -78,6 +78,7 @@ def setup_globals(tmp_path: Path):
         github_repository="owner/repo",
         github_event_name="",
         github_event_path=tmp_path / "events.json",
+        github_run_id="123456",
         runner_debug=False,
     )
 
