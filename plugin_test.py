@@ -3,7 +3,6 @@
 主要测试代码来自 https://github.com/Lancercmd/nonebot2-store-test
 """
 
-import html
 import json
 import os
 import re
@@ -71,11 +70,9 @@ class PluginTest:
             f.write(f"OUTPUT<<EOF\n{output}\nEOF\n")
         # 输出至作业摘要
         with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
-            summary = f"插件 {self.project_link} 测试结果：{'成功' if self._run else '失败'}"
-            summary += (
-                f"<details><summary>测试输出</summary>{html.escape(output)}</details>"
-            )
-            f.write(f"{summary}\n")
+            summary = f"插件 {self.project_link} 测试结果：{'成功' if self._run else '失败'}\n"
+            summary += f"<details><summary>测试输出</summary><pre><code>{output}</code></pre></details>"
+            f.write(f"{summary}")
 
     async def create_poetry_project(self) -> None:
         if not self._path.exists():

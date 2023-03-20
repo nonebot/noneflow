@@ -131,6 +131,7 @@ class Settings(BaseSettings):
     github_repository: str
     github_event_name: str
     github_event_path: Path
+    github_run_id: str
     runner_debug: bool = False
 
 
@@ -533,10 +534,13 @@ def generate_validation_message(info: PublishInfo | MyValidationError) -> str:
         and "plugin_test_result" not in error_keys
     ):
         plugin_test_result = True
+
+    # https://github.com/he0119/action-test/actions/runs/4469672520
+    action_url = f"https://github.com/{g.settings.github_repository}/actions/runs/{g.settings.github_run_id}"
     if g.skip_plugin_test:
-        details.append("<li>✅ 插件加载测试已跳过。</li>")
+        details.append(f"""<li>✅ 插件 <a href="{action_url}">加载测试</a> 已跳过。</li>""")
     elif plugin_test_result:
-        details.append("<li>✅ 插件加载测试通过。</li>")
+        details.append(f"""<li>✅ 插件 <a href="{action_url}">加载测试</a> 通过。</li>""")
 
     if len(details) != 0:
         detail_message = "".join(details)
