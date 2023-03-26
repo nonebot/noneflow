@@ -66,8 +66,9 @@ class PluginTest:
             f.write(f"RESULT={self._run}\n")
         # 输出测试输出
         output = "\n".join(self._output_lines)
+        # 限制输出长度，防止评论过长，评论最大长度为 65536
         with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-            f.write(f"OUTPUT<<EOF\n{output}\nEOF\n")
+            f.write(f"OUTPUT<<EOF\n{output[:50000]}\nEOF\n")
         # 输出至作业摘要
         with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
             summary = f"插件 {self.project_link} 加载测试结果：{'通过' if self._run else '未通过'}\n"
