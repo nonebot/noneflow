@@ -149,16 +149,16 @@ class PluginTest:
             code = proc.returncode
 
             self._run = not code
-            if self._run:
-                self._log_output(f"插件 {self.module_name} 加载正常。")
-            else:
-                self._log_output(f"插件 {self.module_name} 加载出错：")
-                _out = stdout.decode().strip().splitlines()
-                _err = stderr.decode().strip().splitlines()
-                for i in _out:
-                    self._log_output(f"    {i}")
-                for i in _err:
-                    self._log_output(f"    {i}")
+
+            status = "正常" if self._run else "出错"
+            self._log_output(f"插件 {self.module_name} 加载{status}：")
+
+            _out = stdout.decode().strip().splitlines()
+            _err = stderr.decode().strip().splitlines()
+            for i in _out:
+                self._log_output(f"    {i}")
+            for i in _err:
+                self._log_output(f"    {i}")
 
     def _log_output(self, output: str) -> None:
         """记录输出，同时打印到控制台"""
