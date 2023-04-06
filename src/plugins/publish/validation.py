@@ -12,19 +12,6 @@ import httpx
 from pydantic import BaseModel, ValidationError, root_validator, validator
 
 from .config import plugin_config
-from .models import PublishType
-
-if TYPE_CHECKING:
-    from githubkit.rest.models import Issue
-    from pydantic.error_wrappers import ErrorDict
-    from githubkit.rest.models import Issue
-    from githubkit.webhooks.models import Issue as WebhookIssue
-    from githubkit.webhooks.models import (
-        IssueCommentCreatedPropIssue,
-        IssuesOpenedPropIssue,
-        IssuesReopenedPropIssue,
-    )
-
 from .constants import (
     ADAPTER_DESC_PATTERN,
     ADAPTER_HOMEPAGE_PATTERN,
@@ -44,6 +31,17 @@ from .constants import (
     TAGS_PATTERN,
     VALIDATION_MESSAGE_TEMPLATE,
 )
+from .models import PublishType
+
+if TYPE_CHECKING:
+    from githubkit.rest.models import Issue
+    from githubkit.webhooks.models import Issue as WebhookIssue
+    from githubkit.webhooks.models import (
+        IssueCommentCreatedPropIssue,
+        IssuesOpenedPropIssue,
+        IssuesReopenedPropIssue,
+    )
+    from pydantic.error_wrappers import ErrorDict
 
 
 class MyValidationError(ValueError):

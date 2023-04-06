@@ -3,10 +3,9 @@ from typing import cast
 
 import nonebot
 from nonebot.adapters.github import Adapter as GITHUBAdapter
-from nonebot.adapters.github import Event, events
+from nonebot.adapters.github import Event
 from nonebot.adapters.github.bot import GitHubBot, OAuthBot
 from nonebot.adapters.github.config import GitHubApp, OAuthApp
-from nonebot.adapters.github.utils import log
 from nonebot.drivers.none import Driver
 
 

@@ -1,6 +1,5 @@
 from githubkit.rest.models import IssuePropLabelsItemsOneof1, Label, PullRequestSimple
 from githubkit.webhooks.models import Label as WebhookLabel
-from nonebot import logger
 from nonebot.adapters.github import (
     GitHubBot,
     IssueCommentCreated,
@@ -12,7 +11,6 @@ from nonebot.adapters.github import (
 from nonebot.params import Depends
 
 from . import utils
-from .constants import COMMIT_MESSAGE_PREFIX
 from .models import PublishType, RepoInfo
 
 
