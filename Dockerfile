@@ -14,20 +14,17 @@ RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
 
 FROM python:3.11-slim-bullseye
 
-WORKDIR /app
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends git \
-    && apt-get purge -y --auto-remove \
-    && rm -rf /var/lib/apt/lists/*
-
+# 安装依赖
 COPY --from=requirements-stage /tmp/requirements.txt /app/requirements.txt
+RUN apt-get update \
+  && apt-get -y upgrade \
+  && apt-get install -y --no-install-recommends git \
+  && pip install --no-cache-dir --upgrade -r requirements.txt \
+  && apt-get purge -y --auto-remove \
+  && rm -rf /var/lib/apt/lists/* \
+  && rm /app/requirements.txt
 
-RUN pip install --no-cache-dir --upgrade -r requirements.txt
+COPY bot.py pyproject.toml .env /app/
+COPY src /app/src/
 
-RUN rm requirements.txt
-
-COPY ./main.py /app/
-COPY ./src /app/src
-
-CMD ["python", "/app/main.py"]
+CMD ["python", "/app/bot.py"]
