@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 from typing import cast
 
@@ -44,28 +43,7 @@ class Adapter(GITHUBAdapter):
         if event_name == "pull_request_target":
             event_name = "pull_request"
 
-        event_payload = json.loads(payload)
-        try:
-            types = events.get(event_name)
-            if isinstance(types, dict):
-                if action := event_payload.get("action"):
-                    return types[action].parse_obj(
-                        {"id": event_id, "name": event_name, "payload": event_payload}
-                    )
-                else:
-                    raise ValueError(
-                        f"Payload missing action, either of {', '.join(types)}."
-                    )
-            elif types is None:
-                raise ValueError(f"Unknown event type {event_name}.")
-            return types.parse_obj(
-                {"id": event_id, "name": event_name, "payload": event_payload}
-            )
-        except Exception as e:
-            log("WARNING", f"Failed to parse webhook payload {event_id}", e)
-            return Event.parse_obj(
-                {"id": event_id, "name": event_name, "payload": event_payload}
-            )
+        return super().payload_to_event(event_id, event_name, payload)
 
 
 nonebot.init(driver="~none")
