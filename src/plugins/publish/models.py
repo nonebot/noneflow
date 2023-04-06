@@ -18,4 +18,4 @@ class RepoInfo(BaseModel):
     """仓库信息"""
 
     owner: str
-    name: str
+    repo: str

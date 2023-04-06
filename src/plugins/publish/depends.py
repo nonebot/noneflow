@@ -1,7 +1,7 @@
 from githubkit.rest.models import IssuePropLabelsItemsOneof1, Label, PullRequestSimple
 from githubkit.webhooks.models import Label as WebhookLabel
 from nonebot.adapters.github import (
-    GitHubBot,
+    Bot,
     IssueCommentCreated,
     IssuesEdited,
     IssuesOpened,
@@ -14,15 +14,30 @@ from . import utils
 from .models import PublishType, RepoInfo
 
 
-def get_repo_info(event: PullRequestClosed) -> RepoInfo:
+def get_repo_info(
+    event: PullRequestClosed
+    | IssuesOpened
+    | IssuesReopened
+    | IssuesEdited
+    | IssueCommentCreated,
+) -> RepoInfo:
     """获取仓库信息"""
     repo = event.payload.repository
-    return RepoInfo(owner=repo.owner.login, name=repo.name)
+    return RepoInfo(owner=repo.owner.login, repo=repo.name)
 
 
-def get_labels(event: PullRequestClosed) -> list["WebhookLabel"]:
+def get_labels(
+    event: PullRequestClosed
+    | IssuesOpened
+    | IssuesReopened
+    | IssuesEdited
+    | IssueCommentCreated,
+):
     """获取标签"""
-    labels = event.payload.pull_request.labels
+    if isinstance(event, PullRequestClosed):
+        labels = event.payload.pull_request.labels
+    else:
+        labels = event.payload.issue.labels
     return labels
 
 
@@ -35,12 +50,14 @@ def get_type_by_labels(
     return utils.get_type_by_labels(labels)
 
 
-def get_pull_requests_by_label(
-    bot: GitHubBot,
+async def get_pull_requests_by_label(
+    bot: Bot,
     repo_info: RepoInfo = Depends(get_repo_info),
     publish_type: PublishType = Depends(get_type_by_labels),
 ) -> list[PullRequestSimple]:
-    pulls = bot.rest.pulls.list(**repo_info.dict(), state="open").parsed_data
+    pulls = (
+        await bot.rest.pulls.async_list(**repo_info.dict(), state="open")
+    ).parsed_data
     return [
         pull
         for pull in pulls

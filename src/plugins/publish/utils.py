@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Union
 from githubkit.exception import RequestFailed
 from githubkit.rest.models import PullRequestSimple
 from nonebot import logger
-from nonebot.adapters.github import GitHubBot
+from nonebot.adapters.github import Bot
 
 from .config import plugin_config
 from .constants import (
@@ -19,7 +19,6 @@ from .constants import (
     SKIP_PLUGIN_TEST_COMMENT,
     TIPS_MESSAGE,
 )
-from .depends import get_type_by_labels
 from .models import PublishType, RepoInfo
 from .validation import (
     AdapterPublishInfo,
@@ -148,8 +147,8 @@ def extract_publish_info_from_issue(
         return e
 
 
-def resolve_conflict_pull_requests(
-    bot: GitHubBot,
+async def resolve_conflict_pull_requests(
+    bot: Bot,
     repo_info: RepoInfo,
     pulls: list[PullRequestSimple],
 ):
@@ -172,8 +171,10 @@ def resolve_conflict_pull_requests(
             return
 
         logger.info(f"正在处理 {pull.title}")
-        issue = bot.rest.issues.get(
-            **repo_info.dict(), issue_number=issue_number
+        issue = (
+            await bot.rest.issues.async_get(
+                **repo_info.dict(), issue_number=issue_number
+            )
         ).parsed_data
 
         publish_type = get_type_by_labels(issue.labels)
@@ -188,14 +189,16 @@ def resolve_conflict_pull_requests(
                 logger.info("发布没通过检查，已跳过")
 
 
-def should_skip_plugin_test(
-    bot: GitHubBot,
+async def should_skip_plugin_test(
+    bot: Bot,
     repo_info: RepoInfo,
     issue_number: int,
 ) -> bool:
     """判断是否跳过插件测试"""
-    comments = bot.rest.issues.list_comments(
-        **repo_info.dict(), issue_number=issue_number
+    comments = (
+        await bot.rest.issues.async_list_comments(
+            **repo_info.dict(), issue_number=issue_number
+        )
     ).parsed_data
     for comment in comments:
         author_association = comment.author_association
@@ -207,8 +210,8 @@ def should_skip_plugin_test(
     return False
 
 
-def create_pull_request(
-    bot: GitHubBot,
+async def create_pull_request(
+    bot: Bot,
     repo_info: RepoInfo,
     info: PublishInfo,
     branch_name: str,
@@ -225,7 +228,7 @@ def create_pull_request(
 
     try:
         # 创建拉取请求
-        resp = bot.rest.pulls.create(
+        resp = await bot.rest.pulls.async_create(
             **repo_info.dict(),
             title=title,
             body=body,
@@ -234,24 +237,26 @@ def create_pull_request(
         )
         pull = resp.parsed_data
         # 自动给拉取请求添加标签
-        bot.rest.issues.add_labels(
+        await bot.rest.issues.async_add_labels(
             **repo_info.dict(), issue_number=pull.number, labels=[info.get_type().value]
         )
         logger.info("拉取请求创建完毕")
     except RequestFailed:
         logger.info("该分支的拉取请求已创建，请前往查看")
 
-        pull = bot.rest.pulls.list(
-            **repo_info.dict(), head=f"{repo_info.owner}:{branch_name}"
+        pull = (
+            await bot.rest.pulls.async_list(
+                **repo_info.dict(), head=f"{repo_info.owner}:{branch_name}"
+            )
         ).parsed_data[0]
         if pull.title != title:
-            bot.rest.pulls.update(
+            await bot.rest.pulls.async_update(
                 **repo_info.dict(), pull_number=pull.number, title=title
             )
             logger.info(f"拉取请求标题已修改为 {title}")
 
 
-def comment_issue(bot: GitHubBot, repo_info: RepoInfo, issue_number: int, body: str):
+async def comment_issue(bot: Bot, repo_info: RepoInfo, issue_number: int, body: str):
     """在议题中发布评论"""
     logger.info("开始发布评论")
 
@@ -259,8 +264,10 @@ def comment_issue(bot: GitHubBot, repo_info: RepoInfo, issue_number: int, body: 
 
     # 重复利用评论
     # 如果发现之前评论过，直接修改之前的评论
-    comments = bot.rest.issues.list_comments(
-        **repo_info.dict(), issue_number=issue_number
+    comments = (
+        await bot.rest.issues.async_list_comments(
+            **repo_info.dict(), issue_number=issue_number
+        )
     ).parsed_data
     reusable_comment = next(
         filter(lambda x: PUBLISH_BOT_MARKER in (x.body if x.body else ""), comments),
@@ -280,14 +287,14 @@ def comment_issue(bot: GitHubBot, repo_info: RepoInfo, issue_number: int, body: 
     if reusable_comment:
         logger.info(f"发现已有评论 {reusable_comment.id}，正在修改")
         if reusable_comment.body != comment:
-            bot.rest.issues.update_comment(
+            await bot.rest.issues.async_update_comment(
                 **repo_info.dict(), comment_id=reusable_comment.id, body=comment
             )
             logger.info("评论修改完成")
         else:
             logger.info("评论内容无变化，跳过修改")
     else:
-        bot.rest.issues.create_comment(
+        await bot.rest.issues.async_create_comment(
             **repo_info.dict(), issue_number=issue_number, body=comment
         )
         logger.info("评论创建完成")

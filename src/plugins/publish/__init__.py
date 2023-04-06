@@ -1,6 +1,6 @@
-from nonebot import logger, on
+from nonebot import logger, on_type
 from nonebot.adapters.github import (
-    GitHubBot,
+    Bot,
     IssueCommentCreated,
     IssuesEdited,
     IssuesOpened,
@@ -30,12 +30,12 @@ from .utils import (
 )
 from .validation import PublishInfo
 
-pr_close = on()
+pr_close = on_type(PullRequestClosed)
 
 
 @pr_close.handle()
 async def _(
-    bot: GitHubBot,
+    bot: Bot,
     event: PullRequestClosed,
     publish_type: PublishType = Depends(get_type_by_labels),
     repo_info: RepoInfo = Depends(get_repo_info),
@@ -46,12 +46,14 @@ async def _(
         logger.error("无法获取相关的议题编号")
         return
 
-    issue = bot.rest.issues.get(
-        **repo_info.dict(), issue_number=related_issue_number
+    issue = (
+        await bot.rest.issues.async_get(
+            **repo_info.dict(), issue_number=related_issue_number
+        )
     ).parsed_data
     if issue.state == "open":
         logger.info(f"正在关闭议题 #{related_issue_number}")
-        bot.rest.issues.update(
+        await bot.rest.issues.async_update(
             **repo_info.dict(),
             issue_number=related_issue_number,
             state="closed",
@@ -69,18 +71,18 @@ async def _(
 
     if event.payload.pull_request.merged:
         logger.info("发布的拉取请求已合并，准备更新拉取请求的提交")
-        pull_requests = get_pull_requests_by_label(bot, repo_info, publish_type)
-        resolve_conflict_pull_requests(bot, repo_info, pull_requests)
+        pull_requests = await get_pull_requests_by_label(bot, repo_info, publish_type)
+        await resolve_conflict_pull_requests(bot, repo_info, pull_requests)
     else:
         logger.info("发布的拉取请求未合并，已跳过")
 
 
-check = on()
+check = on_type((IssuesOpened, IssuesReopened, IssuesEdited, IssueCommentCreated))
 
 
 @check.handle()
-async def _(
-    bot: GitHubBot,
+async def publish_check(
+    bot: Bot,
     event: IssuesOpened | IssuesReopened | IssuesEdited | IssueCommentCreated,
     publish_type: PublishType = Depends(get_type_by_labels),
     repo_info: RepoInfo = Depends(get_repo_info),
@@ -92,8 +94,8 @@ async def _(
 
     # 因为 Actions 会排队，触发事件相关的议题在 Actions 执行时可能已经被关闭
     # 所以需要获取最新的议题状态
-    issue = bot.rest.issues.get(
-        **repo_info.dict(), issue_number=issue_number
+    issue = (
+        await bot.rest.issues.async_get(**repo_info.dict(), issue_number=issue_number)
     ).parsed_data
 
     if issue.state != "open":
@@ -101,14 +103,14 @@ async def _(
         await check.finish()
 
     # 自动给议题添加标签
-    bot.rest.issues.add_labels(
+    await bot.rest.issues.async_add_labels(
         **repo_info.dict(),
         issue_number=issue_number,
         labels=[publish_type.value],
     )
 
     # 是否需要跳过插件测试
-    plugin_config.skip_plugin_test = should_skip_plugin_test(
+    plugin_config.skip_plugin_test = await should_skip_plugin_test(
         bot, repo_info, issue_number
     )
 
@@ -126,12 +128,14 @@ async def _(
         info.update_file()
         commit_and_push(info, branch_name, issue_number)
         # 创建拉取请求
-        create_pull_request(bot, repo_info, info, branch_name, issue_number, title)
+        await create_pull_request(
+            bot, repo_info, info, branch_name, issue_number, title
+        )
         # 修改议题标题
         # 需要等创建完拉取请求并打上标签后执行
         # 不然会因为修改议题触发 Actions 导致标签没有正常打上
         if issue.title != title:
-            bot.rest.issues.update(
+            await bot.rest.issues.async_update(
                 **repo_info.dict(), issue_number=issue_number, title=title
             )
             logger.info(f"议题标题已修改为 {title}")
@@ -140,4 +144,4 @@ async def _(
         message = info.message
         logger.info("发布没通过检查，暂不创建拉取请求")
 
-    comment_issue(bot, repo_info, issue_number, message)
+    await comment_issue(bot, repo_info, issue_number, message)
