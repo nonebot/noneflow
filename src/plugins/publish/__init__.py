@@ -1,32 +1,36 @@
-from typing import TYPE_CHECKING
-
 from nonebot import logger, on
-from nonebot.adapters.github import GitHubBot, PullRequestClosed
+from nonebot.adapters.github import (
+    GitHubBot,
+    IssueCommentCreated,
+    IssuesEdited,
+    IssuesOpened,
+    IssuesReopened,
+    PullRequestClosed,
+)
 from nonebot.params import Depends
 
 from .config import plugin_config
-from .depends import get_pull_requests_by_label, get_repo_info, get_type_by_labels
+from .constants import BRANCH_NAME_PREFIX
+from .depends import (
+    get_issue_number,
+    get_pull_requests_by_label,
+    get_repo_info,
+    get_type_by_labels,
+)
 from .models import PublishType, RepoInfo
 from .utils import (
+    comment_issue,
     commit_and_push,
+    create_pull_request,
     extract_issue_number_from_ref,
     extract_publish_info_from_issue,
+    resolve_conflict_pull_requests,
     run_shell_command,
+    should_skip_plugin_test,
 )
 from .validation import PublishInfo
 
-if TYPE_CHECKING:
-    from githubkit.rest.models import PullRequestSimple
-
-
-async def related_to_pr(
-    event: PullRequestClosed,
-    publish_type: PublishType = Depends(get_type_by_labels),
-) -> bool:
-    return True
-
-
-pr_close = on(rule=related_to_pr)
+pr_close = on()
 
 
 @pr_close.handle()
@@ -71,41 +75,69 @@ async def _(
         logger.info("发布的拉取请求未合并，已跳过")
 
 
-def resolve_conflict_pull_requests(
+check = on()
+
+
+@check.handle()
+async def _(
     bot: GitHubBot,
-    repo_info: RepoInfo,
-    pulls: list["PullRequestSimple"],
+    event: IssuesOpened | IssuesReopened | IssuesEdited | IssueCommentCreated,
+    publish_type: PublishType = Depends(get_type_by_labels),
+    repo_info: RepoInfo = Depends(get_repo_info),
+    issue_number: int = Depends(get_issue_number),
 ):
-    """根据关联的议题提交来解决冲突
+    if event.payload.issue.pull_request:
+        logger.info("评论在拉取请求下，已跳过")
+        await check.finish()
 
-    参考对应的议题重新更新对应分支
-    """
-    # 跳过插件测试，因为这个时候插件测试任务没有运行
-    plugin_config.skip_plugin_test = True
+    # 因为 Actions 会排队，触发事件相关的议题在 Actions 执行时可能已经被关闭
+    # 所以需要获取最新的议题状态
+    issue = bot.rest.issues.get(
+        **repo_info.dict(), issue_number=issue_number
+    ).parsed_data
 
-    for pull in pulls:
-        # 回到主分支
-        run_shell_command(["git", "checkout", plugin_config.input_config.base])
-        # 切换到对应分支
-        run_shell_command(["git", "switch", "-C", pull.head.ref])
+    if issue.state != "open":
+        logger.info("议题未开启，已跳过")
+        await check.finish()
 
-        issue_number = extract_issue_number_from_ref(pull.head.ref)
-        if not issue_number:
-            logger.error(f"无法获取 {pull.title} 对应的议题")
-            return
+    # 自动给议题添加标签
+    bot.rest.issues.add_labels(
+        **repo_info.dict(),
+        issue_number=issue_number,
+        labels=[publish_type.value],
+    )
 
-        logger.info(f"正在处理 {pull.title}")
-        issue = bot.rest.issues.get(
-            **repo_info.dict(), issue_number=issue_number
-        ).parsed_data
+    # 是否需要跳过插件测试
+    plugin_config.skip_plugin_test = should_skip_plugin_test(
+        bot, repo_info, issue_number
+    )
 
-        publish_type = get_type_by_labels(issue.labels)
-        if publish_type:
-            info = extract_publish_info_from_issue(issue, publish_type)
-            if isinstance(info, PublishInfo):
-                info.update_file()
-                commit_and_push(info, pull.head.ref, issue_number)
-                logger.info("拉取请求更新完毕")
-            else:
-                logger.info(info.message)
-                logger.info("发布没通过检查，已跳过")
+    # 检查是否满足发布要求
+    # 仅在通过检查的情况下创建拉取请求
+    info = extract_publish_info_from_issue(issue, publish_type)
+    if isinstance(info, PublishInfo):
+        # 拉取请求与议题的标题
+        title = f"{info.get_type().value}: {info.name}"
+        # 创建新分支
+        # 命名示例 publish/issue123
+        branch_name = f"{BRANCH_NAME_PREFIX}{issue_number}"
+        run_shell_command(["git", "switch", "-C", branch_name])
+        # 更新文件并提交更改
+        info.update_file()
+        commit_and_push(info, branch_name, issue_number)
+        # 创建拉取请求
+        create_pull_request(bot, repo_info, info, branch_name, issue_number, title)
+        # 修改议题标题
+        # 需要等创建完拉取请求并打上标签后执行
+        # 不然会因为修改议题触发 Actions 导致标签没有正常打上
+        if issue.title != title:
+            bot.rest.issues.update(
+                **repo_info.dict(), issue_number=issue_number, title=title
+            )
+            logger.info(f"议题标题已修改为 {title}")
+        message = info.validation_message
+    else:
+        message = info.message
+        logger.info("发布没通过检查，暂不创建拉取请求")
+
+    comment_issue(bot, repo_info, issue_number, message)

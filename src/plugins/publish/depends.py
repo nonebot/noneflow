@@ -1,9 +1,18 @@
 from githubkit.rest.models import IssuePropLabelsItemsOneof1, Label, PullRequestSimple
 from githubkit.webhooks.models import Label as WebhookLabel
 from nonebot import logger
-from nonebot.adapters.github import GitHubBot, PullRequestClosed
+from nonebot.adapters.github import (
+    GitHubBot,
+    IssueCommentCreated,
+    IssuesEdited,
+    IssuesOpened,
+    IssuesReopened,
+    PullRequestClosed,
+)
 from nonebot.params import Depends
 
+from . import utils
+from .constants import COMMIT_MESSAGE_PREFIX
 from .models import PublishType, RepoInfo
 
 
@@ -25,16 +34,7 @@ def get_type_by_labels(
     | list[str | IssuePropLabelsItemsOneof1] = Depends(get_labels),
 ) -> PublishType | None:
     """通过标签获取类型"""
-    for label in labels:
-        if isinstance(label, str):
-            continue
-        if label.name == PublishType.BOT.value:
-            return PublishType.BOT
-        if label.name == PublishType.PLUGIN.value:
-            return PublishType.PLUGIN
-        if label.name == PublishType.ADAPTER.value:
-            return PublishType.ADAPTER
-    logger.info("议题与发布无关")
+    return utils.get_type_by_labels(labels)
 
 
 def get_pull_requests_by_label(
@@ -48,3 +48,10 @@ def get_pull_requests_by_label(
         for pull in pulls
         if publish_type.value in [label.name for label in pull.labels]
     ]
+
+
+def get_issue_number(
+    event: IssuesOpened | IssuesReopened | IssuesEdited | IssueCommentCreated,
+) -> int:
+    """获取议题编号"""
+    return event.payload.issue.number
