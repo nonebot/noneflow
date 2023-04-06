@@ -10,9 +10,8 @@ repository = "https://github.com/nonebot/nonebot2-publish-bot"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-pydantic = "^1.8.2"
-githubkit = "^0.9.4"
-httpx = "^0.23.1"
+nonebot2 = { extras = ["httpx"], version = "^2.0.0rc4" }
+nonebot-adapter-github = "^0.2.5"
 
 [tool.poetry.dev-dependencies]
 isort = "*"
@@ -29,6 +28,10 @@ line-length = 88
 profile = "black"
 line_length = 88
 skip_gitignore = true
+
+[tool.nonebot]
+adapters = [{ name = "GitHub", module_name = "nonebot.adapters.github" }]
+plugin_dirs = ["src/plugins"]
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
