@@ -194,6 +194,8 @@ async def auto_merge(
                 **repo_info.dict(), pull_number=event.payload.pull_request.number
             )
         ).parsed_data
+        # 需要先获取远程分支，否则无法切换到对应分支
+        run_shell_command(["git", "fetch", "origin", plugin_config.input_config.base])
         # 直接尝试处理冲突，如果没有变化则不会提交
         await resolve_conflict_pull_requests(bot, repo_info, [pull_request])
         await bot.rest.pulls.async_merge(
