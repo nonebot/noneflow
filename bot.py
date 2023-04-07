@@ -49,7 +49,13 @@ class Adapter(GITHUBAdapter):
         self.driver.on_startup(self._startup)
 
     async def _startup(self):
-        await super()._startup()
+        try:
+            await super()._startup()
+        except:
+            logger.exception("启动 GitHub 适配器时出现异常")
+            driver = cast(Driver, self.driver)
+            driver.should_exit.set()
+            return
         # 完成启动后创建任务处理 GitHub Action 事件
         asyncio.create_task(handle_github_action_event())
 
