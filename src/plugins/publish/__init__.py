@@ -6,6 +6,7 @@ from nonebot.adapters.github import (
     IssuesOpened,
     IssuesReopened,
     PullRequestClosed,
+    PullRequestReviewSubmitted,
 )
 from nonebot.params import Depends
 
@@ -166,3 +167,38 @@ async def publish_check(
             logger.info("发布没通过检查，暂不创建拉取请求")
 
         await comment_issue(bot, repo_info, issue_number, message)
+
+
+review_submitted = on_type(PullRequestReviewSubmitted)
+
+
+@review_submitted.handle(parameterless=[Depends(bypass_git)])
+async def auto_merge(
+    bot: GitHubBot,
+    event: PullRequestReviewSubmitted,
+    installation_id: int = Depends(get_installation_id),
+    repo_info: RepoInfo = Depends(get_repo_info),
+    publish_type: PublishType = Depends(get_type_by_labels),  # 保证是发布相关的拉取请求
+):
+    if event.payload.review.author_association not in ["OWNER", "MEMBER"]:
+        logger.info("审核者不是仓库成员，已跳过")
+        await review_submitted.finish()
+
+    if event.payload.review.state != "approved":
+        logger.info("未通过审核，已跳过")
+        await review_submitted.finish()
+
+    async with bot.as_installation(installation_id):
+        pull_request = (
+            await bot.rest.pulls.async_get(
+                **repo_info.dict(), pull_number=event.payload.pull_request.number
+            )
+        ).parsed_data
+        # 直接尝试处理冲突，如果没有变化则不会提交
+        await resolve_conflict_pull_requests(bot, repo_info, [pull_request])
+        await bot.rest.pulls.async_merge(
+            **repo_info.dict(),
+            pull_number=event.payload.pull_request.number,
+            merge_method="rebase",
+        )
+        logger.info("已自动合并")

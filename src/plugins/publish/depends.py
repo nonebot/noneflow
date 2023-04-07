@@ -8,6 +8,7 @@ from nonebot.adapters.github import (
     IssuesOpened,
     IssuesReopened,
     PullRequestClosed,
+    PullRequestReviewSubmitted,
 )
 from nonebot.params import Depends
 
@@ -17,6 +18,7 @@ from .models import PublishType, RepoInfo
 
 def get_repo_info(
     event: PullRequestClosed
+    | PullRequestReviewSubmitted
     | IssuesOpened
     | IssuesReopened
     | IssuesEdited
@@ -29,13 +31,14 @@ def get_repo_info(
 
 def get_labels(
     event: PullRequestClosed
+    | PullRequestReviewSubmitted
     | IssuesOpened
     | IssuesReopened
     | IssuesEdited
     | IssueCommentCreated,
 ):
     """获取标签"""
-    if isinstance(event, PullRequestClosed):
+    if isinstance(event, (PullRequestClosed, PullRequestReviewSubmitted)):
         labels = event.payload.pull_request.labels
     else:
         labels = event.payload.issue.labels

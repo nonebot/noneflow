@@ -3,7 +3,7 @@ import subprocess
 from typing import TYPE_CHECKING, Union
 
 from githubkit.exception import RequestFailed
-from githubkit.rest.models import PullRequestSimple
+from githubkit.rest.models import PullRequest, PullRequestSimple
 from nonebot import logger
 from nonebot.adapters.github import Bot
 
@@ -146,7 +146,7 @@ def extract_publish_info_from_issue(
 async def resolve_conflict_pull_requests(
     bot: Bot,
     repo_info: RepoInfo,
-    pulls: list[PullRequestSimple],
+    pulls: list[PullRequestSimple] | list[PullRequest],
 ):
     """根据关联的议题提交来解决冲突
 
