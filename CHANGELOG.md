@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [2.0.0] - 2023-04-07
+
 ### Added
 
 - 审查通过后自动合并
@@ -160,7 +162,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/nonebot2-publish-bot/compare/v1.2.1...HEAD
+[unreleased]: https://github.com/nonebot/nonebot2-publish-bot/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/nonebot/nonebot2-publish-bot/compare/v1.2.1...v2.0.0
 [1.2.1]: https://github.com/nonebot/nonebot2-publish-bot/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/nonebot/nonebot2-publish-bot/compare/v1.1.2...v1.2.0
 [1.1.2]: https://github.com/nonebot/nonebot2-publish-bot/compare/v1.1.1...v1.1.2
