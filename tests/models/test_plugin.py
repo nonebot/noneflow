@@ -33,12 +33,10 @@ def mocked_httpx_get(url: str):
 
 async def test_plugin_from_issue(mocker: MockerFixture) -> None:
     """测试从 issue 中构造 PluginPublishInfo 的情况"""
-    import os
-
     from src.plugins.publish.config import plugin_config
     from src.plugins.publish.validation import PluginPublishInfo
 
-    os.environ["PLUGIN_TEST_RESULT"] = "True"
+    mocker.patch.object(plugin_config, "plugin_test_result", True)
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
@@ -72,14 +70,11 @@ async def test_plugin_from_issue(mocker: MockerFixture) -> None:
 
 async def test_plugin_from_issue_plugin_test_empty(mocker: MockerFixture) -> None:
     """测试插件测试结果为空的情况"""
-    import os
-
     from src.plugins.publish.config import plugin_config
     from src.plugins.publish.validation import PluginPublishInfo
 
     mocker.patch.object(plugin_config, "skip_plugin_test", True)
-
-    os.environ["PLUGIN_TEST_RESULT"] = ""
+    mocker.patch.object(plugin_config, "plugin_test_result", "")
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
@@ -107,11 +102,10 @@ async def test_plugin_from_issue_plugin_test_empty(mocker: MockerFixture) -> Non
 
 async def test_plugin_from_issue_trailing_whitespace(mocker: MockerFixture) -> None:
     """测试末尾如果有空格的情况"""
-    import os
-
+    from src.plugins.publish.config import plugin_config
     from src.plugins.publish.validation import PluginPublishInfo
 
-    os.environ["PLUGIN_TEST_RESULT"] = "True"
+    mocker.patch.object(plugin_config, "plugin_test_result", True)
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
@@ -170,12 +164,11 @@ async def test_plugin_info_validation_success(mocker: MockerFixture) -> None:
 
 async def test_plugin_info_validation_failed(mocker: MockerFixture) -> None:
     """测试验证失败的情况"""
-    import os
-
+    from src.plugins.publish.config import plugin_config
     from src.plugins.publish.validation import MyValidationError, PluginPublishInfo
 
-    os.environ["PLUGIN_TEST_RESULT"] = "False"
-    os.environ["PLUGIN_TEST_OUTPUT"] = "test output"
+    mocker.patch.object(plugin_config, "plugin_test_result", False)
+    mocker.patch.object(plugin_config, "plugin_test_output", "test output")
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
@@ -205,12 +198,11 @@ async def test_plugin_info_validation_failed(mocker: MockerFixture) -> None:
 
 async def test_plugin_info_validation_partial_failed(mocker: MockerFixture) -> None:
     """测试验证一部分失败的情况"""
-    import os
-
+    from src.plugins.publish.config import plugin_config
     from src.plugins.publish.validation import MyValidationError, PluginPublishInfo
 
-    os.environ["PLUGIN_TEST_RESULT"] = "False"
-    os.environ["PLUGIN_TEST_OUTPUT"] = "test output"
+    mocker.patch.object(plugin_config, "plugin_test_result", False)
+    mocker.patch.object(plugin_config, "plugin_test_output", "test output")
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
@@ -235,15 +227,12 @@ async def test_plugin_info_validation_partial_failed(mocker: MockerFixture) -> N
 
 async def test_plugin_info_skip_plugin_test(mocker: MockerFixture) -> None:
     """测试跳过插件测试的情况"""
-    import os
-
     from src.plugins.publish.config import plugin_config
     from src.plugins.publish.validation import MyValidationError, PluginPublishInfo
 
     mocker.patch.object(plugin_config, "skip_plugin_test", True)
-
-    os.environ["PLUGIN_TEST_RESULT"] = "False"
-    os.environ["PLUGIN_TEST_OUTPUT"] = "test output"
+    mocker.patch.object(plugin_config, "plugin_test_result", False)
+    mocker.patch.object(plugin_config, "plugin_test_output", "test output")
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
@@ -270,12 +259,11 @@ async def test_plugin_info_validation_failed_http_exception(
     mocker: MockerFixture,
 ) -> None:
     """测试验证失败的情况，HTTP 请求报错"""
-    import os
-
+    from src.plugins.publish.config import plugin_config
     from src.plugins.publish.validation import MyValidationError, PluginPublishInfo
 
-    os.environ["PLUGIN_TEST_RESULT"] = "False"
-    os.environ["PLUGIN_TEST_OUTPUT"] = "test output"
+    mocker.patch.object(plugin_config, "plugin_test_result", False)
+    mocker.patch.object(plugin_config, "plugin_test_output", "test output")
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()

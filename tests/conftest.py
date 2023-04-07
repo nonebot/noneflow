@@ -24,6 +24,8 @@ def pytest_configure(config: pytest.Config) -> None:
         "github_repository": "owner/repo",
         "github_run_id": "123456",
         "github_event_path": "event_path",
+        "plugin_test_output": "test_output",
+        "plugin_test_result": False,
     }
 
 

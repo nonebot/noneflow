@@ -16,6 +16,8 @@ class Config(BaseModel, extra=Extra.ignore):
     github_repository: str
     github_run_id: str
     skip_plugin_test: bool = False
+    plugin_test_result: bool = False
+    plugin_test_output: str = ""
 
 
 plugin_config = Config.parse_obj(get_driver().config)

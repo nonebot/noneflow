@@ -1,5 +1,3 @@
-from collections.abc import AsyncGenerator
-
 from githubkit.rest.models import IssuePropLabelsItemsOneof1, Label, PullRequestSimple
 from githubkit.webhooks.models import Label as WebhookLabel
 from nonebot.adapters.github import (

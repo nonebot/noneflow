@@ -1,14 +1,13 @@
 import abc
 import html
 import json
-import logging
-import os
 import re
 from functools import cache
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import httpx
+from nonebot import logger
 from pydantic import BaseModel, ValidationError, root_validator, validator
 
 from .config import plugin_config
@@ -116,7 +115,7 @@ class PublishInfo(abc.ABC, BaseModel):
         return tags
 
     def _update_file(self, path: Path):
-        logging.info(f"正在更新文件: {path}")
+        logger.info(f"正在更新文件: {path}")
         with path.open("r", encoding="utf-8") as f:
             data: list[dict[str, str]] = json.load(f)
         with path.open("w", encoding="utf-8") as f:
@@ -124,7 +123,7 @@ class PublishInfo(abc.ABC, BaseModel):
             json.dump(data, f, ensure_ascii=False, indent=2)
             # 结尾加上换行符，不然会被 pre-commit fix
             f.write("\n")
-        logging.info(f"文件更新完成")
+        logger.info(f"文件更新完成")
 
     @abc.abstractmethod
     def update_file(self) -> None:
@@ -249,15 +248,14 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     """插件测试结果"""
 
     @validator("plugin_test_result", pre=True)
-    def plugin_test_result_validator(cls, v: str) -> str:
+    def plugin_test_result_validator(cls, v: bool) -> bool:
         if plugin_config.skip_plugin_test:
-            logging.info("已跳过插件测试")
-            return "True"
+            logger.info("已跳过插件测试")
+            return True
 
-        if v != "True":
-            output = os.environ.get("PLUGIN_TEST_OUTPUT") or ""
+        if not v:
             raise ValueError(
-                f"⚠️ 插件加载测试未通过。<details><summary>测试输出</summary>{html.escape(output)}</details>"
+                f"⚠️ 插件加载测试未通过。<details><summary>测试输出</summary>{html.escape(plugin_config.plugin_test_output)}</details>"
             )
         return v
 
@@ -291,7 +289,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
             "author": author,
             "homepage": homepage.group(1).strip() if homepage else None,
             "tags": tags.group(1).strip() if tags else None,
-            "plugin_test_result": os.environ.get("PLUGIN_TEST_RESULT", "False"),
+            "plugin_test_result": plugin_config.plugin_test_result,
         }
 
         try:
@@ -354,7 +352,7 @@ def check_url(url: str) -> int | None:
 
     返回状态码，如果报错则返回 None
     """
-    logging.info(f"检查网址 {url}")
+    logger.info(f"检查网址 {url}")
     try:
         r = httpx.get(url)
         return r.status_code

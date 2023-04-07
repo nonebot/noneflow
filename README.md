@@ -76,7 +76,6 @@ jobs:
       - name: NoneBot2 Publish Bot
         uses: docker://ghcr.io/nonebot/nonebot2-publish-bot:latest
         with:
-          token: ${{ secrets.GH_TOKEN }}
           config: >
             {
               "base": "master",
@@ -87,6 +86,11 @@ jobs:
         env:
           PLUGIN_TEST_RESULT: ${{ needs.plugin_test.outputs.result }}
           PLUGIN_TEST_OUTPUT: ${{ needs.plugin_test.outputs.output }}
+          GITHUB_APPS: >
+            [{
+              "app_id": "${{ secrets.APP_ID }}",
+              "private_key": "${{ secrets.APP_KEY }}"
+            }]
 ```
 
 ## 测试
