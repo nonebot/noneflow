@@ -24,6 +24,7 @@ from .utils import (
     create_pull_request,
     extract_issue_number_from_ref,
     extract_publish_info_from_issue,
+    get_type_by_title,
     resolve_conflict_pull_requests,
     run_shell_command,
     should_skip_plugin_test,
@@ -84,7 +85,6 @@ check = on_type((IssuesOpened, IssuesReopened, IssuesEdited, IssueCommentCreated
 async def publish_check(
     bot: Bot,
     event: IssuesOpened | IssuesReopened | IssuesEdited | IssueCommentCreated,
-    publish_type: PublishType = Depends(get_type_by_labels),
     repo_info: RepoInfo = Depends(get_repo_info),
     issue_number: int = Depends(get_issue_number),
 ):
@@ -100,6 +100,11 @@ async def publish_check(
 
     if issue.state != "open":
         logger.info("议题未开启，已跳过")
+        await check.finish()
+
+    publish_type = get_type_by_title(issue.title)
+    if not publish_type:
+        logger.info("议题与发布无关，已跳过")
         await check.finish()
 
     # 自动给议题添加标签
