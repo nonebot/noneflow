@@ -31,10 +31,10 @@ def mocked_httpx_get(url: str):
     return MockResponse(404)
 
 
-def test_bot_from_issue(mocker: MockerFixture) -> None:
+async def test_bot_from_issue(mocker: MockerFixture) -> None:
     """测试从 issue 中构造 BotPublishInfo"""
-    import src.globals as g
-    from src.models import BotPublishInfo
+    from src.plugins.publish.config import plugin_config
+    from src.plugins.publish.validation import BotPublishInfo
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
@@ -54,15 +54,15 @@ def test_bot_from_issue(mocker: MockerFixture) -> None:
 
     info.update_file()
 
-    with g.settings.input_config.bot_path.open("r") as f:
+    with plugin_config.input_config.bot_path.open("r") as f:
         data = json.load(f)[1]
         assert data == info.dict()
     mock_httpx.assert_called_once_with("https://v2.nonebot.dev")
 
 
-def test_bot_from_issue_trailing_whitespace(mocker: MockerFixture) -> None:
+async def test_bot_from_issue_trailing_whitespace(mocker: MockerFixture) -> None:
     """测试末尾如果有空格的情况"""
-    from src.models import BotPublishInfo
+    from src.plugins.publish.validation import BotPublishInfo
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
@@ -86,9 +86,9 @@ def test_bot_from_issue_trailing_whitespace(mocker: MockerFixture) -> None:
     mock_httpx.assert_called_once_with("https://v2.nonebot.dev")
 
 
-def test_bot_info_validation_success(mocker: MockerFixture) -> None:
+async def test_bot_info_validation_success(mocker: MockerFixture) -> None:
     """测试验证成功的情况"""
-    from src.models import BotPublishInfo
+    from src.plugins.publish.validation import BotPublishInfo
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
 
@@ -112,9 +112,9 @@ def test_bot_info_validation_success(mocker: MockerFixture) -> None:
     mock_httpx.assert_has_calls(calls)  # type: ignore
 
 
-def test_bot_info_validation_failed(mocker: MockerFixture) -> None:
+async def test_bot_info_validation_failed(mocker: MockerFixture) -> None:
     """测试验证失败的情况"""
-    from src.models import BotPublishInfo, MyValidationError
+    from src.plugins.publish.validation import BotPublishInfo, MyValidationError
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
@@ -141,9 +141,9 @@ def test_bot_info_validation_failed(mocker: MockerFixture) -> None:
     mock_httpx.assert_has_calls(calls)  # type: ignore
 
 
-def test_bot_info_validation_failed_json_error(mocker: MockerFixture) -> None:
+async def test_bot_info_validation_failed_json_error(mocker: MockerFixture) -> None:
     """测试验证失败的情况，JSON 解析错误"""
-    from src.models import BotPublishInfo, MyValidationError
+    from src.plugins.publish.validation import BotPublishInfo, MyValidationError
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
@@ -167,9 +167,11 @@ def test_bot_info_validation_failed_json_error(mocker: MockerFixture) -> None:
     mock_httpx.assert_has_calls(calls)  # type: ignore
 
 
-def test_bot_info_validation_failed_tag_field_missing(mocker: MockerFixture) -> None:
+async def test_bot_info_validation_failed_tag_field_missing(
+    mocker: MockerFixture,
+) -> None:
     """测试验证失败的情况，tag 字段缺失"""
-    from src.models import BotPublishInfo, MyValidationError
+    from src.plugins.publish.validation import BotPublishInfo, MyValidationError
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
@@ -193,9 +195,11 @@ def test_bot_info_validation_failed_tag_field_missing(mocker: MockerFixture) -> 
     mock_httpx.assert_has_calls(calls)  # type: ignore
 
 
-def test_bot_info_validation_failed_name_tags_missing(mocker: MockerFixture) -> None:
+async def test_bot_info_validation_failed_name_tags_missing(
+    mocker: MockerFixture,
+) -> None:
     """测试验证失败的情况，name, tags 字段缺失"""
-    from src.models import BotPublishInfo, MyValidationError
+    from src.plugins.publish.validation import BotPublishInfo, MyValidationError
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
@@ -216,9 +220,9 @@ def test_bot_info_validation_failed_name_tags_missing(mocker: MockerFixture) -> 
     mock_httpx.assert_has_calls(calls)  # type: ignore
 
 
-def test_bot_info_validation_failed_http_exception(mocker: MockerFixture) -> None:
+async def test_bot_info_validation_failed_http_exception(mocker: MockerFixture) -> None:
     """测试验证失败的情况，HTTP 请求报错"""
-    from src.models import BotPublishInfo, MyValidationError
+    from src.plugins.publish.validation import BotPublishInfo, MyValidationError
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()

@@ -13,13 +13,14 @@ python = "^3.11"
 nonebot2 = { extras = ["httpx"], version = "^2.0.0rc4" }
 nonebot-adapter-github = "^0.2.5"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 isort = "*"
 black = "*"
 pre-commit = "*"
-pytest = "^7.2.0"
+nonebug = "^0.3.2"
 pytest-cov = "^4.0.0"
 pytest-mock = "^3.6.1"
+pytest-asyncio = "^0.21.0"
 
 [tool.black]
 line-length = 88
@@ -28,6 +29,9 @@ line-length = 88
 profile = "black"
 line_length = 88
 skip_gitignore = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
 
 [tool.nonebot]
 adapters = [{ name = "GitHub", module_name = "nonebot.adapters.github" }]
