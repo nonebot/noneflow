@@ -1,14 +1,15 @@
+import asyncio
 import os
 from contextlib import contextmanager
 from pathlib import Path
 from typing import cast
 
 import nonebot
+from nonebot import logger
 from nonebot.adapters.github import Adapter as GITHUBAdapter
 from nonebot.adapters.github import Event
-from nonebot.adapters.github.bot import GitHubBot, OAuthBot
-from nonebot.adapters.github.config import GitHubApp, OAuthApp
 from nonebot.drivers.none import Driver
+from nonebot.message import handle_event
 
 
 @contextmanager
@@ -21,29 +22,36 @@ def ensure_cwd(cwd: Path):
         os.chdir(current_cwd)
 
 
+async def handle_github_action_event():
+    """处理 GitHub Action 事件"""
+    driver = cast(Driver, nonebot.get_driver())
+    try:
+        config = driver.config
+        # 从环境变量中获取事件信息
+        event_id = config.github_run_id
+        event_name = config.github_event_name
+        github_event_path = Path(config.github_event_path)
+        # 生成事件
+        if event := Adapter.payload_to_event(
+            event_id, event_name, github_event_path.read_text(encoding="utf-8")
+        ):
+            bot = nonebot.get_bot()
+            await handle_event(bot, event)
+    except:
+        logger.exception("处理 GitHub Action 事件时出现异常")
+    finally:
+        # 处理一次之后就退出
+        driver.should_exit.set()
+
+
 class Adapter(GITHUBAdapter):
     def _setup(self):
         self.driver.on_startup(self._startup)
 
-    async def _startup_app(self, app: GitHubApp | OAuthApp):
-        if isinstance(app, GitHubApp):
-            bot = GitHubBot(self, app)
-            await bot._get_self_info()
-        else:
-            bot = OAuthBot(self, app)
-        self.bot_connect(bot)
-
-        # 从环境变量中获取事件信息
-        event_id = self.config.github_run_id
-        event_name = self.config.github_event_name
-        github_event_path = Path(self.config.github_event_path)
-        if event := self.payload_to_event(
-            event_id, event_name, github_event_path.read_text(encoding="utf-8")
-        ):
-            # 处理一次之后就退出
-            await bot.handle_event(event)
-            driver = cast(Driver, self.driver)
-            driver.should_exit.set()
+    async def _startup(self):
+        await super()._startup()
+        # 完成启动后创建任务处理 GitHub Action 事件
+        asyncio.create_task(handle_github_action_event())
 
     @classmethod
     def payload_to_event(
