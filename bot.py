@@ -45,7 +45,7 @@ class Adapter(GITHUBAdapter):
         return super().payload_to_event(event_id, event_name, payload)
 
 
-nonebot.init(driver="~none")
+nonebot.init(_env_file=Path(__file__).parent / ".env", driver="~none")
 
 driver = nonebot.get_driver()
 driver.register_adapter(Adapter)
