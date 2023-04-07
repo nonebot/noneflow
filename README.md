@@ -1,6 +1,6 @@
-# NoneBot2 Publish Bot
+# NoneFlow
 
-[![codecov](https://codecov.io/gh/nonebot/nonebot2-publish-bot/branch/main/graph/badge.svg?token=BOIBTOCWCH)](https://codecov.io/gh/nonebot/nonebot2-publish-bot)
+[![codecov](https://codecov.io/gh/nonebot/noneflow/branch/main/graph/badge.svg?token=BOIBTOCWCH)](https://codecov.io/gh/nonebot/noneflow)
 
 [NoneBot2](https://github.com/nonebot/nonebot2) 插件/协议/机器人 发布机器人
 
@@ -28,7 +28,7 @@
 简单的示例
 
 ```yaml
-name: NoneBot2 Publish Bot
+name: NoneFlow
 
 on:
   issues:
@@ -67,10 +67,10 @@ jobs:
       - name: Test Plugin
         id: plugin-test
         run: |
-          curl -sSL https://github.com/nonebot/nonebot2-publish-bot/releases/latest/download/plugin_test.py | python -
-  publish_bot:
+          curl -sSL https://github.com/nonebot/noneflow/releases/latest/download/plugin_test.py | python -
+  noneflow:
     runs-on: ubuntu-latest
-    name: nonebot2 publish bot
+    name: noneflow
     needs: plugin_test
     steps:
       - name: Generate token
@@ -85,8 +85,8 @@ jobs:
         with:
           token: ${{ steps.generate-token.outputs.token }}
 
-      - name: NoneBot2 Publish Bot
-        uses: docker://ghcr.io/nonebot/nonebot2-publish-bot:latest
+      - name: NoneFlow
+        uses: docker://ghcr.io/nonebot/noneflow:latest
         with:
           config: >
             {

@@ -19,7 +19,9 @@
         "GITHUB_EVENT_PATH": "${workspaceFolder}/tests/plugin-test/issue-comment.json",
         "GITHUB_APPS": "[{\"client_id\": 1111, \"client_secret\": 12312}]",
         "GITHUB_REPOSITORY": "owner/repo",
-        "INPUT_CONFIG": "{\"base\": \"master\", \"plugin_path\": \"website/static/plugins.json\", \"bot_path\": \"website/static/bots.json\", \"adapter_path\": \"website/static/adapters.json\"}"
+        "INPUT_CONFIG": "{\"base\": \"master\", \"plugin_path\": \"website/static/plugins.json\", \"bot_path\": \"website/static/bots.json\", \"adapter_path\": \"website/static/adapters.json\"}",
+        "APP_ID": "123",
+        "PRIVATE_KEY": "123123"
       }
     },
     {

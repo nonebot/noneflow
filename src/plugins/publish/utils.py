@@ -13,8 +13,8 @@ from .constants import (
     COMMENT_MESSAGE_TEMPLATE,
     COMMENT_TITLE,
     COMMIT_MESSAGE_PREFIX,
-    POWERED_BY_BOT_MESSAGE,
-    PUBLISH_BOT_MARKER,
+    NONEFLOW_MARKER,
+    POWERED_BY_NONEFLOW_MESSAGE,
     REUSE_MESSAGE,
     SKIP_PLUGIN_TEST_COMMENT,
     TIPS_MESSAGE,
@@ -266,16 +266,16 @@ async def comment_issue(bot: Bot, repo_info: RepoInfo, issue_number: int, body: 
         )
     ).parsed_data
     reusable_comment = next(
-        filter(lambda x: PUBLISH_BOT_MARKER in (x.body if x.body else ""), comments),
+        filter(lambda x: NONEFLOW_MARKER in (x.body if x.body else ""), comments),
         None,
     )
     if reusable_comment:
-        footer = f"{REUSE_MESSAGE}\n\n{POWERED_BY_BOT_MESSAGE}"
+        footer = f"{REUSE_MESSAGE}\n\n{POWERED_BY_NONEFLOW_MESSAGE}"
     else:
-        footer = f"{POWERED_BY_BOT_MESSAGE}"
+        footer = f"{POWERED_BY_NONEFLOW_MESSAGE}"
 
     # 添加发布机器人评论的标志
-    footer += f"\n{PUBLISH_BOT_MARKER}"
+    footer += f"\n{NONEFLOW_MARKER}"
 
     comment = COMMENT_MESSAGE_TEMPLATE.format(
         title=COMMENT_TITLE, body=body, tips=TIPS_MESSAGE, footer=footer

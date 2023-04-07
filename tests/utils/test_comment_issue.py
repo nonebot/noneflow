@@ -31,7 +31,7 @@
 #             "owner",
 #             "repo",
 #             1,
-#             body="# 📃 商店发布检查结果\n\ntest\n\n---\n\n💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。\n💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。\n\n💪 Powered by [NoneBot2 Publish Bot](https://github.com/nonebot/nonebot2-publish-bot)\n<!-- PUBLISH_BOT -->\n",
+#             body="# 📃 商店发布检查结果\n\ntest\n\n---\n\n💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。\n💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。\n\n💪 Powered by [NoneBot2 Publish Bot](https://github.com/nonebot/noneflow)\n<!-- PUBLISH_BOT -->\n",
 #         )
 
 
@@ -53,7 +53,7 @@
 #         "owner",
 #         "repo",
 #         123,
-#         body="# 📃 商店发布检查结果\n\ntest\n\n---\n\n💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。\n💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。\n\n♻️ 评论已更新至最新检查结果\n\n💪 Powered by [NoneBot2 Publish Bot](https://github.com/nonebot/nonebot2-publish-bot)\n<!-- PUBLISH_BOT -->\n",
+#         body="# 📃 商店发布检查结果\n\ntest\n\n---\n\n💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。\n💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。\n\n♻️ 评论已更新至最新检查结果\n\n💪 Powered by [NoneBot2 Publish Bot](https://github.com/nonebot/noneflow)\n<!-- PUBLISH_BOT -->\n",
 #     )
 
 
@@ -68,7 +68,7 @@
 #     bot.github.rest.issues.list_comments.return_value = mock_list_comments_resp
 
 #     mock_comment = mocker.MagicMock()
-#     mock_comment.body = "# 📃 商店发布检查结果\n\ntest\n\n---\n\n💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。\n💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。\n\n♻️ 评论已更新至最新检查结果\n\n💪 Powered by [NoneBot2 Publish Bot](https://github.com/nonebot/nonebot2-publish-bot)\n<!-- PUBLISH_BOT -->\n"
+#     mock_comment.body = "# 📃 商店发布检查结果\n\ntest\n\n---\n\n💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。\n💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。\n\n♻️ 评论已更新至最新检查结果\n\n💪 Powered by [NoneBot2 Publish Bot](https://github.com/nonebot/noneflow)\n<!-- PUBLISH_BOT -->\n"
 #     mock_comment.id = 123
 #     mock_list_comments_resp.parsed_data = [mock_comment]
 

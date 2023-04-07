@@ -1,6 +1,6 @@
 import re
 
-PUBLISH_BOT_MARKER = "<!-- PUBLISH_BOT -->"
+NONEFLOW_MARKER = "<!-- NONEFLOW -->"
 
 SKIP_PLUGIN_TEST_COMMENT = "/skip"
 
@@ -16,7 +16,9 @@ TIPS_MESSAGE = (
 
 REUSE_MESSAGE = "♻️ 评论已更新至最新检查结果"
 
-POWERED_BY_BOT_MESSAGE = "💪 Powered by [NoneBot2 Publish Bot](https://github.com/nonebot/nonebot2-publish-bot)"
+POWERED_BY_NONEFLOW_MESSAGE = (
+    "💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)"
+)
 
 DETAIL_MESSAGE_TEMPLATE = (
     "<details><summary>详情</summary><pre><code>{detail_message}</code></pre></details>"
