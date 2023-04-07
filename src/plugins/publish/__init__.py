@@ -181,11 +181,11 @@ async def auto_merge(
     publish_type: PublishType = Depends(get_type_by_labels),  # 保证是发布相关的拉取请求
 ):
     if event.payload.review.author_association not in ["OWNER", "MEMBER"]:
-        logger.info("审核者不是仓库成员，已跳过")
+        logger.info("审查者不是仓库成员，已跳过")
         await review_submitted.finish()
 
     if event.payload.review.state != "approved":
-        logger.info("未通过审核，已跳过")
+        logger.info("未通过审查，已跳过")
         await review_submitted.finish()
 
     async with bot.as_installation(installation_id):

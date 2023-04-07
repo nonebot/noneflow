@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Added
+
+- 审查通过后自动合并
+
+### Changed
+
+- 切换至 NoneBot
+- 优化插件测试日志
+
 ## [1.2.1] - 2023-03-20
 
 ### Added

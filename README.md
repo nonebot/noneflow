@@ -15,6 +15,7 @@
 - 拉取请求关闭时，自动关闭对应议题，并删除对应分支
 - 已经创建的拉取请求在其他拉取请求合并后，自动解决冲突
 - 自动检查是否符合发布要求
+- 审查通过后自动合并
 
 ### 发布要求
 
@@ -36,6 +37,8 @@ on:
     types: [closed]
   issue_comment:
     types: [created]
+  pull_request_review:
+    types: [submitted]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.issue.number || github.run_id }}
