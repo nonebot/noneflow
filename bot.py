@@ -66,7 +66,12 @@ class Adapter(GITHUBAdapter):
 
 
 with ensure_cwd(Path(__file__).parent):
-    nonebot.init(driver="~none")
+    app_id = os.environ.get("APP_ID")
+    private_key = os.environ.get("PRIVATE_KEY")
+
+    nonebot.init(
+        driver="~none", github_apps=[{"app_id": app_id, "private_key": private_key}]
+    )
 
     driver = nonebot.get_driver()
     driver.register_adapter(Adapter)

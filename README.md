@@ -98,11 +98,8 @@ jobs:
         env:
           PLUGIN_TEST_RESULT: ${{ needs.plugin_test.outputs.result }}
           PLUGIN_TEST_OUTPUT: ${{ needs.plugin_test.outputs.output }}
-          GITHUB_APPS: >
-            [{
-              "app_id": "${{ secrets.APP_ID }}",
-              "private_key": "${{ secrets.APP_KEY }}"
-            }]
+          APP_ID: ${{ secrets.APP_ID }}
+          PRIVATE_KEY: ${{ secrets.APP_KEY }}
 ```
 
 ## 测试
