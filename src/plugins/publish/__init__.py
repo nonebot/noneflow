@@ -16,6 +16,7 @@ from .depends import (
     get_installation_id,
     get_issue_number,
     get_pull_requests_by_label,
+    get_related_issue_number,
     get_repo_info,
     get_type_by_labels,
 )
@@ -24,7 +25,6 @@ from .utils import (
     comment_issue,
     commit_and_push,
     create_pull_request,
-    extract_issue_number_from_ref,
     extract_publish_info_from_issue,
     get_type_by_title,
     resolve_conflict_pull_requests,
@@ -40,7 +40,22 @@ def bypass_git():
     run_shell_command(["git", "config", "--global", "safe.directory", "*"])
 
 
-pr_close = on_type(PullRequestClosed)
+async def pr_close_rule(
+    publish_type: PublishType | None = Depends(get_type_by_labels),
+    related_issue_number: int | None = Depends(get_related_issue_number),
+) -> bool:
+    if publish_type is None:
+        logger.info("拉取请求与发布无关，已跳过")
+        return False
+
+    if not related_issue_number:
+        logger.error("无法获取相关的议题编号")
+        return False
+
+    return True
+
+
+pr_close = on_type(PullRequestClosed, rule=pr_close_rule)
 
 
 @pr_close.handle(parameterless=[Depends(bypass_git)])
@@ -50,13 +65,8 @@ async def _(
     installation_id: int = Depends(get_installation_id),
     publish_type: PublishType = Depends(get_type_by_labels),
     repo_info: RepoInfo = Depends(get_repo_info),
-):
-    ref = event.payload.pull_request.head.ref
-    related_issue_number = extract_issue_number_from_ref(ref)
-    if not related_issue_number:
-        logger.error("无法获取相关的议题编号")
-        return
-
+    related_issue_number: int = Depends(get_related_issue_number),
+) -> None:
     async with bot.as_installation(installation_id):
         issue = (
             await bot.rest.issues.async_get(
@@ -76,7 +86,15 @@ async def _(
         logger.info(f"议题 #{related_issue_number} 已关闭")
 
         try:
-            run_shell_command(["git", "push", "origin", "--delete", ref])
+            run_shell_command(
+                [
+                    "git",
+                    "push",
+                    "origin",
+                    "--delete",
+                    event.payload.pull_request.head.ref,
+                ]
+            )
             logger.info(f"已删除对应分支")
         except:
             logger.info("对应分支不存在或已删除")
@@ -91,21 +109,29 @@ async def _(
             logger.info("发布的拉取请求未合并，已跳过")
 
 
-check = on_type((IssuesOpened, IssuesReopened, IssuesEdited, IssueCommentCreated))
+async def check_rule(
+    event: IssuesOpened | IssuesReopened | IssuesEdited | IssueCommentCreated,
+) -> bool:
+    if event.payload.issue.pull_request:
+        logger.info("评论在拉取请求下，已跳过")
+        return False
+
+    return True
+
+
+check = on_type(
+    (IssuesOpened, IssuesReopened, IssuesEdited, IssueCommentCreated),
+    rule=check_rule,
+)
 
 
 @check.handle(parameterless=[Depends(bypass_git)])
 async def publish_check(
     bot: GitHubBot,
-    event: IssuesOpened | IssuesReopened | IssuesEdited | IssueCommentCreated,
     installation_id: int = Depends(get_installation_id),
     repo_info: RepoInfo = Depends(get_repo_info),
     issue_number: int = Depends(get_issue_number),
-):
-    if event.payload.issue.pull_request:
-        logger.info("评论在拉取请求下，已跳过")
-        await check.finish()
-
+) -> None:
     async with bot.as_installation(installation_id):
         # 因为 Actions 会排队，触发事件相关的议题在 Actions 执行时可能已经被关闭
         # 所以需要获取最新的议题状态
@@ -169,7 +195,24 @@ async def publish_check(
         await comment_issue(bot, repo_info, issue_number, message)
 
 
-review_submitted = on_type(PullRequestReviewSubmitted)
+async def review_submiited_rule(
+    event: PullRequestReviewSubmitted,
+    publish_type: PublishType | None = Depends(get_type_by_labels),
+) -> bool:
+    if publish_type is None:
+        logger.info("拉取请求与发布无关，已跳过")
+        return False
+    if event.payload.review.author_association not in ["OWNER", "MEMBER"]:
+        logger.info("审查者不是仓库成员，已跳过")
+        return False
+    if event.payload.review.state != "approved":
+        logger.info("未通过审查，已跳过")
+        return False
+
+    return True
+
+
+review_submitted = on_type(PullRequestReviewSubmitted, rule=review_submiited_rule)
 
 
 @review_submitted.handle(parameterless=[Depends(bypass_git)])
@@ -178,16 +221,7 @@ async def auto_merge(
     event: PullRequestReviewSubmitted,
     installation_id: int = Depends(get_installation_id),
     repo_info: RepoInfo = Depends(get_repo_info),
-    publish_type: PublishType = Depends(get_type_by_labels),  # 保证是发布相关的拉取请求
-):
-    if event.payload.review.author_association not in ["OWNER", "MEMBER"]:
-        logger.info("审查者不是仓库成员，已跳过")
-        await review_submitted.finish()
-
-    if event.payload.review.state != "approved":
-        logger.info("未通过审查，已跳过")
-        await review_submitted.finish()
-
+) -> None:
     async with bot.as_installation(installation_id):
         pull_request = (
             await bot.rest.pulls.async_get(

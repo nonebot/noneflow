@@ -85,3 +85,9 @@ async def get_installation_id(
         await bot.rest.apps.async_get_repo_installation(**repo_info.dict())
     ).parsed_data
     return installation.id
+
+
+def get_related_issue_number(event: PullRequestClosed) -> int | None:
+    ref = event.payload.pull_request.head.ref
+    related_issue_number = utils.extract_issue_number_from_ref(ref)
+    return related_issue_number
