@@ -1,6 +1,6 @@
 from nonebot import logger, on_type
 from nonebot.adapters.github import (
-    Bot,
+    GitHubBot,
     IssueCommentCreated,
     IssuesEdited,
     IssuesOpened,
@@ -12,6 +12,7 @@ from nonebot.params import Depends
 from .config import plugin_config
 from .constants import BRANCH_NAME_PREFIX
 from .depends import (
+    get_installed_bot,
     get_issue_number,
     get_pull_requests_by_label,
     get_repo_info,
@@ -36,8 +37,8 @@ pr_close = on_type(PullRequestClosed)
 
 @pr_close.handle()
 async def _(
-    bot: Bot,
     event: PullRequestClosed,
+    bot: GitHubBot = Depends(get_installed_bot),
     publish_type: PublishType = Depends(get_type_by_labels),
     repo_info: RepoInfo = Depends(get_repo_info),
 ):
@@ -83,8 +84,8 @@ check = on_type((IssuesOpened, IssuesReopened, IssuesEdited, IssueCommentCreated
 
 @check.handle()
 async def publish_check(
-    bot: Bot,
     event: IssuesOpened | IssuesReopened | IssuesEdited | IssueCommentCreated,
+    bot: GitHubBot = Depends(get_installed_bot),
     repo_info: RepoInfo = Depends(get_repo_info),
     issue_number: int = Depends(get_issue_number),
 ):

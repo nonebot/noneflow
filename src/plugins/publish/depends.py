@@ -1,7 +1,10 @@
+from collections.abc import AsyncGenerator
+
 from githubkit.rest.models import IssuePropLabelsItemsOneof1, Label, PullRequestSimple
 from githubkit.webhooks.models import Label as WebhookLabel
 from nonebot.adapters.github import (
     Bot,
+    GitHubBot,
     IssueCommentCreated,
     IssuesEdited,
     IssuesOpened,
@@ -70,3 +73,15 @@ def get_issue_number(
 ) -> int:
     """获取议题编号"""
     return event.payload.issue.number
+
+
+async def get_installed_bot(
+    bot: GitHubBot,
+    repo_info: RepoInfo = Depends(get_repo_info),
+) -> AsyncGenerator[GitHubBot, None]:
+    """获取安装后的 Bot"""
+    installation = (
+        await bot.rest.apps.async_get_repo_installation(**repo_info.dict())
+    ).parsed_data
+    async with bot.as_installation(installation.id):
+        yield bot
