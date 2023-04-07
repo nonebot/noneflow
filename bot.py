@@ -1,3 +1,5 @@
+import os
+from contextlib import contextmanager
 from pathlib import Path
 from typing import cast
 
@@ -7,6 +9,16 @@ from nonebot.adapters.github import Event
 from nonebot.adapters.github.bot import GitHubBot, OAuthBot
 from nonebot.adapters.github.config import GitHubApp, OAuthApp
 from nonebot.drivers.none import Driver
+
+
+@contextmanager
+def ensure_cwd(cwd: Path):
+    current_cwd = Path.cwd()
+    try:
+        os.chdir(cwd)
+        yield
+    finally:
+        os.chdir(current_cwd)
 
 
 class Adapter(GITHUBAdapter):
@@ -45,14 +57,14 @@ class Adapter(GITHUBAdapter):
         return super().payload_to_event(event_id, event_name, payload)
 
 
-bot_dir = Path(__file__).parent
+with ensure_cwd(Path(__file__).parent):
+    nonebot.init(driver="~none")
 
-nonebot.init(_env_file=bot_dir / ".env", driver="~none")
+    driver = nonebot.get_driver()
+    driver.register_adapter(Adapter)
 
-driver = nonebot.get_driver()
-driver.register_adapter(Adapter)
+    nonebot.load_plugins("src/plugins")
 
-nonebot.load_plugins(str(bot_dir / "src/plugins"))
 
 if __name__ == "__main__":
     nonebot.run()

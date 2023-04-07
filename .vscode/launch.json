@@ -10,6 +10,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/bot.py",
       "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/tests",
       "justMyCode": false,
       "env": {
         // "LOG_LEVEL": "TRACE",
