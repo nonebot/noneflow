@@ -29,9 +29,9 @@ def mocked_httpx_get(url: str):
     return MockResponse(404)
 
 
-def test_adapter_tags_color_missing(mocker: MockerFixture) -> None:
+async def test_adapter_tags_color_missing(mocker: MockerFixture) -> None:
     """测试标签缺少颜色的情况"""
-    from src.models import AdapterPublishInfo
+    from src.plugins.publish.validation import AdapterPublishInfo
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
 
@@ -56,9 +56,9 @@ def test_adapter_tags_color_missing(mocker: MockerFixture) -> None:
     )
 
 
-def test_adapter_tags_color_invalid(mocker: MockerFixture) -> None:
+async def test_adapter_tags_color_invalid(mocker: MockerFixture) -> None:
     """测试标签颜色不正确的情况"""
-    from src.models import AdapterPublishInfo
+    from src.plugins.publish.validation import AdapterPublishInfo
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
 
@@ -83,9 +83,9 @@ def test_adapter_tags_color_invalid(mocker: MockerFixture) -> None:
     )
 
 
-def test_adapter_tags_label_invalid(mocker: MockerFixture) -> None:
+async def test_adapter_tags_label_invalid(mocker: MockerFixture) -> None:
     """测试标签名称不正确的情况"""
-    from src.models import AdapterPublishInfo
+    from src.plugins.publish.validation import AdapterPublishInfo
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
 
@@ -110,9 +110,9 @@ def test_adapter_tags_label_invalid(mocker: MockerFixture) -> None:
     )
 
 
-def test_adapter_tags_number_invalid(mocker: MockerFixture) -> None:
+async def test_adapter_tags_number_invalid(mocker: MockerFixture) -> None:
     """测试标签数量不正确的情况"""
-    from src.models import AdapterPublishInfo
+    from src.plugins.publish.validation import AdapterPublishInfo
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
 
@@ -144,9 +144,9 @@ def test_adapter_tags_number_invalid(mocker: MockerFixture) -> None:
     )
 
 
-def test_adapter_tags_json_invalid(mocker: MockerFixture) -> None:
+async def test_adapter_tags_json_invalid(mocker: MockerFixture) -> None:
     """测试标签 json 格式不正确的情况"""
-    from src.models import AdapterPublishInfo
+    from src.plugins.publish.validation import AdapterPublishInfo
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
 
@@ -171,9 +171,9 @@ def test_adapter_tags_json_invalid(mocker: MockerFixture) -> None:
     )
 
 
-def test_adapter_tags_json_not_list(mocker: MockerFixture) -> None:
+async def test_adapter_tags_json_not_list(mocker: MockerFixture) -> None:
     """测试标签 json 不是列表的情况"""
-    from src.models import AdapterPublishInfo
+    from src.plugins.publish.validation import AdapterPublishInfo
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
 
@@ -198,9 +198,9 @@ def test_adapter_tags_json_not_list(mocker: MockerFixture) -> None:
     )
 
 
-def test_adapter_tags_json_not_dict(mocker: MockerFixture) -> None:
+async def test_adapter_tags_json_not_dict(mocker: MockerFixture) -> None:
     """测试标签 json 是列表但列表里不全是字典的情况"""
-    from src.models import AdapterPublishInfo
+    from src.plugins.publish.validation import AdapterPublishInfo
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
 

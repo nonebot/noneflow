@@ -31,12 +31,12 @@ def mocked_httpx_get(url: str):
     return MockResponse(404)
 
 
-def test_plugin_from_issue(mocker: MockerFixture) -> None:
+async def test_plugin_from_issue(mocker: MockerFixture) -> None:
     """测试从 issue 中构造 PluginPublishInfo 的情况"""
     import os
 
-    import src.globals as g
-    from src.models import PluginPublishInfo
+    from src.plugins.publish.config import plugin_config
+    from src.plugins.publish.validation import PluginPublishInfo
 
     os.environ["PLUGIN_TEST_RESULT"] = "True"
 
@@ -60,7 +60,7 @@ def test_plugin_from_issue(mocker: MockerFixture) -> None:
 
     info.update_file()
 
-    with g.settings.input_config.plugin_path.open("r") as f:
+    with plugin_config.input_config.plugin_path.open("r") as f:
         data = json.load(f)[1]
         assert data == info.dict(exclude={"plugin_test_result"})
     calls = [
@@ -70,14 +70,14 @@ def test_plugin_from_issue(mocker: MockerFixture) -> None:
     mock_httpx.assert_has_calls(calls)  # type: ignore
 
 
-def test_plugin_from_issue_plugin_test_empty(mocker: MockerFixture) -> None:
+async def test_plugin_from_issue_plugin_test_empty(mocker: MockerFixture) -> None:
     """测试插件测试结果为空的情况"""
     import os
 
-    import src.globals as g
-    from src.models import PluginPublishInfo
+    from src.plugins.publish.config import plugin_config
+    from src.plugins.publish.validation import PluginPublishInfo
 
-    g.skip_plugin_test = True
+    mocker.patch.object(plugin_config, "skip_plugin_test", True)
 
     os.environ["PLUGIN_TEST_RESULT"] = ""
 
@@ -105,11 +105,11 @@ def test_plugin_from_issue_plugin_test_empty(mocker: MockerFixture) -> None:
     mock_httpx.assert_has_calls(calls)  # type: ignore
 
 
-def test_plugin_from_issue_trailing_whitespace(mocker: MockerFixture) -> None:
+async def test_plugin_from_issue_trailing_whitespace(mocker: MockerFixture) -> None:
     """测试末尾如果有空格的情况"""
     import os
 
-    from src.models import PluginPublishInfo
+    from src.plugins.publish.validation import PluginPublishInfo
 
     os.environ["PLUGIN_TEST_RESULT"] = "True"
 
@@ -138,9 +138,9 @@ def test_plugin_from_issue_trailing_whitespace(mocker: MockerFixture) -> None:
     )
 
 
-def test_plugin_info_validation_success(mocker: MockerFixture) -> None:
+async def test_plugin_info_validation_success(mocker: MockerFixture) -> None:
     """测试验证成功的情况"""
-    from src.models import PluginPublishInfo
+    from src.plugins.publish.validation import PluginPublishInfo
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
 
@@ -168,11 +168,11 @@ def test_plugin_info_validation_success(mocker: MockerFixture) -> None:
     mock_httpx.assert_has_calls(calls)  # type: ignore
 
 
-def test_plugin_info_validation_failed(mocker: MockerFixture) -> None:
+async def test_plugin_info_validation_failed(mocker: MockerFixture) -> None:
     """测试验证失败的情况"""
     import os
 
-    from src.models import MyValidationError, PluginPublishInfo
+    from src.plugins.publish.validation import MyValidationError, PluginPublishInfo
 
     os.environ["PLUGIN_TEST_RESULT"] = "False"
     os.environ["PLUGIN_TEST_OUTPUT"] = "test output"
@@ -203,11 +203,11 @@ def test_plugin_info_validation_failed(mocker: MockerFixture) -> None:
     mock_httpx.assert_has_calls(calls)  # type: ignore
 
 
-def test_plugin_info_validation_partial_failed(mocker: MockerFixture) -> None:
+async def test_plugin_info_validation_partial_failed(mocker: MockerFixture) -> None:
     """测试验证一部分失败的情况"""
     import os
 
-    from src.models import MyValidationError, PluginPublishInfo
+    from src.plugins.publish.validation import MyValidationError, PluginPublishInfo
 
     os.environ["PLUGIN_TEST_RESULT"] = "False"
     os.environ["PLUGIN_TEST_OUTPUT"] = "test output"
@@ -233,14 +233,14 @@ def test_plugin_info_validation_partial_failed(mocker: MockerFixture) -> None:
     mock_httpx.assert_has_calls(calls)  # type: ignore
 
 
-def test_plugin_info_skip_plugin_test(mocker: MockerFixture) -> None:
+async def test_plugin_info_skip_plugin_test(mocker: MockerFixture) -> None:
     """测试跳过插件测试的情况"""
     import os
 
-    import src.globals as g
-    from src.models import MyValidationError, PluginPublishInfo
+    from src.plugins.publish.config import plugin_config
+    from src.plugins.publish.validation import MyValidationError, PluginPublishInfo
 
-    g.skip_plugin_test = True
+    mocker.patch.object(plugin_config, "skip_plugin_test", True)
 
     os.environ["PLUGIN_TEST_RESULT"] = "False"
     os.environ["PLUGIN_TEST_OUTPUT"] = "test output"
@@ -266,11 +266,13 @@ def test_plugin_info_skip_plugin_test(mocker: MockerFixture) -> None:
     mock_httpx.assert_has_calls(calls)  # type: ignore
 
 
-def test_plugin_info_validation_failed_http_exception(mocker: MockerFixture) -> None:
+async def test_plugin_info_validation_failed_http_exception(
+    mocker: MockerFixture,
+) -> None:
     """测试验证失败的情况，HTTP 请求报错"""
     import os
 
-    from src.models import MyValidationError, PluginPublishInfo
+    from src.plugins.publish.validation import MyValidationError, PluginPublishInfo
 
     os.environ["PLUGIN_TEST_RESULT"] = "False"
     os.environ["PLUGIN_TEST_OUTPUT"] = "test output"

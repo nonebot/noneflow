@@ -31,9 +31,9 @@ def mocked_httpx_get(url: str):
     return MockResponse(404)
 
 
-def test_pypi_project_name_invalid(mocker: MockerFixture) -> None:
+async def test_pypi_project_name_invalid(mocker: MockerFixture) -> None:
     """测试 PyPI 项目名错误的情况"""
-    from src.models import AdapterPublishInfo
+    from src.plugins.publish.validation import AdapterPublishInfo
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
 
@@ -53,9 +53,9 @@ def test_pypi_project_name_invalid(mocker: MockerFixture) -> None:
     mock_httpx.assert_called_once_with("https://v2.nonebot.dev")
 
 
-def test_module_name_invalid(mocker: MockerFixture) -> None:
+async def test_module_name_invalid(mocker: MockerFixture) -> None:
     """测试模块名称不正确的情况"""
-    from src.models import AdapterPublishInfo
+    from src.plugins.publish.validation import AdapterPublishInfo
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
 
@@ -80,9 +80,9 @@ def test_module_name_invalid(mocker: MockerFixture) -> None:
     )
 
 
-def test_name_duplication(mocker: MockerFixture) -> None:
+async def test_name_duplication(mocker: MockerFixture) -> None:
     """测试名称重复的情况"""
-    from src.models import AdapterPublishInfo
+    from src.plugins.publish.validation import AdapterPublishInfo
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
 

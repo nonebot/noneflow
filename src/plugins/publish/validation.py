@@ -4,34 +4,14 @@ import json
 import logging
 import os
 import re
-from enum import Enum
 from functools import cache
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import httpx
-from pydantic import (
-    BaseModel,
-    BaseSettings,
-    SecretStr,
-    ValidationError,
-    root_validator,
-    validator,
-)
+from pydantic import BaseModel, ValidationError, root_validator, validator
 
-import src.globals as g
-
-if TYPE_CHECKING:
-    from githubkit.rest.models import Issue
-    from pydantic.error_wrappers import ErrorDict
-    from githubkit.rest.models import Issue
-    from githubkit.webhooks.models import Issue as WebhookIssue
-    from githubkit.webhooks.models import (
-        IssueCommentCreatedPropIssue,
-        IssuesOpenedPropIssue,
-        IssuesReopenedPropIssue,
-    )
-
+from .config import plugin_config
 from .constants import (
     ADAPTER_DESC_PATTERN,
     ADAPTER_HOMEPAGE_PATTERN,
@@ -51,6 +31,17 @@ from .constants import (
     TAGS_PATTERN,
     VALIDATION_MESSAGE_TEMPLATE,
 )
+from .models import PublishType
+
+if TYPE_CHECKING:
+    from githubkit.rest.models import Issue
+    from githubkit.webhooks.models import Issue as WebhookIssue
+    from githubkit.webhooks.models import (
+        IssueCommentCreatedPropIssue,
+        IssuesOpenedPropIssue,
+        IssuesReopenedPropIssue,
+    )
+    from pydantic.error_wrappers import ErrorDict
 
 
 class MyValidationError(ValueError):
@@ -69,81 +60,6 @@ class MyValidationError(ValueError):
     @property
     def message(self) -> str:
         return generate_validation_message(self)
-
-
-class PartialGithubEventHeadCommit(BaseModel):
-    message: str
-
-
-class PartialGitHubEventIssue(BaseModel):
-    number: int
-
-
-class PartialGitHubIssuesEvent(BaseModel):
-    """议题事件
-
-    https://docs.github.com/cn/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#issues
-    """
-
-    action: str
-    issue: PartialGitHubEventIssue
-
-
-class PartialGitHubPullRequestEvent(BaseModel):
-    """拉取请求事件
-
-    https://docs.github.com/cn/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#pull_request
-    """
-
-    action: str
-    pull_request: PartialGitHubEventIssue
-
-
-class PartialGitHubPushEvent(BaseModel):
-    """推送事件
-
-    https://docs.github.com/cn/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#push
-    """
-
-    head_commit: PartialGithubEventHeadCommit
-
-
-class PartialGitHubIssueCommentEvent(BaseModel):
-    """议题评论事件
-
-    https://docs.github.com/cn/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#issue_comment
-    """
-
-    action: str
-    issue: PartialGitHubEventIssue
-
-
-class Config(BaseModel):
-    base: str
-    plugin_path: Path
-    bot_path: Path
-    adapter_path: Path
-
-
-class Settings(BaseSettings):
-    input_token: SecretStr
-    input_config: Config
-    github_repository: str
-    github_event_name: str
-    github_event_path: Path
-    github_run_id: str
-    runner_debug: bool = False
-
-
-class PublishType(Enum):
-    """发布的类型
-
-    值为标签名
-    """
-
-    BOT = "Bot"
-    PLUGIN = "Plugin"
-    ADAPTER = "Adapter"
 
 
 class Tag(BaseModel):
@@ -244,10 +160,14 @@ class PublishInfo(abc.ABC, BaseModel):
         module_name = values.get("module_name")
         project_link = values.get("project_link")
         if _type == PublishType.PLUGIN:
-            with g.settings.input_config.plugin_path.open("r", encoding="utf-8") as f:
+            with plugin_config.input_config.plugin_path.open(
+                "r", encoding="utf-8"
+            ) as f:
                 data: list[dict[str, str]] = json.load(f)
         else:
-            with g.settings.input_config.adapter_path.open("r", encoding="utf-8") as f:
+            with plugin_config.input_config.adapter_path.open(
+                "r", encoding="utf-8"
+            ) as f:
                 data: list[dict[str, str]] = json.load(f)
 
         if any(
@@ -293,7 +213,7 @@ class BotPublishInfo(PublishInfo):
         return PublishType.BOT
 
     def update_file(self) -> None:
-        self._update_file(g.settings.input_config.bot_path)
+        self._update_file(plugin_config.input_config.bot_path)
 
     @classmethod
     def from_issue(
@@ -330,7 +250,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
 
     @validator("plugin_test_result", pre=True)
     def plugin_test_result_validator(cls, v: str) -> str:
-        if g.skip_plugin_test:
+        if plugin_config.skip_plugin_test:
             logging.info("已跳过插件测试")
             return "True"
 
@@ -346,7 +266,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
         return PublishType.PLUGIN
 
     def update_file(self) -> None:
-        self._update_file(g.settings.input_config.plugin_path)
+        self._update_file(plugin_config.input_config.plugin_path)
 
     @classmethod
     def from_issue(
@@ -388,7 +308,7 @@ class AdapterPublishInfo(PublishInfo, PyPIMixin):
         return PublishType.ADAPTER
 
     def update_file(self) -> None:
-        self._update_file(g.settings.input_config.adapter_path)
+        self._update_file(plugin_config.input_config.adapter_path)
 
     @classmethod
     def from_issue(
@@ -536,8 +456,8 @@ def generate_validation_message(info: PublishInfo | MyValidationError) -> str:
         plugin_test_result = True
 
     # https://github.com/he0119/action-test/actions/runs/4469672520
-    action_url = f"https://github.com/{g.settings.github_repository}/actions/runs/{g.settings.github_run_id}"
-    if g.skip_plugin_test:
+    action_url = f"https://github.com/{plugin_config.github_repository}/actions/runs/{plugin_config.github_run_id}"
+    if plugin_config.skip_plugin_test:
         details.append(f"""<li>✅ 插件 <a href="{action_url}">加载测试</a> 已跳过。</li>""")
     elif plugin_test_result:
         details.append(f"""<li>✅ 插件 <a href="{action_url}">加载测试</a> 通过。</li>""")
