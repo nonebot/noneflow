@@ -75,13 +75,12 @@ def get_issue_number(
     return event.payload.issue.number
 
 
-async def get_installed_bot(
+async def get_installation_id(
     bot: GitHubBot,
     repo_info: RepoInfo = Depends(get_repo_info),
-) -> AsyncGenerator[GitHubBot, None]:
-    """获取安装后的 Bot"""
+) -> int:
+    """获取 GitHub App 的 Installation ID"""
     installation = (
         await bot.rest.apps.async_get_repo_installation(**repo_info.dict())
     ).parsed_data
-    async with bot.as_installation(installation.id):
-        yield bot
+    return installation.id
