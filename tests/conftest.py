@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 
 def pytest_configure(config: pytest.Config) -> None:
     config.stash[NONEBOT_INIT_KWARGS] = {
+        "driver": "~none",
         "input_config": {
             "base": "master",
             "adapter_path": "adapter_path",
