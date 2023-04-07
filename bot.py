@@ -51,7 +51,7 @@ driver = nonebot.get_driver()
 driver.register_adapter(Adapter)
 
 
-nonebot.load_from_toml("pyproject.toml")
+nonebot.load_plugins("src/plugins")
 
 if __name__ == "__main__":
     nonebot.run()

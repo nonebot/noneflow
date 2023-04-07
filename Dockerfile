@@ -26,7 +26,7 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/* \
   && rm /app/requirements.txt
 
-COPY bot.py pyproject.toml .env /app/
+COPY bot.py .env /app/
 COPY src /app/src/
 
-CMD ["python", "/app/bot.py"]
+CMD ["python", "bot.py"]
