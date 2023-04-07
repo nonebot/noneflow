@@ -99,10 +99,6 @@ def get_type_by_commit_message(message: str) -> PublishType | None:
 
 def commit_and_push(info: PublishInfo, branch_name: str, issue_number: int):
     """提交并推送"""
-    # 绕过检查
-    # https://github.blog/2022-04-18-highlights-from-git-2-36/#stricter-repository-ownership-checks
-    run_shell_command(["git", "config", "--global", "safe.directory", "*"])
-
     commit_message = f"{COMMIT_MESSAGE_PREFIX} {info.get_type().value.lower()} {info.name} (#{issue_number})"
 
     run_shell_command(["git", "config", "--global", "user.name", info.author])
