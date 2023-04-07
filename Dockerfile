@@ -29,4 +29,4 @@ RUN apt-get update \
 COPY bot.py .env /app/
 COPY src /app/src/
 
-CMD ["python", "bot.py"]
+CMD ["python", "/app/bot.py"]
