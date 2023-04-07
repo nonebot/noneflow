@@ -45,13 +45,14 @@ class Adapter(GITHUBAdapter):
         return super().payload_to_event(event_id, event_name, payload)
 
 
-nonebot.init(_env_file=Path(__file__).parent / ".env", driver="~none")
+bot_dir = Path(__file__).parent
+
+nonebot.init(_env_file=bot_dir / ".env", driver="~none")
 
 driver = nonebot.get_driver()
 driver.register_adapter(Adapter)
 
-
-nonebot.load_plugins("src/plugins")
+nonebot.load_plugins(str(bot_dir / "src/plugins"))
 
 if __name__ == "__main__":
     nonebot.run()
