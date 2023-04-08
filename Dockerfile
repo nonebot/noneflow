@@ -16,6 +16,9 @@ FROM python:3.11-slim-bullseye
 
 WORKDIR /app
 
+# 设置时区
+ENV TZ=Asia/Shanghai
+
 # 安装依赖
 COPY --from=requirements-stage /tmp/requirements.txt /app/requirements.txt
 RUN apt-get update \
