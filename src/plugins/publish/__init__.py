@@ -55,11 +55,11 @@ async def pr_close_rule(
     return True
 
 
-pr_close = on_type(PullRequestClosed, rule=pr_close_rule)
+pr_close_matcher = on_type(PullRequestClosed, rule=pr_close_rule)
 
 
-@pr_close.handle(parameterless=[Depends(bypass_git)])
-async def _(
+@pr_close_matcher.handle(parameterless=[Depends(bypass_git)])
+async def handle_pr_close(
     event: PullRequestClosed,
     bot: GitHubBot,
     installation_id: int = Depends(get_installation_id),
@@ -119,14 +119,14 @@ async def check_rule(
     return True
 
 
-check = on_type(
+publish_check_matcher = on_type(
     (IssuesOpened, IssuesReopened, IssuesEdited, IssueCommentCreated),
     rule=check_rule,
 )
 
 
-@check.handle(parameterless=[Depends(bypass_git)])
-async def publish_check(
+@publish_check_matcher.handle(parameterless=[Depends(bypass_git)])
+async def handle_publish_check(
     bot: GitHubBot,
     installation_id: int = Depends(get_installation_id),
     repo_info: RepoInfo = Depends(get_repo_info),
@@ -143,12 +143,12 @@ async def publish_check(
 
         if issue.state != "open":
             logger.info("议题未开启，已跳过")
-            await check.finish()
+            await publish_check_matcher.finish()
 
         publish_type = get_type_by_title(issue.title)
         if not publish_type:
             logger.info("议题与发布无关，已跳过")
-            await check.finish()
+            await publish_check_matcher.finish()
 
         # 自动给议题添加标签
         await bot.rest.issues.async_add_labels(
@@ -212,11 +212,11 @@ async def review_submiited_rule(
     return True
 
 
-review_submitted = on_type(PullRequestReviewSubmitted, rule=review_submiited_rule)
+auto_merge_matcher = on_type(PullRequestReviewSubmitted, rule=review_submiited_rule)
 
 
-@review_submitted.handle(parameterless=[Depends(bypass_git)])
-async def auto_merge(
+@auto_merge_matcher.handle(parameterless=[Depends(bypass_git)])
+async def handle_auto_merge(
     bot: GitHubBot,
     event: PullRequestReviewSubmitted,
     installation_id: int = Depends(get_installation_id),

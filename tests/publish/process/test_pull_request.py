@@ -9,7 +9,7 @@ from pytest_mock import MockerFixture
 
 
 async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
-    from src.plugins.publish import pr_close
+    from src.plugins.publish import pr_close_matcher
 
     event_path = Path(__file__).parent.parent / "plugin-test" / "pr-close.json"
 
@@ -30,7 +30,7 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
     mock_pulls_resp = mocker.MagicMock()
     mock_pulls_resp.parsed_data = []
 
-    async with app.test_matcher(pr_close) as ctx:
+    async with app.test_matcher(pr_close_matcher) as ctx:
         adapter = get_adapter(Adapter)
         bot = ctx.create_bot(
             base=GitHubBot,
@@ -90,7 +90,7 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
 
 
 async def test_process_pull_request_not_merged(app: App, mocker: MockerFixture) -> None:
-    from src.plugins.publish import pr_close
+    from src.plugins.publish import pr_close_matcher
 
     event_path = Path(__file__).parent.parent / "plugin-test" / "pr-close.json"
 
@@ -108,7 +108,7 @@ async def test_process_pull_request_not_merged(app: App, mocker: MockerFixture) 
     mock_installation_resp = mocker.MagicMock()
     mock_installation_resp.parsed_data = mock_installation
 
-    async with app.test_matcher(pr_close) as ctx:
+    async with app.test_matcher(pr_close_matcher) as ctx:
         adapter = get_adapter(Adapter)
         bot = ctx.create_bot(
             base=GitHubBot,
@@ -163,13 +163,13 @@ async def test_process_pull_request_not_merged(app: App, mocker: MockerFixture) 
 
 async def test_not_publish(app: App, mocker: MockerFixture) -> None:
     """测试与发布无关的拉取请求"""
-    from src.plugins.publish import pr_close
+    from src.plugins.publish import pr_close_matcher
 
     event_path = Path(__file__).parent.parent / "plugin-test" / "pr-close.json"
 
     mock_subprocess_run = mocker.patch("subprocess.run")
 
-    async with app.test_matcher(pr_close) as ctx:
+    async with app.test_matcher(pr_close_matcher) as ctx:
         adapter = get_adapter(Adapter)
         bot = ctx.create_bot(
             base=GitHubBot,
@@ -191,13 +191,13 @@ async def test_extract_issue_number_from_ref_failed(
     app: App, mocker: MockerFixture
 ) -> None:
     """测试从分支名中提取议题号失败"""
-    from src.plugins.publish import pr_close
+    from src.plugins.publish import pr_close_matcher
 
     event_path = Path(__file__).parent.parent / "plugin-test" / "pr-close.json"
 
     mock_subprocess_run = mocker.patch("subprocess.run")
 
-    async with app.test_matcher(pr_close) as ctx:
+    async with app.test_matcher(pr_close_matcher) as ctx:
         adapter = get_adapter(Adapter)
         bot = ctx.create_bot(
             base=GitHubBot,

@@ -34,7 +34,7 @@ async def test_process_publish_check(
     app: App, mocker: MockerFixture, tmp_path: Path
 ) -> None:
     """测试一个正常的发布流程"""
-    from src.plugins.publish import check
+    from src.plugins.publish import publish_check_matcher
     from src.plugins.publish.config import plugin_config
 
     mocker.patch("httpx.get", side_effect=mocked_httpx_get)
@@ -44,7 +44,6 @@ async def test_process_publish_check(
 
     mock_installation = mocker.MagicMock()
     mock_installation.id = 123
-
     mock_installation_resp = mocker.MagicMock()
     mock_installation_resp.parsed_data = mock_installation
 
@@ -77,7 +76,7 @@ async def test_process_publish_check(
 
     check_json_data(plugin_config.input_config.bot_path, [])
 
-    async with app.test_matcher(check) as ctx:
+    async with app.test_matcher(publish_check_matcher) as ctx:
         adapter = get_adapter(Adapter)
         bot = ctx.create_bot(
             base=GitHubBot,
@@ -224,7 +223,7 @@ async def test_edit_title(app: App, mocker: MockerFixture, tmp_path: Path) -> No
 
     插件名被修改后，标题也应该被修改
     """
-    from src.plugins.publish import check
+    from src.plugins.publish import publish_check_matcher
     from src.plugins.publish.config import plugin_config
 
     mocker.patch("httpx.get", side_effect=mocked_httpx_get)
@@ -266,7 +265,7 @@ async def test_edit_title(app: App, mocker: MockerFixture, tmp_path: Path) -> No
 
     check_json_data(plugin_config.input_config.bot_path, [])
 
-    async with app.test_matcher(check) as ctx:
+    async with app.test_matcher(publish_check_matcher) as ctx:
         adapter = get_adapter(Adapter)
         bot = ctx.create_bot(
             base=GitHubBot,
@@ -425,7 +424,7 @@ async def test_process_publish_check_not_pass(
     app: App, mocker: MockerFixture, tmp_path: Path
 ) -> None:
     """测试发布检查不通过"""
-    from src.plugins.publish import check
+    from src.plugins.publish import publish_check_matcher
     from src.plugins.publish.config import plugin_config
 
     mocker.patch("httpx.get", side_effect=mocked_httpx_get)
@@ -459,7 +458,7 @@ async def test_process_publish_check_not_pass(
 
     check_json_data(plugin_config.input_config.bot_path, [])
 
-    async with app.test_matcher(check) as ctx:
+    async with app.test_matcher(publish_check_matcher) as ctx:
         adapter = get_adapter(Adapter)
         bot = ctx.create_bot(
             base=GitHubBot,
@@ -533,14 +532,14 @@ async def test_comment_at_pull_request(app: App, mocker: MockerFixture) -> None:
 
     event.issue.pull_request 不为空
     """
-    from src.plugins.publish import check
+    from src.plugins.publish import publish_check_matcher
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
     )
 
-    async with app.test_matcher(check) as ctx:
+    async with app.test_matcher(publish_check_matcher) as ctx:
         adapter = get_adapter(Adapter)
         bot = ctx.create_bot(
             base=GitHubBot,
@@ -563,7 +562,7 @@ async def test_issue_state_closed(app: App, mocker: MockerFixture) -> None:
 
     event.issue.state = "closed"
     """
-    from src.plugins.publish import check
+    from src.plugins.publish import publish_check_matcher
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_subprocess_run = mocker.patch(
@@ -581,7 +580,7 @@ async def test_issue_state_closed(app: App, mocker: MockerFixture) -> None:
     mock_issues_resp = mocker.MagicMock()
     mock_issues_resp.parsed_data = mock_issue
 
-    async with app.test_matcher(check) as ctx:
+    async with app.test_matcher(publish_check_matcher) as ctx:
         adapter = get_adapter(Adapter)
         bot = ctx.create_bot(
             base=GitHubBot,
@@ -619,7 +618,7 @@ async def test_not_publish_issue(app: App, mocker: MockerFixture) -> None:
 
     议题的标题不以 "Bot/Adapter/Plugin" 开头
     """
-    from src.plugins.publish import check
+    from src.plugins.publish import publish_check_matcher
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_subprocess_run = mocker.patch(
@@ -638,7 +637,7 @@ async def test_not_publish_issue(app: App, mocker: MockerFixture) -> None:
     mock_issues_resp = mocker.MagicMock()
     mock_issues_resp.parsed_data = mock_issue
 
-    async with app.test_matcher(check) as ctx:
+    async with app.test_matcher(publish_check_matcher) as ctx:
         adapter = get_adapter(Adapter)
         bot = ctx.create_bot(
             base=GitHubBot,
