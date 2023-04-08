@@ -105,7 +105,7 @@ class PublishInfo(abc.ABC, BaseModel):
         try:
             tags: list[Any] | Any = json.loads(v)
         except json.JSONDecodeError:
-            raise ValueError("⚠️ 标签解码失败。<dt>请确保标签格式正确。</dt>")
+            raise ValueError("⚠️ 标签解码失败。<dt>请确保标签为 JSON 格式。</dt>")
         if not isinstance(tags, list):
             raise ValueError("⚠️ 标签格式错误。<dt>请确保标签为列表。</dt>")
         if len(tags) > 0 and any(map(lambda x: not isinstance(x, dict), tags)):
