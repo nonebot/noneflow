@@ -1,3 +1,4 @@
+<!-- markdownlint-disable -->
 <p align="center">
   <a href="https://v2.nonebot.dev/"><img src="https://raw.githubusercontent.com/nonebot/noneflow/main/assets/logo.png" width="200" alt="noneflow"></a>
 </p>
@@ -7,10 +8,12 @@
 # NoneFlow
 
 [![codecov](https://codecov.io/gh/nonebot/noneflow/branch/main/graph/badge.svg?token=BOIBTOCWCH)](https://codecov.io/gh/nonebot/noneflow)
+[![Powered by NoneBot](https://img.shields.io/badge/Powered%20%20by-NoneBot-red)](https://github.com/nonebot/nonebot2)
 
-_✨ [NoneBot2](https://github.com/nonebot/nonebot2) 工作流管理机器人 ✨_
+_✨ NoneBot 工作流管理机器人 ✨_
 
 </div>
+<!-- markdownlint-enable-->
 
 ## 主要功能
 
