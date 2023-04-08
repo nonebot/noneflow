@@ -1,8 +1,16 @@
+<p align="center">
+  <a href="https://v2.nonebot.dev/"><img src="https://raw.githubusercontent.com/nonebot/noneflow/main/assets/logo.png" width="200" alt="noneflow"></a>
+</p>
+
+<div align="center">
+
 # NoneFlow
 
 [![codecov](https://codecov.io/gh/nonebot/noneflow/branch/main/graph/badge.svg?token=BOIBTOCWCH)](https://codecov.io/gh/nonebot/noneflow)
 
-[NoneBot2](https://github.com/nonebot/nonebot2) 插件/协议/机器人 发布机器人
+_✨ [NoneBot2](https://github.com/nonebot/nonebot2) 工作流管理机器人 ✨_
+
+</div>
 
 ## 主要功能
 
