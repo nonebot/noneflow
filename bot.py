@@ -74,9 +74,14 @@ class Adapter(GITHUBAdapter):
 with ensure_cwd(Path(__file__).parent):
     app_id = os.environ.get("APP_ID")
     private_key = os.environ.get("PRIVATE_KEY")
+    # https://docs.github.com/en/actions/learn-github-actions/contexts#runner-context
+    # 如果设置时，值总是为 "1"
+    runner_debug = os.environ.get("RUNNER_DEBUG", "0")
 
     nonebot.init(
-        driver="~none", github_apps=[{"app_id": app_id, "private_key": private_key}]
+        driver="~none",
+        github_apps=[{"app_id": app_id, "private_key": private_key}],
+        log_level="DEBUG" if runner_debug == "1" else "INFO",
     )
 
     driver = nonebot.get_driver()

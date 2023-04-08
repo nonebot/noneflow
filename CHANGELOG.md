@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Added
+
+- 遵守 debug logging 的设置
+
 ### Changed
 
 - 设置时区为中国
