@@ -7,12 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [2.1.0] - 2023-04-08
+
 ### Added
 
 - 遵守 debug logging 的设置
 
 ### Changed
 
+- 优化评论内容
 - 设置时区为中国
 - 审查通过后如果可合并则直接合并
 
@@ -171,7 +174,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/noneflow/compare/v2.0.0...HEAD
+[unreleased]: https://github.com/nonebot/noneflow/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/nonebot/noneflow/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/nonebot/noneflow/compare/v1.2.1...v2.0.0
 [1.2.1]: https://github.com/nonebot/noneflow/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/nonebot/noneflow/compare/v1.1.2...v1.2.0

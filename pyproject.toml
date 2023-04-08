@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "noneflow"
-version = "2.0.0"
+version = "2.1.0"
 description = "Manage publish related issues in nonebot2 project"
 authors = ["hemengyang <hmy0119@gmail.com>"]
 license = "MIT"
