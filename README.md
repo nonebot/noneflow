@@ -7,10 +7,10 @@
 
 # NoneFlow
 
+_✨ NoneBot 工作流管理机器人 ✨_
+
 [![codecov](https://codecov.io/gh/nonebot/noneflow/branch/main/graph/badge.svg?token=BOIBTOCWCH)](https://codecov.io/gh/nonebot/noneflow)
 [![Powered by NoneBot](https://img.shields.io/badge/Powered%20%20by-NoneBot-red)](https://github.com/nonebot/nonebot2)
-
-_✨ NoneBot 工作流管理机器人 ✨_
 
 </div>
 <!-- markdownlint-enable-->
