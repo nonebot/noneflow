@@ -1,171 +1,216 @@
-# from pytest_mock import MockerFixture
+from pathlib import Path
+from typing import cast
+
+from nonebot import get_adapter
+from nonebot.adapters.github import Adapter, GitHubBot, PullRequestClosed
+from nonebot.adapters.github.config import GitHubApp
+from nonebug import App
+from pytest_mock import MockerFixture
 
 
-# def test_process_pull_request(mocker: MockerFixture) -> None:
-#     from src import Bot
+async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
+    from src.plugins.publish import pr_close
 
-#     bot = Bot()
-#     bot.github = mocker.MagicMock()
+    event_path = Path(__file__).parent.parent / "plugin-test" / "pr-close.json"
 
-#     mock_subprocess_run = mocker.patch("subprocess.run")
-#     bot.get_pull_requests_by_label = mocker.MagicMock()
-#     bot.get_pull_requests_by_label.return_value = []
-#     bot.resolve_conflict_pull_requests = mocker.MagicMock()
+    mock_subprocess_run = mocker.patch("subprocess.run")
 
-#     mock_label = mocker.MagicMock()
-#     mock_label.name = "Bot"
+    mock_issue = mocker.MagicMock()
+    mock_issue.state = "open"
 
-#     mock_event = mocker.MagicMock()
-#     mock_event.pull_request.labels = [mock_label]
-#     mock_event.pull_request.head.ref = "publish/issue1"
-#     mock_event.pull_request.merged = True
+    mock_issues_resp = mocker.MagicMock()
+    mock_issues_resp.parsed_data = mock_issue
 
-#     mock_issues_resp = mocker.MagicMock()
-#     bot.github.rest.issues.get.return_value = mock_issues_resp
-#     mock_issue = mocker.MagicMock()
-#     mock_issue.state = "open"
-#     mock_issues_resp.parsed_data = mock_issue
+    mock_installation = mocker.MagicMock()
+    mock_installation.id = 123
 
-#     bot.process_pull_request_event(mock_event)
+    mock_installation_resp = mocker.MagicMock()
+    mock_installation_resp.parsed_data = mock_installation
 
-#     bot.github.rest.issues.get.assert_called_once_with("owner", "repo", 1)
+    mock_pulls_resp = mocker.MagicMock()
+    mock_pulls_resp.parsed_data = []
 
-#     bot.github.rest.issues.update.assert_called_once_with(
-#         "owner", "repo", 1, state="closed", state_reason="completed"
-#     )
+    async with app.test_matcher(pr_close) as ctx:
+        adapter = get_adapter(Adapter)
+        bot = ctx.create_bot(
+            base=GitHubBot,
+            adapter=adapter,
+            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
+        )
+        bot = cast(GitHubBot, bot)
+        event = Adapter.payload_to_event("1", "pull_request", event_path.read_bytes())
+        assert isinstance(event, PullRequestClosed)
+        event.payload.pull_request.merged = True
 
-#     # 测试 git 命令
-#     mock_subprocess_run.assert_called_once_with(
-#         ["git", "push", "origin", "--delete", "publish/issue1"],
-#         check=True,
-#         capture_output=True,
-#     )
+        ctx.should_call_api(
+            "rest.apps.async_get_repo_installation",
+            {"owner": "he0119", "repo": "action-test"},
+            mock_installation_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 76},
+            mock_issues_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 76,
+                "state": "closed",
+                "state_reason": "completed",
+            },
+            True,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_list",
+            {"owner": "he0119", "repo": "action-test", "state": "open"},
+            mock_pulls_resp,
+        )
 
-#     # 处理冲突的拉取请求
-#     bot.get_pull_requests_by_label.assert_called_once_with("Bot")
-#     bot.resolve_conflict_pull_requests.assert_called_once_with([])
+        ctx.receive_event(bot, event)
 
-
-# def test_process_pull_request_not_merged(mocker: MockerFixture) -> None:
-#     from src import Bot
-
-#     bot = Bot()
-#     bot.github = mocker.MagicMock()
-
-#     mock_subprocess_run = mocker.patch("subprocess.run")
-#     bot.get_pull_requests_by_label = mocker.MagicMock()
-#     bot.get_pull_requests_by_label.return_value = []
-#     bot.resolve_conflict_pull_requests = mocker.MagicMock()
-
-#     mock_label = mocker.MagicMock()
-#     mock_label.name = "Bot"
-
-#     mock_event = mocker.MagicMock()
-#     mock_event.pull_request.labels = [mock_label]
-#     mock_event.pull_request.head.ref = "publish/issue1"
-#     mock_event.pull_request.merged = False
-
-#     mock_issues_resp = mocker.MagicMock()
-#     bot.github.rest.issues.get.return_value = mock_issues_resp
-#     mock_issue = mocker.MagicMock()
-#     mock_issue.state = "open"
-#     mock_issues_resp.parsed_data = mock_issue
-
-#     bot.process_pull_request_event(mock_event)
-
-#     bot.github.rest.issues.get.assert_called_once_with("owner", "repo", 1)
-
-#     bot.github.rest.issues.update.assert_called_once_with(
-#         "owner", "repo", 1, state="closed", state_reason="not_planned"
-#     )
-
-#     # 测试 git 命令
-#     mock_subprocess_run.assert_called_once_with(
-#         ["git", "push", "origin", "--delete", "publish/issue1"],
-#         check=True,
-#         capture_output=True,
-#     )
-
-#     # 处理冲突的拉取请求
-#     bot.get_pull_requests_by_label.assert_not_called()
-#     bot.resolve_conflict_pull_requests.assert_not_called()
+    # 测试 git 命令
+    mock_subprocess_run.assert_has_calls(
+        [
+            mocker.call(
+                ["git", "config", "--global", "safe.directory", "*"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                ["git", "push", "origin", "--delete", "publish/issue76"],
+                check=True,
+                capture_output=True,
+            ),
+        ],  # type: ignore
+        any_order=True,
+    )
 
 
-# def test_not_publish(mocker: MockerFixture) -> None:
-#     """测试与发布无关的拉取请求"""
-#     from src import Bot
+async def test_process_pull_request_not_merged(app: App, mocker: MockerFixture) -> None:
+    from src.plugins.publish import pr_close
 
-#     bot = Bot()
-#     bot.github = mocker.MagicMock()
+    event_path = Path(__file__).parent.parent / "plugin-test" / "pr-close.json"
 
-#     mock_subprocess_run = mocker.patch("subprocess.run")
-#     bot.get_pull_requests_by_label = mocker.MagicMock()
-#     bot.get_pull_requests_by_label.return_value = []
-#     bot.resolve_conflict_pull_requests = mocker.MagicMock()
+    mock_subprocess_run = mocker.patch("subprocess.run")
 
-#     mock_label = mocker.MagicMock()
-#     mock_label.name = "Something"
+    mock_issue = mocker.MagicMock()
+    mock_issue.state = "open"
 
-#     mock_event = mocker.MagicMock()
-#     mock_event.pull_request.labels = [mock_label]
-#     mock_event.pull_request.head.ref = "publish/issue1"
-#     mock_event.pull_request.merged = True
+    mock_issues_resp = mocker.MagicMock()
+    mock_issues_resp.parsed_data = mock_issue
 
-#     mock_issues_resp = mocker.MagicMock()
-#     bot.github.rest.issues.get.return_value = mock_issues_resp
-#     mock_issue = mocker.MagicMock()
-#     mock_issue.state = "open"
-#     mock_issues_resp.parsed_data = mock_issue
+    mock_installation = mocker.MagicMock()
+    mock_installation.id = 123
 
-#     bot.process_pull_request_event(mock_event)
+    mock_installation_resp = mocker.MagicMock()
+    mock_installation_resp.parsed_data = mock_installation
 
-#     bot.github.rest.issues.get.assert_not_called()
+    async with app.test_matcher(pr_close) as ctx:
+        adapter = get_adapter(Adapter)
+        bot = ctx.create_bot(
+            base=GitHubBot,
+            adapter=adapter,
+            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
+        )
+        bot = cast(GitHubBot, bot)
+        event = Adapter.payload_to_event("1", "pull_request", event_path.read_bytes())
+        assert isinstance(event, PullRequestClosed)
 
-#     bot.github.rest.issues.update.assert_not_called()
+        ctx.should_call_api(
+            "rest.apps.async_get_repo_installation",
+            {"owner": "he0119", "repo": "action-test"},
+            mock_installation_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 76},
+            mock_issues_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 76,
+                "state": "closed",
+                "state_reason": "not_planned",
+            },
+            True,
+        )
 
-#     # 测试 git 命令
-#     mock_subprocess_run.assert_not_called()
+        ctx.receive_event(bot, event)
 
-#     # 处理冲突的拉取请求
-#     bot.get_pull_requests_by_label.assert_not_called()
-#     bot.resolve_conflict_pull_requests.assert_not_called()
+    # 测试 git 命令
+    mock_subprocess_run.assert_has_calls(
+        [
+            mocker.call(
+                ["git", "config", "--global", "safe.directory", "*"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                ["git", "push", "origin", "--delete", "publish/issue76"],
+                check=True,
+                capture_output=True,
+            ),
+        ],  # type: ignore
+        any_order=True,
+    )
 
 
-# def test_extract_issue_number_from_ref_failed(mocker: MockerFixture) -> None:
-#     """测试从分支名中提取议题号失败"""
-#     from src import Bot
+async def test_not_publish(app: App, mocker: MockerFixture) -> None:
+    """测试与发布无关的拉取请求"""
+    from src.plugins.publish import pr_close
 
-#     bot = Bot()
-#     bot.github = mocker.MagicMock()
+    event_path = Path(__file__).parent.parent / "plugin-test" / "pr-close.json"
 
-#     mock_subprocess_run = mocker.patch("subprocess.run")
-#     bot.get_pull_requests_by_label = mocker.MagicMock()
-#     bot.get_pull_requests_by_label.return_value = []
-#     bot.resolve_conflict_pull_requests = mocker.MagicMock()
+    mock_subprocess_run = mocker.patch("subprocess.run")
 
-#     mock_label = mocker.MagicMock()
-#     mock_label.name = "Bot"
+    async with app.test_matcher(pr_close) as ctx:
+        adapter = get_adapter(Adapter)
+        bot = ctx.create_bot(
+            base=GitHubBot,
+            adapter=adapter,
+            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
+        )
+        bot = cast(GitHubBot, bot)
+        event = Adapter.payload_to_event("1", "pull_request", event_path.read_bytes())
+        assert isinstance(event, PullRequestClosed)
+        event.payload.pull_request.labels = []
 
-#     mock_event = mocker.MagicMock()
-#     mock_event.pull_request.labels = [mock_label]
-#     mock_event.pull_request.head.ref = "1"
-#     mock_event.pull_request.merged = True
+        ctx.receive_event(bot, event)
 
-#     mock_issues_resp = mocker.MagicMock()
-#     bot.github.rest.issues.get.return_value = mock_issues_resp
-#     mock_issue = mocker.MagicMock()
-#     mock_issue.state = "open"
-#     mock_issues_resp.parsed_data = mock_issue
+    # 测试 git 命令
+    mock_subprocess_run.assert_not_called()
 
-#     bot.process_pull_request_event(mock_event)
 
-#     bot.github.rest.issues.get.assert_not_called()
+async def test_extract_issue_number_from_ref_failed(
+    app: App, mocker: MockerFixture
+) -> None:
+    """测试从分支名中提取议题号失败"""
+    from src.plugins.publish import pr_close
 
-#     bot.github.rest.issues.update.assert_not_called()
+    event_path = Path(__file__).parent.parent / "plugin-test" / "pr-close.json"
 
-#     # 测试 git 命令
-#     mock_subprocess_run.assert_not_called()
+    mock_subprocess_run = mocker.patch("subprocess.run")
 
-#     # 处理冲突的拉取请求
-#     bot.get_pull_requests_by_label.assert_not_called()
-#     bot.resolve_conflict_pull_requests.assert_not_called()
+    async with app.test_matcher(pr_close) as ctx:
+        adapter = get_adapter(Adapter)
+        bot = ctx.create_bot(
+            base=GitHubBot,
+            adapter=adapter,
+            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
+        )
+        bot = cast(GitHubBot, bot)
+        event = Adapter.payload_to_event("1", "pull_request", event_path.read_bytes())
+        assert isinstance(event, PullRequestClosed)
+        event.payload.pull_request.head.ref = "1"
+
+        ctx.receive_event(bot, event)
+
+    # 测试 git 命令
+    mock_subprocess_run.assert_not_called()
+    mock_subprocess_run.assert_not_called()

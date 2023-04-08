@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 import nonebot
 import pytest
+from nonebot.adapters.github import Adapter
 from nonebug import NONEBOT_INIT_KWARGS
 from nonebug.app import App
 from pytest_mock import MockerFixture
@@ -26,11 +27,13 @@ def pytest_configure(config: pytest.Config) -> None:
         "github_event_path": "event_path",
         "plugin_test_output": "test_output",
         "plugin_test_result": False,
+        "github_apps": [],
     }
 
 
 @pytest.fixture(scope="session", autouse=True)
 def load_plugin(nonebug_init: None) -> set["Plugin"]:
+    nonebot.get_driver().register_adapter(Adapter)
     return nonebot.load_plugins(str(Path(__file__).parent.parent / "src" / "plugins"))
 
 
