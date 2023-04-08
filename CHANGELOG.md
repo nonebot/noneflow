@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Changed
+
+- 设置时区为中国
+
 ## [2.0.0] - 2023-04-07
 
 ### Added
