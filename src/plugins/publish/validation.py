@@ -4,7 +4,7 @@ import json
 import re
 from functools import cache
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 import httpx
 from nonebot import logger
@@ -360,6 +360,23 @@ def check_url(url: str) -> int | None:
         pass
 
 
+loc_map = {
+    "name": "名称",
+    "desc": "功能",
+    "project_link": "PyPI 项目名",
+    "module_name": "import 包名",
+    "tags": "标签",
+    "homepage": "项目仓库/主页链接",
+}
+
+
+def loc_to_name(loc: str) -> str:
+    """将 loc 转换为可读名称"""
+    if loc in loc_map:
+        return loc_map[loc]
+    return loc
+
+
 def generate_validation_message(info: PublishInfo | MyValidationError) -> str:
     """生成验证信息"""
     if isinstance(info, MyValidationError):
@@ -369,7 +386,8 @@ def generate_validation_message(info: PublishInfo | MyValidationError) -> str:
 
         errors: list[str] = []
         for error in info.errors:
-            if error["loc"][0] == "tags" and len(error["loc"]) == 3:
+            loc = cast(str, error["loc"][0])
+            if loc == "tags" and len(error["loc"]) == 3:
                 if error["type"] == "value_error.missing":
                     errors.append(
                         f"<li>⚠️ 第 {error['loc'][1]+1} 个标签缺少 {error['loc'][2]} 字段。<dt>请确保标签字段完整。</dt></li>"  # type: ignore
@@ -378,7 +396,7 @@ def generate_validation_message(info: PublishInfo | MyValidationError) -> str:
                     errors.append(f"<li>⚠️ 第 {error['loc'][1]+1} 个{error['msg']}</li>")  # type: ignore
             elif error["type"].startswith("type_error"):
                 errors.append(
-                    f"<li>⚠️ {error['loc'][0]}: 无法匹配到数据。<dt>请确保填写该项目。</dt></li>"
+                    f"<li>⚠️ {loc_to_name(loc)}: 无法匹配到数据。<dt>请确保填写该项目。</dt></li>"
                 )
             else:
                 errors.append(f"<li>{error['msg']}</li>")
