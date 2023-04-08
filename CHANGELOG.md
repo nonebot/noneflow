@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ### Changed
 
 - 设置时区为中国
+- 审查通过后如果可合并则直接合并
 
 ## [2.0.0] - 2023-04-07
 
