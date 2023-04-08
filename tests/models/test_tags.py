@@ -161,7 +161,7 @@ async def test_adapter_tags_json_invalid(mocker: MockerFixture) -> None:
             tags=json.dumps([{"label": "1", "color": "#ffffff"}]) + "1",  # type: ignore
             is_official=False,
         )
-    assert "⚠️ 标签解码失败。<dt>请确保标签格式正确。</dt>" in str(e.value)
+    assert "⚠️ 标签解码失败。<dt>请确保标签为 JSON 格式。</dt>" in str(e.value)
 
     mock_httpx.assert_has_calls(
         [
