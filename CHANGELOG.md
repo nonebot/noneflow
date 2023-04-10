@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Added
+
+- 跳过机器人的评论
+
 ## [2.1.0] - 2023-04-08
 
 ### Added

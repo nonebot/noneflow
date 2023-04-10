@@ -2,6 +2,9 @@ import re
 
 NONEFLOW_MARKER = "<!-- NONEFLOW -->"
 
+BOT_MARKER = "[bot]"
+"""机器人的名字结尾都会带有这个"""
+
 SKIP_PLUGIN_TEST_COMMENT = "/skip"
 
 COMMENT_TITLE = "# 📃 商店发布检查结果"
