@@ -19,6 +19,7 @@ from .depends import (
     get_related_issue_number,
     get_repo_info,
     get_type_by_labels,
+    get_type_by_title,
 )
 from .models import PublishType, RepoInfo
 from .utils import (
@@ -26,7 +27,6 @@ from .utils import (
     commit_and_push,
     create_pull_request,
     extract_publish_info_from_issue,
-    get_type_by_title,
     resolve_conflict_pull_requests,
     run_shell_command,
     should_skip_plugin_test,
@@ -111,6 +111,7 @@ async def handle_pr_close(
 
 async def check_rule(
     event: IssuesOpened | IssuesReopened | IssuesEdited | IssueCommentCreated,
+    publish_type: PublishType | None = Depends(get_type_by_title),
 ) -> bool:
     if isinstance(
         event, IssueCommentCreated
@@ -120,6 +121,9 @@ async def check_rule(
     if event.payload.issue.pull_request:
         logger.info("评论在拉取请求下，已跳过")
         return False
+    if not publish_type:
+        logger.info("议题与发布无关，已跳过")
+        await publish_check_matcher.finish()
 
     return True
 
@@ -136,6 +140,7 @@ async def handle_publish_check(
     installation_id: int = Depends(get_installation_id),
     repo_info: RepoInfo = Depends(get_repo_info),
     issue_number: int = Depends(get_issue_number),
+    publish_type: PublishType = Depends(get_type_by_title),
 ) -> None:
     async with bot.as_installation(installation_id):
         # 因为 Actions 会排队，触发事件相关的议题在 Actions 执行时可能已经被关闭
@@ -148,11 +153,6 @@ async def handle_publish_check(
 
         if issue.state != "open":
             logger.info("议题未开启，已跳过")
-            await publish_check_matcher.finish()
-
-        publish_type = get_type_by_title(issue.title)
-        if not publish_type:
-            logger.info("议题与发布无关，已跳过")
             await publish_check_matcher.finish()
 
         # 自动给议题添加标签
