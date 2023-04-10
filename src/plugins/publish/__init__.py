@@ -11,7 +11,7 @@ from nonebot.adapters.github import (
 from nonebot.params import Depends
 
 from .config import plugin_config
-from .constants import BRANCH_NAME_PREFIX
+from .constants import BOT_MARKER, BRANCH_NAME_PREFIX
 from .depends import (
     get_installation_id,
     get_issue_number,
@@ -112,6 +112,11 @@ async def handle_pr_close(
 async def check_rule(
     event: IssuesOpened | IssuesReopened | IssuesEdited | IssueCommentCreated,
 ) -> bool:
+    if isinstance(
+        event, IssueCommentCreated
+    ) and event.payload.comment.user.login.endswith(BOT_MARKER):
+        logger.info("评论来自机器人，已跳过")
+        return False
     if event.payload.issue.pull_request:
         logger.info("评论在拉取请求下，已跳过")
         return False

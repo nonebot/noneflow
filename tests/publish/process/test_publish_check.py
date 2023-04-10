@@ -668,3 +668,32 @@ async def test_not_publish_issue(app: App, mocker: MockerFixture) -> None:
         check=True,
         capture_output=True,
     )
+
+
+async def test_comment_by_self(app: App, mocker: MockerFixture) -> None:
+    """测试自己评论触发的情况"""
+    from src.plugins.publish import publish_check_matcher
+
+    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
+    mock_subprocess_run = mocker.patch(
+        "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
+    )
+
+    async with app.test_matcher(publish_check_matcher) as ctx:
+        adapter = get_adapter(Adapter)
+        bot = ctx.create_bot(
+            base=GitHubBot,
+            adapter=adapter,
+            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
+        )
+        bot = cast(GitHubBot, bot)
+        event_path = (
+            Path(__file__).parent.parent / "plugin-test" / "issue-comment-bot.json"
+        )
+        event = Adapter.payload_to_event("1", "issue_comment", event_path.read_bytes())
+        assert isinstance(event, IssueCommentCreated)
+
+        ctx.receive_event(bot, event)
+
+    mock_httpx.assert_not_called()
+    mock_subprocess_run.assert_not_called()
