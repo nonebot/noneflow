@@ -87,6 +87,7 @@ async def test_process_publish_check(
         event_path = Path(__file__).parent.parent / "plugin-test" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
         assert isinstance(event, IssuesOpened)
+        event.payload.issue.title = "Bot: test"
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
@@ -276,6 +277,7 @@ async def test_edit_title(app: App, mocker: MockerFixture, tmp_path: Path) -> No
         event_path = Path(__file__).parent.parent / "plugin-test" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
         assert isinstance(event, IssuesOpened)
+        event.payload.issue.title = "Bot: test"
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
@@ -469,6 +471,7 @@ async def test_process_publish_check_not_pass(
         event_path = Path(__file__).parent.parent / "plugin-test" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
         assert isinstance(event, IssuesOpened)
+        event.payload.issue.title = "Bot: test"
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
@@ -625,18 +628,6 @@ async def test_not_publish_issue(app: App, mocker: MockerFixture) -> None:
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
     )
 
-    mock_installation = mocker.MagicMock()
-    mock_installation.id = 123
-    mock_installation_resp = mocker.MagicMock()
-    mock_installation_resp.parsed_data = mock_installation
-
-    mock_issue = mocker.MagicMock()
-    mock_issue.pull_request = None
-    mock_issue.state = "open"
-    mock_issue.title = "test"
-    mock_issues_resp = mocker.MagicMock()
-    mock_issues_resp.parsed_data = mock_issue
-
     async with app.test_matcher(publish_check_matcher) as ctx:
         adapter = get_adapter(Adapter)
         bot = ctx.create_bot(
@@ -648,26 +639,12 @@ async def test_not_publish_issue(app: App, mocker: MockerFixture) -> None:
         event_path = Path(__file__).parent.parent / "plugin-test" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
         assert isinstance(event, IssuesOpened)
-
-        ctx.should_call_api(
-            "rest.apps.async_get_repo_installation",
-            {"owner": "he0119", "repo": "action-test"},
-            mock_installation_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_get",
-            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-            mock_issues_resp,
-        )
+        event.payload.issue.title = "test"
 
         ctx.receive_event(bot, event)
 
     mock_httpx.assert_not_called()
-    mock_subprocess_run.assert_called_once_with(
-        ["git", "config", "--global", "safe.directory", "*"],
-        check=True,
-        capture_output=True,
-    )
+    mock_subprocess_run.assert_not_called()
 
 
 async def test_comment_by_self(app: App, mocker: MockerFixture) -> None:
