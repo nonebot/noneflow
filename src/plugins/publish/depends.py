@@ -45,20 +45,11 @@ def get_labels(
     return labels
 
 
-def get_title(
-    event: PullRequestClosed
-    | PullRequestReviewSubmitted
-    | IssuesOpened
-    | IssuesReopened
-    | IssuesEdited
-    | IssueCommentCreated,
+def get_issue_title(
+    event: IssuesOpened | IssuesReopened | IssuesEdited | IssueCommentCreated,
 ):
-    """获取议题或拉取请求的标题"""
-    if isinstance(event, (PullRequestClosed, PullRequestReviewSubmitted)):
-        title = event.payload.pull_request.title
-    else:
-        title = event.payload.issue.title
-    return title
+    """获取议题标题"""
+    return event.payload.issue.title
 
 
 def get_type_by_labels(
@@ -70,7 +61,7 @@ def get_type_by_labels(
     return utils.get_type_by_labels(labels)
 
 
-def get_type_by_title(title: str = Depends(get_title)) -> PublishType | None:
+def get_type_by_title(title: str = Depends(get_issue_title)) -> PublishType | None:
     """通过标题获取类型"""
     return utils.get_type_by_title(title)
 
