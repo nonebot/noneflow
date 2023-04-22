@@ -16,11 +16,10 @@ ISSUE_PATTERN = r"### {}\s+([^\s#].*?)(?=(?:\s+###|$))"
 PROJECT_LINK_PATTERN = re.compile(ISSUE_PATTERN.format("PyPI 项目名"))
 MODULE_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("插件 import 包名"))
 
-RUNNER = """import os
-import json
+RUNNER = """import json
+import os
 
 from nonebot import init, load_plugin, require
-
 
 init(driver="~none")
 plugin = load_plugin("{}")
