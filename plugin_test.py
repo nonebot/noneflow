@@ -16,14 +16,30 @@ ISSUE_PATTERN = r"### {}\s+([^\s#].*?)(?=(?:\s+###|$))"
 PROJECT_LINK_PATTERN = re.compile(ISSUE_PATTERN.format("PyPI 项目名"))
 MODULE_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("插件 import 包名"))
 
-RUNNER = """from nonebot import init, load_plugin, require
+RUNNER = """import os
+import json
+
+from nonebot import init, load_plugin, require
+
 
 init(driver="~none")
-valid = load_plugin("{}")
+plugin = load_plugin("{}")
 {}
-if not valid:
+if not plugin:
     exit(1)
 else:
+    metadata = (
+        {{
+            "name": plugin.metadata.name,
+            "description": plugin.metadata.description,
+            "usage": plugin.metadata.usage,
+            "extra": plugin.metadata.extra,
+        }}
+        if plugin.metadata
+        else {{}}
+    )
+    with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+        f.write(f"METADATA<<EOF\\n{{json.dumps(metadata)}}\\nEOF\\n")
     exit(0)
 """
 

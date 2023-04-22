@@ -39,8 +39,9 @@
       "justMyCode": true,
       "env": {
         "GITHUB_EVENT_NAME": "issue_comment",
-        "GITHUB_EVENT_PATH": "${workspaceFolder}/tests/plugin-test/issue-comment.json",
-        "GITHUB_OUTPUT": "plugin_test/output.txt",
+        "GITHUB_EVENT_PATH": "${workspaceFolder}/tests/publish/plugin-test/issue-comment.json",
+        "GITHUB_OUTPUT": "${workspaceFolder}/plugin_test/output.txt",
+        "GITHUB_STEP_SUMMARY": "${workspaceFolder}/plugin_test/step_summary.txt",
       }
     }
   ]
