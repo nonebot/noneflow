@@ -247,4 +247,4 @@ async def handle_auto_merge(
             pull_number=event.payload.pull_request.number,
             merge_method="rebase",
         )
-        logger.info("已自动合并")
+        logger.info("已自动合并 #{event.payload.pull_request.number}")
