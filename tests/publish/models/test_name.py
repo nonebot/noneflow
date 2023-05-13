@@ -5,17 +5,6 @@ from pydantic import ValidationError
 from pytest_mock import MockerFixture
 
 
-def generate_issue_body(
-    name: str = "name",
-    desc: str = "desc",
-    module_name: str = "module_name",
-    project_link: str = "project_link",
-    homepage: str = "https://v2.nonebot.dev",
-    tags: list = [{"label": "test", "color": "#ffffff"}],
-):
-    return f"""**协议名称：**\n\n{name}\n\n**协议功能：**\n\n{desc}\n\n**PyPI 项目名：**\n\n{project_link}\n\n**协议 import 包名：**\n\n{module_name}\n\n**协议项目仓库/主页链接：**\n\n{homepage}\n\n**标签：**\n\n{json.dumps(tags)}"""
-
-
 def mocked_httpx_get(url: str):
     class MockResponse:
         def __init__(self, status_code: int):
