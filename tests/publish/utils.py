@@ -32,4 +32,3 @@ def generate_issue_body_plugin(
     tags: list = [{"label": "test", "color": "#ffffff"}],
 ):
     return f"""### 插件名称\n\n{name}\n\n### 插件描述\n\n{desc}\n\n### PyPI 项目名\n\n{project_link}\n\n### 插件 import 包名\n\n{module_name}\n\n### 插件项目仓库/主页链接\n\n{homepage}\n\n### 标签\n\n{json.dumps(tags)}"""
-
