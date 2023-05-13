@@ -13,6 +13,8 @@ from nonebot.adapters.github.config import GitHubApp
 from nonebug import App
 from pytest_mock import MockerFixture
 
+from tests.publish.utils import generate_issue_body_bot
+
 
 def mocked_httpx_get(url: str):
     class MockResponse:
@@ -52,7 +54,7 @@ async def test_process_publish_check(
     mock_issue.title = "Bot: test"
     mock_issue.number = 80
     mock_issue.state = "open"
-    mock_issue.body = """**机器人名称：**\n\ntest\n\n**机器人功能：**\n\ndesc\n\n**机器人项目仓库/主页链接：**\n\nhttps://v2.nonebot.dev\n\n**标签：**\n\n[{"label": "test", "color": "#ffffff"}]"""
+    mock_issue.body = generate_issue_body_bot(name="test")
     mock_issue.user.login = "test"
 
     mock_event = mocker.MagicMock()
@@ -242,7 +244,7 @@ async def test_edit_title(app: App, mocker: MockerFixture, tmp_path: Path) -> No
     mock_issue.title = "Bot: test"
     mock_issue.number = 80
     mock_issue.state = "open"
-    mock_issue.body = """**机器人名称：**\n\ntest1\n\n**机器人功能：**\n\ndesc\n\n**机器人项目仓库/主页链接：**\n\nhttps://v2.nonebot.dev\n\n**标签：**\n\n[{"label": "test", "color": "#ffffff"}]"""
+    mock_issue.body = generate_issue_body_bot(name="test1")
     mock_issue.user.login = "test"
 
     mock_event = mocker.MagicMock()
@@ -444,7 +446,7 @@ async def test_process_publish_check_not_pass(
     mock_issue.title = "Bot: test"
     mock_issue.number = 1
     mock_issue.state = "open"
-    mock_issue.body = """**机器人名称：**\n\ntest\n\n**机器人功能：**\n\ndesc\n\n**机器人项目仓库/主页链接：**\n\nhttps://test\n\n**标签：**\n\n[{"label": "test", "color": "#ffffff"}]"""
+    mock_issue.body = generate_issue_body_bot(name="test", homepage="https://test")
     mock_issue.user.login = "test"
 
     mock_issues_resp = mocker.MagicMock()

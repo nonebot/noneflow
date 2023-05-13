@@ -4,16 +4,7 @@ from collections import OrderedDict
 import pytest
 from pytest_mock import MockerFixture
 
-
-def generate_issue_body(
-    name: str = "name",
-    desc: str = "desc",
-    homepage: str = "https://v2.nonebot.dev",
-    tags: list | str = [{"label": "test", "color": "#ffffff"}],
-):
-    if isinstance(tags, list):
-        tags = json.dumps(tags)
-    return f"""**机器人名称：**\n\n{name}\n\n**机器人功能：**\n\n{desc}\n\n**机器人项目仓库/主页链接：**\n\n{homepage}\n\n**标签：**\n\n{tags}"""
+from tests.publish.utils import generate_issue_body_bot
 
 
 def mocked_httpx_get(url: str):
@@ -38,7 +29,7 @@ async def test_bot_from_issue(mocker: MockerFixture) -> None:
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
-    mock_issue.body = generate_issue_body()
+    mock_issue.body = generate_issue_body_bot()
     mock_issue.user.login = "author"
 
     info = BotPublishInfo.from_issue(mock_issue)
@@ -66,7 +57,7 @@ async def test_bot_from_issue_trailing_whitespace(mocker: MockerFixture) -> None
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
-    mock_issue.body = generate_issue_body(
+    mock_issue.body = generate_issue_body_bot(
         name="name ",
         desc="desc ",
         homepage="https://v2.nonebot.dev ",
@@ -118,7 +109,7 @@ async def test_bot_info_validation_failed(mocker: MockerFixture) -> None:
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
-    mock_issue.body = generate_issue_body(
+    mock_issue.body = generate_issue_body_bot(
         homepage="https://www.baidu.com",
         tags=[
             {"label": "test", "color": "#ffffff"},
@@ -147,7 +138,7 @@ async def test_bot_info_validation_failed_json_error(mocker: MockerFixture) -> N
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
-    mock_issue.body = generate_issue_body(
+    mock_issue.body = generate_issue_body_bot(
         homepage="https://www.baidu.com",
         tags="not a json",
     )
@@ -175,7 +166,7 @@ async def test_bot_info_validation_failed_tag_field_missing(
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
-    mock_issue.body = generate_issue_body(
+    mock_issue.body = generate_issue_body_bot(
         homepage="https://www.baidu.com",
         tags=[{"label": "test"}],
     )
@@ -203,7 +194,7 @@ async def test_bot_info_validation_failed_name_tags_missing(
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
-    mock_issue.body = generate_issue_body(name="", tags="")
+    mock_issue.body = generate_issue_body_bot(name="", tags="")
     mock_issue.user.login = "author"
 
     with pytest.raises(MyValidationError) as e:
@@ -226,7 +217,7 @@ async def test_bot_info_validation_failed_http_exception(mocker: MockerFixture) 
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
-    mock_issue.body = generate_issue_body(homepage="exception")
+    mock_issue.body = generate_issue_body_bot(homepage="exception")
     mock_issue.user.login = "author"
 
     with pytest.raises(MyValidationError) as e:

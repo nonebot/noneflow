@@ -57,21 +57,21 @@ PYTHON_MODULE_NAME_REGEX = re.compile(
 )
 
 # 匹配信息的正则表达式
-ISSUE_PATTERN = r"\*\*{}：\*\*\s+([^\s*].*?)(?=(?:\s+\*\*|$))"
+ISSUE_PATTERN = r"### {}\s+([^\s#].*?)(?=(?:\s+###|$))"
 # 基本信息
 PROJECT_LINK_PATTERN = re.compile(ISSUE_PATTERN.format("PyPI 项目名"))
 TAGS_PATTERN = re.compile(ISSUE_PATTERN.format("标签"))
 # 机器人
 BOT_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("机器人名称"))
-BOT_DESC_PATTERN = re.compile(ISSUE_PATTERN.format("机器人功能"))
+BOT_DESC_PATTERN = re.compile(ISSUE_PATTERN.format("机器人描述"))
 BOT_HOMEPAGE_PATTERN = re.compile(ISSUE_PATTERN.format("机器人项目仓库/主页链接"))
 # 插件
 PLUGIN_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("插件名称"))
-PLUGIN_DESC_PATTERN = re.compile(ISSUE_PATTERN.format("插件功能"))
+PLUGIN_DESC_PATTERN = re.compile(ISSUE_PATTERN.format("插件描述"))
 PLUGIN_MODULE_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("插件 import 包名"))
 PLUGIN_HOMEPAGE_PATTERN = re.compile(ISSUE_PATTERN.format("插件项目仓库/主页链接"))
 # 协议
-ADAPTER_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("协议名称"))
-ADAPTER_DESC_PATTERN = re.compile(ISSUE_PATTERN.format("协议功能"))
-ADAPTER_MODULE_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("协议 import 包名"))
-ADAPTER_HOMEPAGE_PATTERN = re.compile(ISSUE_PATTERN.format("协议项目仓库/主页链接"))
+ADAPTER_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("适配器名称"))
+ADAPTER_DESC_PATTERN = re.compile(ISSUE_PATTERN.format("适配器描述"))
+ADAPTER_MODULE_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("适配器 import 包名"))
+ADAPTER_HOMEPAGE_PATTERN = re.compile(ISSUE_PATTERN.format("适配器项目仓库/主页链接"))

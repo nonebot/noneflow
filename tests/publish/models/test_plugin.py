@@ -4,16 +4,7 @@ from collections import OrderedDict
 import pytest
 from pytest_mock import MockerFixture
 
-
-def generate_issue_body(
-    name: str = "name",
-    desc: str = "desc",
-    module_name: str = "module_name",
-    project_link: str = "project_link",
-    homepage: str = "https://v2.nonebot.dev",
-    tags: list = [{"label": "test", "color": "#ffffff"}],
-):
-    return f"""**插件名称：**\n\n{name}\n\n**插件功能：**\n\n{desc}\n\n**PyPI 项目名：**\n\n{project_link}\n\n**插件 import 包名：**\n\n{module_name}\n\n**插件项目仓库/主页链接：**\n\n{homepage}\n\n**标签：**\n\n{json.dumps(tags)}"""
+from tests.publish.utils import generate_issue_body_plugin
 
 
 def mocked_httpx_get(url: str):
@@ -40,7 +31,7 @@ async def test_plugin_from_issue(mocker: MockerFixture) -> None:
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
-    mock_issue.body = generate_issue_body()
+    mock_issue.body = generate_issue_body_plugin()
     mock_issue.user.login = "author"
 
     info = PluginPublishInfo.from_issue(mock_issue)
@@ -78,7 +69,7 @@ async def test_plugin_from_issue_plugin_test_empty(mocker: MockerFixture) -> Non
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
-    mock_issue.body = generate_issue_body()
+    mock_issue.body = generate_issue_body_plugin()
     mock_issue.user.login = "author"
 
     info = PluginPublishInfo.from_issue(mock_issue)
@@ -109,7 +100,7 @@ async def test_plugin_from_issue_trailing_whitespace(mocker: MockerFixture) -> N
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
-    mock_issue.body = generate_issue_body(
+    mock_issue.body = generate_issue_body_plugin(
         module_name="module_name ",
         project_link="project_link ",
         name="name ",
@@ -172,7 +163,7 @@ async def test_plugin_info_validation_failed(mocker: MockerFixture) -> None:
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
-    mock_issue.body = generate_issue_body(
+    mock_issue.body = generate_issue_body_plugin(
         project_link="project_link_failed",
         homepage="https://www.baidu.com",
         tags=[
@@ -206,7 +197,7 @@ async def test_plugin_info_validation_partial_failed(mocker: MockerFixture) -> N
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
-    mock_issue.body = generate_issue_body(
+    mock_issue.body = generate_issue_body_plugin(
         homepage="https://www.baidu.com",
     )
     mock_issue.user.login = "author"
@@ -236,7 +227,7 @@ async def test_plugin_info_skip_plugin_test(mocker: MockerFixture) -> None:
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
-    mock_issue.body = generate_issue_body(
+    mock_issue.body = generate_issue_body_plugin(
         homepage="https://www.baidu.com",
     )
     mock_issue.user.login = "author"
@@ -267,7 +258,7 @@ async def test_plugin_info_validation_failed_http_exception(
 
     mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
-    mock_issue.body = generate_issue_body(homepage="exception")
+    mock_issue.body = generate_issue_body_plugin(homepage="exception")
     mock_issue.user.login = "author"
 
     with pytest.raises(MyValidationError) as e:
