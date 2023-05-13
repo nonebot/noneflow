@@ -11,7 +11,7 @@ from pathlib import Path
 from urllib.request import urlopen
 
 # 匹配信息的正则表达式
-ISSUE_PATTERN = r"\*\*{}：\*\*\s+([^\s*].*?)(?=(?:\s+\*\*|$))"
+ISSUE_PATTERN = r"### {}\s+([^\s#].*?)(?=(?:\s+###|$))"
 # 插件信息
 PROJECT_LINK_PATTERN = re.compile(ISSUE_PATTERN.format("PyPI 项目名"))
 MODULE_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("插件 import 包名"))
