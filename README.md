@@ -1,6 +1,6 @@
 <!-- markdownlint-disable -->
 <p align="center">
-  <a href="https://v2.nonebot.dev/"><img src="https://raw.githubusercontent.com/nonebot/noneflow/main/assets/logo.png" width="200" alt="noneflow"></a>
+  <a href="https://nonebot.dev/"><img src="https://raw.githubusercontent.com/nonebot/noneflow/main/assets/logo.png" width="200" alt="noneflow"></a>
 </p>
 
 <div align="center">
