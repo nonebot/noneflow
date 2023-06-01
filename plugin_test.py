@@ -33,7 +33,7 @@ def get_plugin_list() -> dict[str, str]:
 
     通过 package_name 获取 module_name
     """
-    with urlopen("https://v2.nonebot.dev/plugins.json") as response:
+    with urlopen("https://nonebot.dev/plugins.json") as response:
         plugins = json.loads(response.read())
 
     return {plugin["project_link"]: plugin["module_name"] for plugin in plugins}
