@@ -34,9 +34,11 @@ plugin = load_plugin("{}")
 if not plugin:
     exit(1)
 else:
-    metadata = asdict(plugin.metadata) if plugin.metadata else {{}}
-    with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-        f.write(f"METADATA<<EOF\\n{{json.dumps(metadata)}}\\nEOF\\n")
+    # 只有插件元数据存在时才会输出
+    if plugin.metadata:
+        metadata = asdict(plugin.metadata)
+        with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+            f.write(f"METADATA<<EOF\\n{{json.dumps(metadata)}}\\nEOF\\n")
 
 {}
 """
@@ -51,6 +53,7 @@ def get_plugin_list() -> dict[str, str]:
         plugins = json.loads(response.read())
 
     return {plugin["project_link"]: plugin["module_name"] for plugin in plugins}
+
 
 class PluginTest:
     def __init__(self, project_link: str, module_name: str) -> None:

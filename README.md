@@ -81,6 +81,7 @@ jobs:
     outputs:
       result: ${{ steps.plugin-test.outputs.RESULT }}
       output: ${{ steps.plugin-test.outputs.OUTPUT }}
+      metadata: ${{ steps.plugin-test.outputs.METADATA }}
     steps:
       - name: Install Poetry
         if: ${{ !startsWith(github.event_name, 'pull_request') }}
@@ -125,6 +126,7 @@ jobs:
         env:
           PLUGIN_TEST_RESULT: ${{ needs.plugin_test.outputs.result }}
           PLUGIN_TEST_OUTPUT: ${{ needs.plugin_test.outputs.output }}
+          PLUGIN_TEST_METADATA: ${{ needs.plugin_test.outputs.metadata }}
           APP_ID: ${{ secrets.APP_ID }}
           PRIVATE_KEY: ${{ secrets.APP_KEY }}
 ```
