@@ -49,7 +49,7 @@
     "assignee": null,
     "assignees": [],
     "author_association": "OWNER",
-    "body": "**插件名称：**\r\n\r\n腾讯云图像变换\r\n\r\n**插件功能：**\r\n\r\n✨基于腾讯云合成图的以图绘图的Nonebot插件✨\r\n\r\n**PyPI 项目名：**\r\n\r\nnonebot_plugin_face2cartoonpic\r\n\r\n**插件 import 包名：**\r\n\r\nnonebot_plugin_face2cartoonpic\r\n\r\n**插件项目仓库/主页链接：**\r\n\r\nhttps://github.com/ANGJustinl/nonebot_plugin_face2cartoonpic_main\r\n\r\n**标签：**\r\n\r\n[{\"label\":\"以图绘图\",\"color\":\"#72f15e\"},{\"label\":\"腾讯云\",\"color\":\"#3785f1\"}]",
+    "body": "### 插件名称\r\n\r\n腾讯云图像变换\r\n\r\n### 插件功能\r\n\r\n✨基于腾讯云合成图的以图绘图的Nonebot插件✨\r\n\r\n### PyPI 项目名\r\n\r\nnonebot_plugin_face2cartoonpic\r\n\r\n### 插件 import 包名\r\n\r\nnonebot_plugin_face2cartoonpic\r\n\r\n### 插件项目仓库/主页链接\r\n\r\nhttps://github.com/ANGJustinl/nonebot_plugin_face2cartoonpic_main\r\n\r\n**标签\r\n\r\n[{\"label\":\"以图绘图\",\"color\":\"#72f15e\"},{\"label\":\"腾讯云\",\"color\":\"#3785f1\"}]",
     "closed_at": null,
     "comments": 4,
     "comments_url": "https://api.github.com/repos/he0119/action-test/issues/70/comments",

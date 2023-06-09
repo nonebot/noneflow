@@ -10,6 +10,12 @@ from asyncio import create_subprocess_shell, run, subprocess
 from pathlib import Path
 from urllib.request import urlopen
 
+# GITHUB
+GITHUB_OUTPUT_FILE = Path(os.environ["GITHUB_OUTPUT"])
+GITHUB_STEP_SUMMARY_FILE = Path(os.environ["GITHUB_STEP_SUMMARY"])
+# NoneBot Store
+STORE_PLUGINS_URL = "https://nonebot.dev/plugins.json"
+
 # 匹配信息的正则表达式
 ISSUE_PATTERN = r"### {}\s+([^\s#].*?)(?=(?:\s+###|$))"
 # 插件信息
@@ -18,28 +24,21 @@ MODULE_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("插件 import 包名"))
 
 RUNNER = """import json
 import os
+from dataclasses import asdict
 
 from nonebot import init, load_plugin, require
 
 init(driver="~none")
 plugin = load_plugin("{}")
-{}
+
 if not plugin:
     exit(1)
 else:
-    metadata = (
-        {{
-            "name": plugin.metadata.name,
-            "description": plugin.metadata.description,
-            "usage": plugin.metadata.usage,
-            "extra": plugin.metadata.extra,
-        }}
-        if plugin.metadata
-        else {{}}
-    )
+    metadata = asdict(plugin.metadata) if plugin.metadata else {{}}
     with open(os.environ["GITHUB_OUTPUT"], "a") as f:
         f.write(f"METADATA<<EOF\\n{{json.dumps(metadata)}}\\nEOF\\n")
-    exit(0)
+
+{}
 """
 
 
@@ -48,11 +47,10 @@ def get_plugin_list() -> dict[str, str]:
 
     通过 package_name 获取 module_name
     """
-    with urlopen("https://nonebot.dev/plugins.json") as response:
+    with urlopen(STORE_PLUGINS_URL) as response:
         plugins = json.loads(response.read())
 
     return {plugin["project_link"]: plugin["module_name"] for plugin in plugins}
-
 
 class PluginTest:
     def __init__(self, project_link: str, module_name: str) -> None:
@@ -77,15 +75,15 @@ class PluginTest:
             await self.run_poetry_project()
 
         # 输出测试结果
-        with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+        with open(GITHUB_OUTPUT_FILE, "a") as f:
             f.write(f"RESULT={self._run}\n")
         # 输出测试输出
         output = "\n".join(self._output_lines)
         # 限制输出长度，防止评论过长，评论最大长度为 65536
-        with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+        with open(GITHUB_OUTPUT_FILE, "a") as f:
             f.write(f"OUTPUT<<EOF\n{output[:50000]}\nEOF\n")
         # 输出至作业摘要
-        with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+        with open(GITHUB_STEP_SUMMARY_FILE, "a") as f:
             summary = f"插件 {self.project_link} 加载测试结果：{'通过' if self._run else '未通过'}\n"
             summary += f"<details><summary>测试输出</summary><pre><code>{output}</code></pre></details>"
             f.write(f"{summary}")
