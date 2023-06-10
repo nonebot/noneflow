@@ -26,6 +26,7 @@ from .utils import (
     comment_issue,
     commit_and_push,
     create_pull_request,
+    ensure_issue_content,
     extract_publish_info_from_issue,
     resolve_conflict_pull_requests,
     run_shell_command,
@@ -166,6 +167,10 @@ async def handle_publish_check(
         plugin_config.skip_plugin_test = await should_skip_plugin_test(
             bot, repo_info, issue_number
         )
+
+        # 如果需要跳过插件测试，则修改议题内容，确保其包含插件所需信息
+        if publish_type == PublishType.PLUGIN and plugin_config.skip_plugin_test:
+            await ensure_issue_content(bot, repo_info, issue_number, issue.body or "")  # type: ignore
 
         # 检查是否满足发布要求
         # 仅在通过检查的情况下创建拉取请求

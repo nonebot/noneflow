@@ -10,10 +10,11 @@ from nonebot.adapters.github import (
     IssuesOpened,
 )
 from nonebot.adapters.github.config import GitHubApp
+from nonebot.plugin import PluginMetadata
 from nonebug import App
 from pytest_mock import MockerFixture
 
-from tests.publish.utils import generate_issue_body_bot
+from tests.publish.utils import generate_issue_body_bot, generate_issue_body_plugin
 
 
 def mocked_httpx_get(url: str):
@@ -674,3 +675,129 @@ async def test_comment_by_self(app: App, mocker: MockerFixture) -> None:
 
     mock_httpx.assert_not_called()
     mock_subprocess_run.assert_not_called()
+
+
+async def test_skip_plugin_check(
+    app: App, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    """测试手动跳过插件测试的流程"""
+    from src.plugins.publish import publish_check_matcher
+    from src.plugins.publish.config import plugin_config
+
+    mocker.patch.object(plugin_config, "plugin_test_result", False)
+
+    mocker.patch("httpx.get", side_effect=mocked_httpx_get)
+    mock_subprocess_run = mocker.patch(
+        "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
+    )
+
+    mock_installation = mocker.MagicMock()
+    mock_installation.id = 123
+    mock_installation_resp = mocker.MagicMock()
+    mock_installation_resp.parsed_data = mock_installation
+
+    mock_issue = mocker.MagicMock()
+    mock_issue.pull_request = None
+    mock_issue.title = "Plugin: project_link"
+    mock_issue.number = 70
+    mock_issue.state = "open"
+    mock_issue.body = generate_issue_body_plugin()
+    mock_issue.user.login = "test"
+
+    mock_event = mocker.MagicMock()
+    mock_event.issue = mock_issue
+
+    mock_issues_resp = mocker.MagicMock()
+    mock_issues_resp.parsed_data = mock_issue
+
+    mock_comment = mocker.MagicMock()
+    mock_comment.body = "/skip"
+    mock_comment.author_association = "OWNER"
+    mock_list_comments_resp = mocker.MagicMock()
+    mock_list_comments_resp.parsed_data = [mock_comment]
+
+    mock_pull = mocker.MagicMock()
+    mock_pull.number = 2
+    mock_pulls_resp = mocker.MagicMock()
+    mock_pulls_resp.parsed_data = mock_pull
+
+    with open(tmp_path / "plugins.json", "w") as f:
+        json.dump([], f)
+
+    check_json_data(plugin_config.input_config.plugin_path, [])
+
+    async with app.test_matcher(publish_check_matcher) as ctx:
+        adapter = get_adapter(Adapter)
+        bot = ctx.create_bot(
+            base=GitHubBot,
+            adapter=adapter,
+            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
+        )
+        bot = cast(GitHubBot, bot)
+        event_path = Path(__file__).parent.parent / "events" / "issue-comment-skip.json"
+        event = Adapter.payload_to_event("1", "issue_comment", event_path.read_bytes())
+        assert isinstance(event, IssueCommentCreated)
+        event.payload.issue.title = "Plugin: project_link"
+
+        ctx.should_call_api(
+            "rest.apps.async_get_repo_installation",
+            {"owner": "he0119", "repo": "action-test"},
+            mock_installation_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 70},
+            mock_issues_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_add_labels",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 70,
+                "labels": ["Plugin"],
+            },
+            True,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 70},
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 70,
+                "body": '### 插件名称\n\n### 插件描述\n\n### 插件项目仓库/主页链接\n\n### 插件类型\n\n### 插件支持的适配器\n\n### PyPI 项目名\n\nproject_link\n\n### 插件 import 包名\n\nmodule_name\n\n### 标签\n\n[{"label": "test", "color": "#ffffff"}]',
+            },
+            True,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 70},
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_create_comment",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 70,
+                "body": """# 📃 商店发布检查结果\n\n> Plugin: \n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ 包 <a href="https://pypi.org/project/project_link/">project_link</a> 未发布至 PyPI。<dt>请将您的包发布至 PyPI。</dt></li><li>⚠️ 名称: 无法匹配到数据。<dt>请确保填写该项目。</dt></li><li>⚠️ 功能: 无法匹配到数据。<dt>请确保填写该项目。</dt></li><li>⚠️ 项目仓库/主页链接: 无法匹配到数据。<dt>请确保填写该项目。</dt></li><li>⚠️ 插件类型不能为空。<dt>请确保填写插件类型。</dt></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff。</li><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 已跳过。</li></code></pre></details>\n\n---\n\n💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。\n💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。\n\n💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)\n<!-- NONEFLOW -->\n""",
+            },
+            True,
+        )
+
+        ctx.receive_event(bot, event)
+
+    # 测试 git 命令
+    mock_subprocess_run.assert_called_once_with(
+        ["git", "config", "--global", "safe.directory", "*"],
+        check=True,
+        capture_output=True,
+    )
+
+    # 检查文件是否正确
+    check_json_data(plugin_config.input_config.plugin_path, [])

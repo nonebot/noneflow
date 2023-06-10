@@ -14,6 +14,7 @@ from .constants import (
     COMMENT_TITLE,
     COMMIT_MESSAGE_PREFIX,
     NONEFLOW_MARKER,
+    PLUGIN_STRING_PATTERN_LIST,
     POWERED_BY_NONEFLOW_MESSAGE,
     REUSE_MESSAGE,
     SKIP_PLUGIN_TEST_COMMENT,
@@ -294,3 +295,21 @@ async def comment_issue(bot: Bot, repo_info: RepoInfo, issue_number: int, body: 
             **repo_info.dict(), issue_number=issue_number, body=comment
         )
         logger.info("评论创建完成")
+
+
+async def ensure_issue_content(
+    bot: Bot, repo_info: RepoInfo, issue_number: int, issue_body: str
+):
+    """确保议题内容中包含所需的插件信息"""
+    new_content = []
+
+    for name, pattern in PLUGIN_STRING_PATTERN_LIST:
+        if not pattern.search(issue_body):
+            new_content.append(f"### {name}")
+
+    if new_content:
+        new_content.append(issue_body)
+        await bot.rest.issues.async_update(
+            **repo_info.dict(), issue_number=issue_number, body="\n\n".join(new_content)
+        )
+        logger.info("议题内容已更新")
