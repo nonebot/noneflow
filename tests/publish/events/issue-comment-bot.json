@@ -49,7 +49,7 @@
     "assignee": null,
     "assignees": [],
     "author_association": "OWNER",
-    "body": "**插件名称：**\r\n\r\nB站直播间路灯\r\n\r\n**插件功能：**\r\n\r\n通过弹幕记录直播高能点\r\n\r\n**PyPI 项目名：**\r\n\r\nnonebot-plugin-blive-danmaku\r\n\r\n**插件 import 包名：**\r\n\r\nnonebot_plugin_blive_danmaku\r\n\r\n**插件项目仓库/主页链接：**\r\n\r\nhttps://github.com/zangxx66/nonebot_plugin_blive_danmaku\r\n\r\n**标签：**\r\n\r\n[{\"label\":\"bilibili\",\"color\":\"#EA5252\"}]\r\n",
+    "body": "### 插件名称\r\n\r\nB站直播间路灯\r\n\r\n### 插件功能\r\n\r\n通过弹幕记录直播高能点\r\n\r\n### PyPI 项目名\r\n\r\nnonebot-plugin-blive-danmaku\r\n\r\n### 插件 import 包名\r\n\r\nnonebot_plugin_blive_danmaku\r\n\r\n### 插件项目仓库/主页链接\r\n\r\nhttps://github.com/zangxx66/nonebot_plugin_blive_danmaku\r\n\r\n### 标签\r\n\r\n[{\"label\":\"bilibili\",\"color\":\"#EA5252\"}]\r\n",
     "closed_at": null,
     "comments": 1,
     "comments_url": "https://api.github.com/repos/he0119/action-test/issues/101/comments",

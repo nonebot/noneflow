@@ -16,7 +16,7 @@
         // "LOG_LEVEL": "TRACE",
         "GITHUB_RUN_ID": "123",
         "GITHUB_EVENT_NAME": "issue_comment",
-        "GITHUB_EVENT_PATH": "${workspaceFolder}/tests/plugin-test/issue-comment.json",
+        "GITHUB_EVENT_PATH": "${workspaceFolder}/tests/events/issue-comment.json",
         "GITHUB_APPS": "[{\"client_id\": 1111, \"client_secret\": 12312}]",
         "GITHUB_REPOSITORY": "owner/repo",
         "INPUT_CONFIG": "{\"base\": \"master\", \"plugin_path\": \"website/static/plugins.json\", \"bot_path\": \"website/static/bots.json\", \"adapter_path\": \"website/static/adapters.json\"}",
@@ -39,7 +39,7 @@
       "justMyCode": true,
       "env": {
         "GITHUB_EVENT_NAME": "issue_comment",
-        "GITHUB_EVENT_PATH": "${workspaceFolder}/tests/publish/plugin-test/issue-comment.json",
+        "GITHUB_EVENT_PATH": "${workspaceFolder}/tests/publish/events/issue-comment.json",
         "GITHUB_OUTPUT": "${workspaceFolder}/plugin_test/output.txt",
         "GITHUB_STEP_SUMMARY": "${workspaceFolder}/plugin_test/step_summary.txt",
       }

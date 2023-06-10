@@ -86,7 +86,7 @@ async def test_process_publish_check(
             self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
         )
         bot = cast(GitHubBot, bot)
-        event_path = Path(__file__).parent.parent / "plugin-test" / "issue-open.json"
+        event_path = Path(__file__).parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
         assert isinstance(event, IssuesOpened)
         event.payload.issue.title = "Bot: test"
@@ -276,7 +276,7 @@ async def test_edit_title(app: App, mocker: MockerFixture, tmp_path: Path) -> No
             self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
         )
         bot = cast(GitHubBot, bot)
-        event_path = Path(__file__).parent.parent / "plugin-test" / "issue-open.json"
+        event_path = Path(__file__).parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
         assert isinstance(event, IssuesOpened)
         event.payload.issue.title = "Bot: test"
@@ -470,7 +470,7 @@ async def test_process_publish_check_not_pass(
             self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
         )
         bot = cast(GitHubBot, bot)
-        event_path = Path(__file__).parent.parent / "plugin-test" / "issue-open.json"
+        event_path = Path(__file__).parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
         assert isinstance(event, IssuesOpened)
         event.payload.issue.title = "Bot: test"
@@ -552,7 +552,7 @@ async def test_comment_at_pull_request(app: App, mocker: MockerFixture) -> None:
             self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
         )
         bot = cast(GitHubBot, bot)
-        event_path = Path(__file__).parent.parent / "plugin-test" / "pr-comment.json"
+        event_path = Path(__file__).parent.parent / "events" / "pr-comment.json"
         event = Adapter.payload_to_event("1", "issue_comment", event_path.read_bytes())
         assert isinstance(event, IssueCommentCreated)
 
@@ -593,7 +593,7 @@ async def test_issue_state_closed(app: App, mocker: MockerFixture) -> None:
             self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
         )
         bot = cast(GitHubBot, bot)
-        event_path = Path(__file__).parent.parent / "plugin-test" / "issue-open.json"
+        event_path = Path(__file__).parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
         assert isinstance(event, IssuesOpened)
 
@@ -638,7 +638,7 @@ async def test_not_publish_issue(app: App, mocker: MockerFixture) -> None:
             self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
         )
         bot = cast(GitHubBot, bot)
-        event_path = Path(__file__).parent.parent / "plugin-test" / "issue-open.json"
+        event_path = Path(__file__).parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
         assert isinstance(event, IssuesOpened)
         event.payload.issue.title = "test"
@@ -666,9 +666,7 @@ async def test_comment_by_self(app: App, mocker: MockerFixture) -> None:
             self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
         )
         bot = cast(GitHubBot, bot)
-        event_path = (
-            Path(__file__).parent.parent / "plugin-test" / "issue-comment-bot.json"
-        )
+        event_path = Path(__file__).parent.parent / "events" / "issue-comment-bot.json"
         event = Adapter.payload_to_event("1", "issue_comment", event_path.read_bytes())
         assert isinstance(event, IssueCommentCreated)
 
