@@ -70,8 +70,13 @@ PLUGIN_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("插件名称"))
 PLUGIN_DESC_PATTERN = re.compile(ISSUE_PATTERN.format("插件描述"))
 PLUGIN_MODULE_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("插件 import 包名"))
 PLUGIN_HOMEPAGE_PATTERN = re.compile(ISSUE_PATTERN.format("插件项目仓库/主页链接"))
+PLUGIN_TYPE_PATTERN = re.compile(ISSUE_PATTERN.format("插件类型"))
+PLUGIN_SUPPORTED_ADAPTERS_PATTERN = re.compile(ISSUE_PATTERN.format("插件支持的适配器"))
 # 协议
 ADAPTER_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("适配器名称"))
 ADAPTER_DESC_PATTERN = re.compile(ISSUE_PATTERN.format("适配器描述"))
 ADAPTER_MODULE_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("适配器 import 包名"))
 ADAPTER_HOMEPAGE_PATTERN = re.compile(ISSUE_PATTERN.format("适配器项目仓库/主页链接"))
+
+# NoneBot Store
+STORE_ADAPTERS_URL = "https://nonebot.dev/adapters.json"

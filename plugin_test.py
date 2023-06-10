@@ -11,8 +11,8 @@ from pathlib import Path
 from urllib.request import urlopen
 
 # GITHUB
-GITHUB_OUTPUT_FILE = Path(os.environ["GITHUB_OUTPUT"])
-GITHUB_STEP_SUMMARY_FILE = Path(os.environ["GITHUB_STEP_SUMMARY"])
+GITHUB_OUTPUT_FILE = Path(os.environ.get("GITHUB_OUTPUT", ""))
+GITHUB_STEP_SUMMARY_FILE = Path(os.environ.get("GITHUB_STEP_SUMMARY", ""))
 # NoneBot Store
 STORE_PLUGINS_URL = "https://nonebot.dev/plugins.json"
 
