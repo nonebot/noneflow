@@ -12,6 +12,7 @@ repository = "https://github.com/nonebot/noneflow"
 python = "^3.11"
 nonebot2 = { extras = ["httpx"], version = "^2.0.0" }
 nonebot-adapter-github = "^0.2.5"
+githubkit = "0.10.4"
 
 [tool.poetry.group.dev.dependencies]
 isort = "*"
