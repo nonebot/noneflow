@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [2.4.0] - 2023-06-11
+
 ### Added
 
 - 直接从插件元数据中读取所需信息
@@ -209,7 +211,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/noneflow/compare/v2.3.1...HEAD
+[unreleased]: https://github.com/nonebot/noneflow/compare/v2.4.0...HEAD
+[2.4.0]: https://github.com/nonebot/noneflow/compare/v2.3.1...v2.4.0
 [2.3.1]: https://github.com/nonebot/noneflow/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/nonebot/noneflow/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/nonebot/noneflow/compare/v2.1.0...v2.2.0
