@@ -246,13 +246,17 @@ async def test_plugin_info_validation_partial_failed(
 async def test_plugin_info_skip_plugin_test(
     mocker: MockerFixture, mocked_api: MockRouter
 ) -> None:
-    """测试跳过插件测试的情况"""
+    """测试跳过插件测试的情况
+
+    此时 plugin_test 相关的输入都是空字符串
+    """
     from src.plugins.publish.config import plugin_config
     from src.plugins.publish.validation import MyValidationError, PluginPublishInfo
 
     mocker.patch.object(plugin_config, "skip_plugin_test", True)
-    mocker.patch.object(plugin_config, "plugin_test_result", False)
-    mocker.patch.object(plugin_config, "plugin_test_output", "test output")
+    mocker.patch.object(plugin_config, "plugin_test_result", "")
+    mocker.patch.object(plugin_config, "plugin_test_output", "")
+    mocker.patch.object(plugin_config, "plugin_test_metadata", "")
 
     mock_issue = mocker.MagicMock()
     mock_issue.body = generate_issue_body_plugin_skip_test(
@@ -310,11 +314,14 @@ async def test_plugin_info_validation_failed_http_exception(
     assert mocked_api["exception"].called
 
 
-async def test_plugin_info_validation_invalid_adapter(
+async def test_plugin_info_validation_adapter_not_in_store(
     mocker: MockerFixture,
     mocked_api: MockRouter,
 ) -> None:
-    """测试验证失败的情况，适配器错误"""
+    """测试验证失败的情况
+
+    适配器未在商店里
+    """
     from src.plugins.publish.config import plugin_config
     from src.plugins.publish.validation import MyValidationError, PluginPublishInfo
 
@@ -342,6 +349,76 @@ async def test_plugin_info_validation_invalid_adapter(
     assert (
         e.value.message
         == """> Plugin: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ 适配器 unknown 不存在。<dt>请确保适配器模块名称正确。</dt></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff。</li><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 包 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 通过。</li><li>✅ 插件类型: application。</li></code></pre></details>"""
+    )
+
+    assert mocked_api["project_link"].called
+    assert mocked_api["homepage"].called
+
+
+async def test_plugin_info_validation_adapter_invalid(
+    mocker: MockerFixture,
+    mocked_api: MockRouter,
+) -> None:
+    """测试验证失败的情况
+
+    适配器格式错误，手动输入的时候可能会出现
+    """
+    from src.plugins.publish.config import plugin_config
+    from src.plugins.publish.validation import MyValidationError, PluginPublishInfo
+
+    mocker.patch.object(plugin_config, "skip_plugin_test", True)
+
+    mock_issue = mocker.MagicMock()
+    mock_issue.body = generate_issue_body_plugin_skip_test()[:-2]
+    mock_issue.user.login = "author"
+
+    with pytest.raises(MyValidationError) as e:
+        PluginPublishInfo.from_issue(mock_issue)
+
+    assert (
+        e.value.message
+        == """> Plugin: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ 插件支持的适配器解码失败。<dt>请确保适配器列表为 JSON 格式。</dt></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff。</li><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 包 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 已跳过。</li><li>✅ 插件类型: application。</li></code></pre></details>"""
+    )
+
+    assert mocked_api["project_link"].called
+    assert mocked_api["homepage"].called
+
+
+async def test_plugin_info_validation_type_invalid(
+    mocker: MockerFixture,
+    mocked_api: MockRouter,
+) -> None:
+    """测试验证失败的情况
+
+    插件类型错误
+    """
+    from src.plugins.publish.config import plugin_config
+    from src.plugins.publish.validation import MyValidationError, PluginPublishInfo
+
+    mocker.patch.object(plugin_config, "plugin_test_result", True)
+    mocker.patch.object(
+        plugin_config,
+        "plugin_test_metadata",
+        PluginMetadata(
+            name="name",
+            description="desc",
+            usage="usage",
+            homepage="https://nonebot.dev",
+            type="app",
+            supported_adapters={"~onebot.v11"},
+        ),
+    )
+
+    mock_issue = mocker.MagicMock()
+    mock_issue.body = generate_issue_body_plugin()
+    mock_issue.user.login = "author"
+
+    with pytest.raises(MyValidationError) as e:
+        PluginPublishInfo.from_issue(mock_issue)
+
+    assert (
+        e.value.message
+        == """> Plugin: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ 插件类型 app 不符合规范。<dt>请确保插件类型正确，当前仅支持 application 与 library。</dt></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff。</li><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 包 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 通过。</li><li>✅ 插件支持的适配器: nonebot.adapters.onebot.v11。</li></code></pre></details>"""
     )
 
     assert mocked_api["project_link"].called

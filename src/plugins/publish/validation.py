@@ -533,7 +533,7 @@ def generate_validation_message(info: PublishInfo | MyValidationError) -> str:
         # 需要先转换才能读取
         tags = [
             f"{tag['label']}-{tag['color']}"
-            for tag in json.loads(info.raw_data["tags"])
+            for tag in PluginPublishInfo.tags_validator(info.raw_data["tags"])
         ]
 
     if tags:
@@ -605,10 +605,12 @@ def generate_validation_message(info: PublishInfo | MyValidationError) -> str:
         and info.type == PublishType.PLUGIN
         and "supported_adapters" not in error_keys
     ):
-        plugin_supported_adapters = info.raw_data["supported_adapters"]
+        plugin_supported_adapters = PluginPublishInfo.supported_adapters_validator(
+            info.raw_data["supported_adapters"]
+        )
         if plugin_supported_adapters:
             plugin_supported_adapters = {
-                resolve_adapter_name(x) for x in json.loads(plugin_supported_adapters)
+                resolve_adapter_name(x) for x in plugin_supported_adapters
             }
     if plugin_supported_adapters:
         details.append(
