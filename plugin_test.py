@@ -167,7 +167,7 @@ class PluginTest:
         if self._path.exists():
             # 默认使用 ~none 驱动
             with open(self._path / ".env", "w") as f:
-                f.write('driver="~none"')
+                f.write("DRIVER=~none\nLOGURU_COLORIZE=false")
             # 如果提供了插件配置项，则写入配置文件
             if self.config is not None:
                 with open(self._path / ".env.prod", "w") as f:
