@@ -3,6 +3,7 @@
 主要测试代码来自 https://github.com/Lancercmd/nonebot2-store-test
 """
 
+import argparse
 import json
 import os
 import re
@@ -68,8 +69,10 @@ def get_plugin_list() -> dict[str, str]:
 
 
 class PluginTest:
-    def __init__(self, project_link: str, module_name: str, config: str | None) -> None:
-        self._path = Path("plugin_test")
+    def __init__(
+        self, project_link: str, module_name: str, config: str | None = None
+    ) -> None:
+        self._path = Path("plugin_test") / f"{project_link}-test"
 
         self.project_link = project_link
         self.module_name = module_name
@@ -96,13 +99,15 @@ class PluginTest:
         # 输出测试输出
         output = "\n".join(self._output_lines)
         # 限制输出长度，防止评论过长，评论最大长度为 65536
+        output = output[:50000]
         with open(GITHUB_OUTPUT_FILE, "a") as f:
-            f.write(f"OUTPUT<<EOF\n{output[:50000]}\nEOF\n")
+            f.write(f"OUTPUT<<EOF\n{output}\nEOF\n")
         # 输出至作业摘要
         with open(GITHUB_STEP_SUMMARY_FILE, "a") as f:
             summary = f"插件 {self.project_link} 加载测试结果：{'通过' if self._run else '未通过'}\n"
             summary += f"<details><summary>测试输出</summary><pre><code>{output}</code></pre></details>"
             f.write(f"{summary}")
+        return self._run, output
 
     async def create_poetry_project(self) -> None:
         if not self._path.exists():
@@ -214,7 +219,7 @@ class PluginTest:
                 return self._plugin_list[package_name]
 
 
-def main():
+async def test_plugin():
     event_path = os.environ.get("GITHUB_EVENT_PATH")
     if not event_path:
         print("未找到 GITHUB_EVENT_PATH，已跳过")
@@ -260,8 +265,62 @@ def main():
         module_name.group(1).strip(),
         config.group(1).strip() if config else None,
     )
-    run(test.run())
+    await test.run()
+
+
+METADATA_PATTERN = re.compile(r"METADATA<<EOF\s([\s\S]+?)\sEOF")
+
+
+def check_metadata(path: Path) -> bool:
+    """检查插件是否拥有插件元数据"""
+    with open(path / "output.txt") as f:
+        output = f.read()
+    match = METADATA_PATTERN.search(output)
+    return bool(match)
+
+
+async def test_store(offset: int, limit: int):
+    global GITHUB_OUTPUT_FILE, GITHUB_STEP_SUMMARY_FILE
+
+    output_path = Path("plugin_test")
+    test_results = {}
+    for i, (project_link, module_name) in enumerate(
+        list(get_plugin_list().items())[offset:]
+    ):
+        if project_link.startswith("git+http"):
+            continue
+        if i >= limit:
+            break
+        print(f"正在测试插件 {project_link} ...")
+        test = PluginTest(project_link, module_name)
+        # 设置环境变量
+        GITHUB_OUTPUT_FILE = (test._path / "output.txt").resolve()
+        GITHUB_STEP_SUMMARY_FILE = (test._path / "summary.txt").resolve()
+        os.environ["GITHUB_OUTPUT"] = str(GITHUB_OUTPUT_FILE)
+        # 获取测试结果
+        result, output = await test.run()
+        test_results[project_link] = {
+            "run": result,
+            "metadata": check_metadata(test._path),
+        }
+        with open(output_path / f"{project_link}.log", "w", encoding="utf8") as f:
+            f.write(output)
+        with open(output_path / "results.json", "w", encoding="utf8") as f:
+            json.dump(test_results, f, indent=2, ensure_ascii=False)
+
+
+async def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-s", "--store", action="store_true", help="测试插件商店内的插件")
+    parser.add_argument("-l", "--limit", type=int, default=1, help="测试插件数量")
+    parser.add_argument("-o", "--offset", type=int, default=0, help="测试插件偏移量")
+    args = parser.parse_args()
+    if args.store:
+        print("测试插件商店内的插件")
+        await test_store(args.offset, args.limit)
+    else:
+        await test_plugin()
 
 
 if __name__ == "__main__":
-    main()
+    run(main())
