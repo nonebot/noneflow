@@ -34,9 +34,11 @@ plugin = load_plugin("{}")
 if not plugin:
     exit(1)
 else:
-    # 只有插件元数据存在时才会输出
     if plugin.metadata:
-        metadata = asdict(plugin.metadata)
+        metadata = asdict(
+            plugin.metadata,
+            dict_factory=lambda x: {{k: v for (k, v) in x if k != "config"}},
+        )
         with open(os.environ["GITHUB_OUTPUT"], "a") as f:
             f.write(f"METADATA<<EOF\\n{{json.dumps(metadata)}}\\nEOF\\n")
 
