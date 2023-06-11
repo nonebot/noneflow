@@ -46,10 +46,7 @@ else:
         metadata = asdict(
             plugin.metadata,
             dict_factory=lambda x: {{
-                k: v
-                for (k, v) in x
-                if k
-                in ("name", "description", "homepage", "type", "supported_adapters")
+                k: v for (k, v) in x if k not in ("config", "extra")
             }},
         )
         with open(os.environ["GITHUB_OUTPUT"], "a") as f:
