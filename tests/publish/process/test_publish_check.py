@@ -771,6 +771,17 @@ async def test_skip_plugin_check(
             },
             True,
         )
+        # 修改标题
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 70,
+                "title": "Plugin: ",
+            },
+            True,
+        )
         ctx.should_call_api(
             "rest.issues.async_list_comments",
             {"owner": "he0119", "repo": "action-test", "issue_number": 70},

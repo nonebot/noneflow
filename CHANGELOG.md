@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - 直接从插件元数据中读取所需信息
 - 支持测试时设置插件配置项
 
+### Changed
+
+- 无论发布是否通过检查都将修改议题标题
+
 ## [2.3.1] - 2023-05-13
 
 ### Fixed
