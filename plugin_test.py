@@ -284,7 +284,7 @@ async def test_store(offset: int, limit: int):
 
     plugin_test_path = Path("plugin_test")
     output_path = plugin_test_path / "output"
-    output_path.mkdir(exist_ok=True)
+    output_path.mkdir(exist_ok=True, parents=True)
 
     test_results = {}
     for i, (project_link, module_name) in enumerate(
