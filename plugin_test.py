@@ -29,6 +29,13 @@ from dataclasses import asdict
 
 from nonebot import init, load_plugin, require
 
+
+class SetEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, set):
+            return list(obj)
+        return json.JSONEncoder.default(self, obj)
+
 init()
 plugin = load_plugin("{}")
 
@@ -46,7 +53,7 @@ else:
             }},
         )
         with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-            f.write(f"METADATA<<EOF\\n{{json.dumps(metadata)}}\\nEOF\\n")
+            f.write(f"METADATA<<EOF\\n{{json.dumps(metadata, cls=SetEncoder)}}\\nEOF\\n")
 
 {}
 """
