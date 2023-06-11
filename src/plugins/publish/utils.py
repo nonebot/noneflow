@@ -13,8 +13,10 @@ from .constants import (
     COMMENT_MESSAGE_TEMPLATE,
     COMMENT_TITLE,
     COMMIT_MESSAGE_PREFIX,
+    ISSUE_FIELD_PATTERN,
+    ISSUE_FIELD_TEMPLATE,
     NONEFLOW_MARKER,
-    PLUGIN_STRING_PATTERN_LIST,
+    PLUGIN_STRING_LIST,
     POWERED_BY_NONEFLOW_MESSAGE,
     REUSE_MESSAGE,
     SKIP_PLUGIN_TEST_COMMENT,
@@ -303,13 +305,14 @@ async def ensure_issue_content(
     """确保议题内容中包含所需的插件信息"""
     new_content = []
 
-    for name, pattern in PLUGIN_STRING_PATTERN_LIST:
+    for name in PLUGIN_STRING_LIST:
+        pattern = re.compile(ISSUE_FIELD_PATTERN.format(name))
         if not pattern.search(issue_body):
-            new_content.append(f"### {name}")
+            new_content.append(ISSUE_FIELD_TEMPLATE.format(name))
 
     if new_content:
         new_content.append(issue_body)
         await bot.rest.issues.async_update(
             **repo_info.dict(), issue_number=issue_number, body="\n\n".join(new_content)
         )
-        logger.info("议题内容已更新")
+        logger.info("检测到议题内容缺失，已更新")
