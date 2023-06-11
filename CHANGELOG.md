@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ### Added
 
 - 直接从插件元数据中读取所需信息
+- 支持测试时设置插件配置项
 
 ## [2.3.1] - 2023-05-13
 
