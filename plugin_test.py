@@ -282,7 +282,10 @@ def check_metadata(path: Path) -> bool:
 async def test_store(offset: int, limit: int):
     global GITHUB_OUTPUT_FILE, GITHUB_STEP_SUMMARY_FILE
 
-    output_path = Path("plugin_test")
+    plugin_test_path = Path("plugin_test")
+    output_path = plugin_test_path / "output"
+    output_path.mkdir(exist_ok=True)
+
     test_results = {}
     for i, (project_link, module_name) in enumerate(
         list(get_plugin_list().items())[offset:]
@@ -305,7 +308,7 @@ async def test_store(offset: int, limit: int):
         }
         with open(output_path / f"{project_link}.log", "w", encoding="utf8") as f:
             f.write(output)
-        with open(output_path / "results.json", "w", encoding="utf8") as f:
+        with open(plugin_test_path / "results.json", "w", encoding="utf8") as f:
             json.dump(test_results, f, indent=2, ensure_ascii=False)
 
 
