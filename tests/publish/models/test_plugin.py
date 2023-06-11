@@ -248,15 +248,12 @@ async def test_plugin_info_skip_plugin_test(
 ) -> None:
     """测试跳过插件测试的情况
 
-    此时 plugin_test 相关的输入都是空字符串
+    此时 plugin_test 相关的输入都是默认值
     """
     from src.plugins.publish.config import plugin_config
     from src.plugins.publish.validation import MyValidationError, PluginPublishInfo
 
     mocker.patch.object(plugin_config, "skip_plugin_test", True)
-    mocker.patch.object(plugin_config, "plugin_test_result", "")
-    mocker.patch.object(plugin_config, "plugin_test_output", "")
-    mocker.patch.object(plugin_config, "plugin_test_metadata", "")
 
     mock_issue = mocker.MagicMock()
     mock_issue.body = generate_issue_body_plugin_skip_test(
@@ -423,3 +420,30 @@ async def test_plugin_info_validation_type_invalid(
 
     assert mocked_api["project_link"].called
     assert mocked_api["homepage"].called
+
+
+async def test_plugin_info_validation_missing_metadata(
+    mocker: MockerFixture, mocked_api: MockRouter
+) -> None:
+    """测试验证失败的情况
+
+    插件测试成功，但缺少插件元数据
+    """
+    from src.plugins.publish.config import plugin_config
+    from src.plugins.publish.validation import MyValidationError, PluginPublishInfo
+
+    mocker.patch.object(plugin_config, "plugin_test_result", True)
+
+    mock_issue = mocker.MagicMock()
+    mock_issue.body = generate_issue_body_plugin()
+    mock_issue.user.login = "author"
+
+    with pytest.raises(MyValidationError) as e:
+        PluginPublishInfo.from_issue(mock_issue)
+
+    assert (
+        e.value.message
+        == """> Plugin: project_link\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ 无法获取到插件元数据。<dt>请填写插件元数据。</dt></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff。</li><li>✅ 包 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 通过。</li></code></pre></details>"""
+    )
+
+    assert mocked_api["project_link"].called

@@ -26,6 +26,7 @@ from .constants import (
     PLUGIN_NAME_PATTERN,
     PLUGIN_SUPPORTED_ADAPTERS_PATTERN,
     PLUGIN_TYPE_PATTERN,
+    PLUGIN_VALID_TYPE,
     PROJECT_LINK_PATTERN,
     PYPI_PACKAGE_NAME_PATTERN,
     PYTHON_MODULE_NAME_REGEX,
@@ -271,7 +272,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
         if not v:
             raise ValueError(f"⚠️ 插件类型不能为空。<dt>请确保填写插件类型。</dt>")
 
-        if v not in ["application", "library"]:
+        if v not in PLUGIN_VALID_TYPE:
             raise ValueError(
                 f"⚠️ 插件类型 {v} 不符合规范。<dt>请确保插件类型正确，当前仅支持 application 与 library。</dt>"
             )
@@ -347,12 +348,12 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
             supported_adapters = plugin_config.plugin_test_metadata.supported_adapters
         else:
             # 插件缺少元数据
-            # 可能为插件测试未通过/被跳过，或者插件未按规范编写
+            # 可能为插件测试未通过，或者插件未按规范编写
             name = project_link
             desc = None
             homepage = None
             type = None
-            # 给一个会报错，方便后面跳过
+            # 给一个会报错的值，方便后面跳过
             supported_adapters = False
 
         raw_data = {

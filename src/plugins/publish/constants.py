@@ -90,6 +90,8 @@ PLUGIN_STRING_LIST = [
     PLUGIN_TYPE_STRING,
     PLUGIN_SUPPORTED_ADAPTERS_STRING,
 ]
+PLUGIN_VALID_TYPE = ["application", "library"]
+"""插件类型当前只支持 application 和 library"""
 # 协议
 ADAPTER_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("适配器名称"))
 ADAPTER_DESC_PATTERN = re.compile(ISSUE_PATTERN.format("适配器描述"))
