@@ -21,6 +21,7 @@ ISSUE_PATTERN = r"### {}\s+([^\s#].*?)(?=(?:\s+###|$))"
 # 插件信息
 PROJECT_LINK_PATTERN = re.compile(ISSUE_PATTERN.format("PyPI 项目名"))
 MODULE_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("插件 import 包名"))
+CONFIG_PATTERN = re.compile(r"### 插件配置项\s+```(?:\w+)?\s?([\s\S]*?)```")
 
 RUNNER = """import json
 import os
@@ -28,7 +29,7 @@ from dataclasses import asdict
 
 from nonebot import init, load_plugin, require
 
-init(driver="~none")
+init()
 plugin = load_plugin("{}")
 
 if not plugin:
@@ -58,11 +59,12 @@ def get_plugin_list() -> dict[str, str]:
 
 
 class PluginTest:
-    def __init__(self, project_link: str, module_name: str) -> None:
+    def __init__(self, project_link: str, module_name: str, config: str | None) -> None:
         self._path = Path("plugin_test")
 
         self.project_link = project_link
         self.module_name = module_name
+        self.config = config
 
         self._create = False
         self._run = False
@@ -151,6 +153,14 @@ class PluginTest:
 
     async def run_poetry_project(self) -> None:
         if self._path.exists():
+            # 默认使用 ~none 驱动
+            with open(self._path / ".env", "w") as f:
+                f.write('driver="~none"')
+            # 如果提供了插件配置项，则写入配置文件
+            if self.config is not None:
+                with open(self._path / ".env.prod", "w") as f:
+                    f.write(self.config)
+
             with open(self._path / "runner.py", "w") as f:
                 f.write(
                     RUNNER.format(
@@ -229,13 +239,18 @@ def main():
     issue_body = issue.get("body")
     project_link = PROJECT_LINK_PATTERN.search(issue_body)
     module_name = MODULE_NAME_PATTERN.search(issue_body)
+    config = CONFIG_PATTERN.search(issue_body)
 
     if not project_link or not module_name:
         print("议题中没有插件信息，已跳过")
         return
 
     # 测试插件
-    test = PluginTest(project_link.group(1), module_name.group(1))
+    test = PluginTest(
+        project_link.group(1).strip(),
+        module_name.group(1).strip(),
+        config.group(1).strip() if config else None,
+    )
     run(test.run())
 
 
