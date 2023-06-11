@@ -461,18 +461,29 @@ def generate_validation_message(info: PublishInfo | MyValidationError) -> str:
         result = "⚠️ 在发布检查过程中，我们发现以下问题："
 
         errors: list[str] = []
+
+        # 判断插件元数据是否缺失，如果是因为跳过插件测试导致的，不需要提醒
+        missing_metadata = False
+        if info.type == PublishType.PLUGIN and not plugin_config.skip_plugin_test:
+            missing_metadata = plugin_config.plugin_test_metadata is None
+            # 如果缺少插件元数据，提醒用户填写插件元数据或确保插件正常加载
+            match (missing_metadata, plugin_config.plugin_test_result):
+                case (True, True):
+                    errors.append("<li>⚠️ 无法获取到插件元数据。<dt>请填写插件元数据。</dt></li>")
+                case (True, False):
+                    errors.append("<li>⚠️ 无法获取到插件元数据。<dt>请确保插件正常加载。</dt></li>")
+
         for error in info.errors:
             loc = cast(str, error["loc"][0])
 
-            if info.type.value == "Plugin" and not plugin_config.skip_plugin_test:
-                missing_metadata = plugin_config.plugin_test_metadata is None
-                # 如果插件测试通过，但是没有插件元数据，提醒用户填写插件元数据
-                if plugin_config.plugin_test_result and missing_metadata:
-                    errors.append("<li>⚠️ 无法获取到插件元数据。<dt>请填写插件元数据。</dt></li>")
-
+            if (
+                info.type == PublishType.PLUGIN
+                and not plugin_config.skip_plugin_test
+                and missing_metadata
+            ):
                 # 如果没有跳过测试且缺少插件元数据，则跳过元数据相关的错误
                 # 因为这个时候这些项都会报错，错误在此时没有意义
-                if missing_metadata and loc in [
+                if loc in [
                     "name",
                     "desc",
                     "homepage",

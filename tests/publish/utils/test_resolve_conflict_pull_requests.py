@@ -7,19 +7,9 @@ from nonebot.adapters.github import Adapter, GitHubBot
 from nonebot.adapters.github.config import GitHubApp
 from nonebug import App
 from pytest_mock import MockerFixture
+from respx import MockRouter
 
 from tests.publish.utils import generate_issue_body_bot
-
-
-def mocked_httpx_get(url: str):
-    class MockResponse:
-        def __init__(self, status_code: int):
-            self.status_code = status_code
-
-    if url == "https://v2.nonebot.dev":
-        return MockResponse(200)
-
-    return MockResponse(404)
 
 
 def check_json_data(file: Path, data: Any) -> None:
@@ -28,13 +18,12 @@ def check_json_data(file: Path, data: Any) -> None:
 
 
 async def test_resolve_conflict_pull_requests(
-    app: App, mocker: MockerFixture, tmp_path: Path
+    app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path
 ) -> None:
     from src.plugins.publish.config import plugin_config
     from src.plugins.publish.models import RepoInfo
     from src.plugins.publish.utils import resolve_conflict_pull_requests
 
-    mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_result = mocker.MagicMock()
     mock_subprocess_run.side_effect = lambda *args, **kwargs: mock_result
@@ -134,9 +123,11 @@ async def test_resolve_conflict_pull_requests(
                 "name": "test",
                 "desc": "desc",
                 "author": "test",
-                "homepage": "https://v2.nonebot.dev",
+                "homepage": "https://nonebot.dev",
                 "tags": [{"label": "test", "color": "#ffffff"}],
                 "is_official": False,
             }
         ],
     )
+
+    assert mocked_api["homepage"].called

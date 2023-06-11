@@ -43,6 +43,12 @@
         "GITHUB_OUTPUT": "${workspaceFolder}/plugin_test/output.txt",
         "GITHUB_STEP_SUMMARY": "${workspaceFolder}/plugin_test/step_summary.txt",
       }
-    }
+    },
+    {
+      "name": "Debug Unit Test",
+      "type": "python",
+      "request": "test",
+      "justMyCode": false,
+    },
   ]
 }

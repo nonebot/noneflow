@@ -3,31 +3,16 @@ from collections import OrderedDict
 
 import pytest
 from pytest_mock import MockerFixture
+from respx import MockRouter
 
 from tests.publish.utils import generate_issue_body_bot
 
 
-def mocked_httpx_get(url: str):
-    class MockResponse:
-        def __init__(self, status_code: int):
-            self.status_code = status_code
-
-    if url == "https://pypi.org/pypi/project_link/json":
-        return MockResponse(200)
-    if url == "https://v2.nonebot.dev":
-        return MockResponse(200)
-    if url == "exception":
-        raise Exception("test exception")
-
-    return MockResponse(404)
-
-
-async def test_bot_from_issue(mocker: MockerFixture) -> None:
+async def test_bot_from_issue(mocker: MockerFixture, mocked_api: MockRouter) -> None:
     """测试从 issue 中构造 BotPublishInfo"""
     from src.plugins.publish.config import plugin_config
     from src.plugins.publish.validation import BotPublishInfo
 
-    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
     mock_issue.body = generate_issue_body_bot()
     mock_issue.user.login = "author"
@@ -38,7 +23,7 @@ async def test_bot_from_issue(mocker: MockerFixture) -> None:
         name="name",
         desc="desc",
         author="author",
-        homepage="https://v2.nonebot.dev",
+        homepage="https://nonebot.dev",
         tags=[{"label": "test", "color": "#ffffff"}],
         is_official=False,
     )
@@ -48,19 +33,21 @@ async def test_bot_from_issue(mocker: MockerFixture) -> None:
     with plugin_config.input_config.bot_path.open("r") as f:
         data = json.load(f)[1]
         assert data == info.dict()
-    mock_httpx.assert_called_once_with("https://v2.nonebot.dev")
+
+    assert mocked_api["homepage"].called
 
 
-async def test_bot_from_issue_trailing_whitespace(mocker: MockerFixture) -> None:
+async def test_bot_from_issue_trailing_whitespace(
+    mocker: MockerFixture, mocked_api: MockRouter
+) -> None:
     """测试末尾如果有空格的情况"""
     from src.plugins.publish.validation import BotPublishInfo
 
-    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
     mock_issue.body = generate_issue_body_bot(
         name="name ",
         desc="desc ",
-        homepage="https://v2.nonebot.dev ",
+        homepage="https://nonebot.dev ",
     )
     mock_issue.user.login = "author"
 
@@ -70,44 +57,43 @@ async def test_bot_from_issue_trailing_whitespace(mocker: MockerFixture) -> None
         name="name",
         desc="desc",
         author="author",
-        homepage="https://v2.nonebot.dev",
+        homepage="https://nonebot.dev",
         tags=[{"label": "test", "color": "#ffffff"}],
         is_official=False,
     )
-    mock_httpx.assert_called_once_with("https://v2.nonebot.dev")
+
+    assert mocked_api["homepage"].called
 
 
-async def test_bot_info_validation_success(mocker: MockerFixture) -> None:
+async def test_bot_info_validation_success(
+    mocker: MockerFixture, mocked_api: MockRouter
+) -> None:
     """测试验证成功的情况"""
     from src.plugins.publish.validation import BotPublishInfo
-
-    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
 
     info = BotPublishInfo(
         name="name",
         desc="desc",
         author="author",
-        homepage="https://v2.nonebot.dev",
+        homepage="https://nonebot.dev",
         tags=json.dumps([{"label": "test", "color": "#ffffff"}]),  # type: ignore
         is_official=False,
     )
 
     assert (
         info.validation_message
-        == """> Bot: name\n\n**✅ 所有测试通过，一切准备就绪！**\n\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff。</li><li>✅ 项目 <a href="https://v2.nonebot.dev">主页</a> 返回状态码 200。</li></code></pre></details>"""
+        == """> Bot: name\n\n**✅ 所有测试通过，一切准备就绪！**\n\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff。</li><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li></code></pre></details>"""
     )
 
-    calls = [
-        mocker.call("https://v2.nonebot.dev"),
-    ]
-    mock_httpx.assert_has_calls(calls)  # type: ignore
+    assert mocked_api["homepage"].called
 
 
-async def test_bot_info_validation_failed(mocker: MockerFixture) -> None:
+async def test_bot_info_validation_failed(
+    mocker: MockerFixture, mocked_api: MockRouter
+) -> None:
     """测试验证失败的情况"""
     from src.plugins.publish.validation import BotPublishInfo, MyValidationError
 
-    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
     mock_issue.body = generate_issue_body_bot(
         homepage="https://www.baidu.com",
@@ -126,17 +112,15 @@ async def test_bot_info_validation_failed(mocker: MockerFixture) -> None:
         == """> Bot: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保您的项目主页可访问。</dt></li><li>⚠️ 第 2 个标签名称过长<dt>请确保标签名称不超过 10 个字符。</dt></li><li>⚠️ 第 2 个标签颜色错误<dt>请确保标签颜色符合十六进制颜色码规则。</dt></li></code></pre>"""
     )
 
-    calls = [
-        mocker.call("https://www.baidu.com"),
-    ]
-    mock_httpx.assert_has_calls(calls)  # type: ignore
+    assert mocked_api["homepage_failed"].called
 
 
-async def test_bot_info_validation_failed_json_error(mocker: MockerFixture) -> None:
+async def test_bot_info_validation_failed_json_error(
+    mocker: MockerFixture, mocked_api: MockRouter
+) -> None:
     """测试验证失败的情况，JSON 解析错误"""
     from src.plugins.publish.validation import BotPublishInfo, MyValidationError
 
-    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
     mock_issue.body = generate_issue_body_bot(
         homepage="https://www.baidu.com",
@@ -152,19 +136,15 @@ async def test_bot_info_validation_failed_json_error(mocker: MockerFixture) -> N
         == """> Bot: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保您的项目主页可访问。</dt></li><li>⚠️ 标签解码失败。<dt>请确保标签为 JSON 格式。</dt></li></code></pre>"""
     )
 
-    calls = [
-        mocker.call("https://www.baidu.com"),
-    ]
-    mock_httpx.assert_has_calls(calls)  # type: ignore
+    assert mocked_api["homepage_failed"].called
 
 
 async def test_bot_info_validation_failed_tag_field_missing(
-    mocker: MockerFixture,
+    mocker: MockerFixture, mocked_api: MockRouter
 ) -> None:
     """测试验证失败的情况，tag 字段缺失"""
     from src.plugins.publish.validation import BotPublishInfo, MyValidationError
 
-    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
     mock_issue.body = generate_issue_body_bot(
         homepage="https://www.baidu.com",
@@ -180,19 +160,15 @@ async def test_bot_info_validation_failed_tag_field_missing(
         == """> Bot: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保您的项目主页可访问。</dt></li><li>⚠️ 第 1 个标签缺少 color 字段。<dt>请确保标签字段完整。</dt></li></code></pre>"""
     )
 
-    calls = [
-        mocker.call("https://www.baidu.com"),
-    ]
-    mock_httpx.assert_has_calls(calls)  # type: ignore
+    assert mocked_api["homepage_failed"].called
 
 
 async def test_bot_info_validation_failed_name_tags_missing(
-    mocker: MockerFixture,
+    mocker: MockerFixture, mocked_api: MockRouter
 ) -> None:
     """测试验证失败的情况，name, tags 字段缺失"""
     from src.plugins.publish.validation import BotPublishInfo, MyValidationError
 
-    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
     mock_issue.body = generate_issue_body_bot(name="", tags="")
     mock_issue.user.login = "author"
@@ -202,20 +178,18 @@ async def test_bot_info_validation_failed_name_tags_missing(
 
     assert (
         e.value.message
-        == """> Bot: \n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ 名称: 无法匹配到数据。<dt>请确保填写该项目。</dt></li><li>⚠️ 标签: 无法匹配到数据。<dt>请确保填写该项目。</dt></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 项目 <a href="https://v2.nonebot.dev">主页</a> 返回状态码 200。</li></code></pre></details>"""
+        == """> Bot: \n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ 名称: 无法匹配到数据。<dt>请确保填写该项目。</dt></li><li>⚠️ 标签: 无法匹配到数据。<dt>请确保填写该项目。</dt></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li></code></pre></details>"""
     )
 
-    calls = [
-        mocker.call("https://v2.nonebot.dev"),
-    ]
-    mock_httpx.assert_has_calls(calls)  # type: ignore
+    assert mocked_api["homepage"].called
 
 
-async def test_bot_info_validation_failed_http_exception(mocker: MockerFixture) -> None:
+async def test_bot_info_validation_failed_http_exception(
+    mocker: MockerFixture, mocked_api: MockRouter
+) -> None:
     """测试验证失败的情况，HTTP 请求报错"""
     from src.plugins.publish.validation import BotPublishInfo, MyValidationError
 
-    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
     mock_issue.body = generate_issue_body_bot(homepage="exception")
     mock_issue.user.login = "author"
@@ -228,7 +202,4 @@ async def test_bot_info_validation_failed_http_exception(mocker: MockerFixture) 
         == """> Bot: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ 项目 <a href="exception">主页</a> 返回状态码 None。<dt>请确保您的项目主页可访问。</dt></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff。</li></code></pre></details>"""
     )
 
-    calls = [
-        mocker.call("exception"),
-    ]
-    mock_httpx.assert_has_calls(calls)  # type: ignore
+    assert mocked_api["exception"].called

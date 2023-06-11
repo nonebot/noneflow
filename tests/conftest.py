@@ -2,12 +2,14 @@ import json
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import httpx
 import nonebot
 import pytest
 from nonebot.adapters.github import Adapter
 from nonebug import NONEBOT_INIT_KWARGS
 from nonebug.app import App
 from pytest_mock import MockerFixture
+from respx import MockRouter
 
 if TYPE_CHECKING:
     from nonebot.plugin import Plugin
@@ -105,3 +107,34 @@ def clear_cache(app: App):
     from src.plugins.publish.validation import check_url
 
     check_url.cache_clear()
+
+
+@pytest.fixture
+def mocked_api(respx_mock: MockRouter):
+    respx_mock.get("exception", name="exception").mock(side_effect=httpx.ConnectError)
+    respx_mock.get(
+        "https://pypi.org/pypi/project_link/json", name="project_link"
+    ).respond()
+    respx_mock.get(
+        "https://pypi.org/pypi/project_link1/json", name="project_link1"
+    ).respond()
+    respx_mock.get(
+        "https://pypi.org/pypi/project_link_failed/json", name="project_link_failed"
+    ).respond(404)
+    respx_mock.get("https://www.baidu.com", name="homepage_failed").respond(404)
+    respx_mock.get("https://nonebot.dev/", name="homepage").respond()
+    respx_mock.get("https://nonebot.dev/adapters.json", name="store_adapters").respond(
+        json=[
+            {
+                "module_name": "nonebot.adapters.onebot.v11",
+                "project_link": "nonebot-adapter-onebot",
+                "name": "OneBot V11",
+                "desc": "OneBot V11 协议",
+                "author": "yanyongyu",
+                "homepage": "https://onebot.adapters.nonebot.dev/",
+                "tags": [],
+                "is_official": True,
+            }
+        ],
+    )
+    yield respx_mock

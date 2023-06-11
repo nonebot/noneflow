@@ -3,33 +3,18 @@ from collections import OrderedDict
 
 import pytest
 from pytest_mock import MockerFixture
+from respx import MockRouter
 
 from tests.publish.utils import generate_issue_body_adapter
 
 
-def mocked_httpx_get(url: str):
-    class MockResponse:
-        def __init__(self, status_code: int):
-            self.status_code = status_code
-
-    if url == "https://pypi.org/pypi/project_link/json":
-        return MockResponse(200)
-    if url == "https://pypi.org/pypi/project_link1/json":
-        return MockResponse(200)
-    if url == "https://v2.nonebot.dev":
-        return MockResponse(200)
-    if url == "exception":
-        raise Exception("test exception")
-
-    return MockResponse(404)
-
-
-async def test_adapter_from_issue(mocker: MockerFixture) -> None:
+async def test_adapter_from_issue(
+    mocker: MockerFixture, mocked_api: MockRouter
+) -> None:
     """测试从 issue 中构造 AdapterPublishInfo 的情况"""
     from src.plugins.publish.config import plugin_config
     from src.plugins.publish.validation import AdapterPublishInfo
 
-    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
     mock_issue.body = generate_issue_body_adapter()
     mock_issue.user.login = "author"
@@ -42,7 +27,7 @@ async def test_adapter_from_issue(mocker: MockerFixture) -> None:
         name="name",
         desc="desc",
         author="author",
-        homepage="https://v2.nonebot.dev",
+        homepage="https://nonebot.dev",
         tags=[{"label": "test", "color": "#ffffff"}],
         is_official=False,
     )
@@ -52,26 +37,24 @@ async def test_adapter_from_issue(mocker: MockerFixture) -> None:
     with plugin_config.input_config.adapter_path.open("r") as f:
         data = json.load(f)[1]
         assert data == info.dict()
-    mock_httpx.assert_has_calls(
-        [
-            mocker.call("https://pypi.org/pypi/project_link/json"),
-            mocker.call("https://v2.nonebot.dev"),
-        ]  # type: ignore
-    )
+
+    assert mocked_api["project_link"].called
+    assert mocked_api["homepage"].called
 
 
-async def test_adapter_from_issue_trailing_whitespace(mocker: MockerFixture) -> None:
+async def test_adapter_from_issue_trailing_whitespace(
+    mocker: MockerFixture, mocked_api: MockRouter
+) -> None:
     """测试末尾如果有空格的情况"""
     from src.plugins.publish.validation import AdapterPublishInfo
 
-    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
     mock_issue.body = generate_issue_body_adapter(
         name="name ",
         desc="desc ",
         module_name="module_name ",
         project_link="project_link ",
-        homepage="https://v2.nonebot.dev ",
+        homepage="https://nonebot.dev ",
     )
     mock_issue.user.login = "author"
 
@@ -83,24 +66,18 @@ async def test_adapter_from_issue_trailing_whitespace(mocker: MockerFixture) -> 
         name="name",
         desc="desc",
         author="author",
-        homepage="https://v2.nonebot.dev",
+        homepage="https://nonebot.dev",
         tags=[{"label": "test", "color": "#ffffff"}],
         is_official=False,
     )
 
-    mock_httpx.assert_has_calls(
-        [
-            mocker.call("https://pypi.org/pypi/project_link/json"),
-            mocker.call("https://v2.nonebot.dev"),
-        ]  # type: ignore
-    )
+    assert mocked_api["project_link"].called
+    assert mocked_api["homepage"].called
 
 
-async def test_adapter_info_validation_success(mocker: MockerFixture) -> None:
+async def test_adapter_info_validation_success(mocked_api: MockRouter) -> None:
     """测试验证成功的情况"""
     from src.plugins.publish.validation import AdapterPublishInfo
-
-    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
 
     info = AdapterPublishInfo(
         module_name="module_name",
@@ -108,28 +85,26 @@ async def test_adapter_info_validation_success(mocker: MockerFixture) -> None:
         name="name",
         desc="desc",
         author="author",
-        homepage="https://v2.nonebot.dev",
+        homepage="https://nonebot.dev",
         tags=json.dumps([{"label": "test", "color": "#ffffff"}]),  # type: ignore
         is_official=False,
     )
 
     assert (
         info.validation_message
-        == """> Adapter: name\n\n**✅ 所有测试通过，一切准备就绪！**\n\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff。</li><li>✅ 项目 <a href="https://v2.nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 包 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li></code></pre></details>"""
+        == """> Adapter: name\n\n**✅ 所有测试通过，一切准备就绪！**\n\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff。</li><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 包 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li></code></pre></details>"""
     )
 
-    calls = [
-        mocker.call("https://pypi.org/pypi/project_link/json"),
-        mocker.call("https://v2.nonebot.dev"),
-    ]
-    mock_httpx.assert_has_calls(calls)  # type: ignore
+    assert mocked_api["project_link"].called
+    assert mocked_api["homepage"].called
 
 
-async def test_adapter_info_validation_failed(mocker: MockerFixture) -> None:
+async def test_adapter_info_validation_failed(
+    mocker: MockerFixture, mocked_api: MockRouter
+) -> None:
     """测试验证失败的情况"""
     from src.plugins.publish.validation import AdapterPublishInfo, MyValidationError
 
-    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
     mock_issue.body = generate_issue_body_adapter(
         project_link="project_link_failed",
@@ -146,18 +121,16 @@ async def test_adapter_info_validation_failed(mocker: MockerFixture) -> None:
         == """> Adapter: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ 包 <a href="https://pypi.org/project/project_link_failed/">project_link_failed</a> 未发布至 PyPI。<dt>请将您的包发布至 PyPI。</dt></li><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保您的项目主页可访问。</dt></li><li>⚠️ 第 1 个标签颜色错误<dt>请确保标签颜色符合十六进制颜色码规则。</dt></li></code></pre>"""
     )
 
-    calls = [
-        mocker.call("https://pypi.org/pypi/project_link_failed/json"),
-        mocker.call("https://www.baidu.com"),
-    ]
-    mock_httpx.assert_has_calls(calls)  # type: ignore
+    assert mocked_api["project_link_failed"].called
+    assert mocked_api["homepage_failed"].called
 
 
-async def test_adapter_info_validation_partial_failed(mocker: MockerFixture) -> None:
+async def test_adapter_info_validation_partial_failed(
+    mocker: MockerFixture, mocked_api: MockRouter
+) -> None:
     """测试验证一部分失败的情况"""
     from src.plugins.publish.validation import AdapterPublishInfo, MyValidationError
 
-    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
     mock_issue.body = generate_issue_body_adapter(
         homepage="https://www.baidu.com",
@@ -172,18 +145,16 @@ async def test_adapter_info_validation_partial_failed(mocker: MockerFixture) -> 
         == """> Adapter: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保您的项目主页可访问。</dt></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff。</li><li>✅ 包 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li></code></pre></details>"""
     )
 
-    calls = [
-        mocker.call("https://pypi.org/pypi/project_link/json"),
-        mocker.call("https://www.baidu.com"),
-    ]
-    mock_httpx.assert_has_calls(calls)  # type: ignore
+    assert mocked_api["project_link"].called
+    assert mocked_api["homepage_failed"].called
 
 
-async def test_adapter_info_name_validation_failed(mocker: MockerFixture) -> None:
+async def test_adapter_info_name_validation_failed(
+    mocker: MockerFixture, mocked_api: MockRouter
+) -> None:
     """测试名称重复检测失败的情况"""
     from src.plugins.publish.validation import AdapterPublishInfo, MyValidationError
 
-    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
     mock_issue.body = generate_issue_body_adapter(
         module_name="module_name1",
@@ -196,23 +167,19 @@ async def test_adapter_info_name_validation_failed(mocker: MockerFixture) -> Non
 
     assert (
         e.value.message
-        == """> Adapter: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ PyPI 项目名 project_link1 加包名 module_name1 的值与商店重复。<dt>请确保没有重复发布。</dt></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff。</li><li>✅ 项目 <a href="https://v2.nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 包 <a href="https://pypi.org/project/project_link1/">project_link1</a> 已发布至 PyPI。</li></code></pre></details>"""
+        == """> Adapter: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ PyPI 项目名 project_link1 加包名 module_name1 的值与商店重复。<dt>请确保没有重复发布。</dt></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff。</li><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 包 <a href="https://pypi.org/project/project_link1/">project_link1</a> 已发布至 PyPI。</li></code></pre></details>"""
     )
 
-    calls = [
-        mocker.call("https://pypi.org/pypi/project_link1/json"),
-        mocker.call("https://v2.nonebot.dev"),
-    ]
-    mock_httpx.assert_has_calls(calls)  # type: ignore
+    assert mocked_api["project_link1"].called
+    assert mocked_api["homepage"].called
 
 
 async def test_adapter_info_validation_failed_http_exception(
-    mocker: MockerFixture,
+    mocker: MockerFixture, mocked_api: MockRouter
 ) -> None:
     """测试验证失败的情况，HTTP 请求报错"""
     from src.plugins.publish.validation import AdapterPublishInfo, MyValidationError
 
-    mock_httpx = mocker.patch("httpx.get", side_effect=mocked_httpx_get)
     mock_issue = mocker.MagicMock()
     mock_issue.body = generate_issue_body_adapter(homepage="exception")
     mock_issue.user.login = "author"
@@ -225,8 +192,5 @@ async def test_adapter_info_validation_failed_http_exception(
         == """> Adapter: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ 项目 <a href="exception">主页</a> 返回状态码 None。<dt>请确保您的项目主页可访问。</dt></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff。</li><li>✅ 包 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li></code></pre></details>"""
     )
 
-    calls = [
-        mocker.call("https://pypi.org/pypi/project_link/json"),
-        mocker.call("exception"),
-    ]
-    mock_httpx.assert_has_calls(calls)  # type: ignore
+    assert mocked_api["project_link"].called
+    assert mocked_api["exception"].called
