@@ -189,18 +189,20 @@ async def handle_publish_check(
             await create_pull_request(
                 bot, repo_info, info, branch_name, issue_number, title
             )
-            # 修改议题标题
-            # 需要等创建完拉取请求并打上标签后执行
-            # 不然会因为修改议题触发 Actions 导致标签没有正常打上
-            if issue.title != title:
-                await bot.rest.issues.async_update(
-                    **repo_info.dict(), issue_number=issue_number, title=title
-                )
-                logger.info(f"议题标题已修改为 {title}")
             message = info.validation_message
         else:
+            title = f"{publish_type.value}: {info.raw_data.get('name') or ''}"
             message = info.message
             logger.info("发布没通过检查，暂不创建拉取请求")
+
+        # 修改议题标题
+        # 需要等创建完拉取请求并打上标签后执行
+        # 不然会因为修改议题触发 Actions 导致标签没有正常打上
+        if issue.title != title:
+            await bot.rest.issues.async_update(
+                **repo_info.dict(), issue_number=issue_number, title=title
+            )
+            logger.info(f"议题标题已修改为 {title}")
 
         await comment_issue(bot, repo_info, issue_number, message)
 
