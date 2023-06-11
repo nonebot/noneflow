@@ -38,7 +38,12 @@ else:
     if plugin.metadata:
         metadata = asdict(
             plugin.metadata,
-            dict_factory=lambda x: {{k: v for (k, v) in x if k != "config"}},
+            dict_factory=lambda x: {{
+                k: v
+                for (k, v) in x
+                if k
+                in ("name", "description", "homepage", "type", "supported_adapters")
+            }},
         )
         with open(os.environ["GITHUB_OUTPUT"], "a") as f:
             f.write(f"METADATA<<EOF\\n{{json.dumps(metadata)}}\\nEOF\\n")
