@@ -11,7 +11,7 @@ from pytest_mock import MockerFixture
 async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
     from src.plugins.publish import pr_close_matcher
 
-    event_path = Path(__file__).parent.parent / "plugin-test" / "pr-close.json"
+    event_path = Path(__file__).parent.parent / "events" / "pr-close.json"
 
     mock_subprocess_run = mocker.patch("subprocess.run")
 
@@ -92,7 +92,7 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
 async def test_process_pull_request_not_merged(app: App, mocker: MockerFixture) -> None:
     from src.plugins.publish import pr_close_matcher
 
-    event_path = Path(__file__).parent.parent / "plugin-test" / "pr-close.json"
+    event_path = Path(__file__).parent.parent / "events" / "pr-close.json"
 
     mock_subprocess_run = mocker.patch("subprocess.run")
 
@@ -165,7 +165,7 @@ async def test_not_publish(app: App, mocker: MockerFixture) -> None:
     """测试与发布无关的拉取请求"""
     from src.plugins.publish import pr_close_matcher
 
-    event_path = Path(__file__).parent.parent / "plugin-test" / "pr-close.json"
+    event_path = Path(__file__).parent.parent / "events" / "pr-close.json"
 
     mock_subprocess_run = mocker.patch("subprocess.run")
 
@@ -193,7 +193,7 @@ async def test_extract_issue_number_from_ref_failed(
     """测试从分支名中提取议题号失败"""
     from src.plugins.publish import pr_close_matcher
 
-    event_path = Path(__file__).parent.parent / "plugin-test" / "pr-close.json"
+    event_path = Path(__file__).parent.parent / "events" / "pr-close.json"
 
     mock_subprocess_run = mocker.patch("subprocess.run")
 

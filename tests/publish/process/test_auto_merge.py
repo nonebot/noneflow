@@ -37,7 +37,7 @@ async def test_auto_merge(app: App, mocker: MockerFixture) -> None:
         bot = cast(GitHubBot, bot)
         event_path = (
             Path(__file__).parent.parent
-            / "plugin-test"
+            / "events"
             / "pull_request_review_submitted.json"
         )
         event = Adapter.payload_to_event(
@@ -110,7 +110,7 @@ async def test_auto_merge_need_rebase(app: App, mocker: MockerFixture) -> None:
         bot = cast(GitHubBot, bot)
         event_path = (
             Path(__file__).parent.parent
-            / "plugin-test"
+            / "events"
             / "pull_request_review_submitted.json"
         )
         event = Adapter.payload_to_event(
@@ -185,7 +185,7 @@ async def test_auto_merge_not_publish(app: App, mocker: MockerFixture) -> None:
         bot = cast(GitHubBot, bot)
         event_path = (
             Path(__file__).parent.parent
-            / "plugin-test"
+            / "events"
             / "pull_request_review_submitted.json"
         )
         event = Adapter.payload_to_event(
@@ -223,7 +223,7 @@ async def test_auto_merge_not_member(app: App, mocker: MockerFixture) -> None:
         bot = cast(GitHubBot, bot)
         event_path = (
             Path(__file__).parent.parent
-            / "plugin-test"
+            / "events"
             / "pull_request_review_submitted.json"
         )
         event = Adapter.payload_to_event(
@@ -261,7 +261,7 @@ async def test_auto_merge_not_approve(app: App, mocker: MockerFixture) -> None:
         bot = cast(GitHubBot, bot)
         event_path = (
             Path(__file__).parent.parent
-            / "plugin-test"
+            / "events"
             / "pull_request_review_submitted.json"
         )
         event = Adapter.payload_to_event(

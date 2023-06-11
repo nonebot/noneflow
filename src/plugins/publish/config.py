@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from nonebot import get_driver
+from nonebot.plugin import PluginMetadata
 from pydantic import BaseModel, Extra, validator
 
 
@@ -18,6 +19,7 @@ class Config(BaseModel, extra=Extra.ignore):
     skip_plugin_test: bool = False
     plugin_test_result: bool = False
     plugin_test_output: str = ""
+    plugin_test_metadata: PluginMetadata | None = None
 
     @validator("plugin_test_result", pre=True)
     def plugin_test_result_validator(cls, v):
@@ -25,6 +27,14 @@ class Config(BaseModel, extra=Extra.ignore):
         # 这里将其转换为布尔值，不然会报错
         if v == "":
             return False
+        return v
+
+    @validator("plugin_test_metadata", pre=True)
+    def plugin_test_metadata_validator(cls, v):
+        # 如果插件测试没有运行时，会得到一个空字符串
+        # 这里将其转换为 None，不然会报错
+        if v == "":
+            return None
         return v
 
 
