@@ -11,7 +11,7 @@ from nonebot.adapters.github import (
 from nonebot.params import Depends
 
 from .config import plugin_config
-from .constants import BOT_MARKER, BRANCH_NAME_PREFIX
+from .constants import BOT_MARKER, BRANCH_NAME_PREFIX, MAX_NAME_LENGTH
 from .depends import (
     get_installation_id,
     get_issue_number,
@@ -167,9 +167,16 @@ async def handle_publish_check(
         # 检查是否满足发布要求
         # 仅在通过检查的情况下创建拉取请求
         info = extract_publish_info_from_issue(issue, publish_type)
+
+        # 设置拉取请求与议题的标题
         if isinstance(info, PublishInfo):
-            # 拉取请求与议题的标题
-            title = f"{info.get_type().value}: {info.name}"
+            name = info.name
+        else:
+            name = info.raw_data.get("name") or ""
+        # 限制标题长度，过长的标题不好看
+        title = f"{publish_type.value}: {name[:MAX_NAME_LENGTH]}"
+
+        if isinstance(info, PublishInfo):
             # 创建新分支
             # 命名示例 publish/issue123
             branch_name = f"{BRANCH_NAME_PREFIX}{issue_number}"
@@ -183,7 +190,6 @@ async def handle_publish_check(
             )
             message = info.validation_message
         else:
-            title = f"{publish_type.value}: {info.raw_data.get('name') or ''}"
             message = info.message
             logger.info("发布没通过检查，暂不创建拉取请求")
 

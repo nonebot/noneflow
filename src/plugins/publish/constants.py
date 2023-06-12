@@ -56,6 +56,9 @@ PYTHON_MODULE_NAME_REGEX = re.compile(
     re.IGNORECASE,
 )
 
+MAX_NAME_LENGTH = 50
+"""名称最大长度"""
+
 # 匹配信息的正则表达式
 # 格式：### {标题}\n\n{内容}
 ISSUE_PATTERN = r"### {}\s+([^\s#].*?)(?=(?:\s+###|$))"

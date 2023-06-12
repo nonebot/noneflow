@@ -20,6 +20,7 @@ from .constants import (
     BOT_HOMEPAGE_PATTERN,
     BOT_NAME_PATTERN,
     DETAIL_MESSAGE_TEMPLATE,
+    MAX_NAME_LENGTH,
     PLUGIN_DESC_PATTERN,
     PLUGIN_HOMEPAGE_PATTERN,
     PLUGIN_MODULE_NAME_PATTERN,
@@ -96,8 +97,8 @@ class PublishInfo(abc.ABC, BaseModel):
 
     @validator("name", pre=True)
     def name_validator(cls, v: str) -> str:
-        if len(v) > 50:
-            raise ValueError("⚠️ 名称过长。<dt>请确保名称不超过 50 个字符。</dt>")
+        if len(v) > MAX_NAME_LENGTH:
+            raise ValueError(f"⚠️ 名称过长。<dt>请确保名称不超过 {MAX_NAME_LENGTH} 个字符。</dt>")
         return v
 
     @validator("homepage", pre=True)
