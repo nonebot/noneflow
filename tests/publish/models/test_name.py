@@ -26,9 +26,7 @@ async def test_pypi_project_name_invalid(mocked_api: MockRouter) -> None:
     assert mocked_api["homepage"].called
 
 
-async def test_module_name_invalid(
-    mocker: MockerFixture, mocked_api: MockRouter
-) -> None:
+async def test_module_name_invalid(mocked_api: MockRouter) -> None:
     """测试模块名称不正确的情况"""
     from src.plugins.publish.validation import AdapterPublishInfo
 
@@ -49,7 +47,7 @@ async def test_module_name_invalid(
     assert mocked_api["homepage"].called
 
 
-async def test_name_duplication(mocker: MockerFixture, mocked_api: MockRouter) -> None:
+async def test_name_duplication(mocked_api: MockRouter) -> None:
     """测试名称重复的情况"""
     from src.plugins.publish.validation import AdapterPublishInfo
 
@@ -70,4 +68,25 @@ async def test_name_duplication(mocker: MockerFixture, mocked_api: MockRouter) -
     )
 
     assert mocked_api["project_link1"].called
+    assert mocked_api["homepage"].called
+
+
+async def test_name_too_long(mocked_api: MockRouter) -> None:
+    """测试名称过长的情况"""
+    from src.plugins.publish.validation import AdapterPublishInfo
+
+    with pytest.raises(ValidationError) as e:
+        AdapterPublishInfo(
+            module_name="module_name",
+            project_link="project_link",
+            name="looooooooooooooooooooooooooooooooooooooooooooooooooooooooong",
+            desc="desc",
+            author="author",
+            homepage="https://nonebot.dev",
+            tags=json.dumps([]),  # type: ignore
+            is_official=False,
+        )
+    assert "⚠️ 名称过长。<dt>请确保名称不超过 50 个字符。</dt>" in str(e.value)
+
+    assert mocked_api["project_link"].called
     assert mocked_api["homepage"].called

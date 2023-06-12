@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Added
+
+- 限制名称的长度不超过 50 个字符
+
 ### Changed
 
 - 通过议题标签判断商店发布类型

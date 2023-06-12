@@ -94,6 +94,12 @@ class PublishInfo(abc.ABC, BaseModel):
     tags: list[Tag]
     is_official: bool = False
 
+    @validator("name", pre=True)
+    def name_validator(cls, v: str) -> str:
+        if len(v) > 50:
+            raise ValueError("⚠️ 名称过长。<dt>请确保名称不超过 50 个字符。</dt>")
+        return v
+
     @validator("homepage", pre=True)
     def homepage_validator(cls, v: str) -> str:
         if v:
