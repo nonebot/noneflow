@@ -78,7 +78,6 @@ async def test_process_publish_check(
         event_path = Path(__file__).parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
         assert isinstance(event, IssuesOpened)
-        event.payload.issue.title = "Bot: test"
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
@@ -89,16 +88,6 @@ async def test_process_publish_check(
             "rest.issues.async_get",
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
             mock_issues_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_add_labels",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "issue_number": 80,
-                "labels": ["Bot"],
-            },
-            True,
         )
         ctx.should_call_api(
             "rest.issues.async_list_comments",
@@ -271,7 +260,6 @@ async def test_edit_title(
         event_path = Path(__file__).parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
         assert isinstance(event, IssuesOpened)
-        event.payload.issue.title = "Bot: test"
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
@@ -282,16 +270,6 @@ async def test_edit_title(
             "rest.issues.async_get",
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
             mock_issues_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_add_labels",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "issue_number": 80,
-                "labels": ["Bot"],
-            },
-            True,
         )
         ctx.should_call_api(
             "rest.issues.async_list_comments",
@@ -468,7 +446,6 @@ async def test_process_publish_check_not_pass(
         event_path = Path(__file__).parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
         assert isinstance(event, IssuesOpened)
-        event.payload.issue.title = "Bot: test"
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
@@ -479,16 +456,6 @@ async def test_process_publish_check_not_pass(
             "rest.issues.async_get",
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
             mock_issues_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_add_labels",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "issue_number": 80,
-                "labels": ["Bot"],
-            },
-            True,
         )
         # 检查是否需要跳过插件测试
         ctx.should_call_api(
@@ -622,7 +589,7 @@ async def test_not_publish_issue(
 ) -> None:
     """测试议题与发布无关
 
-    议题的标题不以 "Bot/Adapter/Plugin" 开头
+    议题的标签不是 "Bot/Adapter/Plugin"
     """
     from src.plugins.publish import publish_check_matcher
 
@@ -641,7 +608,7 @@ async def test_not_publish_issue(
         event_path = Path(__file__).parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
         assert isinstance(event, IssuesOpened)
-        event.payload.issue.title = "test"
+        event.payload.issue.labels = []
 
         ctx.receive_event(bot, event)
 
@@ -734,7 +701,6 @@ async def test_skip_plugin_check(
         event_path = Path(__file__).parent.parent / "events" / "issue-comment-skip.json"
         event = Adapter.payload_to_event("1", "issue_comment", event_path.read_bytes())
         assert isinstance(event, IssueCommentCreated)
-        event.payload.issue.title = "Plugin: project_link"
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
@@ -745,16 +711,6 @@ async def test_skip_plugin_check(
             "rest.issues.async_get",
             {"owner": "he0119", "repo": "action-test", "issue_number": 70},
             mock_issues_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_add_labels",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "issue_number": 70,
-                "labels": ["Plugin"],
-            },
-            True,
         )
         ctx.should_call_api(
             "rest.issues.async_list_comments",

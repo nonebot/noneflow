@@ -19,7 +19,6 @@ from .depends import (
     get_related_issue_number,
     get_repo_info,
     get_type_by_labels,
-    get_type_by_title,
 )
 from .models import PublishType, RepoInfo
 from .utils import (
@@ -112,7 +111,7 @@ async def handle_pr_close(
 
 async def check_rule(
     event: IssuesOpened | IssuesReopened | IssuesEdited | IssueCommentCreated,
-    publish_type: PublishType | None = Depends(get_type_by_title),
+    publish_type: PublishType | None = Depends(get_type_by_labels),
 ) -> bool:
     if isinstance(
         event, IssueCommentCreated
@@ -141,7 +140,7 @@ async def handle_publish_check(
     installation_id: int = Depends(get_installation_id),
     repo_info: RepoInfo = Depends(get_repo_info),
     issue_number: int = Depends(get_issue_number),
-    publish_type: PublishType = Depends(get_type_by_title),
+    publish_type: PublishType = Depends(get_type_by_labels),
 ) -> None:
     async with bot.as_installation(installation_id):
         # 因为 Actions 会排队，触发事件相关的议题在 Actions 执行时可能已经被关闭
@@ -155,13 +154,6 @@ async def handle_publish_check(
         if issue.state != "open":
             logger.info("议题未开启，已跳过")
             await publish_check_matcher.finish()
-
-        # 自动给议题添加标签
-        await bot.rest.issues.async_add_labels(
-            **repo_info.dict(),
-            issue_number=issue_number,
-            labels=[publish_type.value],
-        )
 
         # 是否需要跳过插件测试
         plugin_config.skip_plugin_test = await should_skip_plugin_test(
