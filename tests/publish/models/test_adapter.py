@@ -152,11 +152,16 @@ async def test_adapter_info_validation_partial_failed(
 async def test_adapter_info_name_validation_failed(
     mocker: MockerFixture, mocked_api: MockRouter
 ) -> None:
-    """测试名称重复检测失败的情况"""
+    """测试名称不符合规范的情况
+
+    名称过长
+    重复的项目名与报名
+    """
     from src.plugins.publish.validation import AdapterPublishInfo, MyValidationError
 
     mock_issue = mocker.MagicMock()
     mock_issue.body = generate_issue_body_adapter(
+        name="looooooooooooooooooooooooooooooooooooooooooooooooooooooooong",
         module_name="module_name1",
         project_link="project_link1",
     )
@@ -167,7 +172,7 @@ async def test_adapter_info_name_validation_failed(
 
     assert (
         e.value.message
-        == """> Adapter: name\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ PyPI 项目名 project_link1 加包名 module_name1 的值与商店重复。<dt>请确保没有重复发布。</dt></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff。</li><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 包 <a href="https://pypi.org/project/project_link1/">project_link1</a> 已发布至 PyPI。</li></code></pre></details>"""
+        == """> Adapter: looooooooooooooooooooooooooooooooooooooooooooooooooooooooong\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n<pre><code><li>⚠️ 名称过长。<dt>请确保名称不超过 50 个字符。</dt></li><li>⚠️ PyPI 项目名 project_link1 加包名 module_name1 的值与商店重复。<dt>请确保没有重复发布。</dt></li></code></pre>\n<details><summary>详情</summary><pre><code><li>✅ 标签: test-#ffffff。</li><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 包 <a href="https://pypi.org/project/project_link1/">project_link1</a> 已发布至 PyPI。</li></code></pre></details>"""
     )
 
     assert mocked_api["project_link1"].called
