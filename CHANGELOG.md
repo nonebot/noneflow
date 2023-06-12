@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Changed
+
+- 通过议题标签判断商店发布类型
+
 ## [2.4.0] - 2023-06-11
 
 ### Added
