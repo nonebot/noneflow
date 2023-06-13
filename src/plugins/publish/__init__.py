@@ -40,7 +40,7 @@ def bypass_git():
     run_shell_command(["git", "config", "--global", "safe.directory", "*"])
 
 
-def install_pre_commit_hook():
+def install_pre_commit_hooks():
     """安装 pre-commit 钩子"""
     run_shell_command(["pre-commit", "install", "--install-hooks"])
 
@@ -64,7 +64,7 @@ pr_close_matcher = on_type(PullRequestClosed, rule=pr_close_rule)
 
 
 @pr_close_matcher.handle(
-    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hook)]
+    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hooks)]
 )
 async def handle_pr_close(
     event: PullRequestClosed,
@@ -142,7 +142,7 @@ publish_check_matcher = on_type(
 
 
 @publish_check_matcher.handle(
-    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hook)]
+    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hooks)]
 )
 async def handle_publish_check(
     bot: GitHubBot,
@@ -235,7 +235,7 @@ auto_merge_matcher = on_type(PullRequestReviewSubmitted, rule=review_submiited_r
 
 
 @auto_merge_matcher.handle(
-    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hook)]
+    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hooks)]
 )
 async def handle_auto_merge(
     bot: GitHubBot,
