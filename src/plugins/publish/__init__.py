@@ -141,7 +141,9 @@ publish_check_matcher = on_type(
 )
 
 
-@publish_check_matcher.handle(parameterless=[Depends(bypass_git)])
+@publish_check_matcher.handle(
+    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hook)]
+)
 async def handle_publish_check(
     bot: GitHubBot,
     installation_id: int = Depends(get_installation_id),
@@ -232,7 +234,9 @@ async def review_submiited_rule(
 auto_merge_matcher = on_type(PullRequestReviewSubmitted, rule=review_submiited_rule)
 
 
-@auto_merge_matcher.handle(parameterless=[Depends(bypass_git)])
+@auto_merge_matcher.handle(
+    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hook)]
+)
 async def handle_auto_merge(
     bot: GitHubBot,
     event: PullRequestReviewSubmitted,
@@ -259,4 +263,4 @@ async def handle_auto_merge(
             pull_number=event.payload.pull_request.number,
             merge_method="rebase",
         )
-        logger.info("已自动合并 #{event.payload.pull_request.number}")
+        logger.info(f"已自动合并 #{event.payload.pull_request.number}")

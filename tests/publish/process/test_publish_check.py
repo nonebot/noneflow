@@ -146,6 +146,11 @@ async def test_process_publish_check(
                 capture_output=True,
             ),
             mocker.call(
+                ["pre-commit", "install", "--install-hooks"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
                 ["git", "switch", "-C", "publish/issue80"],
                 check=True,
                 capture_output=True,
@@ -349,6 +354,11 @@ async def test_edit_title(
         [
             mocker.call(
                 ["git", "config", "--global", "safe.directory", "*"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                ["pre-commit", "install", "--install-hooks"],
                 check=True,
                 capture_output=True,
             ),
@@ -623,10 +633,19 @@ async def test_process_publish_check_not_pass(
         ctx.receive_event(bot, event)
 
     # 测试 git 命令
-    mock_subprocess_run.assert_called_once_with(
-        ["git", "config", "--global", "safe.directory", "*"],
-        check=True,
-        capture_output=True,
+    mock_subprocess_run.assert_has_calls(
+        [
+            mocker.call(
+                ["git", "config", "--global", "safe.directory", "*"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                ["pre-commit", "install", "--install-hooks"],
+                check=True,
+                capture_output=True,
+            ),
+        ]
     )
 
     # 检查文件是否正确
@@ -716,10 +735,19 @@ async def test_issue_state_closed(
         ctx.receive_event(bot, event)
 
     assert mocked_api.calls == []
-    mock_subprocess_run.assert_called_once_with(
-        ["git", "config", "--global", "safe.directory", "*"],
-        check=True,
-        capture_output=True,
+    mock_subprocess_run.assert_has_calls(
+        [
+            mocker.call(
+                ["git", "config", "--global", "safe.directory", "*"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                ["pre-commit", "install", "--install-hooks"],
+                check=True,
+                capture_output=True,
+            ),
+        ]
     )
 
 
@@ -896,10 +924,19 @@ async def test_skip_plugin_check(
         ctx.receive_event(bot, event)
 
     # 测试 git 命令
-    mock_subprocess_run.assert_called_once_with(
-        ["git", "config", "--global", "safe.directory", "*"],
-        check=True,
-        capture_output=True,
+    mock_subprocess_run.assert_has_calls(
+        [
+            mocker.call(
+                ["git", "config", "--global", "safe.directory", "*"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                ["pre-commit", "install", "--install-hooks"],
+                check=True,
+                capture_output=True,
+            ),
+        ]
     )
 
     # 检查文件是否正确
