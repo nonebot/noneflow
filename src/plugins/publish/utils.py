@@ -108,7 +108,11 @@ def commit_and_push(info: PublishInfo, branch_name: str, issue_number: int):
     user_email = f"{info.author}@users.noreply.github.com"
     run_shell_command(["git", "config", "--global", "user.email", user_email])
     run_shell_command(["git", "add", "-A"])
-    run_shell_command(["git", "commit", "-m", commit_message])
+    try:
+        run_shell_command(["git", "commit", "-m", commit_message])
+    except:
+        # 如果提交失败，因为是 pre-commit hooks 导致的，所以需要再次提交
+        run_shell_command(["git", "commit", "-m", commit_message])
 
     try:
         run_shell_command(["git", "fetch", "origin"])

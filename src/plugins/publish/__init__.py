@@ -35,9 +35,14 @@ from .validation import PublishInfo
 
 
 def bypass_git():
-    # 绕过检查
+    """绕过检查"""
     # https://github.blog/2022-04-18-highlights-from-git-2-36/#stricter-repository-ownership-checks
     run_shell_command(["git", "config", "--global", "safe.directory", "*"])
+
+
+def install_pre_commit_hooks():
+    """安装 pre-commit 钩子"""
+    run_shell_command(["pre-commit", "install", "--install-hooks"])
 
 
 async def pr_close_rule(
@@ -58,7 +63,9 @@ async def pr_close_rule(
 pr_close_matcher = on_type(PullRequestClosed, rule=pr_close_rule)
 
 
-@pr_close_matcher.handle(parameterless=[Depends(bypass_git)])
+@pr_close_matcher.handle(
+    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hooks)]
+)
 async def handle_pr_close(
     event: PullRequestClosed,
     bot: GitHubBot,
@@ -134,7 +141,9 @@ publish_check_matcher = on_type(
 )
 
 
-@publish_check_matcher.handle(parameterless=[Depends(bypass_git)])
+@publish_check_matcher.handle(
+    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hooks)]
+)
 async def handle_publish_check(
     bot: GitHubBot,
     installation_id: int = Depends(get_installation_id),
@@ -225,7 +234,9 @@ async def review_submiited_rule(
 auto_merge_matcher = on_type(PullRequestReviewSubmitted, rule=review_submiited_rule)
 
 
-@auto_merge_matcher.handle(parameterless=[Depends(bypass_git)])
+@auto_merge_matcher.handle(
+    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hooks)]
+)
 async def handle_auto_merge(
     bot: GitHubBot,
     event: PullRequestReviewSubmitted,
@@ -252,4 +263,4 @@ async def handle_auto_merge(
             pull_number=event.payload.pull_request.number,
             merge_method="rebase",
         )
-        logger.info("已自动合并 #{event.payload.pull_request.number}")
+        logger.info(f"已自动合并 #{event.payload.pull_request.number}")

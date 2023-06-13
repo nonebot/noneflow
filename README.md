@@ -113,6 +113,12 @@ jobs:
         with:
           token: ${{ steps.generate-token.outputs.token }}
 
+      - name: Cache pre-commit hooks
+        uses: actions/cache@v3
+        with:
+          path: build/.pre-commit
+          key: noneflow-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
+
       - name: NoneFlow
         uses: docker://ghcr.io/nonebot/noneflow:latest
         with:

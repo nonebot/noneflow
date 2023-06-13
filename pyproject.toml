@@ -12,11 +12,11 @@ repository = "https://github.com/nonebot/noneflow"
 python = "^3.11"
 nonebot2 = { extras = ["httpx"], version = "^2.0.0" }
 nonebot-adapter-github = "^0.3.0"
+pre-commit = "^3.3.2"
 
 [tool.poetry.group.dev.dependencies]
 isort = "*"
 black = "*"
-pre-commit = "*"
 nonebug = "^0.3.2"
 pytest-cov = "^4.0.0"
 pytest-mock = "^3.6.1"

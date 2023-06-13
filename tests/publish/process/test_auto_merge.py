@@ -69,10 +69,20 @@ async def test_auto_merge(app: App, mocker: MockerFixture) -> None:
         ctx.receive_event(bot, event)
 
     # 测试 git 命令
-    mock_subprocess_run.assert_called_with(
-        ["git", "config", "--global", "safe.directory", "*"],
-        check=True,
-        capture_output=True,
+    mock_subprocess_run.assert_has_calls(
+        [
+            mocker.call(
+                ["git", "config", "--global", "safe.directory", "*"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                ["pre-commit", "install", "--install-hooks"],
+                check=True,
+                capture_output=True,
+            ),
+        ],
+        any_order=True,
     )
 
 
