@@ -35,9 +35,14 @@ from .validation import PublishInfo
 
 
 def bypass_git():
-    # 绕过检查
+    """绕过检查"""
     # https://github.blog/2022-04-18-highlights-from-git-2-36/#stricter-repository-ownership-checks
     run_shell_command(["git", "config", "--global", "safe.directory", "*"])
+
+
+def install_pre_commit_hook():
+    """安装 pre-commit 钩子"""
+    run_shell_command(["pre-commit", "install", "--install-hooks"])
 
 
 async def pr_close_rule(
@@ -58,7 +63,9 @@ async def pr_close_rule(
 pr_close_matcher = on_type(PullRequestClosed, rule=pr_close_rule)
 
 
-@pr_close_matcher.handle(parameterless=[Depends(bypass_git)])
+@pr_close_matcher.handle(
+    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hook)]
+)
 async def handle_pr_close(
     event: PullRequestClosed,
     bot: GitHubBot,

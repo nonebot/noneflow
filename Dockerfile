@@ -18,6 +18,8 @@ WORKDIR /app
 
 # 设置时区
 ENV TZ=Asia/Shanghai
+# 设置 pre-commit hooks 的路径
+ENV PRE_COMMIT_HOME=/github/workspace/build/.pre-commit
 
 # 安装依赖
 COPY --from=requirements-stage /tmp/requirements.txt /app/requirements.txt
