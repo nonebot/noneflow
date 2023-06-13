@@ -135,6 +135,9 @@ jobs:
           PLUGIN_TEST_METADATA: ${{ needs.plugin_test.outputs.metadata }}
           APP_ID: ${{ secrets.APP_ID }}
           PRIVATE_KEY: ${{ secrets.APP_KEY }}
+
+      - name: Fix permission
+        run: sudo chown -R $(whoami):$(id -ng) build/.pre-commit
 ```
 
 ## 测试
