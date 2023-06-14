@@ -135,6 +135,7 @@ jobs:
           PLUGIN_TEST_METADATA: ${{ needs.plugin_test.outputs.metadata }}
           APP_ID: ${{ secrets.APP_ID }}
           PRIVATE_KEY: ${{ secrets.APP_KEY }}
+          PRE_COMMIT_HOME: /github/workspace/.cache/.pre-commit
 
       - name: Fix permission
         run: sudo chown -R $(whoami):$(id -ng) .cache/.pre-commit
