@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [2.4.3] - 2023-06-14
+
 ### Changed
 
 - 调整 pre-commit hooks 的存放位置至 .cache 目录下
@@ -231,7 +233,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/noneflow/compare/v2.4.2...HEAD
+[unreleased]: https://github.com/nonebot/noneflow/compare/v2.4.3...HEAD
+[2.4.3]: https://github.com/nonebot/noneflow/compare/v2.4.2...v2.4.3
 [2.4.2]: https://github.com/nonebot/noneflow/compare/v2.4.1...v2.4.2
 [2.4.1]: https://github.com/nonebot/noneflow/compare/v2.4.0...v2.4.1
 [2.4.0]: https://github.com/nonebot/noneflow/compare/v2.3.1...v2.4.0
