@@ -116,7 +116,7 @@ jobs:
       - name: Cache pre-commit hooks
         uses: actions/cache@v3
         with:
-          path: build/.pre-commit
+          path: .cache/.pre-commit
           key: noneflow-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
 
       - name: NoneFlow
@@ -135,9 +135,10 @@ jobs:
           PLUGIN_TEST_METADATA: ${{ needs.plugin_test.outputs.metadata }}
           APP_ID: ${{ secrets.APP_ID }}
           PRIVATE_KEY: ${{ secrets.APP_KEY }}
+          PRE_COMMIT_HOME: /github/workspace/.cache/.pre-commit
 
       - name: Fix permission
-        run: sudo chown -R $(whoami):$(id -ng) build/.pre-commit
+        run: sudo chown -R $(whoami):$(id -ng) .cache/.pre-commit
 ```
 
 ## 测试

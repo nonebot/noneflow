@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Changed
+
+- 调整 pre-commit hooks 的存放位置至 .cache 目录下
+
 ## [2.4.2] - 2023-06-14
 
 ### Added
