@@ -342,11 +342,14 @@ async def validate_metadata():
     results_path = Path("plugin_test") / "results.json"
     with open(results_path, encoding="utf8") as f:
         results = json.load(f)
+
     for project_link, result in results.items():
+        print(f"正在验证插件 {project_link} ...")
         plugin = result["plugin"]
         metadata = result["metadata"]
         plugin_test_result = result["run"]
         if not metadata:
+            print(f"插件 {project_link} 缺少元数据")
             continue
         name = metadata.get("name")
         desc = metadata.get("description")
@@ -386,7 +389,6 @@ async def main():
     parser.add_argument("-o", "--offset", type=int, default=0, help="测试插件偏移量")
     args = parser.parse_args()
     if args.validate:
-        print("验证插件元数据")
         await validate_metadata()
     elif args.store:
         print("测试插件商店内的插件")
