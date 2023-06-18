@@ -9,6 +9,7 @@ import os
 import re
 from asyncio import create_subprocess_shell, run, subprocess
 from pathlib import Path
+from typing import Any
 from urllib.request import urlopen
 
 # GITHUB
@@ -271,12 +272,13 @@ async def test_plugin():
 METADATA_PATTERN = re.compile(r"METADATA<<EOF\s([\s\S]+?)\sEOF")
 
 
-def check_metadata(path: Path) -> bool:
-    """检查插件是否拥有插件元数据"""
+def extract_metadata(path: Path) -> dict[Any, Any] | None:
+    """提取插件元数据"""
     with open(path / "output.txt") as f:
         output = f.read()
     match = METADATA_PATTERN.search(output)
-    return bool(match)
+    if match:
+        return json.loads(match.group(1))
 
 
 async def test_store(offset: int, limit: int):
@@ -304,7 +306,7 @@ async def test_store(offset: int, limit: int):
         result, output = await test.run()
         test_results[project_link] = {
             "run": result,
-            "metadata": check_metadata(test._path),
+            "metadata": extract_metadata(test._path),
         }
         with open(output_path / f"{project_link}.log", "w", encoding="utf8") as f:
             f.write(output)
