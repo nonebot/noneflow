@@ -58,7 +58,7 @@ else:
 """
 
 
-def get_plugin_list() -> dict[str, str]:
+def get_plugin_list() -> dict[str, Any]:
     """获取插件列表
 
     通过 package_name 获取 module_name
@@ -66,7 +66,7 @@ def get_plugin_list() -> dict[str, str]:
     with urlopen(STORE_PLUGINS_URL) as response:
         plugins = json.loads(response.read())
 
-    return {plugin["project_link"]: plugin["module_name"] for plugin in plugins}
+    return {plugin["project_link"]: plugin for plugin in plugins}
 
 
 class PluginTest:
@@ -217,7 +217,7 @@ class PluginTest:
             package_name = match.group(1)
             # 不用包括自己
             if package_name in self._plugin_list and package_name != self.project_link:
-                return self._plugin_list[package_name]
+                return self._plugin_list[package_name]["module_name"]
 
 
 async def test_plugin():
@@ -269,6 +269,7 @@ async def test_plugin():
     await test.run()
 
 
+# region store test
 METADATA_PATTERN = re.compile(r"METADATA<<EOF\s([\s\S]+?)\sEOF")
 
 
@@ -289,7 +290,7 @@ async def test_store(offset: int, limit: int):
     output_path.mkdir(exist_ok=True, parents=True)
 
     test_results = {}
-    for i, (project_link, module_name) in enumerate(
+    for i, (project_link, plugin) in enumerate(
         list(get_plugin_list().items())[offset:]
     ):
         if project_link.startswith("git+http"):
@@ -297,7 +298,7 @@ async def test_store(offset: int, limit: int):
         if i >= limit:
             break
         print(f"正在测试插件 {project_link} ...")
-        test = PluginTest(project_link, module_name)
+        test = PluginTest(project_link, plugin["module_name"])
         # 设置环境变量
         GITHUB_OUTPUT_FILE = (test._path / "output.txt").resolve()
         GITHUB_STEP_SUMMARY_FILE = (test._path / "summary.txt").resolve()
@@ -306,6 +307,7 @@ async def test_store(offset: int, limit: int):
         result, output = await test.run()
         test_results[project_link] = {
             "run": result,
+            "plugin": plugin,
             "metadata": extract_metadata(test._path),
         }
         with open(output_path / f"{project_link}.log", "w", encoding="utf8") as f:
@@ -314,13 +316,79 @@ async def test_store(offset: int, limit: int):
             json.dump(test_results, f, indent=2, ensure_ascii=False)
 
 
+async def validate_metadata():
+    import nonebot
+
+    plugin_path = Path("plugin_test") / "plugins.json"
+    with open(plugin_path, "w", encoding="utf8") as f:
+        json.dump([], f, indent=2, ensure_ascii=False)
+
+    nonebot.init(
+        input_config={
+            "base": "",
+            "plugin_path": str(plugin_path),
+            "bot_path": "plugin_test/bots.json",
+            "adapter_path": "plugin_test/adapters.json",
+        },
+        github_repository="nonebot/plugin-test",
+        github_run_id=0,
+        plugin_test_result="",
+        plugin_test_output="",
+    )
+    from pydantic import ValidationError
+
+    from src.plugins.publish.validation import PluginPublishInfo
+
+    results_path = Path("plugin_test") / "results.json"
+    with open(results_path, encoding="utf8") as f:
+        results = json.load(f)
+    for project_link, result in results.items():
+        plugin = result["plugin"]
+        metadata = result["metadata"]
+        plugin_test_result = result["run"]
+        if not metadata:
+            continue
+        name = metadata.get("name")
+        desc = metadata.get("description")
+        homepage = metadata.get("homepage")
+        type = metadata.get("type")
+        supported_adapters = metadata.get("supported_adapters")
+
+        raw_data = {
+            "module_name": plugin["module_name"],
+            "project_link": project_link,
+            "name": name,
+            "desc": desc,
+            "author": plugin["author"],
+            "homepage": homepage,
+            "tags": json.dumps(plugin["tags"]),
+            "plugin_test_result": plugin_test_result,
+            "type": type,
+            "supported_adapters": supported_adapters,
+        }
+        try:
+            publish_info = PluginPublishInfo(**raw_data)
+            publish_info.update_file()
+            print(f"插件 {project_link} 元数据验证成功")
+        except ValidationError as e:
+            print(f"插件 {project_link} 元数据验证失败: {e}")
+            continue
+
+
+# endregion
+
+
 async def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--store", action="store_true", help="测试插件商店内的插件")
+    parser.add_argument("-v", "--validate", action="store_true", help="验证插件元数据")
     parser.add_argument("-l", "--limit", type=int, default=1, help="测试插件数量")
     parser.add_argument("-o", "--offset", type=int, default=0, help="测试插件偏移量")
     args = parser.parse_args()
-    if args.store:
+    if args.validate:
+        print("验证插件元数据")
+        await validate_metadata()
+    elif args.store:
         print("测试插件商店内的插件")
         await test_store(args.offset, args.limit)
     else:

@@ -50,5 +50,16 @@
       "request": "test",
       "justMyCode": false,
     },
+    {
+      "name": "Store Validation",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/plugin_test.py",
+      "args": [
+        "--validate"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": true,
+    },
   ]
 }
