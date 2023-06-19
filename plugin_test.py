@@ -355,12 +355,15 @@ class StoreTest:
 
         metadata_result = await self.validate_metadata(result, plugin, metadata)
 
+        from ansi2html import Ansi2HTMLConverter
+
+        conv = Ansi2HTMLConverter()
         return {
             "run": result,
-            "output": output,
+            "output": conv.convert(output, full=False),
             "valid": metadata_result["valid"],
             "metadata": metadata,
-            "validation_message": metadata_result["message"],
+            "validation_message": conv.convert(metadata_result["message"], full=False),
             "validation_raw_data": metadata_result["raw"],
             "previous": plugin,
             "current": metadata_result["data"],
