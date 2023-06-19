@@ -302,7 +302,7 @@ class StoreTest:
     """商店测试"""
 
     def __init__(
-        self, offset: int, limit: int, project_link: str | None = None
+        self, offset: int = 0, limit: int = 1, project_link: str | None = None
     ) -> None:
         self._offset = offset
         self._limit = limit
@@ -357,6 +357,7 @@ class StoreTest:
 
         return {
             "run": result,
+            "output": output,
             "valid": metadata_result["valid"],
             "metadata": metadata,
             "validation_message": metadata_result["message"],
@@ -433,6 +434,18 @@ class StoreTest:
                 "message": str(e),
             }
 
+    def render_results(self, results: dict):
+        from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+        env = Environment(
+            loader=FileSystemLoader(Path(__file__).parent / "templates"),
+            autoescape=select_autoescape(),
+        )
+        template = env.get_template("results.html.jinja")
+        template.stream(results=results.values()).dump(
+            str(self._plugin_test_path / "index.html")
+        )
+
     async def run(self):
         """测试商店内插件情况"""
         plugin_list = get_plugin_list()
@@ -459,6 +472,8 @@ class StoreTest:
             with open(self._result_path, "w", encoding="utf8") as f:
                 json.dump(results, f, indent=2, ensure_ascii=False)
 
+        self.render_results(results)
+
 
 async def test_store(offset: int, limit: int):
     test = StoreTest(offset, limit)
@@ -471,10 +486,14 @@ async def test_store(offset: int, limit: int):
 async def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--store", action="store_true", help="测试插件商店内的插件")
+    parser.add_argument("-r", "--render", action="store_true", help="渲染测试结果")
     parser.add_argument("-l", "--limit", type=int, default=1, help="测试插件数量")
     parser.add_argument("-o", "--offset", type=int, default=0, help="测试插件偏移量")
     args = parser.parse_args()
-    if args.store:
+    if args.render:
+        test = StoreTest()
+        test.render_results(json.load(open(test._result_path, encoding="utf8")))
+    elif args.store:
         await test_store(args.offset, args.limit)
     else:
         await test_plugin()

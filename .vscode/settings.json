@@ -7,7 +7,7 @@
   "python.testing.pytestEnabled": true,
   "[python]": {
     "editor.codeActionsOnSave": {
-      "source.organizeImports": true
+      "source.organizeImports": false
     },
     "editor.rulers": [
       88
