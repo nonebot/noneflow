@@ -81,7 +81,7 @@
                 </div>
                 <div class="modal-body">
                   {% autoescape false %}
-                  {{ result['metadata'] }}
+                  {{ result['metadata'] | json_encode | replace('\n', '<br>') }}
                   {% endautoescape %}
                 </div>
               </div>

@@ -360,10 +360,12 @@ class StoreTest:
         conv = Ansi2HTMLConverter()
         return {
             "run": result,
-            "output": conv.convert(output, full=False),
+            "output": conv.convert(output, full=False) if output else "",
             "valid": metadata_result["valid"],
             "metadata": metadata,
-            "validation_message": conv.convert(metadata_result["message"], full=False),
+            "validation_message": conv.convert(metadata_result["message"], full=False)
+            if metadata_result["message"]
+            else "",
             "validation_raw_data": metadata_result["raw"],
             "previous": plugin,
             "current": metadata_result["data"],
@@ -440,10 +442,14 @@ class StoreTest:
     def render_results(self, results: dict):
         from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+        def json_encode(value):
+            return json.dumps(value, indent=2, ensure_ascii=False)
+
         env = Environment(
             loader=FileSystemLoader(Path(__file__).parent / "templates"),
             autoescape=select_autoescape(),
         )
+        env.filters["json_encode"] = json_encode
         template = env.get_template("results.html.jinja")
         template.stream(results=results.values()).dump(
             str(self._plugin_test_path / "index.html")
