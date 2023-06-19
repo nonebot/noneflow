@@ -17,19 +17,24 @@
         <tr>
           <th scope="col">PyPI 项目名</th>
           <th scope="col">包名</th>
+          <th scope="col">作者</th>
           <th scope="col">加载结果</th>
           <th scope="col">验证结果</th>
           <th scope="col">插件元数据</th>
+          <th scope="col">测试时间</th>
         </tr>
       </thead>
       <tbody>
         {% for result in results %}
-        {% set project_link = result['previous']['project_link'] %}
-        {% set run_str = '通过' if result['run'] else '未通过' %}
-        {% set valid_str = '通过' if result['valid'] else '未通过' %}
+        {% set project_link = result.previous.project_link %}
+        {% set module_name = result.previous.module_name %}
+        {% set author = result.previous.author %}
+        {% set run_str = '通过' if result.run else '未通过' %}
+        {% set valid_str = '通过' if result.valid else '未通过' %}
         <tr>
           <td class="align-middle">{{ project_link }}</td>
-          <td class="align-middle">{{ result['previous']['module_name'] }}</td>
+          <td class="align-middle">{{ module_name }}</td>
+          <td class="align-middle">{{ author }}</td>
           <td>
             <button class="btn btn-link" type="button" data-bs-toggle="modal"
               data-bs-target="#{{ project_link }}-output">{{ run_str }}</button>
@@ -43,7 +48,7 @@
                 </div>
                 <div class="modal-body">
                   {% autoescape false %}
-                  {{ result['output'] | replace('\n', '<br>') }}
+                  {{ result.output | replace('\n', '<br>') }}
                   {% endautoescape %}
                 </div>
               </div>
@@ -62,7 +67,7 @@
                 </div>
                 <div class="modal-body">
                   {% autoescape false %}
-                  {{ result['validation_message'] | replace('\n', '<br>') }}
+                  {{ result.validation_message | replace('\n', '<br>') }}
                   {% endautoescape %}
                 </div>
               </div>
@@ -81,12 +86,13 @@
                 </div>
                 <div class="modal-body">
                   {% autoescape false %}
-                  {{ result['metadata'] | json_encode | replace('\n', '<br>') }}
+                  {{ result.metadata | json_encode | replace('\n', '<br>') }}
                   {% endautoescape %}
                 </div>
               </div>
             </div>
           </div>
+          <td class="align-middle">{{ result.time }}</td>
         </tr>
         {% endfor %}
       </tbody>

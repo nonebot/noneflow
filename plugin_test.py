@@ -332,6 +332,9 @@ class StoreTest:
 
     async def validate_plugin(self, plugin: PluginData):
         """验证插件"""
+        from datetime import datetime
+        from zoneinfo import ZoneInfo
+
         project_link = plugin["project_link"]
         module_name = plugin["module_name"]
 
@@ -369,6 +372,9 @@ class StoreTest:
             "validation_raw_data": metadata_result["raw"],
             "previous": plugin,
             "current": metadata_result["data"],
+            "time": datetime.utcnow()
+            .astimezone(ZoneInfo("Asia/Shanghai"))
+            .strftime("%Y-%m-%d %H:%M:%S"),
         }
 
     async def validate_metadata(
@@ -455,9 +461,22 @@ class StoreTest:
             str(self._plugin_test_path / "index.html")
         )
 
+    def get_previous_results(self):
+        """获取上次测试结果"""
+        import httpx
+
+        resp = httpx.get(
+            "https://raw.githubusercontent.com/he0119/nonebot-store-test/main/results/results.json"
+        )
+        if resp.status_code == 200:
+            return resp.json()
+        else:
+            raise Exception("获取上次测试结果失败")
+
     async def run(self):
         """测试商店内插件情况"""
         plugin_list = get_plugin_list()
+        previous_results = self.get_previous_results()
         if self._project_link is not None and (
             plugin := plugin_list.get(self._project_link)
         ):
@@ -467,7 +486,7 @@ class StoreTest:
                 self._offset : self._offset + self._limit
             ]
 
-        results = {}
+        current_results = {}
         total = len(test_plugins)
         for i, (project_link, plugin) in enumerate(test_plugins):
             if i >= self._limit:
@@ -476,10 +495,19 @@ class StoreTest:
                 continue
 
             print(f"{i+1}/{total} 正在测试插件 {project_link} ...")
-            results[project_link] = await self.validate_plugin(plugin)
+            current_results[project_link] = await self.validate_plugin(plugin)
 
-            with open(self._result_path, "w", encoding="utf8") as f:
-                json.dump(results, f, indent=2, ensure_ascii=False)
+        results = {}
+        # 按照插件列表顺序输出
+        for project_link in plugin_list:
+            # 如果当前测试结果中有，则使用当前测试结果
+            # 否则使用上次测试结果
+            if project_link in current_results:
+                results[project_link] = current_results[project_link]
+            elif project_link in previous_results:
+                results[project_link] = previous_results[project_link]
+        with open(self._result_path, "w", encoding="utf8") as f:
+            json.dump(results, f, indent=2, ensure_ascii=False)
 
         self.render_results(results)
 
