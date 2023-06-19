@@ -9,9 +9,12 @@ import os
 import re
 from asyncio import create_subprocess_shell, run, subprocess
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
 from urllib.request import urlopen
 
+# 插件测试目录
+PLUGIN_TEST_PATH = Path("plugin_test")
+PLUGIN_TEST_OUTPUT_PATH = PLUGIN_TEST_PATH / "output"
 # GITHUB
 GITHUB_OUTPUT_FILE = Path(os.environ.get("GITHUB_OUTPUT", ""))
 GITHUB_STEP_SUMMARY_FILE = Path(os.environ.get("GITHUB_STEP_SUMMARY", ""))
@@ -58,7 +61,20 @@ else:
 """
 
 
-def get_plugin_list() -> dict[str, Any]:
+class PluginData(TypedDict):
+    module_name: str
+    project_link: str
+    name: str
+    desc: str
+    author: str
+    homepage: str
+    tags: list[Any]
+    is_official: bool
+    type: str
+    supported_adapters: list[str]
+
+
+def get_plugin_list() -> dict[str, PluginData]:
     """获取插件列表
 
     通过 package_name 获取 module_name
@@ -73,7 +89,7 @@ class PluginTest:
     def __init__(
         self, project_link: str, module_name: str, config: str | None = None
     ) -> None:
-        self._path = Path("plugin_test") / f"{project_link}-test"
+        self._path = PLUGIN_TEST_PATH / f"{project_link}-test"
 
         self.project_link = project_link
         self.module_name = module_name
@@ -270,87 +286,130 @@ async def test_plugin():
 
 
 # region store test
-METADATA_PATTERN = re.compile(r"METADATA<<EOF\s([\s\S]+?)\sEOF")
+class StoreTest:
+    """商店测试"""
 
+    def __init__(
+        self, offset: int, limit: int, project_link: str | None = None
+    ) -> None:
+        self._offset = offset
+        self._limit = limit
+        self._project_link = project_link
 
-def extract_metadata(path: Path) -> dict[Any, Any] | None:
-    """提取插件元数据"""
-    with open(path / "output.txt") as f:
-        output = f.read()
-    match = METADATA_PATTERN.search(output)
-    if match:
-        return json.loads(match.group(1))
+        # 输出文件位置
+        self._plugin_test_path = PLUGIN_TEST_PATH
+        self._output_path = PLUGIN_TEST_OUTPUT_PATH
+        self._output_path.mkdir(exist_ok=True, parents=True)
+        self._result_path = self._plugin_test_path / "results.json"
+        self._plugins_path = self._plugin_test_path / "plugins.json"
+        if not self._plugins_path.exists():
+            with open(self._plugins_path, "w") as f:
+                f.write("[]")
+        if not self._result_path.exists():
+            self._result_path.touch()
 
+        self._metadata_pattern = re.compile(r"METADATA<<EOF\s([\s\S]+?)\sEOF")
 
-async def test_store(offset: int, limit: int):
-    global GITHUB_OUTPUT_FILE, GITHUB_STEP_SUMMARY_FILE
+    def extract_metadata(self, path: Path) -> dict[Any, Any] | None:
+        """提取插件元数据"""
+        with open(path / "output.txt") as f:
+            output = f.read()
+        match = self._metadata_pattern.search(output)
+        if match:
+            return json.loads(match.group(1))
 
-    plugin_test_path = Path("plugin_test")
-    output_path = plugin_test_path / "output"
-    output_path.mkdir(exist_ok=True, parents=True)
+    async def validate_plugin(self, plugin: PluginData):
+        project_link = plugin["project_link"]
+        module_name = plugin["module_name"]
 
-    test_results = {}
-    for i, (project_link, plugin) in enumerate(
-        list(get_plugin_list().items())[offset:]
-    ):
-        if project_link.startswith("git+http"):
-            continue
-        if i >= limit:
-            break
-        print(f"正在测试插件 {project_link} ...")
-        test = PluginTest(project_link, plugin["module_name"])
+        test = PluginTest(project_link, module_name)
+
         # 设置环境变量
+        global GITHUB_OUTPUT_FILE, GITHUB_STEP_SUMMARY_FILE
         GITHUB_OUTPUT_FILE = (test._path / "output.txt").resolve()
         GITHUB_STEP_SUMMARY_FILE = (test._path / "summary.txt").resolve()
         os.environ["GITHUB_OUTPUT"] = str(GITHUB_OUTPUT_FILE)
+
+        # 输出文件位置
+        output_path = self._output_path / f"{project_link}.log"
         # 获取测试结果
         result, output = await test.run()
-        test_results[project_link] = {
-            "run": result,
-            "plugin": plugin,
-            "metadata": extract_metadata(test._path),
-        }
-        with open(output_path / f"{project_link}.log", "w", encoding="utf8") as f:
+        # 记录测试结果
+        with open(output_path, "w", encoding="utf8") as f:
             f.write(output)
-        with open(plugin_test_path / "results.json", "w", encoding="utf8") as f:
-            json.dump(test_results, f, indent=2, ensure_ascii=False)
 
+        metadata = self.extract_metadata(test._path)
 
-async def validate_metadata():
-    import nonebot
+        metadata_result = await self.validate_metadata(result, plugin, metadata)
 
-    plugin_path = Path("plugin_test") / "plugins.json"
-    with open(plugin_path, "w", encoding="utf8") as f:
-        json.dump([], f, indent=2, ensure_ascii=False)
+        return {
+            "run": result,
+            "valid": metadata_result["valid"],
+            "metadata": metadata,
+            "validation_message": metadata_result["message"],
+            "validation_raw_data": metadata_result["raw"],
+            "previous": plugin,
+            "current": metadata_result["data"],
+        }
 
-    nonebot.init(
-        input_config={
-            "base": "",
-            "plugin_path": str(plugin_path),
-            "bot_path": "plugin_test/bots.json",
-            "adapter_path": "plugin_test/adapters.json",
-        },
-        github_repository="nonebot/plugin-test",
-        github_run_id=0,
-        plugin_test_result="",
-        plugin_test_output="",
-    )
-    from pydantic import ValidationError
+    async def run(self):
+        plugin_list = get_plugin_list()
+        if self._project_link is not None and (
+            plugin := plugin_list.get(self._project_link)
+        ):
+            test_plugins = [(self._project_link, plugin)]
+        else:
+            test_plugins = list(plugin_list.items())[
+                self._offset : self._offset + self._limit
+            ]
 
-    from src.plugins.publish.validation import PluginPublishInfo
+        results = {}
+        total = len(test_plugins)
+        for i, (project_link, plugin) in enumerate(test_plugins):
+            if i >= self._limit:
+                break
+            if project_link.startswith("git+http"):
+                continue
 
-    results_path = Path("plugin_test") / "results.json"
-    with open(results_path, encoding="utf8") as f:
-        results = json.load(f)
+            print(f"{i+1}/{total} 正在测试插件 {project_link} ...")
+            results[project_link] = await self.validate_plugin(plugin)
 
-    for project_link, result in results.items():
+            with open(self._result_path, "w", encoding="utf8") as f:
+                json.dump(results, f, indent=2, ensure_ascii=False)
+
+    async def validate_metadata(
+        self, result: bool, plugin: PluginData, metadata: dict | None
+    ):
+        import nonebot
+
+        project_link = plugin["project_link"]
+
+        nonebot.init(
+            input_config={
+                "base": "",
+                "plugin_path": str(self._plugins_path),
+                "bot_path": "plugin_test/bots.json",
+                "adapter_path": "plugin_test/adapters.json",
+            },
+            github_repository="nonebot/plugin-test",
+            github_run_id=0,
+            plugin_test_result="",
+            plugin_test_output="",
+        )
+        from pydantic import ValidationError
+
+        from src.plugins.publish.validation import PluginPublishInfo
+
         print(f"正在验证插件 {project_link} ...")
-        plugin = result["plugin"]
-        metadata = result["metadata"]
-        plugin_test_result = result["run"]
+
         if not metadata:
-            print(f"插件 {project_link} 缺少元数据")
-            continue
+            return {
+                "valid": False,
+                "raw": None,
+                "data": None,
+                "message": "缺少元数据",
+            }
+
         name = metadata.get("name")
         desc = metadata.get("description")
         homepage = metadata.get("homepage")
@@ -365,17 +424,30 @@ async def validate_metadata():
             "author": plugin["author"],
             "homepage": homepage,
             "tags": json.dumps(plugin["tags"]),
-            "plugin_test_result": plugin_test_result,
+            "plugin_test_result": result,
             "type": type,
             "supported_adapters": supported_adapters,
         }
         try:
             publish_info = PluginPublishInfo(**raw_data)
-            publish_info.update_file()
-            print(f"插件 {project_link} 元数据验证成功")
+            return {
+                "valid": True,
+                "raw": raw_data,
+                "data": publish_info.dict(exclude={"plugin_test_result"}),
+                "message": None,
+            }
         except ValidationError as e:
-            print(f"插件 {project_link} 元数据验证失败: {e}")
-            continue
+            return {
+                "valid": False,
+                "raw": raw_data,
+                "data": None,
+                "message": str(e),
+            }
+
+
+async def test_store(offset: int, limit: int):
+    test = StoreTest(offset, limit)
+    await test.run()
 
 
 # endregion
@@ -384,14 +456,10 @@ async def validate_metadata():
 async def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--store", action="store_true", help="测试插件商店内的插件")
-    parser.add_argument("-v", "--validate", action="store_true", help="验证插件元数据")
     parser.add_argument("-l", "--limit", type=int, default=1, help="测试插件数量")
     parser.add_argument("-o", "--offset", type=int, default=0, help="测试插件偏移量")
     args = parser.parse_args()
-    if args.validate:
-        await validate_metadata()
-    elif args.store:
-        print("测试插件商店内的插件")
+    if args.store:
         await test_store(args.offset, args.limit)
     else:
         await test_plugin()
