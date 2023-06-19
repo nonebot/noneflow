@@ -10,75 +10,88 @@
 </head>
 
 <body>
-  <h1>商店测试结果</h1>
-  <table class="table table-hover">
-    <thead>
-      <tr>
-        <th scope="col">PyPI 项目名</th>
-        <th scope="col">包名</th>
-        <th scope="col">加载结果</th>
-        <th scope="col">验证结果</th>
-        <th scope="col">加载日志</th>
-        <th scope="col">验证消息</th>
-        <th scope="col">插件元数据</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for result in results %}
-      {% set project_link = result['previous']['project_link'] %}
-      <tr>
-        <td>{{ project_link }}</td>
-        <td>{{ result['previous']['module_name'] }}</td>
-        <td>{{ result['run'] }}</td>
-        <td>{{ result['valid'] }}</td>
-        <td>
-          <button class="btn btn-link" type="button" data-bs-toggle="offcanvas"
-            data-bs-target="#{{ project_link }}-output" aria-controls="offcanvasBottom">显示</button>
-        </td>
-        <div class="offcanvas offcanvas-bottom" tabindex="-1" id="{{ project_link }}-output">
-          <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="offcanvasBottomLabel">{{ project_link }} 加载日志</h5>
-            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
+  <div class="container">
+    <h1 class="text-center">商店测试结果</h1>
+    <table class="table table-hover">
+      <thead class="sticky-top">
+        <tr>
+          <th scope="col">PyPI 项目名</th>
+          <th scope="col">包名</th>
+          <th scope="col">加载结果</th>
+          <th scope="col">验证结果</th>
+          <th scope="col">插件元数据</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for result in results %}
+        {% set project_link = result['previous']['project_link'] %}
+        {% set run_str = '通过' if result['run'] else '未通过' %}
+        {% set valid_str = '通过' if result['valid'] else '未通过' %}
+        <tr>
+          <td class="align-middle">{{ project_link }}</td>
+          <td class="align-middle">{{ result['previous']['module_name'] }}</td>
+          <td>
+            <button class="btn btn-link" type="button" data-bs-toggle="modal"
+              data-bs-target="#{{ project_link }}-output">{{ run_str }}</button>
+          </td>
+          <div class="modal fade" id="{{ project_link }}-output" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel">{{ project_link }} 加载日志</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  {% autoescape false %}
+                  {{ result['output'] | replace('\n', '<br>') }}
+                  {% endautoescape %}
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="offcanvas-body">
-            {% autoescape false %}
-            {{ result['output'] | replace('\n', '<br>') }}
-            {% endautoescape %}
+          <td>
+            <button class="btn btn-link" type="button" data-bs-toggle="modal"
+              data-bs-target="#{{ project_link }}-validation" aria-controls="offcanvasBottom">{{ valid_str }}</button>
+          </td>
+          <div class="modal fade" id="{{ project_link }}-validation" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel">{{ project_link }} 验证日志</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  {% autoescape false %}
+                  {{ result['validation_message'] | replace('\n', '<br>') }}
+                  {% endautoescape %}
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-        <td>
-          <button class="btn btn-link" type="button" data-bs-toggle="offcanvas"
-            data-bs-target="#{{ project_link }}-validation" aria-controls="offcanvasBottom">显示</button>
-        </td>
-        <div class="offcanvas offcanvas-bottom" tabindex="-1" id="{{ project_link }}-validation">
-          <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="offcanvasBottomLabel">{{ project_link }} 验证消息</h5>
-            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
+          <td>
+            <button class="btn btn-link" type="button" data-bs-toggle="modal"
+              data-bs-target="#{{ project_link }}-metadata" aria-controls="offcanvasBottom">显示</button>
+          </td>
+          <div class="modal fade" id="{{ project_link }}-metadata" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel">{{ project_link }} 插件元数据</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  {% autoescape false %}
+                  {{ result['metadata'] }}
+                  {% endautoescape %}
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="offcanvas-body">
-            {% autoescape false %}
-            {{ result['validation_message'] | replace('\n', '<br>') }}
-            {% endautoescape %}
-          </div>
-        </div>
-        <td>
-          <button class="btn btn-link" type="button" data-bs-toggle="offcanvas"
-            data-bs-target="#{{ project_link }}-metadata" aria-controls="offcanvasBottom">显示</button>
-        </td>
-        <div class="offcanvas offcanvas-bottom" tabindex="-1" id="{{ project_link }}-metadata">
-          <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="offcanvasBottomLabel">{{ project_link }} 插件元数据</h5>
-            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
-          </div>
-          <div class="offcanvas-body">
-            {% autoescape false %}
-            {{ result['metadata'] | replace('\n', '<br>') }}
-            {% endautoescape %}
-          </div>
-        </div>
-      </tr>
-      {% endfor %}
-    </tbody>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </body>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
