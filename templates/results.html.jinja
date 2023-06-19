@@ -40,8 +40,10 @@
             <h5 class="offcanvas-title" id="offcanvasBottomLabel">{{ project_link }} 加载日志</h5>
             <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
           </div>
-          <div class="offcanvas-body small">
-            {{ result['output'] }}
+          <div class="offcanvas-body">
+            {% autoescape false %}
+            {{ result['output'] | replace('\n', '<br>') }}
+            {% endautoescape %}
           </div>
         </div>
         <td>
@@ -53,8 +55,10 @@
             <h5 class="offcanvas-title" id="offcanvasBottomLabel">{{ project_link }} 验证消息</h5>
             <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
           </div>
-          <div class="offcanvas-body small">
-            {{ result['validation_message'] }}
+          <div class="offcanvas-body">
+            {% autoescape false %}
+            {{ result['validation_message'] | replace('\n', '<br>') }}
+            {% endautoescape %}
           </div>
         </div>
         <td>
@@ -66,8 +70,10 @@
             <h5 class="offcanvas-title" id="offcanvasBottomLabel">{{ project_link }} 插件元数据</h5>
             <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
           </div>
-          <div class="offcanvas-body small">
-            {{ result['metadata'] }}
+          <div class="offcanvas-body">
+            {% autoescape false %}
+            {{ result['metadata'] | replace('\n', '<br>') }}
+            {% endautoescape %}
           </div>
         </div>
       </tr>
