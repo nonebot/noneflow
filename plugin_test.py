@@ -62,6 +62,8 @@ else:
 
 
 class PluginData(TypedDict):
+    """NoneBot 商店插件数据"""
+
     module_name: str
     project_link: str
     name: str
@@ -70,6 +72,16 @@ class PluginData(TypedDict):
     homepage: str
     tags: list[Any]
     is_official: bool
+    type: str
+    supported_adapters: list[str]
+
+
+class Metadata(TypedDict):
+    """插件元数据"""
+
+    name: str
+    description: str
+    homepage: str
     type: str
     supported_adapters: list[str]
 
@@ -310,7 +322,7 @@ class StoreTest:
 
         self._metadata_pattern = re.compile(r"METADATA<<EOF\s([\s\S]+?)\sEOF")
 
-    def extract_metadata(self, path: Path) -> dict[Any, Any] | None:
+    def extract_metadata(self, path: Path) -> Metadata | None:
         """提取插件元数据"""
         with open(path / "output.txt") as f:
             output = f.read()
@@ -319,6 +331,7 @@ class StoreTest:
             return json.loads(match.group(1))
 
     async def validate_plugin(self, plugin: PluginData):
+        """验证插件"""
         project_link = plugin["project_link"]
         module_name = plugin["module_name"]
 
@@ -352,34 +365,10 @@ class StoreTest:
             "current": metadata_result["data"],
         }
 
-    async def run(self):
-        plugin_list = get_plugin_list()
-        if self._project_link is not None and (
-            plugin := plugin_list.get(self._project_link)
-        ):
-            test_plugins = [(self._project_link, plugin)]
-        else:
-            test_plugins = list(plugin_list.items())[
-                self._offset : self._offset + self._limit
-            ]
-
-        results = {}
-        total = len(test_plugins)
-        for i, (project_link, plugin) in enumerate(test_plugins):
-            if i >= self._limit:
-                break
-            if project_link.startswith("git+http"):
-                continue
-
-            print(f"{i+1}/{total} 正在测试插件 {project_link} ...")
-            results[project_link] = await self.validate_plugin(plugin)
-
-            with open(self._result_path, "w", encoding="utf8") as f:
-                json.dump(results, f, indent=2, ensure_ascii=False)
-
     async def validate_metadata(
-        self, result: bool, plugin: PluginData, metadata: dict | None
+        self, result: bool, plugin: PluginData, metadata: Metadata | None
     ):
+        """验证插件元数据"""
         import nonebot
 
         project_link = plugin["project_link"]
@@ -443,6 +432,32 @@ class StoreTest:
                 "data": None,
                 "message": str(e),
             }
+
+    async def run(self):
+        """测试商店内插件情况"""
+        plugin_list = get_plugin_list()
+        if self._project_link is not None and (
+            plugin := plugin_list.get(self._project_link)
+        ):
+            test_plugins = [(self._project_link, plugin)]
+        else:
+            test_plugins = list(plugin_list.items())[
+                self._offset : self._offset + self._limit
+            ]
+
+        results = {}
+        total = len(test_plugins)
+        for i, (project_link, plugin) in enumerate(test_plugins):
+            if i >= self._limit:
+                break
+            if project_link.startswith("git+http"):
+                continue
+
+            print(f"{i+1}/{total} 正在测试插件 {project_link} ...")
+            results[project_link] = await self.validate_plugin(plugin)
+
+            with open(self._result_path, "w", encoding="utf8") as f:
+                json.dump(results, f, indent=2, ensure_ascii=False)
 
 
 async def test_store(offset: int, limit: int):
