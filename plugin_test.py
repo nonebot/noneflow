@@ -14,6 +14,8 @@ from urllib.request import urlopen
 
 # 插件测试目录
 PLUGIN_TEST_PATH = Path("plugin_test")
+if not PLUGIN_TEST_PATH.exists():
+    PLUGIN_TEST_PATH.mkdir()
 PLUGIN_TEST_OUTPUT_PATH = PLUGIN_TEST_PATH / "output"
 # GITHUB
 GITHUB_OUTPUT_FILE = Path(os.environ.get("GITHUB_OUTPUT", ""))
@@ -141,16 +143,18 @@ class PluginTest:
     async def create_poetry_project(self) -> None:
         if not self._path.exists():
             proc = await create_subprocess_shell(
-                f"poetry new {self._path.resolve()} && cd {self._path.resolve()} && poetry add {self.project_link} && poetry run python -m pip install -U pip {self.project_link}",
+                f"""poetry new {self._path.resolve()} && cd {self._path.resolve()} && sed -i "s/\\^/~/g" pyproject.toml && poetry add {self.project_link} && poetry run python -m pip install -U pip {self.project_link}""",
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-            _, stderr = await proc.communicate()
+            stdout, stderr = await proc.communicate()
             code = proc.returncode
 
             self._create = not code
             if self._create:
                 print(f"项目 {self.project_link} 创建成功。")
+                for i in stdout.decode().strip().splitlines():
+                    self._log_output(f"    {i}")
             else:
                 self._log_output(f"项目 {self.project_link} 创建失败：")
                 for i in stderr.decode().strip().splitlines():
@@ -254,7 +258,7 @@ async def test_plugin():
         print("未找到 GITHUB_EVENT_PATH，已跳过")
         return
 
-    with open(event_path, encoding="utf8") as f:
+    with open(event_path) as f:
         event = json.load(f)
 
     event_name = os.environ.get("GITHUB_EVENT_NAME")
@@ -310,8 +314,6 @@ class StoreTest:
 
         # 输出文件位置
         self._plugin_test_path = PLUGIN_TEST_PATH
-        self._output_path = PLUGIN_TEST_OUTPUT_PATH
-        self._output_path.mkdir(exist_ok=True, parents=True)
         self._result_path = self._plugin_test_path / "results.json"
         self._plugins_path = self._plugin_test_path / "plugins.json"
         if not self._plugins_path.exists():
@@ -346,16 +348,9 @@ class StoreTest:
         GITHUB_STEP_SUMMARY_FILE = (test._path / "summary.txt").resolve()
         os.environ["GITHUB_OUTPUT"] = str(GITHUB_OUTPUT_FILE)
 
-        # 输出文件位置
-        output_path = self._output_path / f"{project_link}.log"
         # 获取测试结果
         result, output = await test.run()
-        # 记录测试结果
-        with open(output_path, "w", encoding="utf8") as f:
-            f.write(output)
-
         metadata = self.extract_metadata(test._path)
-
         metadata_result = await self.validate_metadata(result, plugin, metadata)
 
         from ansi2html import Ansi2HTMLConverter
@@ -383,8 +378,6 @@ class StoreTest:
         """验证插件元数据"""
         import nonebot
 
-        project_link = plugin["project_link"]
-
         nonebot.init(
             input_config={
                 "base": "",
@@ -401,6 +394,7 @@ class StoreTest:
 
         from src.plugins.publish.validation import PluginPublishInfo
 
+        project_link = plugin["project_link"]
         print(f"正在验证插件 {project_link} ...")
 
         if not metadata:
@@ -444,22 +438,6 @@ class StoreTest:
                 "data": None,
                 "message": str(e),
             }
-
-    def render_results(self, results: dict):
-        from jinja2 import Environment, FileSystemLoader, select_autoescape
-
-        def json_encode(value):
-            return json.dumps(value, indent=2, ensure_ascii=False)
-
-        env = Environment(
-            loader=FileSystemLoader(Path(__file__).parent / "templates"),
-            autoescape=select_autoescape(),
-        )
-        env.filters["json_encode"] = json_encode
-        template = env.get_template("results.html.jinja")
-        template.stream(results=results.values()).dump(
-            str(self._plugin_test_path / "index.html")
-        )
 
     def get_previous_results(self):
         """获取上次测试结果"""
@@ -506,10 +484,8 @@ class StoreTest:
                 results[project_link] = current_results[project_link]
             elif project_link in previous_results:
                 results[project_link] = previous_results[project_link]
-        with open(self._result_path, "w", encoding="utf8") as f:
+        with open(self._result_path, "w") as f:
             json.dump(results, f, indent=2, ensure_ascii=False)
-
-        self.render_results(results)
 
 
 async def test_store(offset: int, limit: int):
@@ -523,14 +499,10 @@ async def test_store(offset: int, limit: int):
 async def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--store", action="store_true", help="测试插件商店内的插件")
-    parser.add_argument("-r", "--render", action="store_true", help="渲染测试结果")
     parser.add_argument("-l", "--limit", type=int, default=1, help="测试插件数量")
     parser.add_argument("-o", "--offset", type=int, default=0, help="测试插件偏移量")
     args = parser.parse_args()
-    if args.render:
-        test = StoreTest()
-        test.render_results(json.load(open(test._result_path, encoding="utf8")))
-    elif args.store:
+    if args.store:
         await test_store(args.offset, args.limit)
     else:
         await test_plugin()
