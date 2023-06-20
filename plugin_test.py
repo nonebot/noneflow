@@ -140,14 +140,24 @@ class PluginTest:
             f.write(f"{summary}")
         return self._run, output
 
+    def get_env(self) -> dict[str, str]:
+        """获取环境变量
+
+        删除虚拟环境变量，防止 poetry 使用运行当前脚本的虚拟环境
+        """
+        env = os.environ.copy()
+        env.pop("VIRTUAL_ENV", None)
+        return env
+
     async def create_poetry_project(self) -> None:
         if not self._path.exists():
             self._path.mkdir()
             proc = await create_subprocess_shell(
-                f"""poetry init -n && sed -i "s/\\^/~/g" pyproject.toml && poetry add {self.project_link}""",
+                f"""poetry init -n && sed -i "s/\\^/~/g" pyproject.toml && poetry config virtualenvs.in-project true --local && poetry env info && poetry add {self.project_link}""",
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 cwd=self._path,
+                env=self.get_env(),
             )
             stdout, stderr = await proc.communicate()
             code = proc.returncode
@@ -172,6 +182,7 @@ class PluginTest:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 cwd=self._path,
+                env=self.get_env(),
             )
             stdout, _ = await proc.communicate()
             code = proc.returncode
@@ -189,6 +200,7 @@ class PluginTest:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 cwd=self._path,
+                env=self.get_env(),
             )
             stdout, _ = await proc.communicate()
             code = proc.returncode
@@ -221,9 +233,11 @@ class PluginTest:
                 )
 
             proc = await create_subprocess_shell(
-                f"cd {self._path.resolve()} && poetry run python runner.py",
+                "poetry run python runner.py",
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
+                cwd=self._path,
+                env=self.get_env(),
             )
             stdout, stderr = await proc.communicate()
             code = proc.returncode
@@ -305,7 +319,6 @@ async def test_plugin():
     await test.run()
 
 
-# region store test
 class StoreTest:
     """商店测试"""
 
@@ -498,9 +511,6 @@ class StoreTest:
 async def test_store(offset: int, limit: int):
     test = StoreTest(offset, limit)
     await test.run()
-
-
-# endregion
 
 
 async def main():
