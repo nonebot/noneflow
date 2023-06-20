@@ -142,10 +142,12 @@ class PluginTest:
 
     async def create_poetry_project(self) -> None:
         if not self._path.exists():
+            self._path.mkdir()
             proc = await create_subprocess_shell(
-                f"""poetry new {self._path.resolve()} && cd {self._path.resolve()} && sed -i "s/\\^/~/g" pyproject.toml && poetry add {self.project_link} && poetry run python -m pip install -U pip {self.project_link}""",
+                f"""poetry init -n && sed -i "s/\\^/~/g" pyproject.toml && poetry add {self.project_link} && poetry run python -m pip install -U pip {self.project_link}""",
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
+                cwd=self._path,
             )
             stdout, stderr = await proc.communicate()
             code = proc.returncode
@@ -166,9 +168,10 @@ class PluginTest:
     async def show_package_info(self) -> None:
         if self._path.exists():
             proc = await create_subprocess_shell(
-                f"cd {self._path.resolve()} && poetry show {self.project_link}",
+                f"poetry show {self.project_link}",
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
+                cwd=self._path,
             )
             stdout, _ = await proc.communicate()
             code = proc.returncode
@@ -182,9 +185,10 @@ class PluginTest:
     async def show_plugin_dependencies(self) -> None:
         if self._path.exists():
             proc = await create_subprocess_shell(
-                f"cd {self._path.resolve()} && poetry export --without-hashes",
+                "poetry export --without-hashes",
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
+                cwd=self._path,
             )
             stdout, _ = await proc.communicate()
             code = proc.returncode
