@@ -156,7 +156,7 @@ class PluginTest:
             if self._create:
                 print(f"项目 {self.project_link} 创建成功。")
                 for i in stdout.decode().strip().splitlines():
-                    self._log_output(f"    {i}")
+                    print(f"    {i}")
             else:
                 self._log_output(f"项目 {self.project_link} 创建失败：")
                 for i in stderr.decode().strip().splitlines():
