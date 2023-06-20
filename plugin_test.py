@@ -56,7 +56,7 @@ else:
                 k: v for (k, v) in x if k not in ("config", "extra")
             }},
         )
-        with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+        with open(os.environ["GITHUB_OUTPUT"], "a", encoding='utf8') as f:
             f.write(f"METADATA<<EOF\\n{{json.dumps(metadata, cls=SetEncoder)}}\\nEOF\\n")
 
 {}
@@ -125,16 +125,16 @@ class PluginTest:
             await self.run_poetry_project()
 
         # 输出测试结果
-        with open(GITHUB_OUTPUT_FILE, "a") as f:
+        with open(GITHUB_OUTPUT_FILE, "a", encoding="utf8") as f:
             f.write(f"RESULT={self._run}\n")
         # 输出测试输出
         output = "\n".join(self._output_lines)
         # 限制输出长度，防止评论过长，评论最大长度为 65536
         output = output[:50000]
-        with open(GITHUB_OUTPUT_FILE, "a") as f:
+        with open(GITHUB_OUTPUT_FILE, "a", encoding="utf8") as f:
             f.write(f"OUTPUT<<EOF\n{output}\nEOF\n")
         # 输出至作业摘要
-        with open(GITHUB_STEP_SUMMARY_FILE, "a") as f:
+        with open(GITHUB_STEP_SUMMARY_FILE, "a", encoding="utf8") as f:
             summary = f"插件 {self.project_link} 加载测试结果：{'通过' if self._run else '未通过'}\n"
             summary += f"<details><summary>测试输出</summary><pre><code>{output}</code></pre></details>"
             f.write(f"{summary}")
@@ -144,7 +144,7 @@ class PluginTest:
         if not self._path.exists():
             self._path.mkdir()
             proc = await create_subprocess_shell(
-                f"""poetry init -n && sed -i "s/\\^/~/g" pyproject.toml && poetry add {self.project_link} && poetry run python -m pip install -U pip {self.project_link}""",
+                f"""poetry init -n && sed -i "s/\\^/~/g" pyproject.toml && poetry add {self.project_link}""",
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 cwd=self._path,
@@ -205,14 +205,14 @@ class PluginTest:
     async def run_poetry_project(self) -> None:
         if self._path.exists():
             # 默认使用 ~none 驱动
-            with open(self._path / ".env", "w") as f:
+            with open(self._path / ".env", "w", encoding="utf8") as f:
                 f.write("DRIVER=~none\nLOGURU_COLORIZE=false")
             # 如果提供了插件配置项，则写入配置文件
             if self.config is not None:
-                with open(self._path / ".env.prod", "w") as f:
+                with open(self._path / ".env.prod", "w", encoding="utf8") as f:
                     f.write(self.config)
 
-            with open(self._path / "runner.py", "w") as f:
+            with open(self._path / "runner.py", "w", encoding="utf8") as f:
                 f.write(
                     RUNNER.format(
                         self.module_name,
@@ -262,7 +262,7 @@ async def test_plugin():
         print("未找到 GITHUB_EVENT_PATH，已跳过")
         return
 
-    with open(event_path) as f:
+    with open(event_path, encoding="utf8") as f:
         event = json.load(f)
 
     event_name = os.environ.get("GITHUB_EVENT_NAME")
@@ -321,7 +321,7 @@ class StoreTest:
         self._result_path = self._plugin_test_path / "results.json"
         self._plugins_path = self._plugin_test_path / "plugins.json"
         if not self._plugins_path.exists():
-            with open(self._plugins_path, "w") as f:
+            with open(self._plugins_path, "w", encoding="utf8") as f:
                 f.write("[]")
         if not self._result_path.exists():
             self._result_path.touch()
@@ -330,7 +330,7 @@ class StoreTest:
 
     def extract_metadata(self, path: Path) -> Metadata | None:
         """提取插件元数据"""
-        with open(path / "output.txt") as f:
+        with open(path / "output.txt", encoding="utf8") as f:
             output = f.read()
         match = self._metadata_pattern.search(output)
         if match:
@@ -371,9 +371,9 @@ class StoreTest:
             "validation_raw_data": metadata_result["raw"],
             "previous": plugin,
             "current": metadata_result["data"],
-            "time": datetime.utcnow()
-            .astimezone(ZoneInfo("Asia/Shanghai"))
-            .strftime("%Y-%m-%d %H:%M:%S"),
+            "time": datetime.now(ZoneInfo("Asia/Shanghai")).strftime(
+                "%Y-%m-%d %H:%M:%S"
+            ),
         }
 
     async def validate_metadata(
@@ -488,7 +488,7 @@ class StoreTest:
                 results[project_link] = current_results[project_link]
             elif project_link in previous_results:
                 results[project_link] = previous_results[project_link]
-        with open(self._result_path, "w") as f:
+        with open(self._result_path, "w", encoding="utf8") as f:
             json.dump(results, f, indent=2, ensure_ascii=False)
 
 
