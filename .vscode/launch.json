@@ -56,10 +56,10 @@
       "request": "launch",
       "program": "${workspaceFolder}/plugin_test.py",
       "args": [
-        "--validate"
+        "--store"
       ],
       "console": "integratedTerminal",
-      "justMyCode": true,
+      "justMyCode": false,
     },
   ]
 }
