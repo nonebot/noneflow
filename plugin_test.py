@@ -7,6 +7,7 @@ import argparse
 import json
 import os
 import re
+import shutil
 from asyncio import create_subprocess_shell, run, subprocess
 from pathlib import Path
 from typing import Any, TypedDict
@@ -377,6 +378,9 @@ class StoreTest:
         result, output = await test.run()
         metadata = self.extract_metadata(test._path)
         metadata_result = await self.validate_metadata(result, plugin, metadata)
+
+        # 测试完成后删除测试文件夹
+        shutil.rmtree(test._path)
 
         return {
             "run": result,
