@@ -336,6 +336,14 @@ class StoreTest:
         if match:
             return json.loads(match.group(1))
 
+    @staticmethod
+    def strip_ansi(text: str | None) -> str:
+        """去除 ANSI 转义字符"""
+        if not text:
+            return ""
+        ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+        return ansi_escape.sub("", text)
+
     async def validate_plugin(self, plugin: PluginData):
         """验证插件"""
         from datetime import datetime
@@ -357,17 +365,12 @@ class StoreTest:
         metadata = self.extract_metadata(test._path)
         metadata_result = await self.validate_metadata(result, plugin, metadata)
 
-        from ansi2html import Ansi2HTMLConverter
-
-        conv = Ansi2HTMLConverter()
         return {
             "run": result,
-            "output": conv.convert(output, full=False) if output else "",
+            "output": self.strip_ansi(output),
             "valid": metadata_result["valid"],
             "metadata": metadata,
-            "validation_message": conv.convert(metadata_result["message"], full=False)
-            if metadata_result["message"]
-            else "",
+            "validation_message": self.strip_ansi(metadata_result["message"]),
             "validation_raw_data": metadata_result["raw"],
             "previous": plugin,
             "current": metadata_result["data"],
