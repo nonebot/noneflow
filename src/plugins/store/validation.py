@@ -11,10 +11,10 @@ import httpx
 from pydantic import ValidationError
 
 from src.plugins.publish.validation import PluginPublishInfo
-from src.utils.plugin_test import PluginData, PluginTest
+from src.utils.plugin_test import PluginTest
 
 from .constants import PLUGIN_CONFIGS_URL
-from .models import Metadata
+from .models import Metadata, PluginData
 from .utils import strip_ansi
 
 
@@ -108,17 +108,16 @@ async def validate_plugin(key: str, plugin: PluginData):
     plugin_config = "\n".join(_CONFIGS.get(key, []))
     test = PluginTest(project_link, module_name, plugin_config)
 
-    # 设置环境变量
-    global GITHUB_OUTPUT_FILE, GITHUB_STEP_SUMMARY_FILE
-    GITHUB_OUTPUT_FILE = (test.path / "output.txt").resolve()
-    GITHUB_STEP_SUMMARY_FILE = (test.path / "summary.txt").resolve()
-    os.environ["GITHUB_OUTPUT"] = str(GITHUB_OUTPUT_FILE)
+    # 将 GitHub Action 的输出文件重定向到测试文件夹内
+    test.github_output_file = (test.path / "output.txt").resolve()
+    test.github_step_summary_file = (test.path / "summary.txt").resolve()
+    # 加载测试脚本需要从环境变量中获取 GitHub Action 的输出文件路径
+    os.environ["GITHUB_OUTPUT"] = str(test.github_output_file)
 
     # 获取测试结果
     result, output = await test.run()
     metadata = extract_metadata(test.path)
     metadata_result = await validate_metadata(result, plugin, metadata)
-
     version = extract_version(test.path)
 
     # 测试完成后删除测试文件夹

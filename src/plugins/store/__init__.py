@@ -1,11 +1,13 @@
 import json
+from pathlib import Path
 from typing import Any
 
 import httpx
 
-from src.utils.plugin_test import PLUGIN_TEST_PATH, STORE_PLUGINS_URL, PluginData
+from src.utils.plugin_test import STORE_PLUGINS_URL
 
 from .constants import RESULTS_URL
+from .models import PluginData
 from .validation import validate_plugin
 
 
@@ -17,7 +19,7 @@ class StoreTest:
         self._limit = limit
 
         # 输出文件位置
-        self._result_path = PLUGIN_TEST_PATH / "results.json"
+        self._result_path = Path("plugin_test") / "results.json"
         if not self._result_path.exists():
             self._result_path.touch()
 

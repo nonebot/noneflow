@@ -14,14 +14,8 @@ import os
 import re
 from asyncio import create_subprocess_shell, run, subprocess
 from pathlib import Path
-from typing import Any, TypedDict
 from urllib.request import urlopen
 
-# 插件测试目录
-PLUGIN_TEST_PATH = Path("plugin_test")
-# GITHUB
-GITHUB_OUTPUT_FILE = Path(os.environ.get("GITHUB_OUTPUT", ""))
-GITHUB_STEP_SUMMARY_FILE = Path(os.environ.get("GITHUB_STEP_SUMMARY", ""))
 # NoneBot Store
 STORE_PLUGINS_URL = "https://nonebot.dev/plugins.json"
 
@@ -65,21 +59,6 @@ else:
 """
 
 
-class PluginData(TypedDict):
-    """NoneBot 商店插件数据"""
-
-    module_name: str
-    project_link: str
-    name: str
-    desc: str
-    author: str
-    homepage: str
-    tags: list[Any]
-    is_official: bool
-    type: str
-    supported_adapters: list[str]
-
-
 def get_plugin_list() -> dict[str, str]:
     """获取插件列表
 
@@ -106,7 +85,14 @@ class PluginTest:
         self._run = False
         self._deps = []
 
+        # 输出信息
         self._output_lines: list[str] = []
+
+        # 插件测试目录
+        self.plugin_test_path = Path("plugin_test")
+        # 通过环境变量获取 GITHUB 输出文件位置
+        self.github_output_file = Path(os.environ.get("GITHUB_OUTPUT", ""))
+        self.github_step_summary_file = Path(os.environ.get("GITHUB_STEP_SUMMARY", ""))
 
     @property
     def key(self) -> str:
@@ -122,9 +108,13 @@ class PluginTest:
         """插件测试目录"""
         # 替换 : 为 -，防止文件名不合法
         key = self.key.replace(":", "-")
-        return PLUGIN_TEST_PATH / f"{key}-test"
+        return self.plugin_test_path / f"{key}-test"
 
     async def run(self):
+        # 运行前创建测试目录
+        if not self.plugin_test_path.exists():
+            self.plugin_test_path.mkdir()
+
         await self.create_poetry_project()
         if self._create:
             await self.show_package_info()
@@ -132,16 +122,16 @@ class PluginTest:
             await self.run_poetry_project()
 
         # 输出测试结果
-        with open(GITHUB_OUTPUT_FILE, "a", encoding="utf8") as f:
+        with open(self.github_output_file, "a", encoding="utf8") as f:
             f.write(f"RESULT={self._run}\n")
         # 输出测试输出
         output = "\n".join(self._output_lines)
         # 限制输出长度，防止评论过长，评论最大长度为 65536
         output = output[:50000]
-        with open(GITHUB_OUTPUT_FILE, "a", encoding="utf8") as f:
+        with open(self.github_output_file, "a", encoding="utf8") as f:
             f.write(f"OUTPUT<<EOF\n{output}\nEOF\n")
         # 输出至作业摘要
-        with open(GITHUB_STEP_SUMMARY_FILE, "a", encoding="utf8") as f:
+        with open(self.github_step_summary_file, "a", encoding="utf8") as f:
             summary = f"插件 {self.project_link} 加载测试结果：{'通过' if self._run else '未通过'}\n"
             summary += f"<details><summary>测试输出</summary><pre><code>{output}</code></pre></details>"
             f.write(f"{summary}")
@@ -317,9 +307,6 @@ async def main():
         print("议题中没有插件信息，已跳过")
         return
 
-    # 创建测试目录
-    if not PLUGIN_TEST_PATH.exists():
-        PLUGIN_TEST_PATH.mkdir()
     # 测试插件
     test = PluginTest(
         project_link.group(1).strip(),
