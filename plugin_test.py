@@ -351,8 +351,6 @@ class StoreTest:
         if not self._result_path.exists():
             self._result_path.touch()
 
-        self._metadata_pattern = re.compile(r"METADATA<<EOF\s([\s\S]+?)\sEOF")
-
         # 获取所需的数据
         self._plugin_list = self.get_plugin_list()
         self._previous_results = self.get_previous_results()
@@ -362,9 +360,17 @@ class StoreTest:
         """提取插件元数据"""
         with open(path / "output.txt", encoding="utf8") as f:
             output = f.read()
-        match = self._metadata_pattern.search(output)
+        match = re.search(r"METADATA<<EOF\s([\s\S]+?)\sEOF", output)
         if match:
             return json.loads(match.group(1))
+
+    def extract_version(self, path: Path) -> str | None:
+        """提取插件版本"""
+        with open(path / "output.txt", encoding="utf8") as f:
+            output = f.read()
+        match = re.search(r"version\s+:\s+(\S+)", self.strip_ansi(output))
+        if match:
+            return match.group(1).strip()
 
     @staticmethod
     def strip_ansi(text: str | None) -> str:
@@ -396,6 +402,8 @@ class StoreTest:
         metadata = self.extract_metadata(test.path)
         metadata_result = await self.validate_metadata(result, plugin, metadata)
 
+        version = self.extract_version(test.path)
+
         # 测试完成后删除测试文件夹
         shutil.rmtree(test.path)
 
@@ -411,6 +419,7 @@ class StoreTest:
             "time": datetime.now(ZoneInfo("Asia/Shanghai")).strftime(
                 "%Y-%m-%d %H:%M:%S"
             ),
+            "version": version,
         }
 
     async def validate_metadata(
@@ -533,32 +542,55 @@ class StoreTest:
         else:
             raise Exception("获取插件配置失败")
 
+    @staticmethod
+    def get_latest_version(project_link: str) -> str | None:
+        import httpx
+
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
+        }
+        url = f"https://pypi.org/pypi/{project_link}/json"
+        r = httpx.get(url, headers=headers)
+        if r.status_code == 200:
+            return r.json()["info"]["version"]
+        else:
+            return None
+
     async def run(self):
         """测试商店内插件情况"""
-        test_plugins = list(self._plugin_list.items())[
-            self._offset : self._offset + self._limit
-        ]
+        test_plugins = list(self._plugin_list.items())[self._offset :]
 
-        current_results = {}
-        total = len(test_plugins)
-        for i, (key, plugin) in enumerate(test_plugins):
-            if i >= self._limit:
+        new_results = {}
+
+        i = 1
+        for key, plugin in test_plugins:
+            if i > self._limit:
+                print(f"已达到测试上限 {self._limit}，测试停止")
                 break
             if key.startswith("git+http"):
                 continue
 
-            print(f"{i+1}/{total} 正在测试插件 {key} ...")
-            current_results[key] = await self.validate_plugin(plugin)
+            # 如果插件为最新版本，则跳过测试
+            latest_version = self.get_latest_version(plugin["project_link"])
+            if latest_version == self._previous_results.get(key, {}).get("version"):
+                print(f"插件 {key} 为最新版本，跳过测试")
+                continue
+
+            print(f"{i}/{self._limit} 正在测试插件 {key} ...")
+            new_results[key] = await self.validate_plugin(plugin)
+
+            i += 1
 
         results = {}
         # 按照插件列表顺序输出
         for key in self._plugin_list:
-            # 如果当前测试结果中有，则使用当前测试结果
+            # 如果新的测试结果中有，则使用新的测试结果
             # 否则使用上次测试结果
-            if key in current_results:
-                results[key] = current_results[key]
+            if key in new_results:
+                results[key] = new_results[key]
             elif key in self._previous_results:
                 results[key] = self._previous_results[key]
+
         with open(self._result_path, "w", encoding="utf8") as f:
             json.dump(results, f, indent=2, ensure_ascii=False)
 
