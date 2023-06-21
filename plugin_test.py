@@ -100,6 +100,9 @@ def get_plugin_list() -> dict[str, str]:
     return {plugin["project_link"]: plugin["module_name"] for plugin in plugins}
 
 
+PLUGIN_LIST = get_plugin_list()
+
+
 class PluginTest:
     def __init__(
         self, project_link: str, module_name: str, config: str | None = None
@@ -113,8 +116,6 @@ class PluginTest:
         self._deps = []
 
         self._output_lines: list[str] = []
-
-        self._plugin_list = get_plugin_list()
 
     @property
     def key(self) -> str:
@@ -281,8 +282,8 @@ class PluginTest:
         if match:
             package_name = match.group(1)
             # 不用包括自己
-            if package_name in self._plugin_list and package_name != self.project_link:
-                return self._plugin_list[package_name]
+            if package_name in PLUGIN_LIST and package_name != self.project_link:
+                return PLUGIN_LIST[package_name]
 
 
 async def test_plugin():
