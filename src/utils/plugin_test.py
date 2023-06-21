@@ -1,13 +1,17 @@
 """ 插件加载测试 
 
-主要测试代码来自 https://github.com/Lancercmd/nonebot2-store-test
+测试代码修改自 <https://github.com/Lancercmd/nonebot2-store-test>，谢谢 [Lan 佬](https://github.com/Lancercmd)。
+
+在 GitHub Actions 中运行，通过 GitHub Event 文件获取所需信息。并将测试结果保存至 GitHub Action 的输出文件中。
+
+当前会输出 RESULT, OUTPUT, METADATA 三个数据，分别对应测试结果、测试输出、插件元数据。 
+
+经测试可以直接在 Python 3.10+ 环境下运行，无需额外依赖。
 """
 
-import argparse
 import json
 import os
 import re
-import shutil
 from asyncio import create_subprocess_shell, run, subprocess
 from pathlib import Path
 from typing import Any, TypedDict
@@ -15,9 +19,6 @@ from urllib.request import urlopen
 
 # 插件测试目录
 PLUGIN_TEST_PATH = Path("plugin_test")
-if not PLUGIN_TEST_PATH.exists():
-    PLUGIN_TEST_PATH.mkdir()
-PLUGIN_TEST_OUTPUT_PATH = PLUGIN_TEST_PATH / "output"
 # GITHUB
 GITHUB_OUTPUT_FILE = Path(os.environ.get("GITHUB_OUTPUT", ""))
 GITHUB_STEP_SUMMARY_FILE = Path(os.environ.get("GITHUB_STEP_SUMMARY", ""))
@@ -75,16 +76,6 @@ class PluginData(TypedDict):
     homepage: str
     tags: list[Any]
     is_official: bool
-    type: str
-    supported_adapters: list[str]
-
-
-class Metadata(TypedDict):
-    """插件元数据"""
-
-    name: str
-    description: str
-    homepage: str
     type: str
     supported_adapters: list[str]
 
@@ -286,7 +277,7 @@ class PluginTest:
                 return PLUGIN_LIST[package_name]
 
 
-async def test_plugin():
+async def main():
     event_path = os.environ.get("GITHUB_EVENT_PATH")
     if not event_path:
         print("未找到 GITHUB_EVENT_PATH，已跳过")
@@ -326,6 +317,9 @@ async def test_plugin():
         print("议题中没有插件信息，已跳过")
         return
 
+    # 创建测试目录
+    if not PLUGIN_TEST_PATH.exists():
+        PLUGIN_TEST_PATH.mkdir()
     # 测试插件
     test = PluginTest(
         project_link.group(1).strip(),
@@ -333,284 +327,6 @@ async def test_plugin():
         config.group(1).strip() if config else None,
     )
     await test.run()
-
-
-class StoreTest:
-    """商店测试"""
-
-    def __init__(self, offset: int = 0, limit: int = 1) -> None:
-        self._offset = offset
-        self._limit = limit
-
-        # 输出文件位置
-        self._plugin_test_path = PLUGIN_TEST_PATH
-        self._result_path = self._plugin_test_path / "results.json"
-        self._plugins_path = self._plugin_test_path / "plugins.json"
-        if not self._plugins_path.exists():
-            with open(self._plugins_path, "w", encoding="utf8") as f:
-                f.write("[]")
-        if not self._result_path.exists():
-            self._result_path.touch()
-
-        # 获取所需的数据
-        self._plugin_list = self.get_plugin_list()
-        self._previous_results = self.get_previous_results()
-        self._plugin_configs = self.get_configs()
-
-    def extract_metadata(self, path: Path) -> Metadata | None:
-        """提取插件元数据"""
-        with open(path / "output.txt", encoding="utf8") as f:
-            output = f.read()
-        match = re.search(r"METADATA<<EOF\s([\s\S]+?)\sEOF", output)
-        if match:
-            return json.loads(match.group(1))
-
-    def extract_version(self, path: Path) -> str | None:
-        """提取插件版本"""
-        with open(path / "output.txt", encoding="utf8") as f:
-            output = f.read()
-        match = re.search(r"version\s+:\s+(\S+)", self.strip_ansi(output))
-        if match:
-            return match.group(1).strip()
-
-    @staticmethod
-    def strip_ansi(text: str | None) -> str:
-        """去除 ANSI 转义字符"""
-        if not text:
-            return ""
-        ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
-        return ansi_escape.sub("", text)
-
-    async def validate_plugin(self, plugin: PluginData):
-        """验证插件"""
-        from datetime import datetime
-        from zoneinfo import ZoneInfo
-
-        project_link = plugin["project_link"]
-        module_name = plugin["module_name"]
-
-        test = PluginTest(project_link, module_name)
-        test.config = "\n".join(self._plugin_configs.get(test.key, []))
-
-        # 设置环境变量
-        global GITHUB_OUTPUT_FILE, GITHUB_STEP_SUMMARY_FILE
-        GITHUB_OUTPUT_FILE = (test.path / "output.txt").resolve()
-        GITHUB_STEP_SUMMARY_FILE = (test.path / "summary.txt").resolve()
-        os.environ["GITHUB_OUTPUT"] = str(GITHUB_OUTPUT_FILE)
-
-        # 获取测试结果
-        result, output = await test.run()
-        metadata = self.extract_metadata(test.path)
-        metadata_result = await self.validate_metadata(result, plugin, metadata)
-
-        version = self.extract_version(test.path)
-
-        # 测试完成后删除测试文件夹
-        shutil.rmtree(test.path)
-
-        return {
-            "run": result,
-            "output": self.strip_ansi(output),
-            "valid": metadata_result["valid"],
-            "metadata": metadata,
-            "validation_message": self.strip_ansi(metadata_result["message"]),
-            "validation_raw_data": metadata_result["raw"],
-            "previous": plugin,
-            "current": metadata_result["data"],
-            "time": datetime.now(ZoneInfo("Asia/Shanghai")).strftime(
-                "%Y-%m-%d %H:%M:%S"
-            ),
-            "version": version,
-        }
-
-    async def validate_metadata(
-        self, result: bool, plugin: PluginData, metadata: Metadata | None
-    ):
-        """验证插件元数据"""
-        import nonebot
-
-        nonebot.init(
-            input_config={
-                "base": "",
-                "plugin_path": str(self._plugins_path),
-                "bot_path": "plugin_test/bots.json",
-                "adapter_path": "plugin_test/adapters.json",
-            },
-            github_repository="nonebot/plugin-test",
-            github_run_id=0,
-            plugin_test_result="",
-            plugin_test_output="",
-        )
-        from pydantic import ValidationError
-
-        from src.plugins.publish.validation import PluginPublishInfo
-
-        project_link = plugin["project_link"]
-        module_name = plugin["module_name"]
-        print(f"正在验证插件 {project_link}:{module_name} ...")
-
-        if not metadata:
-            return {
-                "valid": False,
-                "raw": None,
-                "data": None,
-                "message": "缺少元数据",
-            }
-
-        name = metadata.get("name")
-        desc = metadata.get("description")
-        homepage = metadata.get("homepage")
-        type = metadata.get("type")
-        supported_adapters = metadata.get("supported_adapters")
-
-        raw_data = {
-            "module_name": module_name,
-            "project_link": project_link,
-            "name": name,
-            "desc": desc,
-            "author": plugin["author"],
-            "homepage": homepage,
-            "tags": json.dumps(plugin["tags"]),
-            "plugin_test_result": result,
-            "type": type,
-            "supported_adapters": supported_adapters,
-        }
-        try:
-            publish_info = PluginPublishInfo(**raw_data)
-            return {
-                "valid": True,
-                "raw": raw_data,
-                "data": publish_info.dict(exclude={"plugin_test_result"}),
-                "message": None,
-            }
-        except ValidationError as e:
-            return {
-                "valid": False,
-                "raw": raw_data,
-                "data": None,
-                "message": str(e),
-            }
-
-    def get_previous_results(self) -> dict[str, dict[str, Any]]:
-        """获取上次测试结果"""
-        import httpx
-
-        resp = httpx.get(
-            "https://raw.githubusercontent.com/he0119/nonebot-store-test/main/results/results.json"
-        )
-        if resp.status_code == 200:
-            return resp.json()
-        else:
-            raise Exception("获取上次测试结果失败")
-
-    def get_configs(self) -> dict[str, list[str]]:
-        """获取插件配置项"""
-        import httpx
-
-        resp = httpx.get(
-            "https://raw.githubusercontent.com/he0119/nonebot-store-test/main/inputs/configs.json"
-        )
-        if resp.status_code == 200:
-            return resp.json()
-        else:
-            raise Exception("获取插件配置项失败")
-
-    def get_plugin_list(self) -> dict[str, PluginData]:
-        """获取插件列表
-
-        通过 package_name:module_name 获取插件信息
-        """
-        import httpx
-
-        resp = httpx.get(STORE_PLUGINS_URL)
-        if resp.status_code == 200:
-            return {
-                f'{plugin["project_link"]}:{plugin["module_name"]}': plugin
-                for plugin in resp.json()
-            }
-        else:
-            raise Exception("获取插件配置失败")
-
-    def get_plugins_config(self):
-        """获取插件配置"""
-        import httpx
-
-        resp = httpx.get(
-            "https://raw.githubusercontent.com/he0119/nonebot-store-test/main/results/configs.json"
-        )
-        if resp.status_code == 200:
-            return resp.json()
-        else:
-            raise Exception("获取插件配置失败")
-
-    @staticmethod
-    def get_latest_version(project_link: str) -> str | None:
-        import httpx
-
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
-        }
-        url = f"https://pypi.org/pypi/{project_link}/json"
-        r = httpx.get(url, headers=headers)
-        if r.status_code == 200:
-            return r.json()["info"]["version"]
-        else:
-            return None
-
-    async def run(self):
-        """测试商店内插件情况"""
-        test_plugins = list(self._plugin_list.items())[self._offset :]
-
-        new_results = {}
-
-        i = 1
-        for key, plugin in test_plugins:
-            if i > self._limit:
-                print(f"已达到测试上限 {self._limit}，测试停止")
-                break
-            if key.startswith("git+http"):
-                continue
-
-            # 如果插件为最新版本，则跳过测试
-            latest_version = self.get_latest_version(plugin["project_link"])
-            if latest_version == self._previous_results.get(key, {}).get("version"):
-                print(f"插件 {key} 为最新版本，跳过测试")
-                continue
-
-            print(f"{i}/{self._limit} 正在测试插件 {key} ...")
-            new_results[key] = await self.validate_plugin(plugin)
-
-            i += 1
-
-        results = {}
-        # 按照插件列表顺序输出
-        for key in self._plugin_list:
-            # 如果新的测试结果中有，则使用新的测试结果
-            # 否则使用上次测试结果
-            if key in new_results:
-                results[key] = new_results[key]
-            elif key in self._previous_results:
-                results[key] = self._previous_results[key]
-
-        with open(self._result_path, "w", encoding="utf8") as f:
-            json.dump(results, f, indent=2, ensure_ascii=False)
-
-
-async def test_store(offset: int, limit: int):
-    test = StoreTest(offset, limit)
-    await test.run()
-
-
-async def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-s", "--store", action="store_true", help="测试插件商店内的插件")
-    parser.add_argument("-l", "--limit", type=int, default=1, help="测试插件数量")
-    parser.add_argument("-o", "--offset", type=int, default=0, help="测试插件偏移量")
-    args = parser.parse_args()
-    if args.store:
-        await test_store(args.offset, args.limit)
-    else:
-        await test_plugin()
 
 
 if __name__ == "__main__":
