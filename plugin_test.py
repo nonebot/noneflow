@@ -120,15 +120,17 @@ class PluginTest:
     def key(self) -> str:
         """插件的标识符
 
-        project_link-module_name
-        例：nonebot-plugin-test-nonebot_plugin_test
+        project_link:module_name
+        例：nonebot-plugin-test:nonebot_plugin_test
         """
-        return f"{self.project_link}-{self.module_name}"
+        return f"{self.project_link}:{self.module_name}"
 
     @property
     def path(self) -> Path:
         """插件测试目录"""
-        return PLUGIN_TEST_PATH / f"{self.key}-test"
+        # 替换 : 为 -，防止文件名不合法
+        key = self.key.replace(":", "-")
+        return PLUGIN_TEST_PATH / f"{key}-test"
 
     async def run(self):
         await self.create_poetry_project()
@@ -351,6 +353,11 @@ class StoreTest:
 
         self._metadata_pattern = re.compile(r"METADATA<<EOF\s([\s\S]+?)\sEOF")
 
+        # 获取所需的数据
+        self._plugin_list = self.get_plugin_list()
+        self._previous_results = self.get_previous_results()
+        self._plugin_configs = self.get_configs()
+
     def extract_metadata(self, path: Path) -> Metadata | None:
         """提取插件元数据"""
         with open(path / "output.txt", encoding="utf8") as f:
@@ -376,6 +383,7 @@ class StoreTest:
         module_name = plugin["module_name"]
 
         test = PluginTest(project_link, module_name)
+        test.config = "\n".join(self._plugin_configs.get(test.key, []))
 
         # 设置环境变量
         global GITHUB_OUTPUT_FILE, GITHUB_STEP_SUMMARY_FILE
@@ -473,7 +481,7 @@ class StoreTest:
                 "message": str(e),
             }
 
-    def get_previous_results(self):
+    def get_previous_results(self) -> dict[str, dict[str, Any]]:
         """获取上次测试结果"""
         import httpx
 
@@ -484,6 +492,18 @@ class StoreTest:
             return resp.json()
         else:
             raise Exception("获取上次测试结果失败")
+
+    def get_configs(self) -> dict[str, list[str]]:
+        """获取插件配置项"""
+        import httpx
+
+        resp = httpx.get(
+            "https://raw.githubusercontent.com/he0119/nonebot-store-test/main/inputs/configs.json"
+        )
+        if resp.status_code == 200:
+            return resp.json()
+        else:
+            raise Exception("获取插件配置项失败")
 
     def get_plugin_list(self) -> dict[str, PluginData]:
         """获取插件列表
@@ -515,10 +535,7 @@ class StoreTest:
 
     async def run(self):
         """测试商店内插件情况"""
-        plugin_list = self.get_plugin_list()
-        previous_results = self.get_previous_results()
-
-        test_plugins = list(plugin_list.items())[
+        test_plugins = list(self._plugin_list.items())[
             self._offset : self._offset + self._limit
         ]
 
@@ -535,13 +552,13 @@ class StoreTest:
 
         results = {}
         # 按照插件列表顺序输出
-        for key in plugin_list:
+        for key in self._plugin_list:
             # 如果当前测试结果中有，则使用当前测试结果
             # 否则使用上次测试结果
             if key in current_results:
                 results[key] = current_results[key]
-            elif key in previous_results:
-                results[key] = previous_results[key]
+            elif key in self._previous_results:
+                results[key] = self._previous_results[key]
         with open(self._result_path, "w", encoding="utf8") as f:
             json.dump(results, f, indent=2, ensure_ascii=False)
 
