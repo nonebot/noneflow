@@ -1,6 +1,12 @@
 """ 插件加载测试 
 
-主要测试代码来自 https://github.com/Lancercmd/nonebot2-store-test
+测试代码修改自 <https://github.com/Lancercmd/nonebot2-store-test>，谢谢 [Lan 佬](https://github.com/Lancercmd)。
+
+在 GitHub Actions 中运行，通过 GitHub Event 文件获取所需信息。并将测试结果保存至 GitHub Action 的输出文件中。
+
+当前会输出 RESULT, OUTPUT, METADATA 三个数据，分别对应测试结果、测试输出、插件元数据。 
+
+经测试可以直接在 Python 3.10+ 环境下运行，无需额外依赖。
 """
 
 import json
@@ -10,9 +16,6 @@ from asyncio import create_subprocess_shell, run, subprocess
 from pathlib import Path
 from urllib.request import urlopen
 
-# GITHUB
-GITHUB_OUTPUT_FILE = Path(os.environ.get("GITHUB_OUTPUT", ""))
-GITHUB_STEP_SUMMARY_FILE = Path(os.environ.get("GITHUB_STEP_SUMMARY", ""))
 # NoneBot Store
 STORE_PLUGINS_URL = "https://nonebot.dev/plugins.json"
 
@@ -49,7 +52,7 @@ else:
                 k: v for (k, v) in x if k not in ("config", "extra")
             }},
         )
-        with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf8") as f:
             f.write(f"METADATA<<EOF\\n{{json.dumps(metadata, cls=SetEncoder)}}\\nEOF\\n")
 
 {}
@@ -67,10 +70,13 @@ def get_plugin_list() -> dict[str, str]:
     return {plugin["project_link"]: plugin["module_name"] for plugin in plugins}
 
 
-class PluginTest:
-    def __init__(self, project_link: str, module_name: str, config: str | None) -> None:
-        self._path = Path("plugin_test")
+PLUGIN_LIST = get_plugin_list()
 
+
+class PluginTest:
+    def __init__(
+        self, project_link: str, module_name: str, config: str | None = None
+    ) -> None:
         self.project_link = project_link
         self.module_name = module_name
         self.config = config
@@ -79,11 +85,36 @@ class PluginTest:
         self._run = False
         self._deps = []
 
+        # 输出信息
         self._output_lines: list[str] = []
 
-        self._plugin_list = get_plugin_list()
+        # 插件测试目录
+        self.test_dir = Path("plugin_test")
+        # 通过环境变量获取 GITHUB 输出文件位置
+        self.github_output_file = Path(os.environ.get("GITHUB_OUTPUT", ""))
+        self.github_step_summary_file = Path(os.environ.get("GITHUB_STEP_SUMMARY", ""))
+
+    @property
+    def key(self) -> str:
+        """插件的标识符
+
+        project_link:module_name
+        例：nonebot-plugin-test:nonebot_plugin_test
+        """
+        return f"{self.project_link}:{self.module_name}"
+
+    @property
+    def path(self) -> Path:
+        """插件测试目录"""
+        # 替换 : 为 -，防止文件名不合法
+        key = self.key.replace(":", "-")
+        return self.test_dir / f"{key}-test"
 
     async def run(self):
+        # 运行前创建测试目录
+        if not self.test_dir.exists():
+            self.test_dir.mkdir()
+
         await self.create_poetry_project()
         if self._create:
             await self.show_package_info()
@@ -91,32 +122,48 @@ class PluginTest:
             await self.run_poetry_project()
 
         # 输出测试结果
-        with open(GITHUB_OUTPUT_FILE, "a") as f:
+        with open(self.github_output_file, "a", encoding="utf8") as f:
             f.write(f"RESULT={self._run}\n")
         # 输出测试输出
         output = "\n".join(self._output_lines)
         # 限制输出长度，防止评论过长，评论最大长度为 65536
-        with open(GITHUB_OUTPUT_FILE, "a") as f:
-            f.write(f"OUTPUT<<EOF\n{output[:50000]}\nEOF\n")
+        output = output[:50000]
+        with open(self.github_output_file, "a", encoding="utf8") as f:
+            f.write(f"OUTPUT<<EOF\n{output}\nEOF\n")
         # 输出至作业摘要
-        with open(GITHUB_STEP_SUMMARY_FILE, "a") as f:
+        with open(self.github_step_summary_file, "a", encoding="utf8") as f:
             summary = f"插件 {self.project_link} 加载测试结果：{'通过' if self._run else '未通过'}\n"
             summary += f"<details><summary>测试输出</summary><pre><code>{output}</code></pre></details>"
             f.write(f"{summary}")
+        return self._run, output
+
+    def get_env(self) -> dict[str, str]:
+        """获取环境变量
+
+        删除虚拟环境变量，防止 poetry 使用运行当前脚本的虚拟环境
+        """
+        env = os.environ.copy()
+        env.pop("VIRTUAL_ENV", None)
+        return env
 
     async def create_poetry_project(self) -> None:
-        if not self._path.exists():
+        if not self.path.exists():
+            self.path.mkdir()
             proc = await create_subprocess_shell(
-                f"poetry new {self._path.resolve()} && cd {self._path.resolve()} && poetry add {self.project_link} && poetry run python -m pip install -U pip {self.project_link}",
+                f"""poetry init -n && sed -i "s/\\^/~/g" pyproject.toml && poetry config virtualenvs.in-project true --local && poetry env info && poetry add {self.project_link}""",
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
+                cwd=self.path,
+                env=self.get_env(),
             )
-            _, stderr = await proc.communicate()
+            stdout, stderr = await proc.communicate()
             code = proc.returncode
 
             self._create = not code
             if self._create:
                 print(f"项目 {self.project_link} 创建成功。")
+                for i in stdout.decode().strip().splitlines():
+                    print(f"    {i}")
             else:
                 self._log_output(f"项目 {self.project_link} 创建失败：")
                 for i in stderr.decode().strip().splitlines():
@@ -126,11 +173,13 @@ class PluginTest:
             self._create = True
 
     async def show_package_info(self) -> None:
-        if self._path.exists():
+        if self.path.exists():
             proc = await create_subprocess_shell(
-                f"cd {self._path.resolve()} && poetry show {self.project_link}",
+                f"poetry show {self.project_link}",
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
+                cwd=self.path,
+                env=self.get_env(),
             )
             stdout, _ = await proc.communicate()
             code = proc.returncode
@@ -142,11 +191,13 @@ class PluginTest:
                 self._log_output(f"插件 {self.project_link} 信息获取失败。")
 
     async def show_plugin_dependencies(self) -> None:
-        if self._path.exists():
+        if self.path.exists():
             proc = await create_subprocess_shell(
-                f"cd {self._path.resolve()} && poetry export --without-hashes",
+                "poetry export --without-hashes",
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
+                cwd=self.path,
+                env=self.get_env(),
             )
             stdout, _ = await proc.communicate()
             code = proc.returncode
@@ -161,16 +212,16 @@ class PluginTest:
                 self._log_output(f"插件 {self.project_link} 依赖获取失败。")
 
     async def run_poetry_project(self) -> None:
-        if self._path.exists():
+        if self.path.exists():
             # 默认使用 ~none 驱动
-            with open(self._path / ".env", "w") as f:
-                f.write("DRIVER=~none\nLOGURU_COLORIZE=false")
+            with open(self.path / ".env", "w", encoding="utf8") as f:
+                f.write("DRIVER=~none")
             # 如果提供了插件配置项，则写入配置文件
             if self.config is not None:
-                with open(self._path / ".env.prod", "w") as f:
+                with open(self.path / ".env.prod", "w", encoding="utf8") as f:
                     f.write(self.config)
 
-            with open(self._path / "runner.py", "w") as f:
+            with open(self.path / "runner.py", "w", encoding="utf8") as f:
                 f.write(
                     RUNNER.format(
                         self.module_name,
@@ -179,9 +230,11 @@ class PluginTest:
                 )
 
             proc = await create_subprocess_shell(
-                f"cd {self._path.resolve()} && poetry run python runner.py",
+                "poetry run python runner.py",
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
+                cwd=self.path,
+                env=self.get_env(),
             )
             stdout, stderr = await proc.communicate()
             code = proc.returncode
@@ -210,11 +263,11 @@ class PluginTest:
         if match:
             package_name = match.group(1)
             # 不用包括自己
-            if package_name in self._plugin_list and package_name != self.project_link:
-                return self._plugin_list[package_name]
+            if package_name in PLUGIN_LIST and package_name != self.project_link:
+                return PLUGIN_LIST[package_name]
 
 
-def main():
+async def main():
     event_path = os.environ.get("GITHUB_EVENT_PATH")
     if not event_path:
         print("未找到 GITHUB_EVENT_PATH，已跳过")
@@ -260,8 +313,8 @@ def main():
         module_name.group(1).strip(),
         config.group(1).strip() if config else None,
     )
-    run(test.run())
+    await test.run()
 
 
 if __name__ == "__main__":
-    main()
+    run(main())
