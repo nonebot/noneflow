@@ -52,7 +52,7 @@ else:
                 k: v for (k, v) in x if k not in ("config", "extra")
             }},
         )
-        with open(os.environ["GITHUB_OUTPUT"], "a", encoding='utf8') as f:
+        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf8") as f:
             f.write(f"METADATA<<EOF\\n{{json.dumps(metadata, cls=SetEncoder)}}\\nEOF\\n")
 
 {}
@@ -89,7 +89,7 @@ class PluginTest:
         self._output_lines: list[str] = []
 
         # 插件测试目录
-        self.plugin_test_path = Path("plugin_test")
+        self.test_dir = Path("plugin_test")
         # 通过环境变量获取 GITHUB 输出文件位置
         self.github_output_file = Path(os.environ.get("GITHUB_OUTPUT", ""))
         self.github_step_summary_file = Path(os.environ.get("GITHUB_STEP_SUMMARY", ""))
@@ -108,12 +108,12 @@ class PluginTest:
         """插件测试目录"""
         # 替换 : 为 -，防止文件名不合法
         key = self.key.replace(":", "-")
-        return self.plugin_test_path / f"{key}-test"
+        return self.test_dir / f"{key}-test"
 
     async def run(self):
         # 运行前创建测试目录
-        if not self.plugin_test_path.exists():
-            self.plugin_test_path.mkdir()
+        if not self.test_dir.exists():
+            self.test_dir.mkdir()
 
         await self.create_poetry_project()
         if self._create:
