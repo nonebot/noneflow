@@ -1,12 +1,11 @@
 import json
-from pathlib import Path
 from typing import Any
 
 import httpx
 
 from src.utils.plugin_test import STORE_PLUGINS_URL
 
-from .constants import RESULTS_URL
+from .constants import RESULTS_PATH, RESULTS_URL
 from .models import PluginData
 from .validation import validate_plugin
 
@@ -17,13 +16,6 @@ class StoreTest:
     def __init__(self, offset: int = 0, limit: int = 1) -> None:
         self._offset = offset
         self._limit = limit
-
-        # 输出文件位置
-        self._result_path = Path("plugin_test") / "results.json"
-        if not self._result_path.parent.exists():
-            self._result_path.parent.mkdir()
-        if not self._result_path.exists():
-            self._result_path.touch()
 
         # 获取所需的数据
         self._plugin_list = self.get_plugin_list()
@@ -100,5 +92,5 @@ class StoreTest:
             elif key in self._previous_results:
                 results[key] = self._previous_results[key]
 
-        with open(self._result_path, "w", encoding="utf8") as f:
+        with open(RESULTS_PATH, "w", encoding="utf8") as f:
             json.dump(results, f, indent=2, ensure_ascii=False)
