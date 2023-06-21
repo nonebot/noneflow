@@ -20,6 +20,8 @@ class StoreTest:
 
         # 输出文件位置
         self._result_path = Path("plugin_test") / "results.json"
+        if not self._result_path.parent.exists():
+            self._result_path.parent.mkdir()
         if not self._result_path.exists():
             self._result_path.touch()
 
