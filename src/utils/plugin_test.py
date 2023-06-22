@@ -144,6 +144,8 @@ class PluginTest:
         env.pop("VIRTUAL_ENV", None)
         # 启用 LOGURU 的颜色输出
         env["LOGURU_COLORIZE"] = "true"
+        # 强制 poetry 启用彩色输出
+        env["ANSICON"] = "1"
         return env
 
     async def create_poetry_project(self) -> None:
