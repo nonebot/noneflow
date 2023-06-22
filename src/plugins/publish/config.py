@@ -4,6 +4,8 @@ from nonebot import get_driver
 from nonebot.plugin import PluginMetadata
 from pydantic import BaseModel, Extra, validator
 
+from src.utils.helper import strip_ansi
+
 
 class PublishConfig(BaseModel):
     base: str
@@ -36,6 +38,11 @@ class Config(BaseModel, extra=Extra.ignore):
         if v == "":
             return None
         return v
+
+    @validator("plugin_test_output", pre=True)
+    def plugin_test_output_validator(cls, v):
+        """移除 ANSI 转义字符"""
+        return strip_ansi(v)
 
 
 plugin_config = Config.parse_obj(get_driver().config)

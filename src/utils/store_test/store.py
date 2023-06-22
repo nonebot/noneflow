@@ -13,9 +13,10 @@ from .validation import validate_plugin
 class StoreTest:
     """商店测试"""
 
-    def __init__(self, offset: int = 0, limit: int = 1) -> None:
+    def __init__(self, offset: int = 0, limit: int = 1, force: bool = False) -> None:
         self._offset = offset
         self._limit = limit
+        self._force = force
 
         # 获取所需的数据
         self._plugin_list = self.get_plugin_list()
@@ -57,6 +58,18 @@ class StoreTest:
         else:
             return None
 
+    def should_skip(self, key: str, plugin: PluginData) -> bool:
+        """是否跳过测试"""
+        # 如果强制测试，则不跳过
+        if self._force:
+            return False
+        # 如果插件为最新版本，则跳过测试
+        latest_version = self.get_latest_version(plugin["project_link"])
+        if latest_version == self._previous_results.get(key, {}).get("version"):
+            print(f"插件 {key} 为最新版本，跳过测试")
+            return True
+        return False
+
     async def run(self):
         """测试商店内插件情况"""
         test_plugins = list(self._plugin_list.items())[self._offset :]
@@ -71,10 +84,7 @@ class StoreTest:
             if key.startswith("git+http"):
                 continue
 
-            # 如果插件为最新版本，则跳过测试
-            latest_version = self.get_latest_version(plugin["project_link"])
-            if latest_version == self._previous_results.get(key, {}).get("version"):
-                print(f"插件 {key} 为最新版本，跳过测试")
+            if self.should_skip(key, plugin):
                 continue
 
             print(f"{i}/{self._limit} 正在测试插件 {key} ...")
