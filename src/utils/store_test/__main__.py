@@ -33,10 +33,11 @@ async def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-l", "--limit", type=int, default=1, help="测试插件数量")
     parser.add_argument("-o", "--offset", type=int, default=0, help="测试插件偏移量")
+    parser.add_argument("-f", "--force", action="store_true", help="强制重新测试")
     args = parser.parse_args()
     from .store import StoreTest
 
-    test = StoreTest(args.offset, args.limit)
+    test = StoreTest(args.offset, args.limit, args.force)
     await test.run()
 
 

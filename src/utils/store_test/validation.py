@@ -11,11 +11,11 @@ import httpx
 from pydantic import ValidationError
 
 from src.plugins.publish.validation import PluginPublishInfo
+from src.utils.helper import strip_ansi
 from src.utils.plugin_test import PluginTest
 
 from .constants import PLUGIN_CONFIGS_URL
 from .models import Metadata, PluginData
-from .utils import strip_ansi
 
 
 def get_configs() -> dict[str, list[str]]:
@@ -89,7 +89,7 @@ async def validate_metadata(
             "valid": True,
             "raw": raw_data,
             "data": publish_info.dict(exclude={"plugin_test_result"}),
-            "message": None,
+            "message": "通过",
         }
     except ValidationError as e:
         return {
@@ -125,10 +125,10 @@ async def validate_plugin(key: str, plugin: PluginData):
 
     return {
         "run": result,
-        "output": strip_ansi(output),
+        "output": output,
         "valid": metadata_result["valid"],
         "metadata": metadata,
-        "validation_message": strip_ansi(metadata_result["message"]),
+        "validation_message": metadata_result["message"],
         "validation_raw_data": metadata_result["raw"],
         "previous": plugin,
         "current": metadata_result["data"],

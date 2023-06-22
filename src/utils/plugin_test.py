@@ -138,12 +138,12 @@ class PluginTest:
         return self._run, output
 
     def get_env(self) -> dict[str, str]:
-        """获取环境变量
-
-        删除虚拟环境变量，防止 poetry 使用运行当前脚本的虚拟环境
-        """
+        """获取环境变量"""
         env = os.environ.copy()
+        # 删除虚拟环境变量，防止 poetry 使用运行当前脚本的虚拟环境
         env.pop("VIRTUAL_ENV", None)
+        # 启用 LOGURU 的颜色输出
+        env["LOGURU_COLORIZE"] = "true"
         return env
 
     async def create_poetry_project(self) -> None:
@@ -185,7 +185,7 @@ class PluginTest:
             code = proc.returncode
             if not code:
                 self._log_output(f"插件 {self.project_link} 的信息如下：")
-                for i in stdout.decode().strip().splitlines():
+                for i in stdout.decode().splitlines():
                     self._log_output(f"    {i}")
             else:
                 self._log_output(f"插件 {self.project_link} 信息获取失败。")
