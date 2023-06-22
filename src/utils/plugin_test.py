@@ -144,15 +144,13 @@ class PluginTest:
         env.pop("VIRTUAL_ENV", None)
         # 启用 LOGURU 的颜色输出
         env["LOGURU_COLORIZE"] = "true"
-        # 强制 poetry 启用彩色输出
-        env["ANSICON"] = "1"
         return env
 
     async def create_poetry_project(self) -> None:
         if not self.path.exists():
             self.path.mkdir()
             proc = await create_subprocess_shell(
-                f"""poetry init -n && sed -i "s/\\^/~/g" pyproject.toml && poetry config virtualenvs.in-project true --local && poetry env info && poetry add {self.project_link}""",
+                f"""poetry init -n && sed -i "s/\\^/~/g" pyproject.toml && poetry config virtualenvs.in-project true --local && poetry env info --ansi && poetry add {self.project_link}""",
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 cwd=self.path,
@@ -177,7 +175,7 @@ class PluginTest:
     async def show_package_info(self) -> None:
         if self.path.exists():
             proc = await create_subprocess_shell(
-                f"poetry show {self.project_link}",
+                f"poetry show {self.project_link} --ansi",
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 cwd=self.path,
