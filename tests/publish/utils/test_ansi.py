@@ -2,7 +2,7 @@ from nonebug import App
 
 
 async def test_strip_ansi(app: App):
-    from src.utils.helper import strip_ansi
+    from src.utils.plugin_test import strip_ansi
 
     assert strip_ansi("test") == "test"
 

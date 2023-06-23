@@ -11,8 +11,7 @@ import httpx
 from pydantic import ValidationError
 
 from src.plugins.publish.validation import PluginPublishInfo
-from src.utils.helper import strip_ansi
-from src.utils.plugin_test import PluginTest
+from src.utils.plugin_test import PluginTest, strip_ansi
 
 from .constants import PLUGIN_CONFIGS_URL
 from .models import Metadata, PluginData
