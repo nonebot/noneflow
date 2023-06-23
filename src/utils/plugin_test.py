@@ -59,6 +59,14 @@ else:
 """
 
 
+def strip_ansi(text: str | None) -> str:
+    """去除 ANSI 转义字符"""
+    if not text:
+        return ""
+    ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+    return ansi_escape.sub("", text)
+
+
 def get_plugin_list() -> dict[str, str]:
     """获取插件列表
 
@@ -126,14 +134,16 @@ class PluginTest:
             f.write(f"RESULT={self._run}\n")
         # 输出测试输出
         output = "\n".join(self._output_lines)
+        # GitHub 不支持 ANSI 转义字符所以去掉
+        ansiless_output = strip_ansi(output)
         # 限制输出长度，防止评论过长，评论最大长度为 65536
-        output = output[:50000]
+        ansiless_output = ansiless_output[:50000]
         with open(self.github_output_file, "a", encoding="utf8") as f:
-            f.write(f"OUTPUT<<EOF\n{output}\nEOF\n")
+            f.write(f"OUTPUT<<EOF\n{ansiless_output}\nEOF\n")
         # 输出至作业摘要
         with open(self.github_step_summary_file, "a", encoding="utf8") as f:
             summary = f"插件 {self.project_link} 加载测试结果：{'通过' if self._run else '未通过'}\n"
-            summary += f"<details><summary>测试输出</summary><pre><code>{output}</code></pre></details>"
+            summary += f"<details><summary>测试输出</summary><pre><code>{ansiless_output}</code></pre></details>"
             f.write(f"{summary}")
         return self._run, output
 

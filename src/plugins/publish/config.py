@@ -4,7 +4,7 @@ from nonebot import get_driver
 from nonebot.plugin import PluginMetadata
 from pydantic import BaseModel, Extra, validator
 
-from src.utils.helper import strip_ansi
+from src.utils.plugin_test import strip_ansi
 
 
 class PublishConfig(BaseModel):
