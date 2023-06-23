@@ -24,3 +24,12 @@ class Metadata(TypedDict):
     homepage: str
     type: str
     supported_adapters: list[str]
+
+
+class ValidationResult(TypedDict):
+    """验证结果"""
+
+    valid: bool
+    raw: dict[str, Any] | None
+    data: PluginData | None
+    message: str

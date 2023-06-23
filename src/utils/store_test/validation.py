@@ -14,7 +14,7 @@ from src.plugins.publish.validation import PluginPublishInfo
 from src.utils.plugin_test import PluginTest, strip_ansi
 
 from .constants import PLUGIN_CONFIGS_URL
-from .models import Metadata, PluginData
+from .models import Metadata, PluginData, ValidationResult
 
 
 def get_configs() -> dict[str, list[str]]:
@@ -50,7 +50,7 @@ def extract_version(path: Path) -> str | None:
 
 async def validate_metadata(
     result: bool, plugin: PluginData, metadata: Metadata | None
-):
+) -> ValidationResult:
     """验证插件元数据"""
     project_link = plugin["project_link"]
     module_name = plugin["module_name"]
@@ -87,7 +87,7 @@ async def validate_metadata(
         return {
             "valid": True,
             "raw": raw_data,
-            "data": publish_info.dict(exclude={"plugin_test_result"}),
+            "data": publish_info.dict(exclude={"plugin_test_result"}),  # type: ignore
             "message": "通过",
         }
     except ValidationError as e:
@@ -119,6 +119,11 @@ async def validate_plugin(key: str, plugin: PluginData):
     metadata_result = await validate_metadata(result, plugin, metadata)
     version = extract_version(test.path)
 
+    current_plugin = metadata_result["data"]
+    # 插件验证过程中无法获取是否是官方插件，因此需要从原始数据中获取
+    if current_plugin:
+        current_plugin["is_official"] = plugin["is_official"]
+
     # 测试完成后删除测试文件夹
     shutil.rmtree(test.path)
 
@@ -130,7 +135,7 @@ async def validate_plugin(key: str, plugin: PluginData):
         "validation_message": metadata_result["message"],
         "validation_raw_data": metadata_result["raw"],
         "previous": plugin,
-        "current": metadata_result["data"],
+        "current": current_plugin,
         "time": datetime.now(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"),
         "version": version,
     }
