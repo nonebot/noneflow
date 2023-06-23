@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [2.5.0] - 2023-06-14
+
+### Fixed
+
+- 插件测试输出去除 ANSI 字符
+
+### Added
+
+- 添加商店测试脚本
+
 ## [2.4.3] - 2023-06-14
 
 ### Changed
@@ -233,7 +243,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/noneflow/compare/v2.4.3...HEAD
+[unreleased]: https://github.com/nonebot/noneflow/compare/v2.5.0...HEAD
+[2.5.0]: https://github.com/nonebot/noneflow/compare/v2.4.3...v2.5.0
 [2.4.3]: https://github.com/nonebot/noneflow/compare/v2.4.2...v2.4.3
 [2.4.2]: https://github.com/nonebot/noneflow/compare/v2.4.1...v2.4.2
 [2.4.1]: https://github.com/nonebot/noneflow/compare/v2.4.0...v2.4.1
