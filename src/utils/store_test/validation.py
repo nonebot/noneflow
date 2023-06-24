@@ -7,27 +7,16 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-import httpx
 from pydantic import ValidationError
 
 from src.plugins.publish.validation import PluginPublishInfo
 from src.utils.plugin_test import PluginTest, strip_ansi
 
-from .constants import PLUGIN_CONFIGS_URL
+from .constants import STORE_CONFIGS_PATH
 from .models import Metadata, PluginData, ValidationResult
+from .utils import load_json
 
-
-def get_configs() -> dict[str, list[str]]:
-    """获取插件配置项"""
-
-    resp = httpx.get(PLUGIN_CONFIGS_URL)
-    if resp.status_code == 200:
-        return resp.json()
-    else:
-        raise Exception("获取插件配置项失败")
-
-
-_CONFIGS = get_configs()
+_CONFIGS = load_json(STORE_CONFIGS_PATH)
 
 
 def extract_metadata(path: Path) -> Metadata | None:

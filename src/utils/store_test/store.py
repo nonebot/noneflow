@@ -1,50 +1,32 @@
 import json
-from typing import Any
 
 import httpx
 
-from src.utils.plugin_test import STORE_PLUGINS_URL
-
-from .constants import RESULTS_PATH, RESULTS_URL
+from .constants import PREVIOUS_RESULTS_PATH, RESULTS_PATH, STORE_PLUGINS_PATH
 from .models import PluginData
+from .utils import load_json
 from .validation import validate_plugin
 
 
 class StoreTest:
     """商店测试"""
 
-    def __init__(self, offset: int = 0, limit: int = 1, force: bool = False) -> None:
+    def __init__(
+        self,
+        offset: int = 0,
+        limit: int = 1,
+        force: bool = False,
+    ) -> None:
         self._offset = offset
         self._limit = limit
         self._force = force
 
         # 获取所需的数据
-        self._plugin_list = self.get_plugin_list()
-        self._previous_results = self.get_previous_results()
-
-    def get_previous_results(self) -> dict[str, dict[str, Any]]:
-        """获取上次测试结果"""
-
-        resp = httpx.get(RESULTS_URL)
-        if resp.status_code == 200:
-            return resp.json()
-        else:
-            raise Exception("获取上次测试结果失败")
-
-    def get_plugin_list(self) -> dict[str, PluginData]:
-        """获取插件列表
-
-        通过 package_name:module_name 获取插件信息
-        """
-
-        resp = httpx.get(STORE_PLUGINS_URL)
-        if resp.status_code == 200:
-            return {
-                f'{plugin["project_link"]}:{plugin["module_name"]}': plugin
-                for plugin in resp.json()
-            }
-        else:
-            raise Exception("获取插件配置失败")
+        self._plugin_list = {
+            f'{plugin["project_link"]}:{plugin["module_name"]}': plugin
+            for plugin in load_json(STORE_PLUGINS_PATH)
+        }
+        self._previous_results = load_json(PREVIOUS_RESULTS_PATH)
 
     @staticmethod
     def get_latest_version(project_link: str) -> str | None:
