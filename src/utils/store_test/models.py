@@ -14,6 +14,8 @@ class PluginData(TypedDict):
     is_official: bool
     type: str
     supported_adapters: list[str]
+    valid: bool
+    time: str
 
 
 class Metadata(TypedDict):

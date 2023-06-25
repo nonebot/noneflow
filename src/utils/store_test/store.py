@@ -63,7 +63,10 @@ class StoreTest:
         plugins = []
         for result in results:
             # 如果插件验证失败，则不会有新结果，直接使用老结果
-            plugins.append(result["plugin"]["new"] or result["plugin"]["old"])
+            new_plugin: PluginData = result["plugin"]["new"] or result["plugin"]["old"]  # type: ignore
+            new_plugin["valid"] = result["results"]["validation"]
+            new_plugin["time"] = result["time"]
+            plugins.append(new_plugin)
 
         with open(PLUGINS_PATH, "w", encoding="utf8") as f:
             json.dump(plugins, f, indent=2, ensure_ascii=False)
