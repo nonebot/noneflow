@@ -30,6 +30,7 @@ from .utils import (
     resolve_conflict_pull_requests,
     run_shell_command,
     should_skip_plugin_test,
+    trigger_registry_update,
 )
 from .validation import PublishInfo
 
@@ -75,6 +76,9 @@ async def handle_pr_close(
     related_issue_number: int = Depends(get_related_issue_number),
 ) -> None:
     async with bot.as_installation(installation_id):
+        # 如果商店更新则触发 registry 更新
+        await trigger_registry_update(bot, event.payload.pull_request, publish_type)
+
         issue = (
             await bot.rest.issues.async_get(
                 **repo_info.dict(), issue_number=related_issue_number

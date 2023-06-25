@@ -48,6 +48,20 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
             mock_installation_resp,
         )
         ctx.should_call_api(
+            "rest.repos.async_create_dispatch_event",
+            {
+                "repo": "registry",
+                "owner": "owner",
+                "event_type": "store_test",
+                "client_payload": {
+                    "type": "Plugin",
+                    "project_link": "project_link1",
+                    "module_name": "module_name1",
+                },
+            },
+            True,
+        )
+        ctx.should_call_api(
             "rest.issues.async_get",
             {"owner": "he0119", "repo": "action-test", "issue_number": 76},
             mock_issues_resp,
@@ -76,6 +90,11 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
         [
             mocker.call(
                 ["git", "config", "--global", "safe.directory", "*"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                ["git", "checkout", "dcd38595790af3db0d12c00a9f1fbc76f2215041"],
                 check=True,
                 capture_output=True,
             ),

@@ -1,3 +1,4 @@
+import json
 import re
 import subprocess
 from typing import TYPE_CHECKING, Union
@@ -5,7 +6,7 @@ from typing import TYPE_CHECKING, Union
 from githubkit.exception import RequestFailed
 from githubkit.rest.models import PullRequest, PullRequestSimple
 from nonebot import logger
-from nonebot.adapters.github import Bot
+from nonebot.adapters.github import Bot, GitHubBot
 
 from .config import plugin_config
 from .constants import (
@@ -40,6 +41,7 @@ if TYPE_CHECKING:
         IssuesReopenedPropIssue,
     )
     from githubkit.webhooks.models import Label as WebhookLabel
+    from githubkit.webhooks.models import PullRequestClosedPropPullRequest
 
 
 def run_shell_command(command: list[str]):
@@ -321,3 +323,42 @@ async def ensure_issue_content(
             **repo_info.dict(), issue_number=issue_number, body="\n\n".join(new_content)
         )
         logger.info("检测到议题内容缺失，已更新")
+
+
+async def trigger_registry_update(
+    bot: GitHubBot, pull: "PullRequestClosedPropPullRequest", publish_type: PublishType
+):
+    """通过 repository_dispatch 触发商店测试更新"""
+    if not pull.merged:
+        return
+
+    if publish_type == PublishType.PLUGIN:
+        sha = pull.head.sha
+        run_shell_command(["git", "checkout", sha])
+
+        with plugin_config.input_config.plugin_path.open() as f:
+            plugins = json.load(f)
+
+        if not plugins:
+            return
+
+        plugin = plugins[-1]
+        project_link = plugin["project_link"]
+        module_name = plugin["module_name"]
+
+        client_payload = {
+            "type": publish_type.value,
+            "project_link": project_link,
+            "module_name": module_name,
+        }
+    else:
+        client_payload = {"type": publish_type.value}
+
+    owner, repo = plugin_config.input_config.registry_repository.split("/")
+    # 触发插件测试
+    await bot.rest.repos.async_create_dispatch_event(
+        repo=repo,
+        owner=owner,
+        event_type="registry_update",
+        client_payload=client_payload,  # type: ignore
+    )

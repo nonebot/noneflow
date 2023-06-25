@@ -127,7 +127,8 @@ jobs:
               "base": "master",
               "plugin_path": "website/static/plugins.json",
               "bot_path": "website/static/bots.json",
-              "adapter_path": "website/static/adapters.json"
+              "adapter_path": "website/static/adapters.json",
+              "registry_repository": "nonebot/registry"
             }
         env:
           PLUGIN_TEST_RESULT: ${{ needs.plugin_test.outputs.result }}
