@@ -1,9 +1,15 @@
 import json
+from collections.abc import Iterable
 
 import httpx
 
-from .constants import PREVIOUS_RESULTS_PATH, RESULTS_PATH, STORE_PLUGINS_PATH
-from .models import PluginData
+from .constants import (
+    PLUGINS_PATH,
+    PREVIOUS_RESULTS_PATH,
+    RESULTS_PATH,
+    STORE_PLUGINS_PATH,
+)
+from .models import PluginData, TestResult
 from .utils import load_json
 from .validation import validate_plugin
 
@@ -26,7 +32,7 @@ class StoreTest:
             f'{plugin["project_link"]}:{plugin["module_name"]}': plugin
             for plugin in load_json(STORE_PLUGINS_PATH)
         }
-        self._previous_results = load_json(PREVIOUS_RESULTS_PATH)
+        self._previous_results: dict[str, TestResult] = load_json(PREVIOUS_RESULTS_PATH)
 
     @staticmethod
     def get_latest_version(project_link: str) -> str | None:
@@ -52,11 +58,21 @@ class StoreTest:
             return True
         return False
 
+    def generate_plugin_list(self, results: Iterable[TestResult]):
+        """生成插件列表"""
+        plugins = []
+        for result in results:
+            # 如果插件验证失败，则不会有新结果，直接使用老结果
+            plugins.append(result["plugin"]["new"] or result["plugin"]["old"])
+
+        with open(PLUGINS_PATH, "w", encoding="utf8") as f:
+            json.dump(plugins, f, indent=2, ensure_ascii=False)
+
     async def run(self):
         """测试商店内插件情况"""
         test_plugins = list(self._plugin_list.items())[self._offset :]
 
-        new_results = {}
+        new_results: dict[str, TestResult] = {}
 
         i = 1
         for key, plugin in test_plugins:
@@ -74,7 +90,7 @@ class StoreTest:
 
             i += 1
 
-        results = {}
+        results: dict[str, TestResult] = {}
         # 按照插件列表顺序输出
         for key in self._plugin_list:
             # 如果新的测试结果中有，则使用新的测试结果
@@ -86,3 +102,5 @@ class StoreTest:
 
         with open(RESULTS_PATH, "w", encoding="utf8") as f:
             json.dump(results, f, indent=2, ensure_ascii=False)
+
+        self.generate_plugin_list(results.values())

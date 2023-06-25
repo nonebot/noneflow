@@ -1,4 +1,4 @@
-from typing import Any, TypedDict
+from typing import Any, Literal, TypedDict
 
 
 class PluginData(TypedDict):
@@ -26,10 +26,19 @@ class Metadata(TypedDict):
     supported_adapters: list[str]
 
 
-class ValidationResult(TypedDict):
-    """验证结果"""
+class PluginValidation(TypedDict):
+    """验证插件的结果与输出"""
 
-    valid: bool
-    raw: dict[str, Any] | None
-    data: PluginData | None
-    message: str
+    result: bool
+    output: str
+    plugin: PluginData | None
+
+
+class TestResult(TypedDict):
+    """测试结果"""
+
+    time: str
+    version: str | None
+    results: dict[Literal["validation", "load", "metadata"], bool]
+    outputs: dict[Literal["validation", "load", "metadata"], Any]
+    plugin: dict[Literal["old", "new"], PluginData | None]

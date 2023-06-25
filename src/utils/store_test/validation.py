@@ -5,6 +5,7 @@ import re
 import shutil
 from datetime import datetime
 from pathlib import Path
+from typing import cast
 from zoneinfo import ZoneInfo
 
 from pydantic import ValidationError
@@ -13,7 +14,7 @@ from src.plugins.publish.validation import PluginPublishInfo
 from src.utils.plugin_test import PluginTest, strip_ansi
 
 from .constants import STORE_CONFIGS_PATH
-from .models import Metadata, PluginData, ValidationResult
+from .models import Metadata, PluginData, PluginValidation, TestResult
 from .utils import load_json
 
 _CONFIGS = load_json(STORE_CONFIGS_PATH)
@@ -39,7 +40,7 @@ def extract_version(path: Path) -> str | None:
 
 async def validate_metadata(
     result: bool, plugin: PluginData, metadata: Metadata | None
-) -> ValidationResult:
+) -> PluginValidation:
     """验证插件元数据"""
     project_link = plugin["project_link"]
     module_name = plugin["module_name"]
@@ -47,10 +48,9 @@ async def validate_metadata(
 
     if not metadata:
         return {
-            "valid": False,
-            "raw": None,
-            "data": None,
-            "message": "缺少元数据",
+            "result": False,
+            "output": "缺少元数据",
+            "plugin": None,
         }
 
     name = metadata.get("name")
@@ -73,22 +73,23 @@ async def validate_metadata(
     }
     try:
         publish_info = PluginPublishInfo(**raw_data)
+        plugin_data = cast(
+            PluginData, publish_info.dict(exclude={"plugin_test_result"})
+        )
         return {
-            "valid": True,
-            "raw": raw_data,
-            "data": publish_info.dict(exclude={"plugin_test_result"}),  # type: ignore
-            "message": "通过",
+            "result": True,
+            "output": "通过",
+            "plugin": plugin_data,
         }
     except ValidationError as e:
         return {
-            "valid": False,
-            "raw": raw_data,
-            "data": None,
-            "message": str(e),
+            "result": False,
+            "output": str(e),  # TODO: 优化输出，可通过 jinja2 模板渲染
+            "plugin": None,
         }
 
 
-async def validate_plugin(key: str, plugin: PluginData):
+async def validate_plugin(key: str, plugin: PluginData) -> TestResult:
     """验证插件"""
     project_link = plugin["project_link"]
     module_name = plugin["module_name"]
@@ -103,28 +104,36 @@ async def validate_plugin(key: str, plugin: PluginData):
     os.environ["GITHUB_OUTPUT"] = str(test.github_output_file)
 
     # 获取测试结果
-    result, output = await test.run()
+    load_result, load_output = await test.run()
+
     metadata = extract_metadata(test.path)
-    metadata_result = await validate_metadata(result, plugin, metadata)
     version = extract_version(test.path)
 
-    current_plugin = metadata_result["data"]
+    validation = await validate_metadata(load_result, plugin, metadata)
+
+    new_plugin = validation["plugin"]
     # 插件验证过程中无法获取是否是官方插件，因此需要从原始数据中获取
-    if current_plugin:
-        current_plugin["is_official"] = plugin["is_official"]
+    if new_plugin:
+        new_plugin["is_official"] = plugin["is_official"]
 
     # 测试完成后删除测试文件夹
     shutil.rmtree(test.path)
 
     return {
-        "run": result,
-        "output": output,
-        "valid": metadata_result["valid"],
-        "metadata": metadata,
-        "validation_message": metadata_result["message"],
-        "validation_raw_data": metadata_result["raw"],
-        "previous": plugin,
-        "current": current_plugin,
         "time": datetime.now(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"),
         "version": version,
+        "results": {
+            "validation": validation["result"],
+            "load": load_result,
+            "metadata": bool(metadata),
+        },
+        "outputs": {
+            "validation": validation["output"],
+            "load": load_output,
+            "metadata": metadata,
+        },
+        "plugin": {
+            "old": plugin,
+            "new": new_plugin,
+        },
     }
