@@ -52,11 +52,10 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
             {
                 "repo": "registry",
                 "owner": "owner",
-                "event_type": "store_test",
+                "event_type": "registry_update",
                 "client_payload": {
                     "type": "Plugin",
-                    "project_link": "project_link1",
-                    "module_name": "module_name1",
+                    "key": "project_link1:module_name1",
                 },
             },
             True,

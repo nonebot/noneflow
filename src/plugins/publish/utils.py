@@ -348,8 +348,7 @@ async def trigger_registry_update(
 
         client_payload = {
             "type": publish_type.value,
-            "project_link": project_link,
-            "module_name": module_name,
+            "key": f"{project_link}:{module_name}",
         }
     else:
         client_payload = {"type": publish_type.value}

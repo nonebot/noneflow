@@ -36,7 +36,7 @@ _✨ NoneBot 工作流管理机器人 ✨_
 
 ## 使用方法
 
-简单的示例
+自动处理商店发布议题和测试插件
 
 ```yaml
 name: NoneFlow
@@ -140,6 +140,122 @@ jobs:
 
       - name: Fix permission
         run: sudo chown -R $(whoami):$(id -ng) .cache/.pre-commit
+```
+
+定时测试商店内插件
+
+```yaml
+name: "NoneBot Store Test"
+
+on:
+  workflow_dispatch:
+    inputs:
+      offset:
+        description: "Offset"
+        required: false
+        default: "0"
+      limit:
+        description: "Limit"
+        required: false
+        default: "1"
+      args:
+        description: "Args"
+        required: false
+        default: ""
+  schedule:
+    - cron: "0 */4 * * *"
+  repository_dispatch:
+    types: [registry_update]
+
+concurrency:
+  group: "store-test"
+  cancel-in-progress: false
+
+jobs:
+  store_test:
+    runs-on: ubuntu-latest
+    name: NoneBot2 plugin test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          repository: nonebot/noneflow
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: poetry install
+      - name: Test Plugin
+        id: plugin-test
+        run: |
+          mkdir -p plugin_test/store
+          curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/website/static/plugins.json -o plugin_test/store/plugins.json
+          curl -sSL https://raw.githubusercontent.com/nonebot/registry/results/results.json -o plugin_test/store/results.json
+          curl -sSL https://raw.githubusercontent.com/nonebot/registry/main/inputs/configs.json -o plugin_test/store/configs.json
+          poetry run python -m src.utils.store_test --offset ${{ github.event.inputs.offset || 0 }} --limit ${{ github.event.inputs.limit || 50 }} ${{ github.event.inputs.args }}
+      - name: Upload results
+        uses: actions/upload-artifact@v3
+        with:
+          name: results
+          path: |
+            ${{ github.workspace }}/plugin_test/results.json
+            ${{ github.workspace }}/plugin_test/plugins.json
+  upload_results:
+    runs-on: ubuntu-latest
+    name: Upload results
+    needs: store_test
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: results
+      - name: Download results
+        uses: actions/download-artifact@v3
+        with:
+          name: results
+          path: ${{ github.workspace }}
+      - name: Push results
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email github-actions[bot]@users.noreply.github.com
+          git add .
+          git diff-index --quiet HEAD || git commit -m "chore: update test results"
+          git push
+  upload_results_netlify:
+    runs-on: ubuntu-latest
+    name: Upload results to netlify
+    needs: store_test
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: main
+      - name: Download results
+        uses: actions/download-artifact@v3
+        with:
+          name: results
+          path: ${{ github.workspace }}/websites
+      - name: Get Branch Name
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v2
+        with:
+          publish-dir: "./websites"
+          production-deploy: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy ${{ env.BRANCH_NAME }}@${{ github.sha }}"
+          enable-commit-comment: false
+          alias: ${{ env.BRANCH_NAME }}
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
 ```
 
 ## 测试

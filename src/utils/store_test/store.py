@@ -71,9 +71,12 @@ class StoreTest:
         with open(PLUGINS_PATH, "w", encoding="utf8") as f:
             json.dump(plugins, f, indent=2, ensure_ascii=False)
 
-    async def run(self):
+    async def run(self, key: str | None = None):
         """测试商店内插件情况"""
-        test_plugins = list(self._plugin_list.items())[self._offset :]
+        if key:
+            test_plugins = [(key, self._plugin_list[key])]
+        else:
+            test_plugins = list(self._plugin_list.items())[self._offset :]
 
         new_results: dict[str, TestResult] = {}
 
