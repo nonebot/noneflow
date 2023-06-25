@@ -93,11 +93,6 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
                 capture_output=True,
             ),
             mocker.call(
-                ["git", "checkout", "dcd38595790af3db0d12c00a9f1fbc76f2215041"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
                 ["git", "push", "origin", "--delete", "publish/issue76"],
                 check=True,
                 capture_output=True,

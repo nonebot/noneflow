@@ -333,9 +333,6 @@ async def trigger_registry_update(
         return
 
     if publish_type == PublishType.PLUGIN:
-        sha = pull.head.sha
-        run_shell_command(["git", "checkout", sha])
-
         with plugin_config.input_config.plugin_path.open() as f:
             plugins = json.load(f)
 
