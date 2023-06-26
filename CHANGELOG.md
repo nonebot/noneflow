@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Added
+
+- 将插件配置项传递给 registry
+
 ## [2.6.0] - 2023-06-26
 
 ### Added

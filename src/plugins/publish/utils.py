@@ -17,6 +17,7 @@ from .constants import (
     ISSUE_FIELD_PATTERN,
     ISSUE_FIELD_TEMPLATE,
     NONEFLOW_MARKER,
+    PLUGIN_CONFIG_PATTERN,
     PLUGIN_STRING_LIST,
     POWERED_BY_NONEFLOW_MESSAGE,
     REUSE_MESSAGE,
@@ -326,10 +327,14 @@ async def ensure_issue_content(
 
 
 async def trigger_registry_update(
-    bot: GitHubBot, pull: "PullRequestClosedPropPullRequest", publish_type: PublishType
+    bot: GitHubBot,
+    publish_type: PublishType,
+    pull: "PullRequestClosedPropPullRequest",
+    issue: "Issue",
 ):
-    """通过 repository_dispatch 触发商店测试更新"""
+    """通过 repository_dispatch 触发商店列表更新"""
     if not pull.merged:
+        logger.info("拉取请求未合并，跳过触发商店列表更新")
         return
 
     if publish_type == PublishType.PLUGIN:
@@ -342,19 +347,22 @@ async def trigger_registry_update(
         plugin = plugins[-1]
         project_link = plugin["project_link"]
         module_name = plugin["module_name"]
+        config = PLUGIN_CONFIG_PATTERN.search(issue.body) if issue.body else ""
 
         client_payload = {
             "type": publish_type.value,
             "key": f"{project_link}:{module_name}",
+            "config": config.group(1) if config else "",
         }
     else:
         client_payload = {"type": publish_type.value}
 
     owner, repo = plugin_config.input_config.registry_repository.split("/")
-    # 触发插件测试
+    # 触发商店列表更新
     await bot.rest.repos.async_create_dispatch_event(
         repo=repo,
         owner=owner,
         event_type="registry_update",
         client_payload=client_payload,  # type: ignore
     )
+    logger.info("已触发商店列表更新")

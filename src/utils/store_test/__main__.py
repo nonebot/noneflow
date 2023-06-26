@@ -27,11 +27,12 @@ nonebot.init(
 @click.option("-o", "--offset", default=0, show_default=True, help="测试插件偏移量")
 @click.option("-f", "--force", is_flag=True, help="强制重新测试")
 @click.option("-k", "--key", default=None, show_default=True, help="测试插件标识符")
-def main(limit: int, offset: int, force: bool, key: str | None):
+@click.option("-c", "--config", default=None, show_default=True, help="测试插件配置")
+def main(limit: int, offset: int, force: bool, key: str | None, config: str | None):
     from .store import StoreTest
 
     test = StoreTest(offset, limit, force)
-    run(test.run(key))
+    run(test.run(key, config))
 
 
 if __name__ == "__main__":

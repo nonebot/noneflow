@@ -71,12 +71,19 @@ class StoreTest:
         with open(PLUGINS_PATH, "w", encoding="utf8") as f:
             json.dump(plugins, f, indent=2, ensure_ascii=False)
 
-    async def run(self, key: str | None = None):
+    async def run(self, key: str | None = None, config: str | None = None):
         """测试商店内插件情况"""
         if key:
             test_plugins = [(key, self._plugin_list[key])]
+            plugin_configs = {key: config or ""}
         else:
             test_plugins = list(self._plugin_list.items())[self._offset :]
+            plugin_configs = {
+                key: self._previous_results.get(key, {})
+                .get("inputs", {})
+                .get("config", "")
+                for key, _ in test_plugins
+            }
 
         new_results: dict[str, TestResult] = {}
 
@@ -92,7 +99,10 @@ class StoreTest:
                 continue
 
             print(f"{i}/{self._limit} 正在测试插件 {key} ...")
-            new_results[key] = await validate_plugin(key, plugin)
+
+            new_results[key] = await validate_plugin(
+                plugin, plugin_configs.get(key, "")
+            )
 
             i += 1
 

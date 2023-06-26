@@ -43,4 +43,5 @@ class TestResult(TypedDict):
     version: str | None
     results: dict[Literal["validation", "load", "metadata"], bool]
     outputs: dict[Literal["validation", "load", "metadata"], Any]
+    inputs: dict[Literal["config"], str]
     plugin: dict[Literal["old", "new"], PluginData | None]
