@@ -7,10 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [2.6.0] - 2023-06-26
+
 ### Added
 
 - 拉取请求合并后触发 registry 更新
 - 商店测试支持测试指定插件
+- 生成新的商店插件列表
+
+### Changed
+
+- 使用新的商店测试结果结构
 
 ## [2.5.0] - 2023-06-14
 
@@ -248,7 +255,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/noneflow/compare/v2.5.0...HEAD
+[unreleased]: https://github.com/nonebot/noneflow/compare/v2.6.0...HEAD
+[2.6.0]: https://github.com/nonebot/noneflow/compare/v2.5.0...v2.6.0
 [2.5.0]: https://github.com/nonebot/noneflow/compare/v2.4.3...v2.5.0
 [2.4.3]: https://github.com/nonebot/noneflow/compare/v2.4.2...v2.4.3
 [2.4.2]: https://github.com/nonebot/noneflow/compare/v2.4.1...v2.4.2
