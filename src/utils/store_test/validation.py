@@ -115,7 +115,7 @@ async def validate_plugin(plugin: PluginData, config: str) -> TestResult:
     shutil.rmtree(test.path)
 
     return {
-        "time": datetime.now(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"),
+        "time": datetime.now(ZoneInfo("Asia/Shanghai")).isoformat(),
         "version": version,
         "results": {
             "validation": validation["result"],
