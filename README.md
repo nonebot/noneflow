@@ -201,7 +201,9 @@ jobs:
           poetry run python -m src.utils.store_test --offset ${{ github.event.inputs.offset || 0 }} --limit ${{ github.event.inputs.limit || 50 }} ${{ github.event.inputs.args }}
       - name: Update registry(Plugin)
         if: github.event.client_payload.type == 'Plugin'
-        run: poetry run python -m src.utils.store_test -k "${{ github.event.client_payload.key }}" -c "${{ github.event.client_payload.config }}" -f
+        run: poetry run python -m src.utils.store_test -k '${{ github.event.client_payload.key }}' -f
+        env:
+          PLUGIN_CONFIG: ${{ github.event.client_payload.config }}
       - name: Upload results
         uses: actions/upload-artifact@v3
         with:

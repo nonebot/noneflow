@@ -1,3 +1,4 @@
+import os
 from asyncio import run
 
 import click
@@ -27,11 +28,14 @@ nonebot.init(
 @click.option("-o", "--offset", default=0, show_default=True, help="测试插件偏移量")
 @click.option("-f", "--force", is_flag=True, help="强制重新测试")
 @click.option("-k", "--key", default=None, show_default=True, help="测试插件标识符")
-@click.option("-c", "--config", default=None, show_default=True, help="测试插件配置")
-def main(limit: int, offset: int, force: bool, key: str | None, config: str | None):
+def main(limit: int, offset: int, force: bool, key: str | None):
     from .store import StoreTest
 
     test = StoreTest(offset, limit, force)
+
+    # 通过环境变量传递插件配置
+    config = os.environ.get("PLUGIN_CONFIG")
+
     run(test.run(key, config))
 
 
