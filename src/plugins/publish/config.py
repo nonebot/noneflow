@@ -12,7 +12,7 @@ class PublishConfig(BaseModel):
     plugin_path: Path
     bot_path: Path
     adapter_path: Path
-    registry_repository: str
+    registry_repository: str = "nonebot/registry"
 
 
 class Config(BaseModel, extra=Extra.ignore):
