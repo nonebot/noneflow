@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [2.6.1] - 2023-06-26
+
 ### Added
 
 - 将插件配置项传递给 registry
+
+### Changed
+
+- 商店测试结果中测试时间使用 isoformat
 
 ## [2.6.0] - 2023-06-26
 
@@ -23,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 使用新的商店测试结果结构
 
-## [2.5.0] - 2023-06-14
+## [2.5.0] - 2023-06-23
 
 ### Fixed
 
@@ -259,7 +265,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/noneflow/compare/v2.6.0...HEAD
+[unreleased]: https://github.com/nonebot/noneflow/compare/v2.6.1...HEAD
+[2.6.1]: https://github.com/nonebot/noneflow/compare/v2.6.0...v2.6.1
 [2.6.0]: https://github.com/nonebot/noneflow/compare/v2.5.0...v2.6.0
 [2.5.0]: https://github.com/nonebot/noneflow/compare/v2.4.3...v2.5.0
 [2.4.3]: https://github.com/nonebot/noneflow/compare/v2.4.2...v2.4.3

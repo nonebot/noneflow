@@ -192,9 +192,9 @@ jobs:
           poetry install
           mkdir -p plugin_test/store
           curl -sSL https://raw.githubusercontent.com/nonebot/registry/results/results.json -o plugin_test/store/results.json
-          curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/website/static/plugins.json -o plugin_test/store/plugins.json
-          curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/website/static/bots.json -o plugin_test/bots.json
           curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/website/static/adapters.json -o plugin_test/adapters.json
+          curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/website/static/bots.json -o plugin_test/bots.json
+          curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/website/static/plugins.json -o plugin_test/store/plugins.json
       - name: Test plugin
         if: ${{ !contains(fromJSON('["Bot", "Adapter", "Plugin"]'), github.event.client_payload.type) }}
         run: |
@@ -210,9 +210,9 @@ jobs:
           name: results
           path: |
             ${{ github.workspace }}/plugin_test/results.json
-            ${{ github.workspace }}/plugin_test/plugins.json
-            ${{ github.workspace }}/plugin_test/bots.json
             ${{ github.workspace }}/plugin_test/adapters.json
+            ${{ github.workspace }}/plugin_test/bots.json
+            ${{ github.workspace }}/plugin_test/plugins.json
   upload_results:
     runs-on: ubuntu-latest
     name: Upload results
