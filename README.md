@@ -180,6 +180,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: nonebot/noneflow
+          fetch-depth: 0
       - name: Install poetry
         run: pipx install poetry
       - uses: actions/setup-python@v4
@@ -187,6 +188,7 @@ jobs:
           python-version: "3.10"
       - name: Prepare test
         run: |
+          git checkout `git describe --abbrev=0 --tags`
           poetry install
           mkdir -p plugin_test/store
           curl -sSL https://raw.githubusercontent.com/nonebot/registry/results/results.json -o plugin_test/store/results.json
