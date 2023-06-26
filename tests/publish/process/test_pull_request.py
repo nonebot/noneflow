@@ -17,6 +17,7 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
 
     mock_issue = mocker.MagicMock()
     mock_issue.state = "open"
+    mock_issue.body = "### 插件配置项\n\n```dotenv\nlog_level=DEBUG\n```"
 
     mock_issues_resp = mocker.MagicMock()
     mock_issues_resp.parsed_data = mock_issue
@@ -48,19 +49,6 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
             mock_installation_resp,
         )
         ctx.should_call_api(
-            "rest.repos.async_create_dispatch_event",
-            {
-                "repo": "registry",
-                "owner": "owner",
-                "event_type": "registry_update",
-                "client_payload": {
-                    "type": "Plugin",
-                    "key": "project_link1:module_name1",
-                },
-            },
-            True,
-        )
-        ctx.should_call_api(
             "rest.issues.async_get",
             {"owner": "he0119", "repo": "action-test", "issue_number": 76},
             mock_issues_resp,
@@ -73,6 +61,20 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
                 "issue_number": 76,
                 "state": "closed",
                 "state_reason": "completed",
+            },
+            True,
+        )
+        ctx.should_call_api(
+            "rest.repos.async_create_dispatch_event",
+            {
+                "repo": "registry",
+                "owner": "owner",
+                "event_type": "registry_update",
+                "client_payload": {
+                    "type": "Plugin",
+                    "key": "project_link1:module_name1",
+                    "config": "log_level=DEBUG\n",
+                },
             },
             True,
         )

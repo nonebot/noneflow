@@ -192,7 +192,6 @@ jobs:
           poetry install
           mkdir -p plugin_test/store
           curl -sSL https://raw.githubusercontent.com/nonebot/registry/results/results.json -o plugin_test/store/results.json
-          curl -sSL https://raw.githubusercontent.com/nonebot/registry/main/inputs/configs.json -o plugin_test/store/configs.json
           curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/website/static/plugins.json -o plugin_test/store/plugins.json
           curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/website/static/bots.json -o plugin_test/bots.json
           curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/website/static/adapters.json -o plugin_test/adapters.json
@@ -202,7 +201,7 @@ jobs:
           poetry run python -m src.utils.store_test --offset ${{ github.event.inputs.offset || 0 }} --limit ${{ github.event.inputs.limit || 50 }} ${{ github.event.inputs.args }}
       - name: Update registry(Plugin)
         if: github.event.client_payload.type == 'Plugin'
-        run: poetry run python -m src.utils.store_test -k ${{ github.event.client_payload.key }}
+        run: poetry run python -m src.utils.store_test -k ${{ github.event.client_payload.key }} -c ${{ github.event.client_payload.config }} -f
       - name: Upload results
         uses: actions/upload-artifact@v3
         with:

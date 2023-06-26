@@ -76,9 +76,6 @@ async def handle_pr_close(
     related_issue_number: int = Depends(get_related_issue_number),
 ) -> None:
     async with bot.as_installation(installation_id):
-        # 如果商店更新则触发 registry 更新
-        await trigger_registry_update(bot, event.payload.pull_request, publish_type)
-
         issue = (
             await bot.rest.issues.async_get(
                 **repo_info.dict(), issue_number=related_issue_number
@@ -95,6 +92,12 @@ async def handle_pr_close(
                 else "not_planned",
             )
         logger.info(f"议题 #{related_issue_number} 已关闭")
+
+        # 如果商店更新则触发 registry 更新
+        # 因为需要读取最新的插件数据，所以需要在删除分支之前运行
+        await trigger_registry_update(
+            bot, publish_type, event.payload.pull_request, issue
+        )
 
         try:
             run_shell_command(

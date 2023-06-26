@@ -13,11 +13,7 @@ from pydantic import ValidationError
 from src.plugins.publish.validation import PluginPublishInfo
 from src.utils.plugin_test import PluginTest, strip_ansi
 
-from .constants import STORE_CONFIGS_PATH
 from .models import Metadata, PluginData, PluginValidation, TestResult
-from .utils import load_json
-
-_CONFIGS = load_json(STORE_CONFIGS_PATH)
 
 
 def extract_metadata(path: Path) -> Metadata | None:
@@ -89,13 +85,12 @@ async def validate_metadata(
         }
 
 
-async def validate_plugin(key: str, plugin: PluginData) -> TestResult:
+async def validate_plugin(plugin: PluginData, config: str) -> TestResult:
     """验证插件"""
     project_link = plugin["project_link"]
     module_name = plugin["module_name"]
 
-    plugin_config = "\n".join(_CONFIGS.get(key, []))
-    test = PluginTest(project_link, module_name, plugin_config)
+    test = PluginTest(project_link, module_name, config)
 
     # 将 GitHub Action 的输出文件重定向到测试文件夹内
     test.github_output_file = (test.path / "output.txt").resolve()
@@ -132,6 +127,7 @@ async def validate_plugin(key: str, plugin: PluginData) -> TestResult:
             "load": load_output,
             "metadata": metadata,
         },
+        "inputs": {"config": config},
         "plugin": {
             "old": plugin,
             "new": new_plugin,
