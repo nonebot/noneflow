@@ -69,7 +69,7 @@ class StoreTest:
             plugins.append(new_plugin)
 
         with open(PLUGINS_PATH, "w", encoding="utf8") as f:
-            json.dump(plugins, f, indent=2, ensure_ascii=False)
+            json.dump(plugins, f, ensure_ascii=False)
 
     async def run(self, key: str | None = None, config: str | None = None):
         """测试商店内插件情况"""
@@ -117,6 +117,6 @@ class StoreTest:
                 results[key] = self._previous_results[key]
 
         with open(RESULTS_PATH, "w", encoding="utf8") as f:
-            json.dump(results, f, indent=2, ensure_ascii=False)
+            json.dump(results, f, ensure_ascii=False)
 
         self.generate_plugin_list(results.values())
