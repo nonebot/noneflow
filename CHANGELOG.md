@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 修复输出支持适配器列表未排序的问题
+
 ## [2.6.1] - 2023-06-26
 
 ### Added

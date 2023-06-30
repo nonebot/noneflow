@@ -74,7 +74,9 @@ async def test_plugin_from_issue_skip_plugin_test(
     mocker.patch.object(plugin_config, "plugin_test_result", "")
 
     mock_issue = mocker.MagicMock()
-    mock_issue.body = generate_issue_body_plugin_skip_test()
+    mock_issue.body = generate_issue_body_plugin_skip_test(
+        supported_adapters=["~onebot.v12", "nonebot.adapters.onebot.v11"]
+    )
     mock_issue.user.login = "author"
 
     info = PluginPublishInfo.from_issue(mock_issue)
@@ -89,7 +91,10 @@ async def test_plugin_from_issue_skip_plugin_test(
         tags=[{"label": "test", "color": "#ffffff"}],
         is_official=False,
         type="application",
-        supported_adapters=["nonebot.adapters.onebot.v11"],
+        supported_adapters=[
+            "nonebot.adapters.onebot.v11",
+            "nonebot.adapters.onebot.v12",
+        ],
     )
 
     assert mocked_api["project_link"].called
