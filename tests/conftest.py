@@ -135,7 +135,17 @@ def mocked_api(respx_mock: MockRouter):
                 "homepage": "https://onebot.adapters.nonebot.dev/",
                 "tags": [],
                 "is_official": True,
-            }
+            },
+            {
+                "module_name": "nonebot.adapters.onebot.v12",
+                "project_link": "nonebot-adapter-onebot",
+                "name": "OneBot V12",
+                "desc": "OneBot V12 协议",
+                "author": "yanyongyu",
+                "homepage": "https://onebot.adapters.nonebot.dev/",
+                "tags": [],
+                "is_official": True,
+            },
         ],
     )
     yield respx_mock

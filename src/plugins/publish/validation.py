@@ -286,7 +286,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
         return v
 
     @validator("supported_adapters", pre=True)
-    def supported_adapters_validator(cls, v: str | set[str] | None) -> set[str] | None:
+    def supported_adapters_validator(cls, v: str | set[str] | None) -> list[str] | None:
         # 如果是从 issue 中获取的数据，需要先解码
         if isinstance(v, str):
             try:
@@ -309,7 +309,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
             raise ValueError(
                 f"⚠️ 适配器 {', '.join(missing_adapters)} 不存在。<dt>请确保适配器模块名称正确。</dt>"
             )
-        return supported_adapters
+        return sorted(supported_adapters)
 
     @classmethod
     def get_type(cls) -> PublishType:
