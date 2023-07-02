@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [2.7.1] - 2023-07-02
+
+### Fixed
+
+- 修复 plugins 列表格式错误
+
 ## [2.7.0] - 2023-07-02
 
 ### Changed
@@ -275,7 +281,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/noneflow/compare/v2.7.0...HEAD
+[unreleased]: https://github.com/nonebot/noneflow/compare/v2.7.1...HEAD
+[2.7.1]: https://github.com/nonebot/noneflow/compare/v2.7.0...v2.7.1
 [2.7.0]: https://github.com/nonebot/noneflow/compare/v2.6.1...v2.7.0
 [2.6.1]: https://github.com/nonebot/noneflow/compare/v2.6.0...v2.6.1
 [2.6.0]: https://github.com/nonebot/noneflow/compare/v2.5.0...v2.6.0
