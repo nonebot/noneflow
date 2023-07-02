@@ -181,6 +181,7 @@ jobs:
         with:
           repository: nonebot/noneflow
           fetch-depth: 0
+
       - name: Install poetry
         run: pipx install poetry
 
@@ -195,9 +196,10 @@ jobs:
           mkdir -p plugin_test/store
           curl -sSL https://raw.githubusercontent.com/nonebot/registry/results/results.json -o plugin_test/store/previous_results.json
           curl -sSL https://raw.githubusercontent.com/nonebot/registry/results/plugins.json -o plugin_test/store/previous_plugins.json
-          curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/website/static/adapters.json -o plugin_test/adapters.json
-          curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/website/static/bots.json -o plugin_test/bots.json
+          curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/website/static/adapters.json -o plugin_test/store/adapters.json
+          curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/website/static/bots.json -o plugin_test/store/bots.json
           curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/website/static/plugins.json -o plugin_test/store/plugins.json
+
       - name: Test plugin
         if: ${{ !contains(fromJSON('["Bot", "Adapter", "Plugin"]'), github.event.client_payload.type) }}
         run: |
@@ -222,6 +224,7 @@ jobs:
             ${{ github.workspace }}/plugin_test/adapters.json
             ${{ github.workspace }}/plugin_test/bots.json
             ${{ github.workspace }}/plugin_test/plugins.json
+
   upload_results:
     runs-on: ubuntu-latest
     name: Upload results
