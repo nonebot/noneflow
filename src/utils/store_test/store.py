@@ -67,13 +67,16 @@ class StoreTest:
         # 如果强制测试，则不跳过
         if self._force:
             return False
+
         # 如果插件不在上次测试的结果中，则不跳过
-        plugin = self._previous_results.get(key)
-        if not plugin:
+        previous_result = self._previous_results.get(key)
+        previous_plugin = self._previous_plugins.get(key)
+        if not previous_result or not previous_plugin:
             return False
+
         # 如果插件为最新版本，则跳过测试
-        latest_version = self.get_latest_version(plugin["info"]["project_link"])
-        if latest_version == plugin["version"]:
+        latest_version = self.get_latest_version(previous_plugin["project_link"])
+        if latest_version == previous_result["version"]:
             print(f"插件 {key} 为最新版本（{latest_version}），跳过测试")
             return True
         return False

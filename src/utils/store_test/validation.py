@@ -128,22 +128,17 @@ async def validate_plugin(
     result: TestResult = {
         "time": now_str,
         "version": version,
-        "info": {
-            "project_link": project_link,
-            "module_name": module_name,
-            "author": plugin["author"],
-        },
         "results": {
             "validation": validation["result"],
             "load": load_result,
             "metadata": bool(metadata),
         },
+        "inputs": {"config": config},
         "outputs": {
             "validation": validation["output"],
             "load": load_output,
             "metadata": metadata,
         },
-        "inputs": {"config": config},
     }
 
     return result, new_plugin

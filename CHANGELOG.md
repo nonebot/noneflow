@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Changed
+
+- 调整商店测试输出格式
+
 ### Fixed
 
 - 修复输出支持适配器列表未排序的问题

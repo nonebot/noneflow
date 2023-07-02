@@ -51,7 +51,6 @@ class TestResult(TypedDict):
 
     time: str
     version: str | None
-    info: dict[Literal["project_link", "module_name", "author"], str]
     results: dict[Literal["validation", "load", "metadata"], bool]
     inputs: dict[Literal["config"], str]
     outputs: dict[Literal["validation", "load", "metadata"], Any]
