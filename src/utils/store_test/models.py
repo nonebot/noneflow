@@ -1,7 +1,17 @@
 from typing import Any, Literal, TypedDict
 
 
-class PluginData(TypedDict):
+class StorePlugin(TypedDict):
+    """NoneBot 仓库中的插件数据"""
+
+    module_name: str
+    project_link: str
+    author: str
+    tags: list[Any]
+    is_official: bool
+
+
+class Plugin(TypedDict):
     """NoneBot 商店插件数据"""
 
     module_name: str
@@ -33,7 +43,7 @@ class PluginValidation(TypedDict):
 
     result: bool
     output: str
-    plugin: PluginData | None
+    plugin: Plugin | None
 
 
 class TestResult(TypedDict):
@@ -41,7 +51,7 @@ class TestResult(TypedDict):
 
     time: str
     version: str | None
+    info: dict[Literal["project_link", "module_name", "author"], str]
     results: dict[Literal["validation", "load", "metadata"], bool]
-    outputs: dict[Literal["validation", "load", "metadata"], Any]
     inputs: dict[Literal["config"], str]
-    plugin: dict[Literal["old", "new"], PluginData | None]
+    outputs: dict[Literal["validation", "load", "metadata"], Any]

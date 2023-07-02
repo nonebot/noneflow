@@ -13,7 +13,7 @@ from pydantic import ValidationError
 from src.plugins.publish.validation import PluginPublishInfo
 from src.utils.plugin_test import PluginTest, strip_ansi
 
-from .models import Metadata, PluginData, PluginValidation, TestResult
+from .models import Metadata, Plugin, PluginValidation, StorePlugin, TestResult
 
 
 def extract_metadata(path: Path) -> Metadata | None:
@@ -35,7 +35,7 @@ def extract_version(path: Path) -> str | None:
 
 
 async def validate_metadata(
-    result: bool, plugin: PluginData, metadata: Metadata | None
+    result: bool, plugin: StorePlugin, metadata: Metadata | None
 ) -> PluginValidation:
     """验证插件元数据"""
     project_link = plugin["project_link"]
@@ -69,9 +69,7 @@ async def validate_metadata(
     }
     try:
         publish_info = PluginPublishInfo(**raw_data)
-        plugin_data = cast(
-            PluginData, publish_info.dict(exclude={"plugin_test_result"})
-        )
+        plugin_data = cast(Plugin, publish_info.dict(exclude={"plugin_test_result"}))
         return {
             "result": True,
             "output": "通过",
@@ -85,10 +83,21 @@ async def validate_metadata(
         }
 
 
-async def validate_plugin(plugin: PluginData, config: str) -> TestResult:
-    """验证插件"""
+async def validate_plugin(
+    plugin: StorePlugin, config: str
+) -> tuple[TestResult, Plugin | None]:
+    """验证插件
+
+    返回测试结果与验证后的插件数据
+
+    如果插件验证失败，返回的插件数据为 None
+    """
+    now_str = datetime.now(ZoneInfo("Asia/Shanghai")).isoformat()
+
+    # 需要从商店插件数据中获取的信息
     project_link = plugin["project_link"]
     module_name = plugin["module_name"]
+    is_official = plugin["is_official"]
 
     test = PluginTest(project_link, module_name, config)
 
@@ -104,19 +113,26 @@ async def validate_plugin(plugin: PluginData, config: str) -> TestResult:
     metadata = extract_metadata(test.path)
     version = extract_version(test.path)
 
+    # 测试并提取完数据后删除测试文件夹
+    shutil.rmtree(test.path)
+
     validation = await validate_metadata(load_result, plugin, metadata)
 
     new_plugin = validation["plugin"]
-    # 插件验证过程中无法获取是否是官方插件，因此需要从原始数据中获取
     if new_plugin:
-        new_plugin["is_official"] = plugin["is_official"]
+        # 插件验证过程中无法获取是否是官方插件，因此需要从原始数据中获取
+        new_plugin["is_official"] = is_official
+        new_plugin["valid"] = validation["result"]
+        new_plugin["time"] = now_str
 
-    # 测试完成后删除测试文件夹
-    shutil.rmtree(test.path)
-
-    return {
-        "time": datetime.now(ZoneInfo("Asia/Shanghai")).isoformat(),
+    result: TestResult = {
+        "time": now_str,
         "version": version,
+        "info": {
+            "project_link": project_link,
+            "module_name": module_name,
+            "author": plugin["author"],
+        },
         "results": {
             "validation": validation["result"],
             "load": load_result,
@@ -128,8 +144,6 @@ async def validate_plugin(plugin: PluginData, config: str) -> TestResult:
             "metadata": metadata,
         },
         "inputs": {"config": config},
-        "plugin": {
-            "old": plugin,
-            "new": new_plugin,
-        },
     }
+
+    return result, new_plugin
