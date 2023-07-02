@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [2.7.0] - 2023-07-02
+
 ### Changed
 
 - 调整商店测试输出格式
@@ -273,7 +275,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/noneflow/compare/v2.6.1...HEAD
+[unreleased]: https://github.com/nonebot/noneflow/compare/v2.7.0...HEAD
+[2.7.0]: https://github.com/nonebot/noneflow/compare/v2.6.1...v2.7.0
 [2.6.1]: https://github.com/nonebot/noneflow/compare/v2.6.0...v2.6.1
 [2.6.0]: https://github.com/nonebot/noneflow/compare/v2.5.0...v2.6.0
 [2.5.0]: https://github.com/nonebot/noneflow/compare/v2.4.3...v2.5.0
