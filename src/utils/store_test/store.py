@@ -139,6 +139,6 @@ class StoreTest:
 
         # 保存测试结果与生成的列表
         dump_json(RESULTS_PATH, results)
-        dump_json(PLUGINS_PATH, plugins)
+        dump_json(PLUGINS_PATH, list(plugins.values()))
         dump_json(BOTS_PATH, self._store_bots)
         dump_json(ADAPTERS_PATH, self._store_adapters)

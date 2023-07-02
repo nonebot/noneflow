@@ -11,7 +11,7 @@ def load_json(path: Path) -> dict:
         return json.load(f)
 
 
-def dump_json(path: Path, data: dict):
+def dump_json(path: Path, data: dict | list):
     """保存 JSON 文件
 
     为减少文件大小，还需手动设置 separators
