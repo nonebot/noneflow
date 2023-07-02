@@ -183,15 +183,18 @@ jobs:
           fetch-depth: 0
       - name: Install poetry
         run: pipx install poetry
+
       - uses: actions/setup-python@v4
         with:
           python-version: "3.10"
+
       - name: Prepare test
         run: |
           git checkout `git describe --abbrev=0 --tags`
           poetry install
           mkdir -p plugin_test/store
-          curl -sSL https://raw.githubusercontent.com/nonebot/registry/results/results.json -o plugin_test/store/results.json
+          curl -sSL https://raw.githubusercontent.com/nonebot/registry/results/results.json -o plugin_test/store/previous_results.json
+          curl -sSL https://raw.githubusercontent.com/nonebot/registry/results/plugins.json -o plugin_test/store/previous_plugins.json
           curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/website/static/adapters.json -o plugin_test/adapters.json
           curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/website/static/bots.json -o plugin_test/bots.json
           curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/website/static/plugins.json -o plugin_test/store/plugins.json
@@ -199,11 +202,17 @@ jobs:
         if: ${{ !contains(fromJSON('["Bot", "Adapter", "Plugin"]'), github.event.client_payload.type) }}
         run: |
           poetry run python -m src.utils.store_test --offset ${{ github.event.inputs.offset || 0 }} --limit ${{ github.event.inputs.limit || 50 }} ${{ github.event.inputs.args }}
+
       - name: Update registry(Plugin)
         if: github.event.client_payload.type == 'Plugin'
         run: poetry run python -m src.utils.store_test -k '${{ github.event.client_payload.key }}' -f
         env:
           PLUGIN_CONFIG: ${{ github.event.client_payload.config }}
+
+      - name: Update registry(Bot, Apdater)
+        if: ${{ contains(fromJSON('["Bot", "Adapter"]'), github.event.client_payload.type) }}
+        run: poetry run python -m src.utils.store_test -l 0
+
       - name: Upload results
         uses: actions/upload-artifact@v3
         with:
@@ -224,11 +233,13 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: results
+
       - name: Download results
         uses: actions/download-artifact@v3
         with:
           name: results
           path: ${{ github.workspace }}
+
       - name: Push results
         run: |
           git config user.name github-actions[bot]
@@ -236,6 +247,7 @@ jobs:
           git add .
           git diff-index --quiet HEAD || git commit -m "chore: update test results"
           git push
+
   upload_results_netlify:
     runs-on: ubuntu-latest
     name: Upload results to netlify
@@ -243,22 +255,32 @@ jobs:
     permissions:
       contents: read
       deployments: write
+      statuses: write
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           ref: main
+
+      - name: Setup Node Environment
+        uses: ./.github/actions/setup-node
+
       - name: Download results
         uses: actions/download-artifact@v3
         with:
           name: results
-          path: ${{ github.workspace }}/websites
+          path: ${{ github.workspace }}/public
+
+      - name: Build Website
+        run: pnpm build
+
       - name: Get Branch Name
         run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
+
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v2
         with:
-          publish-dir: "./websites"
+          publish-dir: "./dist"
           production-deploy: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
           deploy-message: "Deploy ${{ env.BRANCH_NAME }}@${{ github.sha }}"
