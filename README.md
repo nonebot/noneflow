@@ -139,7 +139,7 @@ jobs:
           PRE_COMMIT_HOME: /github/workspace/.cache/.pre-commit
 
       - name: Fix permission
-        run: sudo chown -R $(whoami):$(id -ng) .cache/.pre-commit
+        run: [ -d .cache/.pre-commit ] && sudo chown -R $(whoami):$(id -ng) .cache/.pre-commit
 ```
 
 定时测试商店内插件
