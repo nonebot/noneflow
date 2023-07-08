@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [2.7.2] - 2023-07-08
+
+### Fixed
+
+- 补上忘记的 drivers.json 文件
+- 修复 pre-commit cache 文件夹不存在时的报错
+
 ## [2.7.1] - 2023-07-02
 
 ### Fixed
@@ -281,7 +288,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/noneflow/compare/v2.7.1...HEAD
+[unreleased]: https://github.com/nonebot/noneflow/compare/v2.7.2...HEAD
+[2.7.2]: https://github.com/nonebot/noneflow/compare/v2.7.1...v2.7.2
 [2.7.1]: https://github.com/nonebot/noneflow/compare/v2.7.0...v2.7.1
 [2.7.0]: https://github.com/nonebot/noneflow/compare/v2.6.1...v2.7.0
 [2.6.1]: https://github.com/nonebot/noneflow/compare/v2.6.0...v2.6.1
