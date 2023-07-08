@@ -3,6 +3,7 @@ import httpx
 from .constants import (
     ADAPTERS_PATH,
     BOTS_PATH,
+    DRIVERS_PATH,
     PLUGIN_KEY_TEMPLATE,
     PLUGINS_PATH,
     PREVIOUS_PLUGINS_PATH,
@@ -10,6 +11,7 @@ from .constants import (
     RESULTS_PATH,
     STORE_ADAPTERS_PATH,
     STORE_BOTS_PATH,
+    STORE_DRIVERS_PATH,
     STORE_PLUGINS_PATH,
 )
 from .models import Plugin, StorePlugin, TestResult
@@ -31,6 +33,9 @@ class StoreTest:
         self._force = force
 
         # NoneBot 仓库中的数据
+        self._store_adapters = load_json(STORE_ADAPTERS_PATH)
+        self._store_bots = load_json(STORE_BOTS_PATH)
+        self._store_drivers = load_json(STORE_DRIVERS_PATH)
         self._store_plugins: dict[str, StorePlugin] = {
             PLUGIN_KEY_TEMPLATE.format(
                 project_link=plugin["project_link"],
@@ -38,8 +43,6 @@ class StoreTest:
             ): plugin
             for plugin in load_json(STORE_PLUGINS_PATH)
         }
-        self._store_bots = load_json(STORE_BOTS_PATH)
-        self._store_adapters = load_json(STORE_ADAPTERS_PATH)
         # 上次测试的结果
         self._previous_results: dict[str, TestResult] = load_json(PREVIOUS_RESULTS_PATH)
         self._previous_plugins: dict[str, Plugin] = {
@@ -139,6 +142,7 @@ class StoreTest:
 
         # 保存测试结果与生成的列表
         dump_json(RESULTS_PATH, results)
-        dump_json(PLUGINS_PATH, list(plugins.values()))
-        dump_json(BOTS_PATH, self._store_bots)
         dump_json(ADAPTERS_PATH, self._store_adapters)
+        dump_json(BOTS_PATH, self._store_bots)
+        dump_json(DRIVERS_PATH, self._store_drivers)
+        dump_json(PLUGINS_PATH, list(plugins.values()))
