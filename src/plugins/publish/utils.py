@@ -8,6 +8,15 @@ from githubkit.rest.models import PullRequest, PullRequestSimple
 from nonebot import logger
 from nonebot.adapters.github import Bot, GitHubBot
 
+from src.utils.validation import (
+    AdapterPublishInfo,
+    BotPublishInfo,
+    PluginPublishInfo,
+    PublishInfo,
+    PublishType,
+    ValidationResult,
+)
+
 from .config import plugin_config
 from .constants import (
     BRANCH_NAME_PREFIX,
@@ -25,13 +34,6 @@ from .constants import (
     TIPS_MESSAGE,
 )
 from .models import PublishType, RepoInfo
-from .validation import (
-    AdapterPublishInfo,
-    BotPublishInfo,
-    MyValidationError,
-    PluginPublishInfo,
-    PublishInfo,
-)
 
 if TYPE_CHECKING:
     from githubkit.rest.models import Issue, IssuePropLabelsItemsOneof1, Label

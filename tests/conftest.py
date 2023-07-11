@@ -105,7 +105,7 @@ async def app(app: App, tmp_path: Path, mocker: MockerFixture):
 @pytest.fixture(autouse=True, scope="function")
 def clear_cache(app: App):
     """每次运行前都清除 cache"""
-    from src.plugins.publish.validation import check_url
+    from src.utils.validation.utils import check_url
 
     check_url.cache_clear()
 
