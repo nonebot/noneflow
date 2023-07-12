@@ -41,7 +41,7 @@ async def handle_github_action_event():
         logger.exception("处理 GitHub Action 事件时出现异常")
     finally:
         # 处理一次之后就退出
-        driver.should_exit.set()
+        driver.exit(True)
 
 
 class Adapter(GITHUBAdapter):
@@ -54,7 +54,7 @@ class Adapter(GITHUBAdapter):
         except:
             logger.exception("启动 GitHub 适配器时出现异常")
             driver = cast(Driver, self.driver)
-            driver.should_exit.set()
+            driver.exit(True)
             return
         # 完成启动后创建任务处理 GitHub Action 事件
         asyncio.create_task(handle_github_action_event())
