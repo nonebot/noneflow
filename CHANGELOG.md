@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Added
+
+- 使用新版 none 驱动器提供的 exit 函数
+
 ### Changed
 
 - 统一称呼将 PyPI 项目与包区分开来
