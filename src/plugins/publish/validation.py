@@ -107,7 +107,7 @@ class PublishInfo(abc.ABC, BaseModel):
             status_code = check_url(v)
             if status_code != 200:
                 raise ValueError(
-                    f"""⚠️ 项目 <a href="{v}">主页</a> 返回状态码 {status_code}。<dt>请确保您的项目主页可访问。</dt>"""
+                    f"""⚠️ 项目 <a href="{v}">主页</a> 返回状态码 {status_code}。<dt>请确保你的项目主页可访问。</dt>"""
                 )
         return v
 
@@ -210,7 +210,7 @@ class PyPIMixin(BaseModel):
 
         if v and not check_pypi(v):
             raise ValueError(
-                f'⚠️ 包 <a href="https://pypi.org/project/{v}/">{v}</a> 未发布至 PyPI。<dt>请将您的包发布至 PyPI。</dt>'
+                f'⚠️ 项目 <a href="https://pypi.org/project/{v}/">{v}</a> 未发布至 PyPI。<dt>请将你的项目发布至 PyPI。</dt>'
             )
         return v
 
@@ -570,7 +570,7 @@ def generate_validation_message(info: PublishInfo | MyValidationError) -> str:
         project_link = info.raw_data["project_link"]
     if project_link:
         details.append(
-            f"""<li>✅ 包 <a href="https://pypi.org/project/{project_link}/">{project_link}</a> 已发布至 PyPI。</li>"""
+            f"""<li>✅ 项目 <a href="https://pypi.org/project/{project_link}/">{project_link}</a> 已发布至 PyPI。</li>"""
         )
 
     # 插件加载测试情况
