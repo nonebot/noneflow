@@ -438,7 +438,7 @@ def check_url(url: str) -> int | None:
     """
     logger.info(f"检查网址 {url}")
     try:
-        r = httpx.get(url)
+        r = httpx.get(url, follow_redirects=True)
         return r.status_code
     except:
         pass

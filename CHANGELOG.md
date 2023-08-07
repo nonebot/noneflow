@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ### Changed
 
 - 统一称呼将 PyPI 项目与包区分开来
+- 检查网址的时候允许重定向
 
 ## [2.7.2] - 2023-07-08
 
