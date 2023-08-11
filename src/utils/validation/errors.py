@@ -6,7 +6,7 @@ class CustomError(PydanticValueError):
     msg_template = "⚠️ {msg}<dt>{hint}</dt>"
 
 
-class NameError(CustomError):
+class PublishNameError(CustomError):
     code = "name"
 
 
@@ -32,3 +32,15 @@ class ProjectLinkError(CustomError):
 
 class DuplicationError(CustomError):
     code = "duplication"
+
+
+class PluginTestError(CustomError):
+    code = "plugin_test"
+
+
+class PluginTypeError(CustomError):
+    code = "plugin_type"
+
+
+class PluginSupportedAdaptersError(CustomError):
+    code = "plugin_supported_adapters"

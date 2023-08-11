@@ -2,36 +2,25 @@
 
 from typing import Any
 
-from pydantic import ValidationError
+from pydantic import validate_model
 
-from .models import (
-    AdapterPublishInfo,
-    BotPublishInfo,
-    PluginPublishInfo,
-    PublishInfo,
-    PublishType,
-)
+from .models import AdapterPublishInfo, BotPublishInfo, PluginPublishInfo, PublishType
 from .results import ValidationResult
+
+validation_model_map = {
+    PublishType.BOT: BotPublishInfo,
+    PublishType.ADAPTER: AdapterPublishInfo,
+    PublishType.PLUGIN: PluginPublishInfo,
+}
 
 
 def validate_info(publish_type: PublishType, data: dict[str, Any]) -> ValidationResult:
     """验证信息是否符合规范"""
-    info = None
-    errors = None
+    if publish_type not in validation_model_map:
+        raise ValueError("⚠️ 未知的发布类型。")
 
-    try:
-        match publish_type:
-            case PublishType.BOT:
-                info = BotPublishInfo.parse_obj(data)
-            case PublishType.ADAPTER:
-                info = AdapterPublishInfo.parse_obj(data)
-            case PublishType.PLUGIN:
-                info = PluginPublishInfo.parse_obj(data)
-            case _:
-                raise ValueError("⚠️ 未知的发布类型。")
-    except ValidationError as e:
-        errors = e
+    data, fields_set, errors = validate_model(validation_model_map[publish_type], data)
 
     return ValidationResult(
-        publish_type=publish_type, data=data, info=info, error=errors
+        publish_type=publish_type, data=data, fields_set=fields_set, errors=errors
     )

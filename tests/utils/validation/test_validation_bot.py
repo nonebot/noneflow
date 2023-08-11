@@ -1,7 +1,5 @@
 from collections import OrderedDict
 
-import pytest
-from pytest_mock import MockerFixture
 from respx import MockRouter
 
 from tests.utils.validation.utils import generate_bot_data
@@ -41,7 +39,7 @@ async def test_bot_info_validation_failed(mocked_api: MockRouter) -> None:
 
     result = validate_info(PublishType.BOT, data)
 
-    assert result.info is None
+    assert result.fields_set is None
     assert result.error
 
     assert mocked_api["homepage_failed"].called
@@ -55,8 +53,9 @@ async def test_bot_info_validation_failed_json_error(mocked_api: MockRouter) -> 
 
     result = validate_info(PublishType.BOT, data)
 
-    assert result.info is None
+    assert "tags" not in result.data
     assert result.error
+    assert "⚠️ 标签解码失败。<dt>请确保标签为 JSON 格式。</dt>" in str(result.error)
 
     assert mocked_api["homepage"].called
 
@@ -67,11 +66,13 @@ async def test_bot_info_validation_failed_tag_field_missing(
     """测试验证失败的情况，tag 字段缺失"""
     from src.utils.validation import PublishType, validate_info
 
-    data = generate_bot_data(tags=[{"label": "test"}])
+    data = generate_bot_data(
+        tags=[{"label": "test"}, {"label": "test", "color": "#ffffff"}]
+    )
 
     result = validate_info(PublishType.BOT, data)
 
-    assert result.info is None
+    assert "tags" not in result.data
     assert result.error
 
     assert mocked_api["homepage"].called
@@ -87,7 +88,7 @@ async def test_bot_info_validation_failed_name_tags_missing(
 
     result = validate_info(PublishType.BOT, data)
 
-    assert result.info is None
+    assert result.fields_set is None
     assert result.error
 
     assert mocked_api["homepage"].called
@@ -103,7 +104,7 @@ async def test_bot_info_validation_failed_http_exception(
 
     result = validate_info(PublishType.BOT, data)
 
-    assert result.info is None
+    assert result.fields_set is None
     assert result.error
 
     assert mocked_api["exception"].called

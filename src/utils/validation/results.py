@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Any, Literal, TypedDict
 
 from pydantic import ValidationError
 
-from .models import PublishInfo, PublishType
+from .models import PublishType
 
 if TYPE_CHECKING:
     from pydantic.error_wrappers import ErrorDict
@@ -25,19 +25,19 @@ class ValidationResult:
         self,
         publish_type: PublishType,
         data: dict[str, Any],
-        info: PublishInfo | None = None,
-        error: ValidationError | None = None,
+        fields_set: set,
+        errors: ValidationError | None,
     ):
         self.type = publish_type
         self.data = data
-        self.info = info
-        self.error = error
+        self.fields_set = fields_set
+        self.error = errors
 
         self.results = self.parse_results()
 
     def parse_results(self) -> list[ValidationDict]:
         """解析验证结果"""
-        if self.info:
+        if self.fields_set:
             return []
 
         if not self.error:

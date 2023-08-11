@@ -1,5 +1,4 @@
 import abc
-import html
 import json
 import re
 from enum import Enum
@@ -15,7 +14,18 @@ from src.utils.constants import (
     PYTHON_MODULE_NAME_REGEX,
 )
 
-from .errors import HomepageError
+from .errors import (
+    CustomError,
+    DuplicationError,
+    HomepageError,
+    ModuleNameError,
+    PluginSupportedAdaptersError,
+    PluginTestError,
+    PluginTypeError,
+    ProjectLinkError,
+    PublishNameError,
+    TagError,
+)
 from .utils import check_pypi, check_url, get_adapters, resolve_adapter_name
 
 
@@ -39,17 +49,18 @@ class PyPIMixin(BaseModel):
     @validator("module_name", pre=True)
     def module_name_validator(cls, v: str) -> str:
         if not PYTHON_MODULE_NAME_REGEX.match(v):
-            raise ValueError(f"⚠️ 包名 {v} 不符合规范。<dt>请确保包名正确。</dt>")
+            raise ModuleNameError(msg=f"⚠️ 包名 {v} 不符合规范。", hint="请确保包名正确。")
         return v
 
     @validator("project_link", pre=True)
     def project_link_validator(cls, v: str) -> str:
         if not PYPI_PACKAGE_NAME_PATTERN.match(v):
-            raise ValueError(f"⚠️ PyPI 项目名 {v} 不符合规范。<dt>请确保项目名正确。</dt>")
+            raise ProjectLinkError(msg=f"⚠️ PyPI 项目名 {v} 不符合规范。", hint="请确保项目名正确。")
 
         if v and not check_pypi(v):
-            raise ValueError(
-                f'⚠️ 包 <a href="https://pypi.org/project/{v}/">{v}</a> 未发布至 PyPI。<dt>请将您的包发布至 PyPI。</dt>'
+            raise ProjectLinkError(
+                msg=f'项目 <a href="https://pypi.org/project/{v}/">{v}</a> 未发布至 PyPI。',
+                hint="请将你的项目发布至 PyPI。",
             )
         return v
 
@@ -60,7 +71,7 @@ class PyPIMixin(BaseModel):
 
         data = values.get("previous_data")
         if data is None:
-            raise ValueError("⚠️ 未获取到数据列表。")
+            raise CustomError(msg="未获取到数据列表。")
 
         if any(
             map(
@@ -69,8 +80,9 @@ class PyPIMixin(BaseModel):
                 data,
             )
         ):
-            raise ValueError(
-                f"⚠️ PyPI 项目名 {project_link} 加包名 {module_name} 的值与商店重复。<dt>请确保没有重复发布。</dt>"
+            raise DuplicationError(
+                msg=f"PyPI 项目名 {project_link} 加包名 {module_name} 的值与商店重复。",
+                hint="请确保没有重复发布。",
             )
         return values
 
@@ -84,13 +96,13 @@ class Tag(BaseModel):
     @validator("label", pre=True)
     def label_validator(cls, v: str) -> str:
         if len(v) > 10:
-            raise ValueError("标签名称过长<dt>请确保标签名称不超过 10 个字符。</dt>")
+            raise TagError(msg="标签名称过长。", hint="请确保标签名称不超过 10 个字符。")
         return v
 
     @validator("color", pre=True)
     def color_validator(cls, v: str) -> str:
         if not re.match(r"^#[0-9a-fA-F]{6}$", v):
-            raise ValueError("标签颜色错误<dt>请确保标签颜色符合十六进制颜色码规则。</dt>")
+            raise TagError(msg="标签颜色错误。", hint="请确保标签颜色符合十六进制颜色码规则。")
         return v
 
 
@@ -107,7 +119,7 @@ class PublishInfo(abc.ABC, BaseModel):
     @validator("name", pre=True)
     def name_validator(cls, v: str) -> str:
         if len(v) > MAX_NAME_LENGTH:
-            raise ValueError(f"⚠️ 名称过长。<dt>请确保名称不超过 {MAX_NAME_LENGTH} 个字符。</dt>")
+            raise PublishNameError(msg="名称过长。", hint=f"请确保名称不超过 {MAX_NAME_LENGTH} 个字符。")
         return v
 
     @validator("homepage", pre=True)
@@ -116,7 +128,7 @@ class PublishInfo(abc.ABC, BaseModel):
             status_code = check_url(v)
             if status_code != 200:
                 raise HomepageError(
-                    msg=f"项目主页返回状态码 {status_code}。", hint=f"请确保您的项目主页可访问。"
+                    msg=f"项目主页返回状态码 {status_code}。", hint=f"请确保你的项目主页可访问。"
                 )
         return v
 
@@ -125,13 +137,13 @@ class PublishInfo(abc.ABC, BaseModel):
         try:
             tags: list[Any] | Any = json.loads(v)
         except json.JSONDecodeError:
-            raise ValueError("⚠️ 标签解码失败。<dt>请确保标签为 JSON 格式。</dt>")
+            raise TagError(msg="标签解码失败。", hint="请确保标签为 JSON 格式。")
         if not isinstance(tags, list):
-            raise ValueError("⚠️ 标签格式错误。<dt>请确保标签为列表。</dt>")
+            raise TagError(msg="标签格式错误。", hint="请确保标签为列表。")
         if len(tags) > 0 and any(map(lambda x: not isinstance(x, dict), tags)):
-            raise ValueError("⚠️ 标签格式错误。<dt>请确保标签列表内均为字典。</dt>")
+            raise TagError(msg="标签格式错误。", hint="请确保标签列表内均为字典。")
         if len(tags) > 3:
-            raise ValueError("⚠️ 标签数量过多。<dt>请确保标签数量不超过 3 个。</dt>")
+            raise TagError(msg="标签数量过多。", hint="请确保标签数量不超过 3 个。")
         return tags
 
     @classmethod
@@ -164,21 +176,19 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
             return values
 
         result = values.get("plugin_test_result")
-        output = values.get("plugin_test_output")
         if not result:
-            raise ValueError(
-                f"⚠️ 插件加载测试未通过。<details><summary>测试输出</summary>{html.escape(output)}</details>"
-            )
+            raise PluginTestError(msg="插件加载测试未通过。")
         return values
 
     @validator("type", pre=True)
     def type_validator(cls, v: str) -> str:
         if not v:
-            raise ValueError(f"⚠️ 插件类型不能为空。<dt>请确保填写插件类型。</dt>")
+            raise PluginTypeError(msg="插件类型不能为空。", hint="请确保填写插件类型。")
 
         if v not in PLUGIN_VALID_TYPE:
-            raise ValueError(
-                f"⚠️ 插件类型 {v} 不符合规范。<dt>请确保插件类型正确，当前仅支持 application 与 library。</dt>"
+            raise PluginTypeError(
+                msg=f"插件类型 {v} 不符合规范。",
+                hint="请确保插件类型正确，当前仅支持 application 与 library。",
             )
         return v
 
@@ -189,22 +199,28 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
             try:
                 v = json.loads(v)
             except json.JSONDecodeError:
-                raise ValueError("⚠️ 插件支持的适配器解码失败。<dt>请确保适配器列表为 JSON 格式。</dt>")
+                raise PluginSupportedAdaptersError(
+                    msg="插件支持的适配器解码失败。",
+                    hint="请确保适配器列表为 JSON 格式。",
+                )
 
         # 如果是支持所有适配器，值应该是 None，不需要检查
         if v is None:
             return None
 
         if not isinstance(v, (list, set)):
-            raise ValueError("⚠️ 适配器列表格式错误。<dt>请确保适配器列表格式无误。</dt>")
+            raise PluginSupportedAdaptersError(
+                msg="适配器列表格式错误。",
+                hint="请确保适配器列表格式无误。",
+            )
 
         supported_adapters = {resolve_adapter_name(x) for x in v}
         store_adapters = get_adapters()
 
         missing_adapters = supported_adapters - store_adapters
         if missing_adapters:
-            raise ValueError(
-                f"⚠️ 适配器 {', '.join(missing_adapters)} 不存在。<dt>请确保适配器模块名称正确。</dt>"
+            raise PluginSupportedAdaptersError(
+                msg=f"适配器 {', '.join(missing_adapters)} 不存在。", hint="请确保适配器模块名称正确。"
             )
         return sorted(supported_adapters)
 
