@@ -3,7 +3,11 @@ from pydantic import PydanticValueError
 
 class CustomError(PydanticValueError):
     code = "custom"
-    msg_template = "⚠️ {msg}<dt>{hint}</dt>"
+
+    def __str__(self) -> str:
+        msg = self.__dict__.get("msg", "")
+        hint = self.__dict__.get("hint", "")
+        return f"{self.code}: {msg}{hint}"
 
 
 class PublishNameError(CustomError):

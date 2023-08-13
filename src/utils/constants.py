@@ -104,3 +104,42 @@ ADAPTER_HOMEPAGE_PATTERN = re.compile(ISSUE_PATTERN.format("适配器项目仓�
 
 # NoneBot Store
 STORE_ADAPTERS_URL = "https://nonebot.dev/adapters.json"
+
+# 发布信息的项
+ADAPTER_INFO_FIELDS = [
+    "module_name",
+    "project_link",
+    "name",
+    "desc",
+    "author",
+    "homepage",
+    "tags",
+    "is_official",
+]
+BOT_INFO_FIELDS = [
+    "name",
+    "desc",
+    "author",
+    "homepage",
+    "tags",
+    "is_official",
+]
+PLUGIN_INFO_FIELDS_STORE = [
+    "module_name",
+    "project_link",
+    "author",
+    "tags",
+    "is_official",
+]
+PLUGIN_INFO_FIELDS_REGISTRY = [
+    "module_name",
+    "project_link",
+    "name",
+    "desc",
+    "author",
+    "homepage",
+    "tags",
+    "is_official",
+    "type",
+    "supported_adapters",
+]

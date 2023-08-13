@@ -71,7 +71,7 @@ class PyPIMixin(BaseModel):
 
         data = values.get("previous_data")
         if data is None:
-            raise CustomError(msg="未获取到数据列表。")
+            raise CustomError(msg="未获取到数据列表。", hint="请稍后再试。")
 
         if any(
             map(
@@ -167,6 +167,10 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     """插件测试结果"""
     plugin_test_output: str
     """插件测试输出"""
+    github_repository: str
+    """GitHub 仓库名"""
+    github_run_id: str
+    """GitHub Action 的 Run ID"""
 
     @root_validator(pre=True)
     def plugin_test_validator(cls, values) -> bool:
@@ -176,8 +180,9 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
             return values
 
         result = values.get("plugin_test_result")
+        output = values.get("plugin_test_output")
         if not result:
-            raise PluginTestError(msg="插件加载测试未通过。")
+            raise PluginTestError(msg="插件加载测试未通过。", hint=output)
         return values
 
     @validator("type", pre=True)
