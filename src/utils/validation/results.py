@@ -1,7 +1,5 @@
 from typing import TYPE_CHECKING, Any, Literal, TypedDict, cast
 
-from pydantic import ValidationError
-
 from src.utils.constants import (
     ADAPTER_INFO_FIELDS,
     BOT_INFO_FIELDS,
@@ -10,9 +8,11 @@ from src.utils.constants import (
 )
 
 from .models import PublishType
+from .render import results_to_comment, results_to_registry
 from .utils import check_url, loc_to_name, resolve_adapter_name
 
 if TYPE_CHECKING:
+    from pydantic import ValidationError
     from pydantic.error_wrappers import ErrorDict
 
 
@@ -178,14 +178,14 @@ class ValidationResult:
         publish_type: PublishType,
         data: dict[str, Any],
         fields_set: set,
-        errors: ValidationError | None,
+        errors: "ValidationError | None",
     ):
         self.type = publish_type
         self.data = data
         self.fields_set = fields_set
         self.errors = errors
 
-        self._results: list[ValidationDict] = []
+        self.results: list[ValidationDict] = []
 
         self._parse_error()
         self._parse_data()
@@ -203,24 +203,24 @@ class ValidationResult:
             type = error["type"]
             # 需要特殊处理的项
             if loc in error_parser:
-                self._results.append(error_parser[loc](error))
+                self.results.append(error_parser[loc](error))
             # 缺少的项
             elif type.startswith("value_error.missing"):
-                self._results.append(MissingErrorParser(error))
+                self.results.append(MissingErrorParser(error))
             # 可以直接获取错误数据的项
             else:
-                self._results.append(DefaultErrorParser(error))
+                self.results.append(DefaultErrorParser(error))
 
     def _parse_data(self) -> None:
         for field in self.data:
             if field in data_parser:
-                self._results.append(data_parser[field](self.data))
+                self.results.append(data_parser[field](self.data))
 
-    def render_issue_comment(self):
-        ...
+    async def render_issue_comment(self, reuse: bool = False):
+        return await results_to_comment(self, reuse=reuse)
 
-    def render_registry_message(self):
-        ...
+    async def render_registry_message(self):
+        return await results_to_registry(self)
 
     def dumps_store(self) -> dict[str, Any]:
         """输出符合商店的格式"""
