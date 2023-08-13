@@ -49,13 +49,13 @@ class PyPIMixin(BaseModel):
     @validator("module_name", pre=True)
     def module_name_validator(cls, v: str) -> str:
         if not PYTHON_MODULE_NAME_REGEX.match(v):
-            raise ModuleNameError(msg=f"⚠️ 包名 {v} 不符合规范。", hint="请确保包名正确。")
+            raise ModuleNameError(msg=f"包名 {v} 不符合规范。", hint="请确保包名正确。")
         return v
 
     @validator("project_link", pre=True)
     def project_link_validator(cls, v: str) -> str:
         if not PYPI_PACKAGE_NAME_PATTERN.match(v):
-            raise ProjectLinkError(msg=f"⚠️ PyPI 项目名 {v} 不符合规范。", hint="请确保项目名正确。")
+            raise ProjectLinkError(msg=f"PyPI 项目名 {v} 不符合规范。", hint="请确保项目名正确。")
 
         if v and not check_pypi(v):
             raise ProjectLinkError(

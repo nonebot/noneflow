@@ -40,7 +40,7 @@ def HomepageDataParser(data: dict[str, Any]) -> ValidationDict:
     return ValidationDict(
         type="pass",
         name="homepage",
-        msg=f"""✅ 项目 <a href="{homepage}">主页</a> 返回状态码 {check_url(homepage)}。""",
+        msg=f"""项目 <a href="{homepage}">主页</a> 返回状态码 {check_url(homepage)}。""",
         hint="",
     )
 
