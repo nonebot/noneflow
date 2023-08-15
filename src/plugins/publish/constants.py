@@ -7,54 +7,9 @@ BOT_MARKER = "[bot]"
 
 SKIP_PLUGIN_TEST_COMMENT = "/skip"
 
-COMMENT_TITLE = "# 📃 商店发布检查结果"
-
 COMMIT_MESSAGE_PREFIX = ":beers: publish"
 
 BRANCH_NAME_PREFIX = "publish/issue"
-
-TIPS_MESSAGE = (
-    "💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。\n💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。"
-)
-
-REUSE_MESSAGE = "♻️ 评论已更新至最新检查结果"
-
-POWERED_BY_NONEFLOW_MESSAGE = (
-    "💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)"
-)
-
-DETAIL_MESSAGE_TEMPLATE = (
-    "<details><summary>详情</summary><pre><code>{detail_message}</code></pre></details>"
-)
-
-VALIDATION_MESSAGE_TEMPLATE = """> {publish_info}
-
-**{result}**
-{error_message}
-{detail_message}
-"""
-
-COMMENT_MESSAGE_TEMPLATE = """{title}
-
-{body}
-
----
-
-{tips}
-
-{footer}
-"""
-
-# PyPI 格式
-PYPI_PACKAGE_NAME_PATTERN = re.compile(
-    r"^([A-Z0-9]|[A-Z0-9][A-Z0-9._-]*[A-Z0-9])$",
-    re.IGNORECASE,
-)
-# import 包名格式
-PYTHON_MODULE_NAME_REGEX = re.compile(
-    r"^([A-Z]|[A-Z][A-Z0-9._-]*[A-Z0-9])$",
-    re.IGNORECASE,
-)
 
 MAX_NAME_LENGTH = 50
 """名称最大长度"""
@@ -94,13 +49,8 @@ PLUGIN_STRING_LIST = [
     PLUGIN_TYPE_STRING,
     PLUGIN_SUPPORTED_ADAPTERS_STRING,
 ]
-PLUGIN_VALID_TYPE = ["application", "library"]
-"""插件类型当前只支持 application 和 library"""
 # 协议
 ADAPTER_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("适配器名称"))
 ADAPTER_DESC_PATTERN = re.compile(ISSUE_PATTERN.format("适配器描述"))
 ADAPTER_MODULE_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("适配器 import 包名"))
 ADAPTER_HOMEPAGE_PATTERN = re.compile(ISSUE_PATTERN.format("适配器项目仓库/主页链接"))
-
-# NoneBot Store
-STORE_ADAPTERS_URL = "https://nonebot.dev/adapters.json"

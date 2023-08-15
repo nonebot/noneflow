@@ -12,6 +12,7 @@ env = jinja2.Environment(
     enable_async=True,
     trim_blocks=True,
     autoescape=True,
+    keep_trailing_newline=True,
 )
 
 
@@ -19,14 +20,13 @@ async def results_to_comment(result: "ValidationResult", reuse: bool = False) ->
     """将验证结果转换为评论内容"""
     pass_data = [item for item in result.results if item["type"] == "pass"]
     fail_data = [item for item in result.results if item["type"] == "fail"]
-    name = result.data.get("name", "")
-    title = f"{result.type.value}: {name}"
+    title = f"{result.type.value}: {result.name}"
 
     template = env.get_template("comment.md.jinja")
     return await template.render_async(
         title=title,
-        is_valid=result.is_valid,
-        data=result.data,
+        is_valid=result.valid,
+        data=result._data,
         pass_data=pass_data,
         fail_data=fail_data,
         reuse=reuse,
@@ -40,8 +40,8 @@ async def results_to_registry(result: "ValidationResult") -> str:
 
     template = env.get_template("registry.html.jinja")
     return await template.render_async(
-        is_valid=result.is_valid,
-        data=result.data,
+        is_valid=result.valid,
+        data=result._data,
         pass_data=pass_data,
         fail_data=fail_data,
     )

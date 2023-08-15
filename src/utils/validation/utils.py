@@ -3,7 +3,7 @@ from functools import cache
 import httpx
 from nonebot import logger
 
-from src.utils.constants import STORE_ADAPTERS_URL
+from .constants import STORE_ADAPTERS_URL
 
 
 def check_pypi(project_link: str) -> bool:

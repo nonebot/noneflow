@@ -7,13 +7,12 @@ from typing import Any
 from nonebot import logger
 from pydantic import BaseModel, root_validator, validator
 
-from src.utils.constants import (
+from .constants import (
     MAX_NAME_LENGTH,
     PLUGIN_VALID_TYPE,
     PYPI_PACKAGE_NAME_PATTERN,
     PYTHON_MODULE_NAME_REGEX,
 )
-
 from .errors import (
     CustomError,
     DuplicationError,

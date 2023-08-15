@@ -10,6 +10,8 @@ from nonebot.adapters.github import (
 )
 from nonebot.params import Depends
 
+from src.utils.validation.models import PublishType
+
 from .config import plugin_config
 from .constants import BOT_MARKER, BRANCH_NAME_PREFIX, MAX_NAME_LENGTH
 from .depends import (
@@ -20,7 +22,7 @@ from .depends import (
     get_repo_info,
     get_type_by_labels,
 )
-from .models import PublishType, RepoInfo
+from .models import RepoInfo
 from .utils import (
     comment_issue,
     commit_and_push,
@@ -31,8 +33,8 @@ from .utils import (
     run_shell_command,
     should_skip_plugin_test,
     trigger_registry_update,
+    update_file,
 )
-from .validation import PublishInfo
 
 
 def bypass_git():
@@ -181,31 +183,25 @@ async def handle_publish_check(
 
         # 检查是否满足发布要求
         # 仅在通过检查的情况下创建拉取请求
-        info = extract_publish_info_from_issue(issue, publish_type)
+        result = extract_publish_info_from_issue(issue, publish_type)
 
         # 设置拉取请求与议题的标题
-        if isinstance(info, PublishInfo):
-            name = info.name
-        else:
-            name = info.raw_data.get("name") or ""
         # 限制标题长度，过长的标题不好看
-        title = f"{publish_type.value}: {name[:MAX_NAME_LENGTH]}"
+        title = f"{publish_type.value}: {result.name[:MAX_NAME_LENGTH]}"
 
-        if isinstance(info, PublishInfo):
+        if result.valid:
             # 创建新分支
             # 命名示例 publish/issue123
             branch_name = f"{BRANCH_NAME_PREFIX}{issue_number}"
             run_shell_command(["git", "switch", "-C", branch_name])
             # 更新文件并提交更改
-            info.update_file()
-            commit_and_push(info, branch_name, issue_number)
+            update_file(result)
+            commit_and_push(result, branch_name, issue_number)
             # 创建拉取请求
             await create_pull_request(
-                bot, repo_info, info, branch_name, issue_number, title
+                bot, repo_info, result, branch_name, issue_number, title
             )
-            message = info.validation_message
         else:
-            message = info.message
             logger.info("发布没通过检查，暂不创建拉取请求")
 
         # 修改议题标题
@@ -217,7 +213,7 @@ async def handle_publish_check(
             )
             logger.info(f"议题标题已修改为 {title}")
 
-        await comment_issue(bot, repo_info, issue_number, message)
+        await comment_issue(bot, repo_info, issue_number, result)
 
 
 async def review_submiited_rule(

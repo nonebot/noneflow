@@ -1,13 +1,18 @@
 from typing import TYPE_CHECKING, Any, Literal, TypedDict, cast
 
-from src.utils.constants import (
+from .constants import (
     ADAPTER_INFO_FIELDS,
     BOT_INFO_FIELDS,
     PLUGIN_INFO_FIELDS_REGISTRY,
     PLUGIN_INFO_FIELDS_STORE,
 )
-
-from .models import PublishType
+from .models import (
+    AdapterPublishInfo,
+    BotPublishInfo,
+    PluginPublishInfo,
+    PublishInfo,
+    PublishType,
+)
 from .render import results_to_comment, results_to_registry
 from .utils import check_url, loc_to_name, resolve_adapter_name
 
@@ -179,11 +184,13 @@ class ValidationResult:
         data: dict[str, Any],
         fields_set: set,
         errors: "ValidationError | None",
+        raw_data: dict[str, Any],
     ):
         self.type = publish_type
-        self.data = data
-        self.fields_set = fields_set
-        self.errors = errors
+        self._data = data
+        self._fields_set = fields_set
+        self._errors = errors
+        self._raw_data = raw_data
 
         self.results: list[ValidationDict] = []
 
@@ -191,14 +198,35 @@ class ValidationResult:
         self._parse_data()
 
     @property
-    def is_valid(self) -> bool:
+    def valid(self) -> bool:
         """是否验证通过"""
-        return self.errors is None
+        return self._errors is None
+
+    @property
+    def name(self) -> str:
+        return self._data.get("name") or self._raw_data.get("name", "")
+
+    @property
+    def author(self) -> str:
+        return self._data["author"]
+
+    @property
+    def info(self) -> PublishInfo:
+        if not self.valid:
+            raise ValueError("无法获取验证通过的信息。")
+
+        match self.type:
+            case PublishType.ADAPTER:
+                return AdapterPublishInfo.construct(self._fields_set, **self._data)
+            case PublishType.BOT:
+                return BotPublishInfo.construct(self._fields_set, **self._data)
+            case PublishType.PLUGIN:
+                return PluginPublishInfo.construct(self._fields_set, **self._data)
 
     def _parse_error(self) -> None:
-        if self.errors is None:
+        if self._errors is None:
             return
-        for error in self.errors.errors():
+        for error in self._errors.errors():
             loc = cast(str, error["loc"][0])
             type = error["type"]
             # 需要特殊处理的项
@@ -212,9 +240,9 @@ class ValidationResult:
                 self.results.append(DefaultErrorParser(error))
 
     def _parse_data(self) -> None:
-        for field in self.data:
+        for field in self._data:
             if field in data_parser:
-                self.results.append(data_parser[field](self.data))
+                self.results.append(data_parser[field](self._data))
 
     async def render_issue_comment(self, reuse: bool = False):
         return await results_to_comment(self, reuse=reuse)
@@ -226,11 +254,11 @@ class ValidationResult:
         """输出符合商店的格式"""
         match self.type:
             case PublishType.ADAPTER:
-                return {key: self.data[key] for key in ADAPTER_INFO_FIELDS}
+                return {key: self.info.dict()[key] for key in ADAPTER_INFO_FIELDS}
             case PublishType.BOT:
-                return {key: self.data[key] for key in BOT_INFO_FIELDS}
+                return {key: self.info.dict()[key] for key in BOT_INFO_FIELDS}
             case PublishType.PLUGIN:
-                return {key: self.data[key] for key in PLUGIN_INFO_FIELDS_STORE}
+                return {key: self.info.dict()[key] for key in PLUGIN_INFO_FIELDS_STORE}
             case _:
                 raise ValueError(f"无法处理的类型 {self.type}")
 
@@ -238,10 +266,12 @@ class ValidationResult:
         """输出符合 registry 的格式"""
         match self.type:
             case PublishType.ADAPTER:
-                return {key: self.data[key] for key in ADAPTER_INFO_FIELDS}
+                return {key: self.info.dict()[key] for key in ADAPTER_INFO_FIELDS}
             case PublishType.BOT:
-                return {key: self.data[key] for key in BOT_INFO_FIELDS}
+                return {key: self.info.dict()[key] for key in BOT_INFO_FIELDS}
             case PublishType.PLUGIN:
-                return {key: self.data[key] for key in PLUGIN_INFO_FIELDS_REGISTRY}
+                return {
+                    key: self.info.dict()[key] for key in PLUGIN_INFO_FIELDS_REGISTRY
+                }
             case _:
                 raise ValueError(f"无法处理的类型 {self.type}")
