@@ -38,17 +38,3 @@ async def results_to_comment(result: "ValidationResult", reuse: bool = False) ->
         fail_data=fail_data,
         reuse=reuse,
     )
-
-
-async def results_to_registry(result: "ValidationResult") -> str:
-    """将验证结果转换为注册表内容"""
-    pass_data = [item for item in result.results if item["type"] == "pass"]
-    fail_data = [item for item in result.results if item["type"] == "fail"]
-
-    template = env.get_template("registry.html.jinja")
-    return await template.render_async(
-        is_valid=result.valid,
-        data=result._data,
-        pass_data=pass_data,
-        fail_data=fail_data,
-    )

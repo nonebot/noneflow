@@ -8,7 +8,7 @@ from githubkit.rest.models import PullRequest, PullRequestSimple
 from nonebot import logger
 from nonebot.adapters.github import Bot, GitHubBot
 
-from src.utils.validation import PublishType, ValidationResult, validate_info
+from src.utils.validation import PublishType, ValidationDict, validate_info
 
 from .config import plugin_config
 from .constants import (
@@ -108,7 +108,7 @@ def get_type_by_commit_message(message: str) -> PublishType | None:
         return PublishType.ADAPTER
 
 
-def commit_and_push(result: ValidationResult, branch_name: str, issue_number: int):
+def commit_and_push(result: ValidationDict, branch_name: str, issue_number: int):
     """提交并推送"""
     commit_message = f"{COMMIT_MESSAGE_PREFIX} {result.type.value.lower()} {result.name} (#{issue_number})"
 
@@ -145,7 +145,7 @@ def extract_issue_number_from_ref(ref: str) -> int | None:
 def validate_info_from_issue(
     issue: "IssuesOpenedPropIssue | IssuesReopenedPropIssue | IssueCommentCreatedPropIssue | Issue | WebhookIssue",
     publish_type: PublishType,
-) -> ValidationResult:
+) -> ValidationDict:
     """从议题中提取发布所需数据"""
     body = issue.body if issue.body else ""
 
@@ -287,7 +287,7 @@ async def resolve_conflict_pull_requests(
                 logger.info("发布没通过检查，已跳过")
 
 
-def update_file(result: ValidationResult) -> None:
+def update_file(result: ValidationDict) -> None:
     """更新文件"""
     match result.type:
         case PublishType.ADAPTER:
@@ -302,7 +302,7 @@ def update_file(result: ValidationResult) -> None:
         data: list[dict[str, str]] = json.load(f)
     with path.open("w", encoding="utf-8") as f:
         # TODO: 以后换成 store 的格式
-        data.append(result.dumps_registry())
+        data.append(result.registry_info())
         json.dump(data, f, ensure_ascii=False, indent=2)
         # 结尾加上换行符，不然会被 pre-commit fix
         f.write("\n")
@@ -333,7 +333,7 @@ async def should_skip_plugin_test(
 async def create_pull_request(
     bot: Bot,
     repo_info: RepoInfo,
-    result: ValidationResult,
+    result: ValidationDict,
     branch_name: str,
     issue_number: int,
     title: str,
@@ -377,7 +377,7 @@ async def create_pull_request(
 
 
 async def comment_issue(
-    bot: Bot, repo_info: RepoInfo, issue_number: int, result: ValidationResult
+    bot: Bot, repo_info: RepoInfo, issue_number: int, result: ValidationDict
 ):
     """在议题中发布评论"""
     logger.info("开始发布评论")

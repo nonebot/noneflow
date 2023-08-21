@@ -2,7 +2,6 @@ import json
 
 import pytest
 from pydantic import ValidationError
-from pytest_mock import MockerFixture
 from respx import MockRouter
 
 
@@ -21,8 +20,7 @@ async def test_pypi_project_name_invalid(mocked_api: MockRouter) -> None:
             tags=json.dumps([]),  # type: ignore
             is_official=False,
         )
-    assert "PyPI 项目名 project_link/ 不符合规范。" in str(e.value)
-    assert "请确保项目名正确。" in str(e.value)
+    assert "PyPI 项目名不符合规范。" in str(e.value)
 
     assert mocked_api["homepage"].called
 
@@ -43,8 +41,7 @@ async def test_module_name_invalid(mocked_api: MockRouter) -> None:
             is_official=False,
             previous_data=[],
         )
-    assert "包名 1module_name 不符合规范" in str(e.value)
-    assert "请确保包名正确。" in str(e.value)
+    assert "包名不符合规范" in str(e.value)
 
     assert mocked_api["project_link"].called
     assert mocked_api["homepage"].called
@@ -75,7 +72,6 @@ async def test_name_duplication(mocked_api: MockRouter) -> None:
             ],
         )
     assert "PyPI 项目名 project_link1 加包名 module_name1 的值与商店重复" in str(e.value)
-    assert "请确保没有重复发布。" in str(e.value)
 
     assert mocked_api["project_link1"].called
     assert mocked_api["homepage"].called
@@ -96,8 +92,7 @@ async def test_name_too_long(mocked_api: MockRouter) -> None:
             tags=json.dumps([]),  # type: ignore
             is_official=False,
         )
-    assert "名称过长。" in str(e.value)
-    assert "请确保名称不超过 50 个字符。" in str(e.value)
+    assert "名称不能超过 50 个字符。" in str(e.value)
 
     assert mocked_api["project_link"].called
     assert mocked_api["homepage"].called

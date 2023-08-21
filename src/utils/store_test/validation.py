@@ -75,7 +75,7 @@ async def validate_metadata(
     return {
         "result": validation_result.valid,
         "output": await validation_result.render_registry_message(),
-        "plugin": cast(Plugin, validation_result.dumps_registry())
+        "plugin": cast(Plugin, validation_result.registry_info())
         if validation_result.valid
         else None,
     }

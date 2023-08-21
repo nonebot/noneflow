@@ -3,7 +3,7 @@ from functools import cache
 import httpx
 from nonebot import logger
 
-from .constants import LOC_NAME_MAP, STORE_ADAPTERS_URL
+from .constants import STORE_ADAPTERS_URL
 
 
 def check_pypi(project_link: str) -> bool:
@@ -25,13 +25,6 @@ def check_url(url: str) -> int | None:
         return r.status_code
     except:
         pass
-
-
-def loc_to_name(loc: str) -> str:
-    """将 loc 转换为可读名称"""
-    if loc in LOC_NAME_MAP:
-        return LOC_NAME_MAP[loc]
-    return loc
 
 
 def get_adapters() -> set[str]:
