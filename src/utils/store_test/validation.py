@@ -8,10 +8,8 @@ from pathlib import Path
 from typing import cast
 from zoneinfo import ZoneInfo
 
-from pydantic import ValidationError
-
-from src.plugins.publish.validation import PluginPublishInfo
 from src.utils.plugin_test import PluginTest, strip_ansi
+from src.utils.validation import PublishType, validate_info
 
 from .models import Metadata, Plugin, PluginValidation, StorePlugin, TestResult
 
@@ -66,21 +64,21 @@ async def validate_metadata(
         "plugin_test_result": result,
         "type": type,
         "supported_adapters": supported_adapters,
+        "github_repository": "nonebot/plugin-test",
+        "github_run_id": 0,
+        "plugin_test_result": result,
+        "plugin_test_output": "",
+        "skip_plugin_test": False,
+        "previous_data": [],
     }
-    try:
-        publish_info = PluginPublishInfo(**raw_data)
-        plugin_data = cast(Plugin, publish_info.dict(exclude={"plugin_test_result"}))
-        return {
-            "result": True,
-            "output": "通过",
-            "plugin": plugin_data,
-        }
-    except ValidationError as e:
-        return {
-            "result": False,
-            "output": str(e),  # TODO: 优化输出，可通过 jinja2 模板渲染
-            "plugin": None,
-        }
+    validation_result = validate_info(PublishType.PLUGIN, raw_data)
+    return {
+        "result": validation_result.valid,
+        "output": await validation_result.render_registry_message(),
+        "plugin": cast(Plugin, validation_result.dumps_registry())
+        if validation_result.valid
+        else None,
+    }
 
 
 async def validate_plugin(
