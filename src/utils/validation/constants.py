@@ -58,3 +58,15 @@ PLUGIN_INFO_FIELDS_REGISTRY = [
     "type",
     "supported_adapters",
 ]
+
+# 发布信息项对应的中文名
+LOC_NAME_MAP = {
+    "name": "名称",
+    "desc": "功能",
+    "project_link": "PyPI 项目名",
+    "module_name": "import 包名",
+    "tags": "标签",
+    "homepage": "项目仓库/主页链接",
+    "type": "插件类型",
+    "supported_adapters": "插件支持的适配器",
+}

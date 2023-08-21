@@ -13,7 +13,7 @@ async def test_bot_info_validation_success(mocked_api: MockRouter) -> None:
 
     result = validate_info(PublishType.BOT, data)
 
-    assert result.is_valid
+    assert result.valid
     assert OrderedDict(result.dumps_registry()) == OrderedDict(
         name="name",
         desc="desc",
@@ -40,10 +40,10 @@ async def test_bot_info_validation_failed(mocked_api: MockRouter) -> None:
 
     result = validate_info(PublishType.BOT, data)
 
-    assert not result.is_valid
-    assert "homepage" not in result.data
-    assert "tags" not in result.data
-    assert result.errors
+    assert not result.valid
+    assert "homepage" not in result._data
+    assert "tags" not in result._data
+    assert result._errors
 
     assert mocked_api["homepage_failed"].called
 
@@ -56,9 +56,9 @@ async def test_bot_info_validation_failed_json_error(mocked_api: MockRouter) -> 
 
     result = validate_info(PublishType.BOT, data)
 
-    assert "tags" not in result.data
-    assert result.errors
-    assert "标签解码失败。请确保标签为 JSON 格式。" in str(result.errors)
+    assert "tags" not in result._data
+    assert result._errors
+    assert "标签解码失败。请确保标签为 JSON 格式。" in str(result._errors)
 
     assert mocked_api["homepage"].called
 
@@ -75,8 +75,8 @@ async def test_bot_info_validation_failed_tag_field_missing(
 
     result = validate_info(PublishType.BOT, data)
 
-    assert "tags" not in result.data
-    assert result.errors
+    assert "tags" not in result._data
+    assert result._errors
 
     assert mocked_api["homepage"].called
 
@@ -91,9 +91,9 @@ async def test_bot_info_validation_failed_name_tags_missing(
 
     result = validate_info(PublishType.BOT, data)
 
-    assert "name" not in result.data
-    assert "tags" not in result.data
-    assert result.errors
+    assert "name" not in result._data
+    assert "tags" not in result._data
+    assert result._errors
 
     assert mocked_api["homepage"].called
 
@@ -108,7 +108,7 @@ async def test_bot_info_validation_failed_http_exception(
 
     result = validate_info(PublishType.BOT, data)
 
-    assert "homepage" not in result.data
-    assert result.errors
+    assert "homepage" not in result._data
+    assert result._errors
 
     assert mocked_api["exception"].called

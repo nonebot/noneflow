@@ -204,6 +204,10 @@ class ValidationResult:
 
     @property
     def name(self) -> str:
+        """获取发布名称
+
+        优先使用验证通过的信息，否则使用原始数据。
+        """
         return self._data.get("name") or self._raw_data.get("name", "")
 
     @property

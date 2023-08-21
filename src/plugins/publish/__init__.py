@@ -28,12 +28,12 @@ from .utils import (
     commit_and_push,
     create_pull_request,
     ensure_issue_content,
-    extract_publish_info_from_issue,
     resolve_conflict_pull_requests,
     run_shell_command,
     should_skip_plugin_test,
     trigger_registry_update,
     update_file,
+    validate_info_from_issue,
 )
 
 
@@ -183,7 +183,7 @@ async def handle_publish_check(
 
         # 检查是否满足发布要求
         # 仅在通过检查的情况下创建拉取请求
-        result = extract_publish_info_from_issue(issue, publish_type)
+        result = validate_info_from_issue(issue, publish_type)
 
         # 设置拉取请求与议题的标题
         # 限制标题长度，过长的标题不好看

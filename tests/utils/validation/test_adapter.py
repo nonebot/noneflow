@@ -13,7 +13,7 @@ async def test_plugin_info_validation_success(mocked_api: MockRouter) -> None:
 
     result = validate_info(PublishType.ADAPTER, data)
 
-    assert result.is_valid
+    assert result.valid
     assert OrderedDict(result.dumps_registry()) == OrderedDict(
         module_name="module_name",
         project_link="project_link",
@@ -42,9 +42,9 @@ async def test_bot_info_validation_failed(mocked_api: MockRouter) -> None:
 
     result = validate_info(PublishType.ADAPTER, data)
 
-    assert not result.is_valid
-    assert "homepage" not in result.data
-    assert "tags" not in result.data
-    assert result.errors
+    assert not result.valid
+    assert "homepage" not in result._data
+    assert "tags" not in result._data
+    assert result._errors
 
     assert mocked_api["homepage_failed"].called

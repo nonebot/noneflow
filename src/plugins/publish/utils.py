@@ -142,7 +142,7 @@ def extract_issue_number_from_ref(ref: str) -> int | None:
         return int(match.group(1))
 
 
-def extract_publish_info_from_issue(
+def validate_info_from_issue(
     issue: "IssuesOpenedPropIssue | IssuesReopenedPropIssue | IssueCommentCreatedPropIssue | Issue | WebhookIssue",
     publish_type: PublishType,
 ) -> ValidationResult:
@@ -158,6 +158,10 @@ def extract_publish_info_from_issue(
             author = issue.user.login if issue.user else None
             homepage = ADAPTER_HOMEPAGE_PATTERN.search(body)
             tags = TAGS_PATTERN.search(body)
+            with plugin_config.input_config.adapter_path.open(
+                "r", encoding="utf-8"
+            ) as f:
+                data: list[dict[str, str]] = json.load(f)
 
             raw_data = {
                 "module_name": module_name.group(1).strip() if module_name else None,
@@ -167,6 +171,7 @@ def extract_publish_info_from_issue(
                 "author": author,
                 "homepage": homepage.group(1).strip() if homepage else None,
                 "tags": tags.group(1).strip() if tags else None,
+                "previous_data": data,
             }
         case PublishType.BOT:
             name = BOT_NAME_PATTERN.search(body)
@@ -190,6 +195,22 @@ def extract_publish_info_from_issue(
             module_name = module_name.group(1).strip() if module_name else None
             project_link = project_link.group(1).strip() if project_link else None
             tags = tags.group(1).strip() if tags else None
+            with plugin_config.input_config.plugin_path.open(
+                "r", encoding="utf-8"
+            ) as f:
+                data: list[dict[str, str]] = json.load(f)
+            raw_data = {
+                "module_name": module_name,
+                "project_link": project_link,
+                "author": author,
+                "tags": tags,
+                "skip_plugin_test": plugin_config.skip_plugin_test,
+                "plugin_test_result": plugin_config.plugin_test_result,
+                "plugin_test_output": plugin_config.plugin_test_output,
+                "github_repository": plugin_config.github_repository,
+                "github_run_id": plugin_config.github_run_id,
+                "previous_data": data,
+            }
             # 如果插件测试被跳过，则从议题中获取信息
             if plugin_config.skip_plugin_test:
                 name = PLUGIN_NAME_PATTERN.search(body)
@@ -198,47 +219,29 @@ def extract_publish_info_from_issue(
                 type = PLUGIN_TYPE_PATTERN.search(body)
                 supported_adapters = PLUGIN_SUPPORTED_ADAPTERS_PATTERN.search(body)
 
-                name = name.group(1).strip() if name else None
-                desc = desc.group(1).strip() if desc else None
-                homepage = homepage.group(1).strip() if homepage else None
-                type = type.group(1).strip() if type else None
-                supported_adapters = (
-                    supported_adapters.group(1).strip() if supported_adapters else None
-                )
+                if name:
+                    raw_data["name"] = name.group(1).strip()
+                if desc:
+                    raw_data["desc"] = desc.group(1).strip()
+                if homepage:
+                    raw_data["homepage"] = homepage.group(1).strip()
+                if type:
+                    raw_data["type"] = type.group(1).strip()
+                if supported_adapters:
+                    raw_data["supported_adapters"] = supported_adapters.group(1).strip()
             elif plugin_config.plugin_test_metadata:
-                name = plugin_config.plugin_test_metadata.name
-                desc = plugin_config.plugin_test_metadata.description
-                homepage = plugin_config.plugin_test_metadata.homepage
-                type = plugin_config.plugin_test_metadata.type
-                supported_adapters = (
-                    plugin_config.plugin_test_metadata.supported_adapters
-                )
+                raw_data["name"] = plugin_config.plugin_test_metadata.name
+                raw_data["desc"] = plugin_config.plugin_test_metadata.description
+                raw_data["homepage"] = plugin_config.plugin_test_metadata.homepage
+                raw_data["type"] = plugin_config.plugin_test_metadata.type
+                raw_data[
+                    "supported_adapters"
+                ] = plugin_config.plugin_test_metadata.supported_adapters
             else:
                 # 插件缺少元数据
                 # 可能为插件测试未通过，或者插件未按规范编写
-                name = project_link
-                desc = None
-                homepage = None
-                type = None
-                # 给一个会报错的值，方便后面跳过
-                supported_adapters = False
+                raw_data["name"] = project_link
 
-            raw_data = {
-                "module_name": module_name,
-                "project_link": project_link,
-                "name": name,
-                "desc": desc,
-                "author": author,
-                "homepage": homepage,
-                "tags": tags,
-                "type": type,
-                "supported_adapters": supported_adapters,
-                "skip_plugin_test": plugin_config.skip_plugin_test,
-                "plugin_test_result": plugin_config.plugin_test_result,
-                "plugin_test_output": plugin_config.plugin_test_output,
-                "github_repository": plugin_config.github_repository,
-                "github_run_id": plugin_config.github_run_id,
-            }
     return validate_info(publish_type, raw_data)
 
 
@@ -274,7 +277,7 @@ async def resolve_conflict_pull_requests(
 
         publish_type = get_type_by_labels(issue.labels)
         if publish_type:
-            result = extract_publish_info_from_issue(issue, publish_type)
+            result = validate_info_from_issue(issue, publish_type)
             if result.valid:
                 update_file(result)
                 commit_and_push(result, pull.head.ref, issue_number)
