@@ -1,3 +1,4 @@
+{% from "render_message.jinja" import render_message %}
 {# 发布测试评论内容 #}
 # 📃 商店发布检查结果
 
@@ -6,13 +7,13 @@
 **{{ "✅ 所有测试通过，一切准备就绪！" if is_valid else "⚠️ 在发布检查过程中，我们发现以下问题："}}**
 
 {% if not is_valid %}
-<pre><code>{% for item in fail_data %}<li>⚠️ {{ item.msg|safe }}<dt>{{ item.hint }}</dt></li>{% endfor %}</code></pre>
+<pre><code>{% for item in fail_data %}<li>⚠️ {{ render_message(item.msg) }}<dt>{{ render_message(item.hint) }}</dt></li>{% endfor %}</code></pre>
 {% endif %}
 
 {% if pass_data %}
 <details>
 <summary>详情</summary>
-<pre><code>{% for item in pass_data %}<li>✅ {{ item.msg|safe }}</li>{% endfor %}</code></pre>
+<pre><code>{% for item in pass_data %}<li>✅ {{ render_message(item.msg) }}</li>{% endfor %}</code></pre>
 </details>
 {% endif %}
 

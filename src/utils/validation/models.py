@@ -1,8 +1,11 @@
 import abc
 import json
 import re
+from collections.abc import Iterable
+from copy import deepcopy
+from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any
+from typing import Any, Self
 
 from nonebot import logger
 from pydantic import BaseModel, root_validator, validator
@@ -26,6 +29,83 @@ from .errors import (
     TagError,
 )
 from .utils import check_pypi, check_url, get_adapters, resolve_adapter_name
+
+
+@dataclass
+class MessageSegment:
+    """消息段"""
+
+    type: str
+    """消息段类型"""
+    data: dict[str, Any] = field(default_factory=dict)
+    """消息段数据"""
+
+    def __add__(
+        self: "MessageSegment",
+        other: "str | MessageSegment | Iterable[MessageSegment]",
+    ) -> "Message":
+        return Message(self) + other
+
+    def __radd__(
+        self: "MessageSegment", other: "str | MessageSegment | Iterable[MessageSegment]"
+    ) -> "Message":
+        return Message(other) + self
+
+    @staticmethod
+    def text(text: str) -> "MessageSegment":
+        return MessageSegment(type="text", data={"text": text})
+
+    @staticmethod
+    def url(url: str, text: str) -> "MessageSegment":
+        return MessageSegment(type="url", data={"url": url, "text": text})
+
+
+class Message(list[MessageSegment]):
+    """消息序列
+
+    参数:
+        message: 消息内容
+    """
+
+    def __init__(
+        self,
+        message: str | None | Iterable[MessageSegment] | MessageSegment = None,
+    ):
+        super().__init__()
+        if message is None:
+            return
+        elif isinstance(message, str):
+            self.append(MessageSegment.text(message))
+        elif isinstance(message, MessageSegment):
+            self.append(message)
+        elif isinstance(message, Iterable):
+            self.extend(message)
+        else:
+            raise TypeError(f"Unsupported type {type(message)!r}")
+
+    def __add__(self, other: str | MessageSegment | Iterable[MessageSegment]) -> Self:
+        result = self.copy()
+        result += other
+        return result
+
+    def __radd__(self, other: str | MessageSegment | Iterable[MessageSegment]) -> Self:
+        result = self.__class__(other)
+        return result + self
+
+    def __iadd__(self, other: str | MessageSegment | Iterable[MessageSegment]) -> Self:
+        if isinstance(other, str):
+            self.append(MessageSegment.text(other))
+        elif isinstance(other, MessageSegment):
+            self.append(other)
+        elif isinstance(other, Iterable):
+            self.extend(other)
+        else:
+            raise TypeError(f"Unsupported type {type(other)!r}")
+        return self
+
+    def copy(self) -> Self:
+        """深拷贝消息"""
+        return deepcopy(self)
 
 
 class PublishType(Enum):
@@ -58,7 +138,9 @@ class PyPIMixin(BaseModel):
 
         if v and not check_pypi(v):
             raise ProjectLinkError(
-                msg=f'项目 <a href="https://pypi.org/project/{v}/">{v}</a> 未发布至 PyPI。',
+                msg="项目"
+                + MessageSegment.url(f"https://pypi.org/project/{v}/", v)
+                + "未发布至 PyPI。",
                 hint="请将你的项目发布至 PyPI。",
             )
         return v

@@ -7,13 +7,20 @@ if TYPE_CHECKING:
     from results import ValidationResult
 
 
+def debug_print(*args, **kwargs):
+    print(*args, **kwargs)
+
+
 env = jinja2.Environment(
     loader=jinja2.FileSystemLoader(Path(__file__).parent / "templates"),
     enable_async=True,
+    lstrip_blocks=True,
     trim_blocks=True,
     autoescape=True,
     keep_trailing_newline=True,
 )
+
+env.filters["debug_print"] = debug_print
 
 
 async def results_to_comment(result: "ValidationResult", reuse: bool = False) -> str:

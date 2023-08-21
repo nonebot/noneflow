@@ -1,0 +1,16 @@
+{% macro render_message(message) %}
+{# message 有两种类型 str 和 Message。 #}
+{% if message is string %}
+{{ message }}
+{%- else %}
+{% for segment in message %}
+{% if segment.type == "text" %}
+{{ segment.data.text }}
+{%- elif segment.type == "url" %}
+<a href="{{ segment.data.url }}">{{ segment.data.text }}</a>
+{%- else %}
+{{ segment|debug_print }}
+{%- endif %}
+{% endfor %}
+{% endif %}
+{% endmacro %}

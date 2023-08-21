@@ -9,6 +9,8 @@ from .constants import (
 from .models import (
     AdapterPublishInfo,
     BotPublishInfo,
+    Message,
+    MessageSegment,
     PluginPublishInfo,
     PublishInfo,
     PublishType,
@@ -26,8 +28,8 @@ class ValidationDict(TypedDict):
 
     type: Literal["pass", "fail"]
     name: str
-    msg: str
-    hint: str
+    msg: str | Message
+    hint: str | Message | None
 
 
 def TagsDataParser(data: dict[str, Any]) -> ValidationDict:
@@ -36,7 +38,7 @@ def TagsDataParser(data: dict[str, Any]) -> ValidationDict:
         type="pass",
         name="tags",
         msg=f"标签: {', '.join(tags)}。",
-        hint="",
+        hint=None,
     )
 
 
@@ -45,8 +47,10 @@ def HomepageDataParser(data: dict[str, Any]) -> ValidationDict:
     return ValidationDict(
         type="pass",
         name="homepage",
-        msg=f"""项目 <a href="{homepage}">主页</a> 返回状态码 {check_url(homepage)}。""",
-        hint="",
+        msg=f"项目 "
+        + MessageSegment.url(homepage, "主页")
+        + f" 返回状态码 {check_url(homepage)}。",
+        hint=None,
     )
 
 
@@ -55,8 +59,10 @@ def ProjectLinkDataParser(data: dict[str, Any]) -> ValidationDict:
     return ValidationDict(
         type="pass",
         name="project_link",
-        msg=f"""项目 <a href="https://pypi.org/project/{project_link}/">{project_link}</a> 已发布至 PyPI。""",
-        hint="",
+        msg="项目 "
+        + MessageSegment.url(f"https://pypi.org/project/{project_link}/", project_link)
+        + " 已发布至 PyPI。",
+        hint=None,
     )
 
 
@@ -69,14 +75,14 @@ def PluginTestDataParser(data: dict[str, Any]) -> ValidationDict:
         return ValidationDict(
             type="pass",
             name="plugin_test_result",
-            msg=f"""插件 <a href="{action_url}">加载测试</a> 已跳过。""",
-            hint="",
+            msg="插件 " + MessageSegment.url(action_url, "加载测试") + " 已跳过。",
+            hint=None,
         )
     return ValidationDict(
         type="pass",
         name="plugin_test_result",
-        msg=f"""插件 <a href="{action_url}">加载测试</a> 通过。""",
-        hint="",
+        msg="插件 " + MessageSegment.url(action_url, "加载测试") + " 通过。",
+        hint=None,
     )
 
 
@@ -85,8 +91,8 @@ def PluginTypeDataParser(data: dict[str, Any]) -> ValidationDict:
     return ValidationDict(
         type="pass",
         name="type",
-        msg=f"""插件类型: {plugin_type}。""",
-        hint="",
+        msg=f"插件类型: {plugin_type}。",
+        hint=None,
     )
 
 
@@ -98,14 +104,14 @@ def PluginSupportedAdaptersDataParser(data: dict[str, Any]) -> ValidationDict:
         return ValidationDict(
             type="pass",
             name="supported_adapters",
-            msg=f"""插件支持的适配器: {', '.join(supported_adapters)}。""",
-            hint="",
+            msg=f"插件支持的适配器: {', '.join(supported_adapters)}。",
+            hint=None,
         )
     return ValidationDict(
         type="pass",
         name="supported_adapters",
-        msg=f"""插件支持的适配器: 所有。""",
-        hint="",
+        msg="插件支持的适配器: 所有。",
+        hint=None,
     )
 
 
