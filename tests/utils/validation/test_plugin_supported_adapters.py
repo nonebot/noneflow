@@ -18,7 +18,7 @@ async def test_plugin_supported_adapters_none(mocked_api: MockRouter) -> None:
     assert mocked_api["homepage"].called
 
 
-async def test_plugin_supported_adapters_iterable(mocked_api: MockRouter) -> None:
+async def test_plugin_supported_adapters_list(mocked_api: MockRouter) -> None:
     """不是列表的情况"""
     from src.utils.validation import PublishType, validate_info
 
@@ -29,5 +29,23 @@ async def test_plugin_supported_adapters_iterable(mocked_api: MockRouter) -> Non
     assert not result["valid"]
     assert "supported_adapters" not in result["data"]
     assert result["errors"]
+    assert result["errors"][0]["type"] == "type_error.list"
+
+    assert mocked_api["homepage"].called
+
+
+async def test_plugin_supported_adapters_json(mocked_api: MockRouter) -> None:
+    """不是 JSON 的情况"""
+    from src.utils.validation import PublishType, validate_info
+
+    data = generate_plugin_data()
+    data["supported_adapters"] = "test"
+
+    result = validate_info(PublishType.PLUGIN, data)
+
+    assert not result["valid"]
+    assert "supported_adapters" not in result["data"]
+    assert result["errors"]
+    assert result["errors"][0]["type"] == "value_error.json"
 
     assert mocked_api["homepage"].called

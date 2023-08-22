@@ -49,8 +49,8 @@ def validate_info(
                     # 可能会有字段数据缺失的情况，这种时候不设置 input
                     if name in raw_data:
                         error["input"] = raw_data[name]
-                case (name, index) if isinstance(name, str) and isinstance(index, int):
-                    error["input"] = PublishInfo.tags_validator(raw_data[name])[index]
+                case ("tags", index) if isinstance(index, int):
+                    error["input"] = PublishInfo.tags_validator(raw_data["tags"])[index]
                 # 标签 list[Tag] 的情况
                 case ("tags", index, field) if isinstance(index, int) and isinstance(
                     field, str

@@ -88,3 +88,19 @@ async def test_validate_info_from_issue_plugin_metadata(
 
     assert result["valid"]
     assert mocked_api["homepage"].called
+
+
+async def test_validate_info_from_issue_plugin_metadata_missing(
+    app: App, mocker: MockerFixture, mocked_api: MockRouter
+):
+    from src.plugins.publish.utils import validate_info_from_issue
+    from src.utils.validation.models import PublishType
+
+    mock_issue = mocker.MagicMock()
+    mock_issue.body = generate_issue_body_plugin()
+    mock_issue.user.login = "test"
+
+    result = validate_info_from_issue(mock_issue, PublishType.PLUGIN)
+
+    assert not result["valid"]
+    assert not mocked_api["homepage"].called
