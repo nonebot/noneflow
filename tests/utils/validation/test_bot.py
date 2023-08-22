@@ -31,6 +31,7 @@ async def test_bot_info_validation_failed(mocked_api: MockRouter) -> None:
     from src.utils.validation import PublishType, validate_info
 
     data = generate_bot_data(
+        name="tooooooooooooooooooooooooooooooooooooooooooooooooog",
         homepage="https://www.baidu.com",
         tags=[
             {"label": "test", "color": "#ffffff"},
@@ -60,6 +61,7 @@ async def test_bot_info_validation_failed_json_error(mocked_api: MockRouter) -> 
     assert result["errors"]
     assert result["errors"][0]["loc"] == ("tags",)
     assert result["errors"][0]["type"] == "value_error.json"
+    assert "input" in result["errors"][0]
     assert result["errors"][0]["input"] == "not a json"
     assert result["errors"][0]["msg"] == "Invalid JSON"
 

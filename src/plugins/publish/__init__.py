@@ -187,9 +187,9 @@ async def handle_publish_check(
 
         # 设置拉取请求与议题的标题
         # 限制标题长度，过长的标题不好看
-        title = f"{publish_type.value}: {result.name[:MAX_NAME_LENGTH]}"
+        title = f"{publish_type.value}: {result['name'][:MAX_NAME_LENGTH]}"
 
-        if result.valid:
+        if result["valid"]:
             # 创建新分支
             # 命名示例 publish/issue123
             branch_name = f"{BRANCH_NAME_PREFIX}{issue_number}"

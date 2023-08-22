@@ -231,13 +231,15 @@ def validate_info_from_issue(
                 if supported_adapters:
                     raw_data["supported_adapters"] = supported_adapters.group(1).strip()
             elif plugin_config.plugin_test_metadata:
-                raw_data["name"] = plugin_config.plugin_test_metadata.name
-                raw_data["desc"] = plugin_config.plugin_test_metadata.description
-                raw_data["homepage"] = plugin_config.plugin_test_metadata.homepage
-                raw_data["type"] = plugin_config.plugin_test_metadata.type
-                raw_data[
+                raw_data["name"] = plugin_config.plugin_test_metadata.get("name")
+                raw_data["desc"] = plugin_config.plugin_test_metadata.get("description")
+                raw_data["homepage"] = plugin_config.plugin_test_metadata.get(
+                    "homepage"
+                )
+                raw_data["type"] = plugin_config.plugin_test_metadata.get("type")
+                raw_data["supported_adapters"] = plugin_config.plugin_test_metadata.get(
                     "supported_adapters"
-                ] = plugin_config.plugin_test_metadata.supported_adapters
+                )
             else:
                 # 插件缺少元数据
                 # 可能为插件测试未通过，或者插件未按规范编写

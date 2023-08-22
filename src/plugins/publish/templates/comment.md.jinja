@@ -9,9 +9,9 @@
 
 {% if not valid %}
 <pre><code>
-{% for error in errors %}
+{%- for error in errors %}
 <li>⚠️ {{ render_error(error) }}</li>
-{% endfor %}
+{%- endfor %}
 </code></pre>
 {% endif %}
 
@@ -19,9 +19,9 @@
 <details>
 <summary>详情</summary>
 <pre><code>
-{% for key, value in data.items() %}
-<li>✅ {{ render_data(key, value) }}</li>
-{% endfor %}
+{%- for key, value in data.items() %}
+<li>✅ {{ render_data(key, value, skip_plugin_test) }}</li>
+{%- endfor %}
 </code></pre>
 </details>
 {% endif %}

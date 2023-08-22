@@ -33,6 +33,8 @@ async def test_bot_info_validation_failed(mocked_api: MockRouter) -> None:
     from src.utils.validation import PublishType, validate_info
 
     data = generate_adapter_data(
+        module_name="module_name/",
+        project_link="project_link_failed",
         homepage="https://www.baidu.com",
         tags=[
             {"label": "test", "color": "#ffffff"},

@@ -42,7 +42,7 @@ class ValidationDict(TypedDict):
     name: str
     author: str
     data: dict[str, Any]
-    errors: "list[ErrorDict] | None"
+    errors: "list[ErrorDict]"
 
 
 class PublishType(Enum):

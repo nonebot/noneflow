@@ -54,3 +54,15 @@ ADAPTER_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("适配器名称"))
 ADAPTER_DESC_PATTERN = re.compile(ISSUE_PATTERN.format("适配器描述"))
 ADAPTER_MODULE_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("适配器 import 包名"))
 ADAPTER_HOMEPAGE_PATTERN = re.compile(ISSUE_PATTERN.format("适配器项目仓库/主页链接"))
+
+# 发布信息项对应的中文名
+LOC_NAME_MAP = {
+    "name": "名称",
+    "desc": "描述",
+    "project_link": "PyPI 项目名",
+    "module_name": "import 包名",
+    "tags": "标签",
+    "homepage": "项目仓库/主页链接",
+    "type": "插件类型",
+    "supported_adapters": "插件支持的适配器",
+}

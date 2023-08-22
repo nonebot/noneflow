@@ -30,7 +30,7 @@ async def test_plugin_info_validation_success(mocked_api: MockRouter) -> None:
     assert mocked_api["homepage"].called
 
 
-async def test_bot_info_validation_failed(mocked_api: MockRouter) -> None:
+async def test_plugin_info_validation_failed(mocked_api: MockRouter) -> None:
     """测试验证失败的情况"""
     from src.utils.validation import PublishType, validate_info
 
@@ -40,9 +40,17 @@ async def test_bot_info_validation_failed(mocked_api: MockRouter) -> None:
             {"label": "test", "color": "#ffffff"},
             {"label": "testtoolong", "color": "#fffffff"},
         ],
+        previous_data=[
+            {
+                "module_name": "module_name",
+                "project_link": "project_link",
+            }
+        ],
     )
 
-    result = validate_info(PublishType.BOT, data)
+    data.pop("type")
+
+    result = validate_info(PublishType.PLUGIN, data)
 
     assert not result["valid"]
     assert "homepage" not in result["data"]

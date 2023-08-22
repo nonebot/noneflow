@@ -1,4 +1,4 @@
-{% macro render_data(key, value) %}
+{% macro render_data(key, value, skip_plugin_test) %}
 {% if key == "homepage" %}
 项目 <a href="{{ value }}">主页</a> 返回状态码 200。
 {%- elif key == "tags" and value %}
@@ -12,8 +12,10 @@
 {%- elif key == "action_url" %}
 {% if skip_plugin_test %}
 插件 <a href="{{ value }}">加载测试</a> 已跳过。
-{% else %}
+{%- else %}
 插件 <a href="{{ value }}">加载测试</a> 通过。
-{% endif %}
+{%- endif %}
+{% else %}
+{{ key }}: {{ value }}。
 {%- endif %}
 {% endmacro %}
