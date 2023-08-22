@@ -56,7 +56,7 @@ class PyPIMixin(BaseModel):
     module_name: str
     project_link: str
 
-    previous_data: list[dict[str, str]]
+    previous_data: list[dict[str, Any]]
 
     @validator("module_name", pre=True)
     def module_name_validator(cls, v: str) -> str:

@@ -52,10 +52,10 @@ def validate_info(
                 case (name, index) if isinstance(name, str) and isinstance(index, int):
                     error["input"] = PublishInfo.tags_validator(raw_data[name])[index]
                 # 标签 list[Tag] 的情况
-                case (name, index, field) if isinstance(name, str) and isinstance(
-                    index, int
-                ) and isinstance(field, str):
-                    tags = PublishInfo.tags_validator(raw_data[name])
+                case ("tags", index, field) if isinstance(index, int) and isinstance(
+                    field, str
+                ):
+                    tags = PublishInfo.tags_validator(raw_data["tags"])
                     if field in tags[index]:
                         error["input"] = tags[index][field]
                 case _:
