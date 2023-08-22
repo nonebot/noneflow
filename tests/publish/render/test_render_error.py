@@ -221,7 +221,7 @@ async def test_render_error_plugin_load_test(app: App, mocker: MockFixture):
     comment = await render_comment(result)
     assert (
         comment
-        == """# 📃 商店发布检查结果\n\n> Plugin: 帮助\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n\n<pre><code><li>⚠️ 无法获取到插件元数据。<dt>请确保插件正常加载。</dt></li><li>⚠️ 插件加载测试未通过。\n<details>\n  <summary>测试输出</summary>\n  output\n</details></li></code></pre>\n\n<details>\n<summary>详情</summary>\n<pre><code><li>✅ 项目 <a href="https://github.com/he0119/nonebot-plugin-treehelp">主页</a> 返回状态码 200。</li></code></pre>\n</details>\n\n---\n\n💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。\n💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。\n\n\n💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)\n<!-- NONEFLOW -->\n"""
+        == """# 📃 商店发布检查结果\n\n> Plugin: 帮助\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n\n<pre><code><li>⚠️ 无法获取到插件元数据。<dt>请确保插件正常加载。</dt></li><li>⚠️ 插件加载测试未通过。<details><summary>测试输出</summary>output</details></li></code></pre>\n\n<details>\n<summary>详情</summary>\n<pre><code><li>✅ 项目 <a href="https://github.com/he0119/nonebot-plugin-treehelp">主页</a> 返回状态码 200。</li></code></pre>\n</details>\n\n---\n\n💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。\n💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。\n\n\n💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)\n<!-- NONEFLOW -->\n"""
     )
 
 

@@ -20,11 +20,7 @@ PyPI 项目名 {{ error.input }} 不符合规范。<dt>请确保项目名正确�
 {%- elif type == "value_error.duplication" %}
 {{ error.msg }}<dt>请确保没有重复发布。</dt>
 {%- elif type == "value_error.plugin_test" %}
-插件加载测试未通过。
-<details>
-  <summary>测试输出</summary>
-  {{ error.ctx.output }}
-</details>
+插件加载测试未通过。<details><summary>测试输出</summary>{{ error.ctx.output }}</details>
 {%- elif type == "value_error.metadata" %}
 无法获取到插件元数据。<dt>{{ "请填写插件元数据" if error.ctx.plugin_test_result else "请确保插件正常加载" }}。</dt>
 {%- elif type == "value_error.plugin.type" %}
