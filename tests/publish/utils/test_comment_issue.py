@@ -11,6 +11,12 @@ async def test_comment_issue(app: App, mocker: MockerFixture):
     from src.plugins.publish.models import RepoInfo
     from src.plugins.publish.utils import comment_issue
 
+    mock_render_comment = mocker.patch("src.plugins.publish.utils.render_comment")
+    mock_render_comment.return_value = "test"
+
+    mock_result = mocker.AsyncMock()
+    mock_result.render_issue_comment.return_value = "test"
+
     mock_comment = mocker.MagicMock()
     mock_comment.body = "Bot: test"
 
@@ -38,20 +44,29 @@ async def test_comment_issue(app: App, mocker: MockerFixture):
                 "owner": "owner",
                 "repo": "repo",
                 "issue_number": 1,
-                "body": "# 📃 商店发布检查结果\n\ntest\n\n---\n\n💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。\n💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。\n\n💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)\n<!-- NONEFLOW -->\n",
+                "body": "test",
             },
             True,
         )
 
-        await comment_issue(bot, RepoInfo(owner="owner", repo="repo"), 1, "test")
+        await comment_issue(bot, RepoInfo(owner="owner", repo="repo"), 1, mock_result)
+
+    mock_render_comment.assert_called_once_with(mock_result, False)
 
 
 async def test_comment_issue_reuse(app: App, mocker: MockerFixture):
+    from src.plugins.publish.constants import NONEFLOW_MARKER
     from src.plugins.publish.models import RepoInfo
     from src.plugins.publish.utils import comment_issue
 
+    mock_render_comment = mocker.patch("src.plugins.publish.utils.render_comment")
+    mock_render_comment.return_value = "test"
+
+    mock_result = mocker.AsyncMock()
+    mock_result.render_issue_comment.return_value = "test"
+
     mock_comment = mocker.MagicMock()
-    mock_comment.body = "任意的东西\n<!-- NONEFLOW -->\n"
+    mock_comment.body = f"任意的东西\n{NONEFLOW_MARKER}\n"
     mock_comment.id = 123
 
     mock_list_comments_resp = mocker.MagicMock()
@@ -78,12 +93,14 @@ async def test_comment_issue_reuse(app: App, mocker: MockerFixture):
                 "owner": "owner",
                 "repo": "repo",
                 "comment_id": 123,
-                "body": "# 📃 商店发布检查结果\n\ntest\n\n---\n\n💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。\n💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。\n\n♻️ 评论已更新至最新检查结果\n\n💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)\n<!-- NONEFLOW -->\n",
+                "body": "test",
             },
             True,
         )
 
-        await comment_issue(bot, RepoInfo(owner="owner", repo="repo"), 1, "test")
+        await comment_issue(bot, RepoInfo(owner="owner", repo="repo"), 1, mock_result)
+
+    mock_render_comment.assert_called_once_with(mock_result, True)
 
 
 async def test_comment_issue_reuse_same(app: App, mocker: MockerFixture):
@@ -91,8 +108,13 @@ async def test_comment_issue_reuse_same(app: App, mocker: MockerFixture):
     from src.plugins.publish.models import RepoInfo
     from src.plugins.publish.utils import comment_issue
 
+    mock_render_comment = mocker.patch("src.plugins.publish.utils.render_comment")
+    mock_render_comment.return_value = "test\n<!-- NONEFLOW -->\n"
+
+    mock_result = mocker.AsyncMock()
+
     mock_comment = mocker.MagicMock()
-    mock_comment.body = "# 📃 商店发布检查结果\n\ntest\n\n---\n\n💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。\n💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。\n\n♻️ 评论已更新至最新检查结果\n\n💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)\n<!-- NONEFLOW -->\n"
+    mock_comment.body = "test\n<!-- NONEFLOW -->\n"
     mock_comment.id = 123
 
     mock_list_comments_resp = mocker.MagicMock()
@@ -113,4 +135,6 @@ async def test_comment_issue_reuse_same(app: App, mocker: MockerFixture):
             mock_list_comments_resp,
         )
 
-        await comment_issue(bot, RepoInfo(owner="owner", repo="repo"), 1, "test")
+        await comment_issue(bot, RepoInfo(owner="owner", repo="repo"), 1, mock_result)
+
+    mock_render_comment.assert_called_once_with(mock_result, True)

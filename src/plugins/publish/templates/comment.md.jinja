@@ -1,0 +1,39 @@
+{% from "render_data.jinja" import render_data %}
+{% from "render_error.jinja" import render_error %}
+{# 发布测试评论内容 #}
+# 📃 商店发布检查结果
+
+> {{ title }}
+
+**{{ "✅ 所有测试通过，一切准备就绪！" if valid else "⚠️ 在发布检查过程中，我们发现以下问题："}}**
+
+{% if not valid %}
+<pre><code>
+{%- for error in errors %}
+<li>⚠️ {{ render_error(error) }}</li>
+{%- endfor %}
+</code></pre>
+{% endif %}
+
+{% if data %}
+<details>
+<summary>详情</summary>
+<pre><code>
+{%- for key, value in data.items() %}
+<li>✅ {{ render_data(key, value, skip_plugin_test) }}</li>
+{%- endfor %}
+</code></pre>
+</details>
+{% endif %}
+
+---
+
+💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
+💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
+
+{% if reuse %}
+♻️ 评论已更新至最新检查结果
+{% endif %}
+
+💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
+<!-- NONEFLOW -->

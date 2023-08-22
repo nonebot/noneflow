@@ -1,7 +1,7 @@
 from pathlib import Path
+from typing import Any
 
 from nonebot import get_driver
-from nonebot.plugin import PluginMetadata
 from pydantic import BaseModel, Extra, validator
 
 from src.utils.plugin_test import strip_ansi
@@ -22,7 +22,7 @@ class Config(BaseModel, extra=Extra.ignore):
     skip_plugin_test: bool = False
     plugin_test_result: bool = False
     plugin_test_output: str = ""
-    plugin_test_metadata: PluginMetadata | None = None
+    plugin_test_metadata: dict[str, Any] | None = None
 
     @validator("plugin_test_result", pre=True)
     def plugin_test_result_validator(cls, v):

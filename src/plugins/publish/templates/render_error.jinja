@@ -1,0 +1,47 @@
+{% macro render_error(error) %}
+{% set loc = error.loc %}
+{% set type = error.type %}
+{%- if loc|length == 3 and loc[0] == "tags" and type == "value_error.missing" %}
+第 {{ loc[1] + 1 }} 个标签缺少 {{ loc[2] }} 字段。<dt>请确保标签字段完整。</dt>
+{% elif loc|length == 3 and loc[0] == "tags" and type == "value_error.any_str.max_length" %}
+第 {{ loc[1] + 1 }} 个标签名称过长<dt>请确保标签名称不超过 10 个字符。</dt>
+{%- elif loc|length == 3 and loc[0] == "tags" and type == "value_error.color" %}
+第 {{ loc[1] + 1 }} 个标签颜色错误<dt>请确保标签颜色符合十六进制颜色码规则。</dt>
+{%- elif loc|length == 2 and loc[0] == "tags" and type == "type_error.dict" %}
+第 {{ loc[1] + 1 }} 个标签格式错误。<dt>请确保标签为字典。</dt>
+{%- elif type == "value_error.homepage.unreachable" %}
+项目 <a href="{{ error.input }}">主页</a> 返回状态码 {{ error.ctx.status_code }}。<dt>请确保你的项目主页可访问。</dt>
+{%- elif type == "value_error.project_link.not_found" %}
+项目 <a href="https://pypi.org/project/{{ error.input }}/">{{ error.input }}</a> 未发布至 PyPI。<dt>请将你的项目发布至 PyPI。</dt>
+{%- elif type == "value_error.project_link.name" %}
+PyPI 项目名 {{ error.input }} 不符合规范。<dt>请确保项目名正确。</dt>
+{%- elif type == "value_error.module_name" %}
+包名 {{ error.input }} 不符合规范。<dt>请确保包名正确。</dt>
+{%- elif type == "value_error.duplication" %}
+{{ error.msg }}<dt>请确保没有重复发布。</dt>
+{%- elif type == "value_error.plugin_test" %}
+插件加载测试未通过。
+<details>
+  <summary>测试输出</summary>
+  {{ error.ctx.output }}
+</details>
+{%- elif type == "value_error.metadata" %}
+无法获取到插件元数据。<dt>{{ "请填写插件元数据" if error.ctx.plugin_test_result else "请确保插件正常加载" }}。</dt>
+{%- elif type == "value_error.plugin.type" %}
+插件类型 {{ error.input }} 不符合规范。<dt>请确保插件类型正确，当前仅支持 application 与 library。</dt>
+{%- elif type == "value_error.plugin.supported_adapters.missing" %}
+适配器 {{ ', '.join(error.ctx.missing_adapters) }} 不存在。<dt>请确保适配器模块名称正确。</dt>
+{%- elif type == "value_error.missing" %}
+{{ loc|loc_to_name }}: 无法匹配到数据。<dt>请确保填写该项目。</dt>
+{%- elif type == "type_error.dict" %}
+{{ loc|loc_to_name }}: 格式错误。<dt>请确保其为字典。</dt>
+{%- elif type == "type_error.list" %}
+{{ loc|loc_to_name }}: 格式错误。<dt>请确保其为列表。</dt>
+{%- elif type == "value_error.json" %}
+{{ loc|loc_to_name }}: 解码失败。<dt>请确保其为 JSON 格式。</dt>
+{%- elif type == "value_error.any_str.max_length" %}
+{{ loc|loc_to_name }}: 字符过多。<dt>请确保其不超过 {{ error.ctx.limit_value }} 个字符。</dt>
+{%- else %}
+{{ error.loc|loc_to_name }}: {{ error.msg }}
+{%- endif %}
+{% endmacro %}

@@ -8,10 +8,8 @@ from pathlib import Path
 from typing import cast
 from zoneinfo import ZoneInfo
 
-from pydantic import ValidationError
-
-from src.plugins.publish.validation import PluginPublishInfo
 from src.utils.plugin_test import PluginTest, strip_ansi
+from src.utils.validation import PublishType, validate_info
 
 from .models import Metadata, Plugin, PluginValidation, StorePlugin, TestResult
 
@@ -45,7 +43,13 @@ async def validate_metadata(
     if not metadata:
         return {
             "result": False,
-            "output": "缺少元数据",
+            "output": [
+                {
+                    "loc": ("metadata",),
+                    "msg": "未找到插件元数据",
+                    "type": "value_error.missing",
+                }
+            ],
             "plugin": None,
         }
 
@@ -63,24 +67,18 @@ async def validate_metadata(
         "author": plugin["author"],
         "homepage": homepage,
         "tags": json.dumps(plugin["tags"]),
-        "plugin_test_result": result,
         "type": type,
         "supported_adapters": supported_adapters,
+        "previous_data": [],
     }
-    try:
-        publish_info = PluginPublishInfo(**raw_data)
-        plugin_data = cast(Plugin, publish_info.dict(exclude={"plugin_test_result"}))
-        return {
-            "result": True,
-            "output": "通过",
-            "plugin": plugin_data,
-        }
-    except ValidationError as e:
-        return {
-            "result": False,
-            "output": str(e),  # TODO: 优化输出，可通过 jinja2 模板渲染
-            "plugin": None,
-        }
+    validation_result = validate_info(PublishType.PLUGIN, raw_data)
+    return {
+        "result": validation_result["valid"] and result,
+        "output": validation_result["errors"] if validation_result["errors"] else [],
+        "plugin": cast(Plugin, validation_result["data"])
+        if validation_result["valid"]
+        else None,
+    }
 
 
 async def validate_plugin(

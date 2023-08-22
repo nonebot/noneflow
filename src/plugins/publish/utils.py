@@ -8,30 +8,36 @@ from githubkit.rest.models import PullRequest, PullRequestSimple
 from nonebot import logger
 from nonebot.adapters.github import Bot, GitHubBot
 
+from src.utils.validation import PublishType, ValidationDict, validate_info
+
 from .config import plugin_config
 from .constants import (
+    ADAPTER_DESC_PATTERN,
+    ADAPTER_HOMEPAGE_PATTERN,
+    ADAPTER_MODULE_NAME_PATTERN,
+    ADAPTER_NAME_PATTERN,
+    BOT_DESC_PATTERN,
+    BOT_HOMEPAGE_PATTERN,
+    BOT_NAME_PATTERN,
     BRANCH_NAME_PREFIX,
-    COMMENT_MESSAGE_TEMPLATE,
-    COMMENT_TITLE,
     COMMIT_MESSAGE_PREFIX,
     ISSUE_FIELD_PATTERN,
     ISSUE_FIELD_TEMPLATE,
     NONEFLOW_MARKER,
     PLUGIN_CONFIG_PATTERN,
+    PLUGIN_DESC_PATTERN,
+    PLUGIN_HOMEPAGE_PATTERN,
+    PLUGIN_MODULE_NAME_PATTERN,
+    PLUGIN_NAME_PATTERN,
     PLUGIN_STRING_LIST,
-    POWERED_BY_NONEFLOW_MESSAGE,
-    REUSE_MESSAGE,
+    PLUGIN_SUPPORTED_ADAPTERS_PATTERN,
+    PLUGIN_TYPE_PATTERN,
+    PROJECT_LINK_PATTERN,
     SKIP_PLUGIN_TEST_COMMENT,
-    TIPS_MESSAGE,
+    TAGS_PATTERN,
 )
-from .models import PublishType, RepoInfo
-from .validation import (
-    AdapterPublishInfo,
-    BotPublishInfo,
-    MyValidationError,
-    PluginPublishInfo,
-    PublishInfo,
-)
+from .models import RepoInfo
+from .render import render_comment
 
 if TYPE_CHECKING:
     from githubkit.rest.models import Issue, IssuePropLabelsItemsOneof1, Label
@@ -103,12 +109,12 @@ def get_type_by_commit_message(message: str) -> PublishType | None:
         return PublishType.ADAPTER
 
 
-def commit_and_push(info: PublishInfo, branch_name: str, issue_number: int):
+def commit_and_push(result: ValidationDict, branch_name: str, issue_number: int):
     """提交并推送"""
-    commit_message = f"{COMMIT_MESSAGE_PREFIX} {info.get_type().value.lower()} {info.name} (#{issue_number})"
+    commit_message = f"{COMMIT_MESSAGE_PREFIX} {result['type'].value.lower()} {result['name']} (#{issue_number})"
 
-    run_shell_command(["git", "config", "--global", "user.name", info.author])
-    user_email = f"{info.author}@users.noreply.github.com"
+    run_shell_command(["git", "config", "--global", "user.name", result["author"]])
+    user_email = f"{result['author']}@users.noreply.github.com"
     run_shell_command(["git", "config", "--global", "user.email", user_email])
     run_shell_command(["git", "add", "-A"])
     try:
@@ -120,10 +126,8 @@ def commit_and_push(info: PublishInfo, branch_name: str, issue_number: int):
 
     try:
         run_shell_command(["git", "fetch", "origin"])
-        result = run_shell_command(
-            ["git", "diff", f"origin/{branch_name}", branch_name]
-        )
-        if result.stdout:
+        r = run_shell_command(["git", "diff", f"origin/{branch_name}", branch_name])
+        if r.stdout:
             raise Exception
         else:
             logger.info("检测到本地分支与远程分支一致，跳过推送")
@@ -139,19 +143,109 @@ def extract_issue_number_from_ref(ref: str) -> int | None:
         return int(match.group(1))
 
 
-def extract_publish_info_from_issue(
+def validate_info_from_issue(
     issue: "IssuesOpenedPropIssue | IssuesReopenedPropIssue | IssueCommentCreatedPropIssue | Issue | WebhookIssue",
     publish_type: PublishType,
-) -> PublishInfo | MyValidationError:
+) -> ValidationDict:
     """从议题中提取发布所需数据"""
-    try:
-        if publish_type == PublishType.BOT:
-            return BotPublishInfo.from_issue(issue)
-        elif publish_type == PublishType.PLUGIN:
-            return PluginPublishInfo.from_issue(issue)
-        return AdapterPublishInfo.from_issue(issue)
-    except MyValidationError as e:
-        return e
+    body = issue.body if issue.body else ""
+
+    match publish_type:
+        case PublishType.ADAPTER:
+            module_name = ADAPTER_MODULE_NAME_PATTERN.search(body)
+            project_link = PROJECT_LINK_PATTERN.search(body)
+            name = ADAPTER_NAME_PATTERN.search(body)
+            desc = ADAPTER_DESC_PATTERN.search(body)
+            author = issue.user.login if issue.user else None
+            homepage = ADAPTER_HOMEPAGE_PATTERN.search(body)
+            tags = TAGS_PATTERN.search(body)
+            with plugin_config.input_config.adapter_path.open(
+                "r", encoding="utf-8"
+            ) as f:
+                data: list[dict[str, str]] = json.load(f)
+
+            raw_data = {
+                "module_name": module_name.group(1).strip() if module_name else None,
+                "project_link": project_link.group(1).strip() if project_link else None,
+                "name": name.group(1).strip() if name else None,
+                "desc": desc.group(1).strip() if desc else None,
+                "author": author,
+                "homepage": homepage.group(1).strip() if homepage else None,
+                "tags": tags.group(1).strip() if tags else None,
+                "previous_data": data,
+            }
+        case PublishType.BOT:
+            name = BOT_NAME_PATTERN.search(body)
+            desc = BOT_DESC_PATTERN.search(body)
+            author = issue.user.login if issue.user else None
+            homepage = BOT_HOMEPAGE_PATTERN.search(body)
+            tags = TAGS_PATTERN.search(body)
+
+            raw_data = {
+                "name": name.group(1).strip() if name else None,
+                "desc": desc.group(1).strip() if desc else None,
+                "author": author,
+                "homepage": homepage.group(1).strip() if homepage else None,
+                "tags": tags.group(1).strip() if tags else None,
+            }
+        case PublishType.PLUGIN:
+            author = issue.user.login if issue.user else None
+            module_name = PLUGIN_MODULE_NAME_PATTERN.search(body)
+            project_link = PROJECT_LINK_PATTERN.search(body)
+            tags = TAGS_PATTERN.search(body)
+            module_name = module_name.group(1).strip() if module_name else None
+            project_link = project_link.group(1).strip() if project_link else None
+            tags = tags.group(1).strip() if tags else None
+            with plugin_config.input_config.plugin_path.open(
+                "r", encoding="utf-8"
+            ) as f:
+                data: list[dict[str, str]] = json.load(f)
+            raw_data = {
+                "module_name": module_name,
+                "project_link": project_link,
+                "author": author,
+                "tags": tags,
+                "skip_plugin_test": plugin_config.skip_plugin_test,
+                "plugin_test_result": plugin_config.plugin_test_result,
+                "plugin_test_output": plugin_config.plugin_test_output,
+                "github_repository": plugin_config.github_repository,
+                "github_run_id": plugin_config.github_run_id,
+                "previous_data": data,
+            }
+            # 如果插件测试被跳过，则从议题中获取信息
+            if plugin_config.skip_plugin_test:
+                name = PLUGIN_NAME_PATTERN.search(body)
+                desc = PLUGIN_DESC_PATTERN.search(body)
+                homepage = PLUGIN_HOMEPAGE_PATTERN.search(body)
+                type = PLUGIN_TYPE_PATTERN.search(body)
+                supported_adapters = PLUGIN_SUPPORTED_ADAPTERS_PATTERN.search(body)
+
+                if name:
+                    raw_data["name"] = name.group(1).strip()
+                if desc:
+                    raw_data["desc"] = desc.group(1).strip()
+                if homepage:
+                    raw_data["homepage"] = homepage.group(1).strip()
+                if type:
+                    raw_data["type"] = type.group(1).strip()
+                if supported_adapters:
+                    raw_data["supported_adapters"] = supported_adapters.group(1).strip()
+            elif plugin_config.plugin_test_metadata:
+                raw_data["name"] = plugin_config.plugin_test_metadata.get("name")
+                raw_data["desc"] = plugin_config.plugin_test_metadata.get("description")
+                raw_data["homepage"] = plugin_config.plugin_test_metadata.get(
+                    "homepage"
+                )
+                raw_data["type"] = plugin_config.plugin_test_metadata.get("type")
+                raw_data["supported_adapters"] = plugin_config.plugin_test_metadata.get(
+                    "supported_adapters"
+                )
+            else:
+                # 插件缺少元数据
+                # 可能为插件测试未通过，或者插件未按规范编写
+                raw_data["name"] = project_link
+
+    return validate_info(publish_type, raw_data)
 
 
 async def resolve_conflict_pull_requests(
@@ -186,14 +280,37 @@ async def resolve_conflict_pull_requests(
 
         publish_type = get_type_by_labels(issue.labels)
         if publish_type:
-            info = extract_publish_info_from_issue(issue, publish_type)
-            if isinstance(info, PublishInfo):
-                info.update_file()
-                commit_and_push(info, pull.head.ref, issue_number)
+            result = validate_info_from_issue(issue, publish_type)
+            if result["valid"]:
+                update_file(result)
+                commit_and_push(result, pull.head.ref, issue_number)
                 logger.info("拉取请求更新完毕")
             else:
-                logger.info(info.message)
+                comment = await render_comment(result)
+                logger.info(comment)
                 logger.info("发布没通过检查，已跳过")
+
+
+def update_file(result: ValidationDict) -> None:
+    """更新文件"""
+    match result["type"]:
+        case PublishType.ADAPTER:
+            path = plugin_config.input_config.adapter_path
+        case PublishType.BOT:
+            path = plugin_config.input_config.bot_path
+        case PublishType.PLUGIN:
+            path = plugin_config.input_config.plugin_path
+
+    logger.info(f"正在更新文件: {path}")
+    with path.open("r", encoding="utf-8") as f:
+        data: list[dict[str, str]] = json.load(f)
+    with path.open("w", encoding="utf-8") as f:
+        # TODO: 以后换成 store 的格式
+        data.append(result["data"])
+        json.dump(data, f, ensure_ascii=False, indent=2)
+        # 结尾加上换行符，不然会被 pre-commit fix
+        f.write("\n")
+    logger.info(f"文件更新完成")
 
 
 async def should_skip_plugin_test(
@@ -220,7 +337,7 @@ async def should_skip_plugin_test(
 async def create_pull_request(
     bot: Bot,
     repo_info: RepoInfo,
-    info: PublishInfo,
+    result: ValidationDict,
     branch_name: str,
     issue_number: int,
     title: str,
@@ -245,7 +362,7 @@ async def create_pull_request(
         pull = resp.parsed_data
         # 自动给拉取请求添加标签
         await bot.rest.issues.async_add_labels(
-            **repo_info.dict(), issue_number=pull.number, labels=[info.get_type().value]
+            **repo_info.dict(), issue_number=pull.number, labels=[result["type"].value]
         )
         logger.info("拉取请求创建完毕")
     except RequestFailed:
@@ -263,11 +380,11 @@ async def create_pull_request(
             logger.info(f"拉取请求标题已修改为 {title}")
 
 
-async def comment_issue(bot: Bot, repo_info: RepoInfo, issue_number: int, body: str):
+async def comment_issue(
+    bot: Bot, repo_info: RepoInfo, issue_number: int, result: ValidationDict
+):
     """在议题中发布评论"""
     logger.info("开始发布评论")
-
-    footer: str
 
     # 重复利用评论
     # 如果发现之前评论过，直接修改之前的评论
@@ -280,17 +397,8 @@ async def comment_issue(bot: Bot, repo_info: RepoInfo, issue_number: int, body: 
         filter(lambda x: NONEFLOW_MARKER in (x.body if x.body else ""), comments),
         None,
     )
-    if reusable_comment:
-        footer = f"{REUSE_MESSAGE}\n\n{POWERED_BY_NONEFLOW_MESSAGE}"
-    else:
-        footer = f"{POWERED_BY_NONEFLOW_MESSAGE}"
 
-    # 添加发布机器人评论的标志
-    footer += f"\n{NONEFLOW_MARKER}"
-
-    comment = COMMENT_MESSAGE_TEMPLATE.format(
-        title=COMMENT_TITLE, body=body, tips=TIPS_MESSAGE, footer=footer
-    )
+    comment = await render_comment(result, bool(reusable_comment))
     if reusable_comment:
         logger.info(f"发现已有评论 {reusable_comment.id}，正在修改")
         if reusable_comment.body != comment:

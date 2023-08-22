@@ -1,4 +1,7 @@
-from typing import Any, Literal, TypedDict
+from typing import TYPE_CHECKING, Any, Literal, TypedDict
+
+if TYPE_CHECKING:
+    from src.utils.validation.models import ErrorDict
 
 
 class StorePlugin(TypedDict):
@@ -42,7 +45,7 @@ class PluginValidation(TypedDict):
     """验证插件的结果与输出"""
 
     result: bool
-    output: str
+    output: list["ErrorDict"]
     plugin: Plugin | None
 
 
