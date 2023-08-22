@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, TypedDict
 
 from pydantic import BaseModel, Field, root_validator, validator
 from pydantic.color import Color
-from pydantic.errors import IterableError, JsonError
+from pydantic.errors import JsonError, ListError
 
 if TYPE_CHECKING:
     from pydantic.error_wrappers import ErrorDict as PydanticErrorDict
@@ -152,7 +152,9 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
         return v
 
     @validator("supported_adapters", pre=True)
-    def supported_adapters_validator(cls, v: str | set[str] | None) -> list[str] | None:
+    def supported_adapters_validator(
+        cls, v: str | list[str] | None
+    ) -> list[str] | None:
         # 如果是从 issue 中获取的数据，需要先解码
         if isinstance(v, str):
             try:
@@ -164,8 +166,8 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
         if v is None:
             return None
 
-        if not isinstance(v, (list, set)):
-            raise IterableError()
+        if not isinstance(v, list):
+            raise ListError()
 
         supported_adapters = {resolve_adapter_name(x) for x in v}
         store_adapters = get_adapters()

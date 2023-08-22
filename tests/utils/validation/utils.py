@@ -75,7 +75,9 @@ def generate_plugin_data(
             "desc": desc,
             "homepage": homepage,
             "type": type,
-            "supported_adapters": supported_adapters,
+            "supported_adapters": json.dumps(supported_adapters)
+            if supported_adapters is not None
+            else None,
             "skip_plugin_test": skip_plugin_test,
             "plugin_test_result": plugin_test_result,
             "plugin_test_output": plugin_test_output,

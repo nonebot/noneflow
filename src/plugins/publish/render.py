@@ -12,10 +12,6 @@ if TYPE_CHECKING:
     from src.utils.validation import ValidationDict
 
 
-def debug_print(*args, **kwargs):
-    print(*args, **kwargs)
-
-
 def tags_to_str(tags: list[dict]) -> str:
     """将标签列表转换为字符串"""
     return ", ".join([f"{tag['label']}-{tag['color']}" for tag in tags])
@@ -49,7 +45,6 @@ env = jinja2.Environment(
     keep_trailing_newline=True,
 )
 
-env.filters["debug_print"] = debug_print
 env.filters["tags_to_str"] = tags_to_str
 env.filters["supported_adapters_to_str"] = supported_adapters_to_str
 env.filters["loc_to_name"] = loc_to_name

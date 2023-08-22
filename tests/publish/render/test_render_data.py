@@ -3,7 +3,7 @@ from pytest_mock import MockFixture
 
 
 async def test_render_data_bot(app: App):
-    """渲染机器人验证数据"""
+    """机器人验证数据"""
     from src.plugins.publish.render import render_comment
     from src.utils.validation import PublishType, ValidationDict
 
@@ -56,7 +56,7 @@ async def test_render_data_bot(app: App):
 
 
 async def test_render_data_adapter(app: App):
-    """渲染适配器数据"""
+    """适配器数据"""
     from src.plugins.publish.render import render_comment
     from src.utils.validation import PublishType, ValidationDict
 
@@ -86,7 +86,7 @@ async def test_render_data_adapter(app: App):
 
 
 async def test_render_data_plugin(app: App, mocker: MockFixture):
-    """渲染插件数据"""
+    """插件数据"""
     from src.plugins.publish.config import plugin_config
     from src.plugins.publish.render import render_comment
     from src.utils.validation import PublishType, ValidationDict
@@ -117,4 +117,33 @@ async def test_render_data_plugin(app: App, mocker: MockFixture):
     assert (
         comment
         == """# 📃 商店发布检查结果\n\n> Plugin: 帮助\n\n**✅ 所有测试通过，一切准备就绪！**\n\n\n<details>\n<summary>详情</summary>\n<pre><code><li>✅ 项目 <a href="https://pypi.org/project/nonebot-plugin-treehelp/">nonebot-plugin-treehelp</a> 已发布至 PyPI。</li><li>✅ 项目 <a href="https://github.com/he0119/nonebot-plugin-treehelp">主页</a> 返回状态码 200。</li><li>✅ 插件类型: application。</li><li>✅ 插件支持的适配器: 所有。</li><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 通过。</li></code></pre>\n</details>\n\n---\n\n💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。\n💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。\n\n\n💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)\n<!-- NONEFLOW -->\n"""
+    )
+
+
+async def test_render_data_plugin_supported_adapters(app: App, mocker: MockFixture):
+    """插件支持的适配器"""
+    from src.plugins.publish.config import plugin_config
+    from src.plugins.publish.render import render_comment
+    from src.utils.validation import PublishType, ValidationDict
+
+    mocker.patch.object(plugin_config, "plugin_test_result", True)
+
+    result: ValidationDict = {
+        "valid": True,
+        "data": {
+            "supported_adapters": [
+                "nonebot.adapters.onebot.v11",
+                "nonebot.adapters.none",
+            ],
+        },
+        "errors": [],
+        "type": PublishType.PLUGIN,
+        "name": "帮助",
+        "author": "he0119",
+    }
+
+    comment = await render_comment(result)
+    assert (
+        comment
+        == """# 📃 商店发布检查结果\n\n> Plugin: 帮助\n\n**✅ 所有测试通过，一切准备就绪！**\n\n\n<details>\n<summary>详情</summary>\n<pre><code><li>✅ 插件支持的适配器: nonebot.adapters.onebot.v11, nonebot.adapters.none。</li><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 通过。</li></code></pre>\n</details>\n\n---\n\n💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。\n💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。\n\n\n💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)\n<!-- NONEFLOW -->\n"""
     )
