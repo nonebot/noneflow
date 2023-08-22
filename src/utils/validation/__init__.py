@@ -20,7 +20,7 @@ def validate_info(
 ) -> ValidationDict:
     """验证信息是否符合规范"""
     if publish_type not in validation_model_map:
-        raise ValueError("⚠️ 未知的发布类型。")
+        raise ValueError("⚠️ 未知的发布类型。")  # pragma: no cover
 
     data, _, errors = validate_model(validation_model_map[publish_type], raw_data)
 

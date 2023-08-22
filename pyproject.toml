@@ -38,6 +38,13 @@ skip_gitignore = true
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 
+[tool.coverage.report]
+exclude_lines = [
+  "pragma: no cover",
+  "if TYPE_CHECKING:",
+  "raise NotImplementedError",
+]
+
 [tool.nonebot]
 adapters = [{ name = "GitHub", module_name = "nonebot.adapters.github" }]
 plugin_dirs = ["src/plugins"]
