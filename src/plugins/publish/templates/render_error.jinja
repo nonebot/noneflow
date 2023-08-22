@@ -1,18 +1,14 @@
 {% macro render_error(error) %}
 {% set loc = error.loc %}
 {% set type = error.type %}
-{% if loc|length == 3 and loc[0] == "tags" %}
-{%- if type == "value_error.tag.label" %}
-第 {{ loc[1] + 1 }} 个标签名称过长<dt>请确保标签名称不超过 10 个字符。</dt>
-{%- elif type == "value_error.tag.color" %}
-第 {{ loc[1] + 1 }} 个标签颜色错误<dt>请确保标签颜色符合十六进制颜色码规则。</dt>
-{%- elif type == "value_error.missing" %}
+{%- if loc|length == 3 and loc[0] == "tags" and type == "value_error.missing" %}
 第 {{ loc[1] + 1 }} 个标签缺少 {{ loc[2] }} 字段。<dt>请确保标签字段完整。</dt>
-{%- else %}
-{{ error.loc[0] }}: {{ error.msg }}
-{%- endif %}
-{% elif type == "value_error.name.too_long" %}
-名称过长。<dt>请确保名称不超过 50 个字符。</dt>
+{% elif loc|length == 3 and loc[0] == "tags" and type == "value_error.any_str.max_length" %}
+第 {{ loc[1] + 1 }} 个标签名称过长<dt>请确保标签名称不超过 10 个字符。</dt>
+{%- elif loc|length == 3 and loc[0] == "tags" and type == "value_error.color" %}
+第 {{ loc[1] + 1 }} 个标签颜色错误<dt>请确保标签颜色符合十六进制颜色码规则。</dt>
+{%- elif loc|length == 2 and loc[0] == "tags" and type == "type_error.dict" %}
+第 {{ loc[1] + 1 }} 个标签格式错误。<dt>请确保标签为字典。</dt>
 {%- elif type == "value_error.homepage.unreachable" %}
 项目 <a href="{{ error.input }}">主页</a> 返回状态码 {{ error.ctx.status_code }}。<dt>请确保你的项目主页可访问。</dt>
 {%- elif type == "value_error.project_link.not_found" %}
@@ -29,11 +25,19 @@ PyPI 项目名 {{ error.input }} 不符合规范。<dt>请确保项目名正确�
   <summary>测试输出</summary>
   {{ error.ctx.output }}
 </details>
-{%- elif type == "value_error.missing" %}
-{{ loc[0]|loc_to_name }}: 无法匹配到数据。<dt>请确保填写该项目。</dt>
 {%- elif type == "value_error.metadata" %}
 无法获取到插件元数据。<dt>{{ "请填写插件元数据" if error.ctx.plugin_test_result else "请确保插件正常加载" }}。</dt>
+{%- elif type == "value_error.missing" %}
+{{ loc|loc_to_name }}: 无法匹配到数据。<dt>请确保填写该项目。</dt>
+{%- elif type == "type_error.dict" %}
+{{ loc|loc_to_name }}: 格式错误。<dt>请确保其为字典。</dt>
+{%- elif type == "type_error.list" %}
+{{ loc|loc_to_name }}: 格式错误。<dt>请确保其为列表。</dt>
+{%- elif type == "value_error.json" %}
+{{ loc|loc_to_name }}: 解码失败。<dt>请确保其为 JSON 格式。</dt>
+{%- elif type == "value_error.any_str.max_length" %}
+{{ loc|loc_to_name }}: 字符过多。<dt>请确保其不超过 {{ error.ctx.limit_value }} 个字符。</dt>
 {%- else %}
-{{ error.loc[0] }}: {{ error.msg }}
+{{ error.loc|loc_to_name }}: {{ error.msg }}
 {%- endif %}
 {% endmacro %}

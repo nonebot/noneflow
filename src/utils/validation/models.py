@@ -1,11 +1,11 @@
 import abc
 import json
-import re
 from enum import Enum
 from typing import TYPE_CHECKING, Any, TypedDict
 
-from pydantic import BaseModel, root_validator, validator
-from pydantic.errors import IterableError, JsonError, ListError
+from pydantic import BaseModel, Field, root_validator, validator
+from pydantic.color import Color
+from pydantic.errors import IterableError, JsonError
 
 if TYPE_CHECKING:
     from pydantic.error_wrappers import ErrorDict as PydanticErrorDict
@@ -28,10 +28,6 @@ from .errors import (
     PluginTypeError,
     ProjectLinkNameError,
     ProjectLinkNotFoundError,
-    PublishNameTooLongError,
-    TagColorError,
-    TagLabelError,
-    TagsTooManyError,
 )
 from .utils import check_pypi, check_url, get_adapters, resolve_adapter_name
 
@@ -104,37 +100,19 @@ class PyPIMixin(BaseModel):
 class Tag(BaseModel):
     """标签"""
 
-    label: str
-    color: str
-
-    @validator("label", pre=True)
-    def label_validator(cls, v: str) -> str:
-        if len(v) > 10:
-            raise TagLabelError()
-        return v
-
-    @validator("color", pre=True)
-    def color_validator(cls, v: str) -> str:
-        if not re.match(r"^#[0-9a-fA-F]{6}$", v):
-            raise TagColorError()
-        return v
+    label: str = Field(max_length=10)
+    color: Color
 
 
 class PublishInfo(abc.ABC, BaseModel):
     """发布信息"""
 
-    name: str
+    name: str = Field(max_length=MAX_NAME_LENGTH)
     desc: str
     author: str
     homepage: str
-    tags: list[Tag]
+    tags: list[Tag] = Field(max_items=3)
     is_official: bool = False
-
-    @validator("name", pre=True)
-    def name_validator(cls, v: str) -> str:
-        if len(v) > MAX_NAME_LENGTH:
-            raise PublishNameTooLongError()
-        return v
 
     @validator("homepage", pre=True)
     def homepage_validator(cls, v: str) -> str:
@@ -150,12 +128,6 @@ class PublishInfo(abc.ABC, BaseModel):
             tags: list[Any] | Any = json.loads(v)
         except json.JSONDecodeError:
             raise JsonError()
-        if not isinstance(tags, list):
-            raise ListError()
-        # if len(tags) > 0 and any(map(lambda x: not isinstance(x, dict), tags)):
-        #     raise TagsDictError()
-        if len(tags) > 3:
-            raise TagsTooManyError()
         return tags
 
     @classmethod

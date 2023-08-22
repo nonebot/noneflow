@@ -2,7 +2,6 @@ import json
 
 import pytest
 from pydantic import ValidationError
-from pytest_mock import MockerFixture
 from respx import MockRouter
 
 
@@ -42,7 +41,7 @@ async def test_adapter_tags_color_invalid(mocked_api: MockRouter) -> None:
             tags=json.dumps([{"label": "test", "color": "#adbcdef"}]),  # type: ignore
             is_official=False,
         )
-    assert "标签颜色不符合十六进制颜色码规则。" in str(e.value)
+    assert "string not recognised as a valid color" in str(e.value)
 
     assert mocked_api["project_link"].called
     assert mocked_api["homepage"].called
@@ -63,7 +62,10 @@ async def test_adapter_tags_label_invalid(mocked_api: MockRouter) -> None:
             tags=json.dumps([{"label": "12345678901", "color": "#adbcde"}]),  # type: ignore
             is_official=False,
         )
-    assert "标签名称超过 10 个字符。" in str(e.value)
+    assert (
+        "ensure this value has at most 10 characters (type=value_error.any_str.max_length; limit_value=10)"
+        in str(e.value)
+    )
 
     assert mocked_api["project_link"].called
     assert mocked_api["homepage"].called
@@ -91,7 +93,10 @@ async def test_adapter_tags_number_invalid(mocked_api: MockRouter) -> None:
             ),  # type: ignore
             is_official=False,
         )
-    assert "标签数量超过 3 个。" in str(e.value)
+    assert (
+        "ensure this value has at most 3 items (type=value_error.list.max_items; limit_value=3)"
+        in str(e.value)
+    )
 
     assert mocked_api["project_link"].called
     assert mocked_api["homepage"].called

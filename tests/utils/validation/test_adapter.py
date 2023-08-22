@@ -5,7 +5,7 @@ from respx import MockRouter
 from tests.utils.validation.utils import generate_adapter_data
 
 
-async def test_plugin_info_validation_success(mocked_api: MockRouter) -> None:
+async def test_adapter_info_validation_success(mocked_api: MockRouter) -> None:
     """测试验证成功的情况"""
     from src.utils.validation import PublishType, validate_info
 
@@ -28,7 +28,7 @@ async def test_plugin_info_validation_success(mocked_api: MockRouter) -> None:
     assert mocked_api["homepage"].called
 
 
-async def test_bot_info_validation_failed(mocked_api: MockRouter) -> None:
+async def test_adapter_info_validation_failed(mocked_api: MockRouter) -> None:
     """测试验证失败的情况"""
     from src.utils.validation import PublishType, validate_info
 

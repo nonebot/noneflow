@@ -521,7 +521,7 @@ async def test_edit_title_too_long(
                 "owner": "he0119",
                 "repo": "action-test",
                 "issue_number": 80,
-                "body": """# 📃 商店发布检查结果\n\n> Bot: looooooooooooooooooooooooooooooooooooooooooooooooooooooong\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n\n<pre><code><li>⚠️ 名称过长。<dt>请确保名称不超过 50 个字符。</dt></li></code></pre>\n\n<details>\n<summary>详情</summary>\n<pre><code><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 标签: test-#ffffff。</li></code></pre>\n</details>\n\n---\n\n💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。\n💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。\n\n\n💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)\n<!-- NONEFLOW -->\n""",
+                "body": """# 📃 商店发布检查结果\n\n> Bot: looooooooooooooooooooooooooooooooooooooooooooooooooooooong\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n\n<pre><code><li>⚠️ 名称: 字符过多。<dt>请确保其不超过 50 个字符。</dt></li></code></pre>\n\n<details>\n<summary>详情</summary>\n<pre><code><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 标签: test-#ffffff。</li></code></pre>\n</details>\n\n---\n\n💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。\n💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。\n\n\n💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)\n<!-- NONEFLOW -->\n""",
             },
             True,
         )

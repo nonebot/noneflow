@@ -2,6 +2,7 @@ from functools import cache
 
 import httpx
 from nonebot import logger
+from pydantic.color import Color, float_to_255
 
 from .constants import STORE_ADAPTERS_URL
 
@@ -42,3 +43,9 @@ def resolve_adapter_name(name: str) -> str:
     if name.startswith("~"):
         name = "nonebot.adapters." + name[1:]
     return name
+
+
+def color_to_hex(color: Color) -> str:
+    values = [float_to_255(c) for c in color._rgba[:3]]
+    hex = "".join(f"{v:02x}" for v in values)
+    return f"#{hex}"

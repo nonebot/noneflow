@@ -1,16 +1,5 @@
 from pydantic import PydanticValueError
 
-from .constants import MAX_NAME_LENGTH
-
-
-class PublishNameError(PydanticValueError):
-    code = "name"
-
-
-class PublishNameTooLongError(PublishNameError):
-    code = "name.too_long"
-    msg_template = f"名称不能超过 {MAX_NAME_LENGTH} 个字符。"
-
 
 class HomepageError(PydanticValueError):
     code = "homepage"
@@ -19,39 +8,6 @@ class HomepageError(PydanticValueError):
 class HomepageUnreachableError(HomepageError):
     code = "homepage.unreachable"
     msg_template = "项目主页不可访问。"
-
-
-class TagsError(PydanticValueError):
-    code = "tags"
-
-
-class TagsListError(TagsError):
-    code = "tags.not_list"
-    msg_template = "标签不是列表。"
-
-
-class TagsDictError(TagsError):
-    code = "tags.not_dict"
-    msg_template = "标签列表内不全为字典。"
-
-
-class TagsTooManyError(TagsError):
-    code = "tags.too_many"
-    msg_template = "标签数量超过 3 个。"
-
-
-class TagError(PydanticValueError):
-    code = "tag"
-
-
-class TagLabelError(TagError):
-    code = "tag.label"
-    msg_template = "标签名称超过 10 个字符。"
-
-
-class TagColorError(TagError):
-    code = "tag.color"
-    msg_template = "标签颜色不符合十六进制颜色码规则。"
 
 
 class ModuleNameError(PydanticValueError):
@@ -89,10 +45,6 @@ class PluginTestError(PydanticValueError):
 class PluginTypeError(PydanticValueError):
     code = "plugin.type"
     msg_template = "插件类型不符合规范。"
-
-
-class PluginSupportedAdaptersError(PydanticValueError):
-    code = "plugin.supported_adapters"
 
 
 class PluginSupportedAdaptersMissingError(PydanticValueError):

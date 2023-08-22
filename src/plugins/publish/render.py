@@ -28,11 +28,16 @@ def supported_adapters_to_str(supported_adapters: list[str] | None) -> str:
     return ", ".join(supported_adapters)
 
 
-def loc_to_name(loc: str) -> str:
+def _loc_to_name(loc: str) -> str:
     """将 loc 转换为可读名称"""
     if loc in LOC_NAME_MAP:
         return LOC_NAME_MAP[loc]
     return loc
+
+
+def loc_to_name(loc: list[str | int]) -> str:
+    """将 loc 转换为可读名称"""
+    return " > ".join([_loc_to_name(str(l)) for l in loc])
 
 
 env = jinja2.Environment(

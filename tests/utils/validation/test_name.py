@@ -92,7 +92,10 @@ async def test_name_too_long(mocked_api: MockRouter) -> None:
             tags=json.dumps([]),  # type: ignore
             is_official=False,
         )
-    assert "名称不能超过 50 个字符。" in str(e.value)
+    assert (
+        "ensure this value has at most 50 characters (type=value_error.any_str.max_length; limit_value=50)"
+        in str(e.value)
+    )
 
     assert mocked_api["project_link"].called
     assert mocked_api["homepage"].called

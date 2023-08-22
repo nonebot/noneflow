@@ -6,7 +6,9 @@ from pydantic import validate_model
 
 from .models import AdapterPublishInfo, BotPublishInfo, PluginPublishInfo, PublishInfo
 from .models import PublishType as PublishType
+from .models import Tag
 from .models import ValidationDict as ValidationDict
+from .utils import color_to_hex
 
 validation_model_map = {
     PublishType.BOT: BotPublishInfo,
@@ -26,7 +28,14 @@ def validate_info(
 
     # tags 会被转成 list[Tag]，需要转成 dict
     if "tags" in data:
-        data["tags"] = [tag.dict() for tag in data["tags"]]
+        tags = cast(list[Tag], data["tags"])
+        data["tags"] = [
+            {
+                "label": tag.label,
+                "color": color_to_hex(tag.color),
+            }
+            for tag in tags
+        ]
 
     # 有些字段不需要返回
     data.pop("previous_data", None)
@@ -40,6 +49,8 @@ def validate_info(
                     # 可能会有字段数据缺失的情况，这种时候不设置 input
                     if name in raw_data:
                         error["input"] = raw_data[name]
+                case (name, index) if isinstance(name, str) and isinstance(index, int):
+                    error["input"] = PublishInfo.tags_validator(raw_data[name])[index]
                 # 标签 list[Tag] 的情况
                 case (name, index, field) if isinstance(name, str) and isinstance(
                     index, int
