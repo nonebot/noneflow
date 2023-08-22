@@ -1,18 +1,28 @@
+{% from "render_data.jinja" import render_data %}
+{% from "render_error.jinja" import render_error %}
 {# 发布测试评论内容 #}
 # 📃 商店发布检查结果
 
 > {{ title }}
 
-**{{ "✅ 所有测试通过，一切准备就绪！" if is_valid else "⚠️ 在发布检查过程中，我们发现以下问题："}}**
+**{{ "✅ 所有测试通过，一切准备就绪！" if valid else "⚠️ 在发布检查过程中，我们发现以下问题："}}**
 
-{% if not is_valid %}
-<pre><code>{% for item in fail_data %}<li>⚠️ {{ render_message(item.msg) }}<dt>{{ render_message(item.hint) }}</dt></li>{% endfor %}</code></pre>
+{% if not valid %}
+<pre><code>
+{% for error in errors %}
+<li>⚠️ {{ render_error(error) }}</li>
+{% endfor %}
+</code></pre>
 {% endif %}
 
-{% if pass_data %}
+{% if data %}
 <details>
 <summary>详情</summary>
-<pre><code>{% for item in pass_data %}<li>✅ {{ render_message(item.msg) }}</li>{% endfor %}</code></pre>
+<pre><code>
+{% for key, value in data.items() %}
+<li>✅ {{ render_data(key, value) }}</li>
+{% endfor %}
+</code></pre>
 </details>
 {% endif %}
 

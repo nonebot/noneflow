@@ -55,4 +55,8 @@ def validate_info(
         "valid": errors is None,
         "data": data,
         "errors": errors_with_input,
+        # 方便插件使用的数据
+        "type": publish_type,
+        "name": data.get("name") or raw_data.get("name", ""),
+        "author": data.get("author", ""),
     }

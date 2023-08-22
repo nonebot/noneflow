@@ -38,6 +38,9 @@ from .utils import check_pypi, check_url, get_adapters, resolve_adapter_name
 
 class ValidationDict(TypedDict):
     valid: bool
+    type: "PublishType"
+    name: str
+    author: str
     data: dict[str, Any]
     errors: "list[ErrorDict] | None"
 

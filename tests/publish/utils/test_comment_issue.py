@@ -11,6 +11,9 @@ async def test_comment_issue(app: App, mocker: MockerFixture):
     from src.plugins.publish.models import RepoInfo
     from src.plugins.publish.utils import comment_issue
 
+    mock_render_comment = mocker.patch("src.plugins.publish.utils.render_comment")
+    mock_render_comment.return_value = "test"
+
     mock_result = mocker.AsyncMock()
     mock_result.render_issue_comment.return_value = "test"
 
@@ -48,13 +51,16 @@ async def test_comment_issue(app: App, mocker: MockerFixture):
 
         await comment_issue(bot, RepoInfo(owner="owner", repo="repo"), 1, mock_result)
 
-    mock_result.render_issue_comment.assert_called_once_with(False)
+    mock_render_comment.assert_called_once_with(mock_result, False)
 
 
 async def test_comment_issue_reuse(app: App, mocker: MockerFixture):
     from src.plugins.publish.constants import NONEFLOW_MARKER
     from src.plugins.publish.models import RepoInfo
     from src.plugins.publish.utils import comment_issue
+
+    mock_render_comment = mocker.patch("src.plugins.publish.utils.render_comment")
+    mock_render_comment.return_value = "test"
 
     mock_result = mocker.AsyncMock()
     mock_result.render_issue_comment.return_value = "test"
@@ -94,7 +100,7 @@ async def test_comment_issue_reuse(app: App, mocker: MockerFixture):
 
         await comment_issue(bot, RepoInfo(owner="owner", repo="repo"), 1, mock_result)
 
-    mock_result.render_issue_comment.assert_called_once_with(True)
+    mock_render_comment.assert_called_once_with(mock_result, True)
 
 
 async def test_comment_issue_reuse_same(app: App, mocker: MockerFixture):
@@ -102,8 +108,10 @@ async def test_comment_issue_reuse_same(app: App, mocker: MockerFixture):
     from src.plugins.publish.models import RepoInfo
     from src.plugins.publish.utils import comment_issue
 
+    mock_render_comment = mocker.patch("src.plugins.publish.utils.render_comment")
+    mock_render_comment.return_value = "test\n<!-- NONEFLOW -->\n"
+
     mock_result = mocker.AsyncMock()
-    mock_result.render_issue_comment.return_value = "test\n<!-- NONEFLOW -->\n"
 
     mock_comment = mocker.MagicMock()
     mock_comment.body = "test\n<!-- NONEFLOW -->\n"
@@ -129,4 +137,4 @@ async def test_comment_issue_reuse_same(app: App, mocker: MockerFixture):
 
         await comment_issue(bot, RepoInfo(owner="owner", repo="repo"), 1, mock_result)
 
-    mock_result.render_issue_comment.assert_called_once_with(True)
+    mock_render_comment.assert_called_once_with(mock_result, True)

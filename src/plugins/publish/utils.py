@@ -37,6 +37,7 @@ from .constants import (
     TAGS_PATTERN,
 )
 from .models import RepoInfo
+from .render import render_comment
 
 if TYPE_CHECKING:
     from githubkit.rest.models import Issue, IssuePropLabelsItemsOneof1, Label
@@ -110,10 +111,10 @@ def get_type_by_commit_message(message: str) -> PublishType | None:
 
 def commit_and_push(result: ValidationDict, branch_name: str, issue_number: int):
     """提交并推送"""
-    commit_message = f"{COMMIT_MESSAGE_PREFIX} {result.type.value.lower()} {result.name} (#{issue_number})"
+    commit_message = f"{COMMIT_MESSAGE_PREFIX} {result['type'].value.lower()} {result['name']} (#{issue_number})"
 
-    run_shell_command(["git", "config", "--global", "user.name", result.author])
-    user_email = f"{result.author}@users.noreply.github.com"
+    run_shell_command(["git", "config", "--global", "user.name", result["author"]])
+    user_email = f"{result['author']}@users.noreply.github.com"
     run_shell_command(["git", "config", "--global", "user.email", user_email])
     run_shell_command(["git", "add", "-A"])
     try:
@@ -278,18 +279,19 @@ async def resolve_conflict_pull_requests(
         publish_type = get_type_by_labels(issue.labels)
         if publish_type:
             result = validate_info_from_issue(issue, publish_type)
-            if result.valid:
+            if result["valid"]:
                 update_file(result)
                 commit_and_push(result, pull.head.ref, issue_number)
                 logger.info("拉取请求更新完毕")
             else:
-                logger.info(result.render_issue_comment())
+                comment = await render_comment(result)
+                logger.info(comment)
                 logger.info("发布没通过检查，已跳过")
 
 
 def update_file(result: ValidationDict) -> None:
     """更新文件"""
-    match result.type:
+    match result["type"]:
         case PublishType.ADAPTER:
             path = plugin_config.input_config.adapter_path
         case PublishType.BOT:
@@ -302,7 +304,7 @@ def update_file(result: ValidationDict) -> None:
         data: list[dict[str, str]] = json.load(f)
     with path.open("w", encoding="utf-8") as f:
         # TODO: 以后换成 store 的格式
-        data.append(result.registry_info())
+        data.append(result["data"])
         json.dump(data, f, ensure_ascii=False, indent=2)
         # 结尾加上换行符，不然会被 pre-commit fix
         f.write("\n")
@@ -358,7 +360,7 @@ async def create_pull_request(
         pull = resp.parsed_data
         # 自动给拉取请求添加标签
         await bot.rest.issues.async_add_labels(
-            **repo_info.dict(), issue_number=pull.number, labels=[result.type.value]
+            **repo_info.dict(), issue_number=pull.number, labels=[result["type"].value]
         )
         logger.info("拉取请求创建完毕")
     except RequestFailed:
@@ -394,7 +396,7 @@ async def comment_issue(
         None,
     )
 
-    comment = await result.render_issue_comment(bool(reusable_comment))
+    comment = await render_comment(result, bool(reusable_comment))
     if reusable_comment:
         logger.info(f"发现已有评论 {reusable_comment.id}，正在修改")
         if reusable_comment.body != comment:

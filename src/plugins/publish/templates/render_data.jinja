@@ -1,0 +1,19 @@
+{% macro render_data(key, value) %}
+{% if key == "homepage" %}
+项目 <a href="{{ value }}">主页</a> 返回状态码 200。
+{%- elif key == "tags" and value %}
+标签: {{ value|tags_to_str }}。
+{%- elif key == "project_link" %}
+项目 <a href="https://pypi.org/project/{{ value }}/">{{ value }}</a> 已发布至 PyPI。
+{%- elif key == "type" %}
+插件类型: {{ value }}。
+{%- elif key == "supported_adapters" %}
+插件支持的适配器: {{ value|supported_adapters_to_str }}。
+{%- elif key == "action_url" %}
+{% if skip_plugin_test %}
+插件 <a href="{{ value }}">加载测试</a> 已跳过。
+{% else %}
+插件 <a href="{{ value }}">加载测试</a> 通过。
+{% endif %}
+{%- endif %}
+{% endmacro %}
