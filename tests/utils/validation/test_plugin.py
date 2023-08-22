@@ -46,9 +46,9 @@ async def test_plugin_info_validation_failed(mocked_api: MockRouter) -> None:
                 "project_link": "project_link",
             }
         ],
+        type="invalid",
+        supported_adapters=["missing", "~onebot.v11"],
     )
-
-    data.pop("type")
 
     result = validate_info(PublishType.PLUGIN, data)
 

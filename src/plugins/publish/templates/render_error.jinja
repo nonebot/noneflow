@@ -27,6 +27,10 @@ PyPI 项目名 {{ error.input }} 不符合规范。<dt>请确保项目名正确�
 </details>
 {%- elif type == "value_error.metadata" %}
 无法获取到插件元数据。<dt>{{ "请填写插件元数据" if error.ctx.plugin_test_result else "请确保插件正常加载" }}。</dt>
+{%- elif type == "value_error.plugin.type" %}
+插件类型 {{ error.input }} 不符合规范。<dt>请确保插件类型正确，当前仅支持 application 与 library。</dt>
+{%- elif type == "value_error.plugin.supported_adapters.missing" %}
+适配器 {{ ', '.join(error.ctx.missing_adapters) }} 不存在。<dt>请确保适配器模块名称正确。</dt>
 {%- elif type == "value_error.missing" %}
 {{ loc|loc_to_name }}: 无法匹配到数据。<dt>请确保填写该项目。</dt>
 {%- elif type == "type_error.dict" %}

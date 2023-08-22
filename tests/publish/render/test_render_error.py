@@ -322,6 +322,49 @@ async def test_render_error_tags_invalid(app: App, mocker: MockFixture):
     )
 
 
+async def test_render_type_eroor(app: App, mocker: MockFixture):
+    """插件类型与适配器错误"""
+    from src.plugins.publish.config import plugin_config
+    from src.plugins.publish.render import render_comment
+    from src.utils.validation import PublishType, ValidationDict
+
+    mocker.patch.object(plugin_config, "plugin_test_result", True)
+    mocker.patch.object(plugin_config, "plugin_test_metadata", {})
+
+    result: ValidationDict = {
+        "valid": False,
+        "data": {
+            "author": "he0119",
+            "tags": [],
+            "is_official": False,
+        },
+        "errors": [
+            {
+                "loc": ("type",),
+                "msg": "插件类型不符合规范。",
+                "type": "value_error.plugin.type",
+                "input": "invalid",
+            },
+            {
+                "loc": ("supported_adapters",),
+                "msg": "适配器 missing 不存在。",
+                "type": "value_error.plugin.supported_adapters.missing",
+                "ctx": {"missing_adapters": {"missing"}},
+                "input": ["missing", "~onebot.v11"],
+            },
+        ],
+        "type": PublishType.PLUGIN,
+        "name": "帮助",
+        "author": "he0119",
+    }
+
+    comment = await render_comment(result)
+    assert (
+        comment
+        == """# 📃 商店发布检查结果\n\n> Plugin: 帮助\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n\n<pre><code><li>⚠️ 插件类型 invalid 不符合规范。<dt>请确保插件类型正确，当前仅支持 application 与 library。</dt></li><li>⚠️ 适配器 missing 不存在。<dt>请确保适配器模块名称正确。</dt></li></code></pre>\n\n<details>\n<summary>详情</summary>\n<pre><code><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 通过。</li></code></pre>\n</details>\n\n---\n\n💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。\n💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。\n\n\n💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)\n<!-- NONEFLOW -->\n"""
+    )
+
+
 async def test_render_unknown_error(app: App, mocker: MockFixture):
     """未知错误"""
     from src.plugins.publish.config import plugin_config

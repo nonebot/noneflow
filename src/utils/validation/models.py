@@ -147,9 +147,6 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
 
     @validator("type", pre=True)
     def type_validator(cls, v: str) -> str:
-        if not v:
-            raise PluginTypeError()
-
         if v not in PLUGIN_VALID_TYPE:
             raise PluginTypeError()
         return v

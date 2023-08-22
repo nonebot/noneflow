@@ -49,7 +49,9 @@ class PluginTypeError(PydanticValueError):
 
 class PluginSupportedAdaptersMissingError(PydanticValueError):
     code = "plugin.supported_adapters.missing"
-    msg_template = "适配器 {', '.join(missing_adapters)} 不存在。"
 
     def __init__(self, *, missing_adapters: set[str]) -> None:
         super().__init__(missing_adapters=missing_adapters)
+
+    def __str__(self) -> str:
+        return f"适配器 {', '.join(self.missing_adapters)} 不存在。"  # type: ignore
