@@ -16,7 +16,7 @@ repos:
       - id: black
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.0.1
+    rev: v3.0.2
     hooks:
       - id: prettier
         types_or: [markdown]
@@ -28,7 +28,7 @@ repos:
         args: [--py310-plus]
 
   - repo: https://github.com/hadialqattan/pycln
-    rev: v2.2.1
+    rev: v2.2.2
     hooks:
       - id: pycln
         args: [--config, pyproject.toml]
