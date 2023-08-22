@@ -10,7 +10,7 @@ from pydantic.errors import IterableError, JsonError, ListError
 if TYPE_CHECKING:
     from pydantic.error_wrappers import ErrorDict as PydanticErrorDict
 
-    class ErrorDict(PydanticErrorDict):
+    class ErrorDict(PydanticErrorDict, total=False):
         input: Any
 
 

@@ -43,7 +43,13 @@ async def validate_metadata(
     if not metadata:
         return {
             "result": False,
-            "output": "缺少元数据",
+            "output": [
+                {
+                    "loc": ("metadata",),
+                    "msg": "未找到插件元数据",
+                    "type": "value_error.missing",
+                }
+            ],
             "plugin": None,
         }
 
@@ -61,22 +67,16 @@ async def validate_metadata(
         "author": plugin["author"],
         "homepage": homepage,
         "tags": json.dumps(plugin["tags"]),
-        "plugin_test_result": result,
         "type": type,
         "supported_adapters": supported_adapters,
-        "github_repository": "nonebot/plugin-test",
-        "github_run_id": 0,
-        "plugin_test_result": result,
-        "plugin_test_output": "",
-        "skip_plugin_test": False,
         "previous_data": [],
     }
     validation_result = validate_info(PublishType.PLUGIN, raw_data)
     return {
-        "result": validation_result.valid,
-        "output": await validation_result.render_registry_message(),
-        "plugin": cast(Plugin, validation_result.registry_info())
-        if validation_result.valid
+        "result": validation_result["valid"] and result,
+        "output": validation_result["errors"] if validation_result["errors"] else [],
+        "plugin": cast(Plugin, validation_result["data"])
+        if validation_result["valid"]
         else None,
     }
 
