@@ -208,8 +208,6 @@ def validate_info_from_issue(
                 "skip_plugin_test": plugin_config.skip_plugin_test,
                 "plugin_test_result": plugin_config.plugin_test_result,
                 "plugin_test_output": plugin_config.plugin_test_output,
-                "github_repository": plugin_config.github_repository,
-                "github_run_id": plugin_config.github_run_id,
                 "previous_data": data,
             }
             # 如果插件测试被跳过，则从议题中获取信息

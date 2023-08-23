@@ -193,14 +193,10 @@ async def test_render_error_plugin(app: App, mocker: MockFixture):
     )
 
 
-async def test_render_error_plugin_load_test(app: App, mocker: MockFixture):
+async def test_render_error_plugin_load_test(app: App):
     """插件加载测试失败，并且没有获取到元数据"""
-    from src.plugins.publish.config import plugin_config
     from src.plugins.publish.render import render_comment
     from src.utils.validation import PublishType, ValidationDict
-
-    mocker.patch.object(plugin_config, "plugin_test_result", False)
-    mocker.patch.object(plugin_config, "plugin_test_output", "output")
 
     result: ValidationDict = {
         "valid": False,
@@ -212,7 +208,20 @@ async def test_render_error_plugin_load_test(app: App, mocker: MockFixture):
             "tags": [],
             "is_official": False,
         },
-        "errors": [],
+        "errors": [
+            {
+                "loc": ("metadata",),
+                "msg": "无法获取到插件元数据。",
+                "type": "value_error.metadata",
+                "ctx": {"plugin_test_result": False},
+            },
+            {
+                "loc": ("plugin_test",),
+                "msg": "插件无法正常加载",
+                "type": "value_error.plugin_test",
+                "ctx": {"output": "output"},
+            },
+        ],
         "type": PublishType.PLUGIN,
         "name": "帮助",
         "author": "he0119",
@@ -242,24 +251,10 @@ async def test_render_error_plugin_metadata(app: App, mocker: MockFixture):
         },
         "errors": [
             {
-                "loc": ("name",),
-                "msg": "field required",
-                "type": "value_error.missing",
-            },
-            {
-                "loc": ("desc",),
-                "msg": "field required",
-                "type": "value_error.missing",
-            },
-            {
-                "loc": ("homepage",),
-                "msg": "field required",
-                "type": "value_error.missing",
-            },
-            {
-                "loc": ("type",),
-                "msg": "field required",
-                "type": "value_error.missing",
+                "loc": ("metadata",),
+                "msg": "无法获取到插件元数据。",
+                "type": "value_error.metadata",
+                "ctx": {"plugin_test_result": True},
             },
         ],
         "type": PublishType.PLUGIN,

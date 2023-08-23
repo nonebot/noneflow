@@ -81,8 +81,7 @@ def generate_plugin_data(
             "skip_plugin_test": skip_plugin_test,
             "plugin_test_result": plugin_test_result,
             "plugin_test_output": plugin_test_output,
+            "plugin_test_metadata": {},
             "previous_data": previous_data,
-            "github_repository": "github",
-            "github_run_id": "123456",
         }
     )
