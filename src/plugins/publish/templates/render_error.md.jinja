@@ -9,8 +9,10 @@
 第 {{ loc[1] + 1 }} 个标签颜色错误<dt>请确保标签颜色符合十六进制颜色码规则。</dt>
 {%- elif loc|length == 2 and loc[0] == "tags" and type == "type_error.dict" %}
 第 {{ loc[1] + 1 }} 个标签格式错误。<dt>请确保标签为字典。</dt>
-{%- elif type == "value_error.homepage.unreachable" %}
+{%- elif type == "value_error.homepage" and error.ctx.status_code != -1 %}
 项目 <a href="{{ error.input }}">主页</a> 返回状态码 {{ error.ctx.status_code }}。<dt>请确保你的项目主页可访问。</dt>
+{%- elif type == "value_error.homepage" and error.ctx.status_code == -1 %}
+项目 <a href="{{ error.input }}">主页</a> 访问出错。<details><summary>错误信息</summary>{{ error.ctx.msg }}</details>
 {%- elif type == "value_error.project_link.not_found" %}
 项目 <a href="https://pypi.org/project/{{ error.input }}/">{{ error.input }}</a> 未发布至 PyPI。<dt>请将你的项目发布至 PyPI。</dt>
 {%- elif type == "value_error.project_link.name" %}

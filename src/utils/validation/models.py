@@ -22,7 +22,7 @@ from .constants import (
 )
 from .errors import (
     DuplicationError,
-    HomepageUnreachableError,
+    HomepageError,
     ModuleNameError,
     PluginSupportedAdaptersMissingError,
     PluginTypeError,
@@ -117,9 +117,9 @@ class PublishInfo(abc.ABC, BaseModel):
     @validator("homepage", pre=True)
     def homepage_validator(cls, v: str) -> str:
         if v:
-            status_code = check_url(v)
+            status_code, msg = check_url(v)
             if status_code != 200:
-                raise HomepageUnreachableError(status_code=status_code)
+                raise HomepageError(status_code=status_code, msg=msg)
         return v
 
     @validator("tags", pre=True)

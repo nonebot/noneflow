@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 使用 jinja 渲染评论
 - 发布信息更新后如果发现不通过将拉取请求转成草稿
+- 检查网址时返回具体的报错信息
 
 ### Changed
 
