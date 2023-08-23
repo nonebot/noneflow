@@ -158,11 +158,6 @@ async def test_auto_merge_need_rebase(app: App, mocker: MockerFixture) -> None:
                 ["git", "config", "--global", "safe.directory", "*"],
                 check=True,
                 capture_output=True,
-            ),
-            mocker.call(
-                ["git", "fetch", "origin", "master"],
-                check=True,
-                capture_output=True,
             ),  # type: ignore
         ],
         any_order=True,
