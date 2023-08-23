@@ -402,6 +402,16 @@ async def create_pull_request(
                 **repo_info.dict(), pull_number=pull.number, title=title
             )
             logger.info(f"拉取请求标题已修改为 {title}")
+        if pull.draft:
+            await bot.async_graphql(
+                query="""mutation markPullRequestReadyForReview($pullRequestId: ID!) {
+                    markPullRequestReadyForReview(input: {pullRequestId: $pullRequestId}) {
+                        clientMutationId
+                    }
+                }""",
+                variables={"pullRequestId": pull.node_id},
+            )
+            logger.info("拉取请求已标记为可评审")
 
 
 async def comment_issue(

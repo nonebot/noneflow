@@ -189,10 +189,10 @@ async def handle_publish_check(
         # 限制标题长度，过长的标题不好看
         title = f"{publish_type.value}: {result['name'][:MAX_NAME_LENGTH]}"
 
+        # 分支命名示例 publish/issue123
+        branch_name = f"{BRANCH_NAME_PREFIX}{issue_number}"
         if result["valid"]:
             # 创建新分支
-            # 命名示例 publish/issue123
-            branch_name = f"{BRANCH_NAME_PREFIX}{issue_number}"
             run_shell_command(["git", "switch", "-C", branch_name])
             # 更新文件并提交更改
             update_file(result)
@@ -202,7 +202,24 @@ async def handle_publish_check(
                 bot, repo_info, result, branch_name, issue_number, title
             )
         else:
-            logger.info("发布没通过检查，暂不创建拉取请求")
+            # 如果之前已经创建了拉取请求，则将其转换为草稿
+            pulls = (
+                await bot.rest.pulls.async_list(
+                    **repo_info.dict(), head=f"{repo_info.owner}:{branch_name}"
+                )
+            ).parsed_data
+            if pulls and (pull := pulls[0]) and not pull.draft:
+                await bot.async_graphql(
+                    query="""mutation convertPullRequestToDraft($pullRequestId: ID!) {
+                        convertPullRequestToDraft(input: {pullRequestId: $pullRequestId}) {
+                            clientMutationId
+                        }
+                    }""",
+                    variables={"pullRequestId": pull.node_id},
+                )
+                logger.info("发布没通过检查，已将之前的拉取请求转换为草稿")
+            else:
+                logger.info("发布没通过检查，暂不创建拉取请求")
 
         # 修改议题标题
         # 需要等创建完拉取请求并打上标签后执行
