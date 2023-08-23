@@ -57,8 +57,6 @@ async def validate_plugin_info(
         raw_data["homepage"] = metadata.get("homepage")
         raw_data["type"] = metadata.get("type")
         raw_data["supported_adapters"] = metadata.get("supported_adapters")
-    else:
-        raw_data["name"] = project_link
 
     validation_result = validate_info(PublishType.PLUGIN, raw_data)
     return {
