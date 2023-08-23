@@ -55,53 +55,20 @@ async def render_comment(result: "ValidationDict", reuse: bool = False) -> str:
     title = f"{result['type'].value}: {result['name']}"
 
     # 有些数据不需要显示
-    result["data"].pop("module_name", None)
-    result["data"].pop("author", None)
     result["data"].pop("is_official", None)
+    result["data"].pop("module_name", None)
     result["data"].pop("name", None)
     result["data"].pop("desc", None)
+    result["data"].pop("author", None)
     if not result["data"].get("tags", []):
         result["data"].pop("tags", None)
 
     if result["type"] == PublishType.PLUGIN:
-        missing_metadata = plugin_config.plugin_test_metadata is None
-        if missing_metadata and not plugin_config.skip_plugin_test:
-            result["errors"].append(
-                {
-                    "loc": ("metadata",),
-                    "msg": "无法获取到插件元数据。",
-                    "type": "value_error.metadata",
-                    "ctx": {"plugin_test_result": plugin_config.plugin_test_result},
-                }
-            )
-            # 如果没有跳过测试且缺少插件元数据，则跳过元数据相关的错误
-            # 因为这个时候这些项都会报错，错误在此时没有意义
-            result["errors"] = [
-                error
-                for error in result["errors"]
-                if error["loc"][0]
-                not in [
-                    "name",
-                    "desc",
-                    "homepage",
-                    "type",
-                ]
-            ]
-
         # https://github.com/he0119/action-test/actions/runs/4469672520
         if plugin_config.plugin_test_result or plugin_config.skip_plugin_test:
             result["data"][
                 "action_url"
             ] = f"https://github.com/{plugin_config.github_repository}/actions/runs/{plugin_config.github_run_id}"
-        else:
-            result["errors"].append(
-                {
-                    "loc": ("plugin_test",),
-                    "msg": "插件无法正常加载",
-                    "type": "value_error.plugin_test",
-                    "ctx": {"output": plugin_config.plugin_test_output},
-                }
-            )
 
     template = env.get_template("comment.md.jinja")
     return await template.render_async(

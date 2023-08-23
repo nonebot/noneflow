@@ -39,11 +39,13 @@ skip_gitignore = true
 asyncio_mode = "auto"
 
 [tool.coverage.report]
-exclude_lines = [
-  "pragma: no cover",
+exclude_also = [
   "if TYPE_CHECKING:",
   "raise NotImplementedError",
 ]
+
+[tool.coverage.run]
+omit = ["src/utils/plugin_test.py"]
 
 [tool.nonebot]
 adapters = [{ name = "GitHub", module_name = "nonebot.adapters.github" }]

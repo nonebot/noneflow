@@ -29,6 +29,7 @@ class Plugin(TypedDict):
     supported_adapters: list[str]
     valid: bool
     time: str
+    version: str | None
 
 
 class Metadata(TypedDict):
@@ -41,11 +42,18 @@ class Metadata(TypedDict):
     supported_adapters: list[str]
 
 
+class PluginValidationOutput(TypedDict):
+    """验证插件的输出"""
+
+    data: dict[str, Any]
+    errors: list["ErrorDict"]
+
+
 class PluginValidation(TypedDict):
     """验证插件的结果与输出"""
 
     result: bool
-    output: list["ErrorDict"]
+    output: PluginValidationOutput | None
     plugin: Plugin | None
 
 

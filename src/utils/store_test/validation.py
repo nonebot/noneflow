@@ -32,49 +32,42 @@ def extract_version(path: Path) -> str | None:
         return match.group(1).strip()
 
 
-async def validate_metadata(
+async def validate_plugin_info(
     result: bool, plugin: StorePlugin, metadata: Metadata | None
 ) -> PluginValidation:
-    """验证插件元数据"""
+    """验证插件数据"""
     project_link = plugin["project_link"]
     module_name = plugin["module_name"]
     print(f"正在验证插件 {project_link}:{module_name} ...")
 
-    if not metadata:
-        return {
-            "result": False,
-            "output": [
-                {
-                    "loc": ("metadata",),
-                    "msg": "未找到插件元数据",
-                    "type": "value_error.missing",
-                }
-            ],
-            "plugin": None,
-        }
-
-    name = metadata.get("name")
-    desc = metadata.get("description")
-    homepage = metadata.get("homepage")
-    type = metadata.get("type")
-    supported_adapters = metadata.get("supported_adapters")
-
     raw_data = {
         "module_name": module_name,
         "project_link": project_link,
-        "name": name,
-        "desc": desc,
         "author": plugin["author"],
-        "homepage": homepage,
         "tags": json.dumps(plugin["tags"]),
-        "type": type,
-        "supported_adapters": supported_adapters,
+        "skip_plugin_test": False,
+        "plugin_test_result": result,
+        "plugin_test_output": "",
+        "plugin_test_metadata": metadata,
         "previous_data": [],
     }
+
+    if metadata:
+        raw_data["name"] = metadata.get("name")
+        raw_data["desc"] = metadata.get("description")
+        raw_data["homepage"] = metadata.get("homepage")
+        raw_data["type"] = metadata.get("type")
+        raw_data["supported_adapters"] = metadata.get("supported_adapters")
+
     validation_result = validate_info(PublishType.PLUGIN, raw_data)
     return {
-        "result": validation_result["valid"] and result,
-        "output": validation_result["errors"] if validation_result["errors"] else [],
+        "result": validation_result["valid"],
+        "output": {
+            "data": validation_result["data"],
+            "errors": validation_result["errors"],
+        }
+        if not validation_result["valid"]
+        else None,
         "plugin": cast(Plugin, validation_result["data"])
         if validation_result["valid"]
         else None,
@@ -114,13 +107,14 @@ async def validate_plugin(
     # 测试并提取完数据后删除测试文件夹
     shutil.rmtree(test.path)
 
-    validation = await validate_metadata(load_result, plugin, metadata)
+    validation = await validate_plugin_info(load_result, plugin, metadata)
 
     new_plugin = validation["plugin"]
     if new_plugin:
         # 插件验证过程中无法获取是否是官方插件，因此需要从原始数据中获取
         new_plugin["is_official"] = is_official
         new_plugin["valid"] = validation["result"]
+        new_plugin["version"] = version
         new_plugin["time"] = now_str
 
     result: TestResult = {
