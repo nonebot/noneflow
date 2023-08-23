@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [3.0.0] - 2023-08-23
+
 ### Added
 
 - 使用 jinja 渲染评论
@@ -311,7 +313,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/noneflow/compare/v2.7.3...HEAD
+[unreleased]: https://github.com/nonebot/noneflow/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/nonebot/noneflow/compare/v2.7.3...v3.0.0
 [2.7.3]: https://github.com/nonebot/noneflow/compare/v2.7.2...v2.7.3
 [2.7.2]: https://github.com/nonebot/noneflow/compare/v2.7.1...v2.7.2
 [2.7.1]: https://github.com/nonebot/noneflow/compare/v2.7.0...v2.7.1
