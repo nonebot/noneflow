@@ -48,6 +48,7 @@ async def validate_plugin_info(
         "skip_plugin_test": False,
         "plugin_test_result": result,
         "plugin_test_output": "",
+        "plugin_test_metadata": metadata,
         "previous_data": [],
     }
 
@@ -64,7 +65,9 @@ async def validate_plugin_info(
         "output": {
             "data": validation_result["data"],
             "errors": validation_result["errors"],
-        },
+        }
+        if not validation_result["valid"]
+        else None,
         "plugin": cast(Plugin, validation_result["data"])
         if validation_result["valid"]
         else None,

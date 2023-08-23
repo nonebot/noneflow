@@ -16,6 +16,7 @@ async def test_validate_plugin_info(mocked_api: MockRouter) -> None:
     result = await validate_plugin_info(False, plugin, None)
 
     assert not result["result"]
+    assert result["output"]
     assert "name" not in result["output"]["data"]
     assert result["output"]["errors"]
     assert result["output"]["errors"][0]["loc"] == ("metadata",)

@@ -53,7 +53,7 @@ class PluginValidation(TypedDict):
     """验证插件的结果与输出"""
 
     result: bool
-    output: PluginValidationOutput
+    output: PluginValidationOutput | None
     plugin: Plugin | None
 
 
