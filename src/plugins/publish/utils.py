@@ -265,8 +265,8 @@ async def resolve_conflict_pull_requests(
     for pull in pulls:
         issue_number = extract_issue_number_from_ref(pull.head.ref)
         if not issue_number:
-            logger.error(f"无法获取 {pull.title} 对应的议题")
-            return
+            logger.error(f"无法获取 {pull.title} 对应的议题编号")
+            continue
 
         logger.info(f"正在处理 {pull.title}")
         if pull.draft:
