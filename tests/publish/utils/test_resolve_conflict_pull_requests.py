@@ -65,6 +65,9 @@ async def test_resolve_conflict_pull_requests_adapter(
     # 测试 git 命令
     mock_subprocess_run.assert_has_calls(
         [
+            mocker.call(
+                ["git", "checkout", "publish/issue1"], check=True, capture_output=True
+            ),
             mocker.call(["git", "checkout", "master"], check=True, capture_output=True),
             mocker.call(
                 ["git", "switch", "-C", "publish/issue1"],
@@ -185,6 +188,9 @@ async def test_resolve_conflict_pull_requests_bot(
     # 测试 git 命令
     mock_subprocess_run.assert_has_calls(
         [
+            mocker.call(
+                ["git", "checkout", "publish/issue1"], check=True, capture_output=True
+            ),
             mocker.call(["git", "checkout", "master"], check=True, capture_output=True),
             mocker.call(
                 ["git", "switch", "-C", "publish/issue1"],
@@ -305,6 +311,9 @@ async def test_resolve_conflict_pull_requests_plugin(
     # 测试 git 命令
     mock_subprocess_run.assert_has_calls(
         [
+            mocker.call(
+                ["git", "checkout", "publish/issue1"], check=True, capture_output=True
+            ),
             mocker.call(["git", "checkout", "master"], check=True, capture_output=True),
             mocker.call(
                 ["git", "switch", "-C", "publish/issue1"],

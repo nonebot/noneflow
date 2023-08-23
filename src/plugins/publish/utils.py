@@ -275,6 +275,9 @@ async def resolve_conflict_pull_requests(
 
         publish_type = get_type_by_labels(pull.labels)
         if publish_type:
+            # 因为当前分支为触发处理冲突的分支，所以需要切换到每个拉取请求对应的分支
+            run_shell_command(["git", "checkout", pull.head.ref])
+            # 获取数据
             result = generate_validation_dict_from_file(publish_type)
             # 回到主分支
             run_shell_command(["git", "checkout", plugin_config.input_config.base])
