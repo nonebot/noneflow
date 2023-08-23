@@ -40,7 +40,13 @@ from .models import RepoInfo
 from .render import render_comment
 
 if TYPE_CHECKING:
-    from githubkit.rest.models import Issue, IssuePropLabelsItemsOneof1, Label
+    from githubkit.rest.models import (
+        Issue,
+        IssuePropLabelsItemsOneof1,
+        Label,
+        PullRequestPropLabelsItems,
+        PullRequestSimplePropLabelsItems,
+    )
     from githubkit.webhooks.models import Issue as WebhookIssue
     from githubkit.webhooks.models import (
         IssueCommentCreatedPropIssue,
@@ -71,7 +77,9 @@ def run_shell_command(command: list[str]):
 def get_type_by_labels(
     labels: list["Label"]
     | list["WebhookLabel"]
-    | list[Union[str, "IssuePropLabelsItemsOneof1"]],
+    | list[Union[str, "IssuePropLabelsItemsOneof1"]]
+    | list["PullRequestSimplePropLabelsItems"]
+    | list["PullRequestPropLabelsItems"],
 ) -> PublishType | None:
     """通过标签获取类型"""
     for label in labels:
@@ -208,6 +216,7 @@ def validate_info_from_issue(
                 "skip_plugin_test": plugin_config.skip_plugin_test,
                 "plugin_test_result": plugin_config.plugin_test_result,
                 "plugin_test_output": plugin_config.plugin_test_output,
+                "plugin_test_metadata": plugin_config.plugin_test_metadata,
                 "previous_data": data,
             }
             # 如果插件测试被跳过，则从议题中获取信息
@@ -247,46 +256,63 @@ def validate_info_from_issue(
 
 
 async def resolve_conflict_pull_requests(
-    bot: Bot,
-    repo_info: RepoInfo,
     pulls: list[PullRequestSimple] | list[PullRequest],
 ):
     """根据关联的议题提交来解决冲突
 
-    参考对应的议题重新更新对应分支
+    直接重新提交之前分支中的内容
     """
-    # 跳过插件测试，因为这个时候插件测试任务没有运行
-    plugin_config.skip_plugin_test = True
-
     for pull in pulls:
-        # 回到主分支
-        run_shell_command(["git", "checkout", plugin_config.input_config.base])
-        # 切换到对应分支
-        run_shell_command(["git", "switch", "-C", pull.head.ref])
-
         issue_number = extract_issue_number_from_ref(pull.head.ref)
         if not issue_number:
-            logger.error(f"无法获取 {pull.title} 对应的议题")
-            return
+            logger.error(f"无法获取 {pull.title} 对应的议题编号")
+            continue
 
         logger.info(f"正在处理 {pull.title}")
-        issue = (
-            await bot.rest.issues.async_get(
-                **repo_info.dict(), issue_number=issue_number
-            )
-        ).parsed_data
+        if pull.draft:
+            logger.info("拉取请求为草稿，跳过处理")
+            continue
 
-        publish_type = get_type_by_labels(issue.labels)
+        publish_type = get_type_by_labels(pull.labels)
         if publish_type:
-            result = validate_info_from_issue(issue, publish_type)
-            if result["valid"]:
-                update_file(result)
-                commit_and_push(result, pull.head.ref, issue_number)
-                logger.info("拉取请求更新完毕")
-            else:
-                comment = await render_comment(result)
-                logger.info(comment)
-                logger.info("发布没通过检查，已跳过")
+            result = generate_validation_dict_from_file(publish_type)
+            # 回到主分支
+            run_shell_command(["git", "checkout", plugin_config.input_config.base])
+            # 切换到对应分支
+            run_shell_command(["git", "switch", "-C", pull.head.ref])
+            update_file(result)
+            commit_and_push(result, pull.head.ref, issue_number)
+            logger.info("拉取请求更新完毕")
+
+
+def generate_validation_dict_from_file(publish_type: PublishType) -> ValidationDict:
+    """从文件中获取发布所需数据"""
+    match publish_type:
+        case PublishType.ADAPTER:
+            with plugin_config.input_config.adapter_path.open(
+                "r", encoding="utf-8"
+            ) as f:
+                data: list[dict[str, str]] = json.load(f)
+            raw_data = data[-1]
+        case PublishType.BOT:
+            with plugin_config.input_config.bot_path.open("r", encoding="utf-8") as f:
+                data: list[dict[str, str]] = json.load(f)
+            raw_data = data[-1]
+        case PublishType.PLUGIN:
+            with plugin_config.input_config.plugin_path.open(
+                "r", encoding="utf-8"
+            ) as f:
+                data: list[dict[str, str]] = json.load(f)
+            raw_data = data[-1]
+
+    return ValidationDict(
+        valid=True,
+        type=publish_type,
+        name=raw_data["name"],
+        author=raw_data["author"],
+        data=raw_data,
+        errors=[],
+    )
 
 
 def update_file(result: ValidationDict) -> None:

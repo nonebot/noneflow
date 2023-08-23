@@ -119,7 +119,7 @@ async def handle_pr_close(
             pull_requests = await get_pull_requests_by_label(
                 bot, repo_info, publish_type
             )
-            await resolve_conflict_pull_requests(bot, repo_info, pull_requests)
+            await resolve_conflict_pull_requests(pull_requests)
         else:
             logger.info("发布的拉取请求未合并，已跳过")
 
@@ -258,7 +258,7 @@ async def handle_auto_merge(
                 ["git", "fetch", "origin", plugin_config.input_config.base]
             )
             # 尝试处理冲突
-            await resolve_conflict_pull_requests(bot, repo_info, [pull_request])
+            await resolve_conflict_pull_requests([pull_request])
 
         await bot.rest.pulls.async_merge(
             **repo_info.dict(),
