@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Added
+
+- 使用 jinja 渲染评论
+
 ### Changed
 
 - 商店插件列表增加插件测试时的版本号
