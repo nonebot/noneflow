@@ -25,7 +25,7 @@ async def test_render_error_bot(app: App):
             {
                 "loc": ("homepage",),
                 "msg": "项目主页不可访问。",
-                "type": "value_error.homepage.unreachable",
+                "type": "value_error.homepage",
                 "ctx": {"status_code": 404},
                 "input": "https://www.baidu.com",
             },
@@ -92,7 +92,7 @@ async def test_render_error_adapter(app: App):
             {
                 "loc": ("homepage",),
                 "msg": "项目主页不可访问。",
-                "type": "value_error.homepage.unreachable",
+                "type": "value_error.homepage",
                 "ctx": {"status_code": 404},
                 "input": "https://www.baidu.com",
             },
@@ -158,7 +158,7 @@ async def test_render_error_plugin(app: App, mocker: MockFixture):
             {
                 "loc": ("homepage",),
                 "msg": "项目主页不可访问。",
-                "type": "value_error.homepage.unreachable",
+                "type": "value_error.homepage",
                 "ctx": {"status_code": 404},
                 "input": "https://www.baidu.com",
             },
@@ -399,4 +399,51 @@ async def test_render_unknown_error(app: App, mocker: MockFixture):
     assert (
         comment
         == """# 📃 商店发布检查结果\n\n> Plugin: 帮助\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n\n<pre><code><li>⚠️ tests &gt; 2 &gt; test: unknown error</li></code></pre>\n\n<details>\n<summary>详情</summary>\n<pre><code><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 通过。</li></code></pre>\n</details>\n\n---\n\n💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。\n💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。\n\n\n💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)\n<!-- NONEFLOW -->\n"""
+    )
+
+
+async def test_render_http_error(app: App, mocker: MockFixture):
+    """网络请求报错"""
+    from src.plugins.publish.config import plugin_config
+    from src.plugins.publish.render import render_comment
+    from src.utils.validation import PublishType, ValidationDict
+
+    mocker.patch.object(plugin_config, "plugin_test_result", True)
+    mocker.patch.object(plugin_config, "plugin_test_metadata", {})
+
+    result: ValidationDict = {
+        "valid": False,
+        "data": {
+            "author": "he0119",
+            "tags": [],
+            "is_official": False,
+        },
+        "errors": [
+            {
+                "loc": ("homepage",),
+                "msg": "项目主页不可访问。",
+                "type": "value_error.homepage",
+                "ctx": {"status_code": 404},
+                "input": "https://www.baidu.com",
+            },
+            {
+                "loc": ("homepage",),
+                "msg": "项目主页无法访问。",
+                "type": "value_error.homepage",
+                "ctx": {
+                    "status_code": -1,
+                    "msg": "Request URL is missing an 'http://' or 'https://' protocol.",
+                },
+                "input": "12312",
+            },
+        ],
+        "type": PublishType.PLUGIN,
+        "name": "帮助",
+        "author": "he0119",
+    }
+
+    comment = await render_comment(result)
+    assert (
+        comment
+        == """# 📃 商店发布检查结果\n\n> Plugin: 帮助\n\n**⚠️ 在发布检查过程中，我们发现以下问题：**\n\n<pre><code><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保你的项目主页可访问。</dt></li><li>⚠️ 项目 <a href="12312">主页</a> 访问出错。<details><summary>错误信息</summary>Request URL is missing an &#39;http://&#39; or &#39;https://&#39; protocol.</details></li></code></pre>\n\n<details>\n<summary>详情</summary>\n<pre><code><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 通过。</li></code></pre>\n</details>\n\n---\n\n💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。\n💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。\n\n\n💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)\n<!-- NONEFLOW -->\n"""
     )

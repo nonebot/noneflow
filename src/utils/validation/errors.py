@@ -3,11 +3,10 @@ from pydantic import PydanticValueError
 
 class HomepageError(PydanticValueError):
     code = "homepage"
+    msg_template = "项目主页无法访问。"
 
-
-class HomepageUnreachableError(HomepageError):
-    code = "homepage.unreachable"
-    msg_template = "项目主页不可访问。"
+    def __init__(self, status_code: int, msg: str) -> None:
+        super().__init__(status_code=status_code, msg=msg)
 
 
 class ModuleNameError(PydanticValueError):

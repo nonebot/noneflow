@@ -10,22 +10,22 @@ from .constants import STORE_ADAPTERS_URL
 def check_pypi(project_link: str) -> bool:
     """检查项目是否存在"""
     url = f"https://pypi.org/pypi/{project_link}/json"
-    status_code = check_url(url)
+    status_code, _ = check_url(url)
     return status_code == 200
 
 
 @cache
-def check_url(url: str) -> int | None:
+def check_url(url: str) -> tuple[int, str]:
     """检查网址是否可以访问
 
-    返回状态码，如果报错则返回 None
+    返回状态码，如果报错则返回 -1
     """
     logger.info(f"检查网址 {url}")
     try:
         r = httpx.get(url, follow_redirects=True)
-        return r.status_code
-    except:
-        pass
+        return r.status_code, ""
+    except Exception as e:
+        return -1, str(e)
 
 
 def get_adapters() -> set[str]:
