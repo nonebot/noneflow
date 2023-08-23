@@ -46,7 +46,28 @@ async def test_validate_plugin(
 
     result, new_plugin = await validate_plugin(plugin, "")
 
-    assert result["version"] == "0.3.0"
+    assert result == {
+        "time": "2023-08-23T09:22:14.836035+08:00",
+        "version": "0.3.0",
+        "inputs": {"config": ""},
+        "results": {
+            "load": True,
+            "metadata": True,
+            "validation": True,
+        },
+        "outputs": {
+            "load": "output",
+            "metadata": {
+                "name": "帮助",
+                "description": "获取插件帮助信息",
+                "usage": "获取插件列表\n/help\n获取插件树\n/help -t\n/help --tree\n获取某个插件的帮助\n/help 插件名\n获取某个插件的树\n/help --tree 插件名\n",
+                "type": "application",
+                "homepage": "https://nonebot.dev/",
+                "supported_adapters": None,
+            },
+            "validation": None,
+        },
+    }
     assert new_plugin == {
         "author": "author",
         "desc": "获取插件帮助信息",
