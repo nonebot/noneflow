@@ -81,7 +81,7 @@ async def test_auto_merge(app: App, mocker: MockerFixture) -> None:
                 check=True,
                 capture_output=True,
             ),
-        ],
+        ],  # type: ignore
         any_order=True,
     )
 
@@ -92,7 +92,6 @@ async def test_auto_merge_need_rebase(app: App, mocker: MockerFixture) -> None:
     需要 rebase 的情况
     """
     from src.plugins.publish import auto_merge_matcher
-    from src.plugins.publish.models import RepoInfo
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_resolve_conflict_pull_requests = mocker.patch(
@@ -168,9 +167,7 @@ async def test_auto_merge_need_rebase(app: App, mocker: MockerFixture) -> None:
         ],
         any_order=True,
     )
-    mock_resolve_conflict_pull_requests.assert_called_once_with(
-        bot, RepoInfo(owner="he0119", repo="action-test"), [mock_pull]
-    )
+    mock_resolve_conflict_pull_requests.assert_called_once_with([mock_pull])
 
 
 async def test_auto_merge_not_publish(app: App, mocker: MockerFixture) -> None:
