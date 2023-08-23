@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 商店插件列表增加插件测试时的版本号
 - 调整商店测试验证输出
+- 处理冲突时直接重新提交
 
 ## [2.7.3] - 2023-08-07
 
