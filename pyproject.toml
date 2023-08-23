@@ -45,7 +45,7 @@ exclude_also = [
 ]
 
 [tool.coverage.run]
-omit = ["utils/plugin_test.py"]
+omit = ["src/utils/plugin_test.py"]
 
 [tool.nonebot]
 adapters = [{ name = "GitHub", module_name = "nonebot.adapters.github" }]
