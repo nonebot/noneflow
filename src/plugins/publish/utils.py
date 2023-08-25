@@ -485,22 +485,37 @@ async def trigger_registry_update(
         return
 
     if publish_type == PublishType.PLUGIN:
-        with plugin_config.input_config.plugin_path.open() as f:
-            plugins = json.load(f)
-
-        if not plugins:
-            return
-
-        plugin = plugins[-1]
-        project_link = plugin["project_link"]
-        module_name = plugin["module_name"]
         config = PLUGIN_CONFIG_PATTERN.search(issue.body) if issue.body else ""
+        if plugin_config.skip_plugin_test:
+            # 重新从议题中获取数据
+            result = validate_info_from_issue(issue, publish_type)
+            if not result["valid"]:
+                logger.error("插件信息验证失败，跳过触发商店列表更新")
 
-        client_payload = {
-            "type": publish_type.value,
-            "key": f"{project_link}:{module_name}",
-            "config": config.group(1) if config else "",
-        }
+            client_payload = {
+                "type": publish_type.value,
+                "key": f"{result['data']['project_link']}:{result['data']['module_name']}",
+                "config": config.group(1) if config else "",
+                "data": result["data"],
+            }
+        else:
+            with plugin_config.input_config.plugin_path.open() as f:
+                plugins = json.load(f)
+
+            if not plugins:
+                logger.error("插件列表为空，跳过触发商店列表更新")
+                return
+
+            plugin = plugins[-1]
+            project_link = plugin["project_link"]
+            module_name = plugin["module_name"]
+            config = PLUGIN_CONFIG_PATTERN.search(issue.body) if issue.body else ""
+
+            client_payload = {
+                "type": publish_type.value,
+                "key": f"{project_link}:{module_name}",
+                "config": config.group(1) if config else "",
+            }
     else:
         client_payload = {"type": publish_type.value}
 
