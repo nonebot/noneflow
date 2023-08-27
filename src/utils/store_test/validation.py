@@ -89,9 +89,7 @@ async def validate_plugin(
         shutil.rmtree(test.path)
 
         # 当跳过测试的插件首次通过加载测试，则不再标记为跳过测试
-        should_skip = (
-            False if plugin_test_result and skip_plugin_test else skip_plugin_test
-        )
+        should_skip = False if plugin_test_result else skip_plugin_test
 
         raw_data = {
             "module_name": module_name,
