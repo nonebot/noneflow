@@ -209,3 +209,50 @@ async def test_trigger_registry_update_plugins_file_empty(
             PublishType.PLUGIN,
             mock_issue,
         )
+
+
+async def test_trigger_registry_update_validation_failed(
+    app: App, mocker: MockerFixture, mocked_api: MockRouter
+):
+    """验证失败时也不会触发更新"""
+    from src.plugins.publish.models import RepoInfo
+    from src.plugins.publish.utils import trigger_registry_update
+    from src.utils.validation import PublishType
+
+    mock_issue = mocker.MagicMock()
+    mock_issue.state = "open"
+    mock_issue.body = generate_issue_body_plugin_skip_test(
+        homepage="https://www.baidu.com"
+    )
+    mock_issue.number = 1
+
+    mock_comment = mocker.MagicMock()
+    mock_comment.body = "/skip"
+    mock_comment.author_association = "OWNER"
+
+    mock_list_comments_resp = mocker.MagicMock()
+    mock_list_comments_resp.parsed_data = [mock_comment]
+
+    async with app.test_api() as ctx:
+        adapter = get_adapter(Adapter)
+        bot = ctx.create_bot(
+            base=GitHubBot,
+            adapter=adapter,
+            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
+        )
+        bot = cast(GitHubBot, bot)
+
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "owner", "repo": "repo", "issue_number": 1},
+            mock_list_comments_resp,
+        )
+
+        await trigger_registry_update(
+            bot,
+            RepoInfo(owner="owner", repo="repo"),
+            PublishType.PLUGIN,
+            mock_issue,
+        )
+
+    assert mocked_api["homepage_failed"].called
