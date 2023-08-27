@@ -95,14 +95,11 @@ async def handle_pr_close(
             )
         logger.info(f"议题 #{related_issue_number} 已关闭")
 
-        # 插件测试是否被跳过
-        plugin_config.skip_plugin_test = await should_skip_plugin_test(
-            bot, repo_info, issue.number
-        )
         # 如果商店更新则触发 registry 更新
-        await trigger_registry_update(
-            bot, publish_type, event.payload.pull_request, issue
-        )
+        if event.payload.pull_request.merged:
+            await trigger_registry_update(bot, repo_info, publish_type, issue)
+        else:
+            logger.info("拉取请求未合并，跳过触发商店列表更新")
 
         try:
             run_shell_command(

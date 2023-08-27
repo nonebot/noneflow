@@ -1,3 +1,4 @@
+import json
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -82,9 +83,92 @@ async def test_validate_plugin(
         "type": "application",
         "valid": True,
         "version": "0.3.0",
+        "skip_plugin_test": False,
     }
 
     assert mocked_api["homepage"].called
 
     assert not temp_output_path.exists()
     assert not plugin_test_dir.exists()
+
+
+async def test_validate_plugin_with_data(
+    mocked_api: MockRouter, mocker: MockerFixture
+) -> None:
+    """验证插件信息，提供数据的情况
+
+    应该不会调用 API，直接使用传递进来的数据，并且 metadata 会缺少 usage（因为拉取请求关闭时无法获取，所以并没有传递过来）。
+    """
+    from src.utils.store_test.validation import StorePlugin, validate_plugin
+
+    mock_datetime = mocker.patch("src.utils.store_test.validation.datetime")
+    mock_datetime.now.return_value = datetime(
+        2023, 8, 23, 9, 22, 14, 836035, tzinfo=ZoneInfo("Asia/Shanghai")
+    )
+
+    mocked_plugin_test = mocker.patch("src.utils.store_test.validation.PluginTest")
+
+    plugin = StorePlugin(
+        module_name="module_name",
+        project_link="project_link",
+        author="author",
+        tags=[],
+        is_official=False,
+    )
+
+    data = {
+        "project_link": "project_link",
+        "module_name": "module_name",
+        "author": "author",
+        "name": "帮助",
+        "desc": "获取插件帮助信息",
+        "homepage": "https://nonebot.dev/",
+        "is_official": False,
+        "tags": [],
+        "type": "application",
+        "supported_adapters": None,
+    }
+
+    result, new_plugin = await validate_plugin(plugin, "", json.dumps(data))
+
+    assert result == {
+        "time": "2023-08-23T09:22:14.836035+08:00",
+        "version": None,
+        "inputs": {"config": ""},
+        "results": {
+            "load": True,
+            "metadata": True,
+            "validation": True,
+        },
+        "outputs": {
+            "load": "已跳过测试",
+            "metadata": {
+                "name": "帮助",
+                "description": "获取插件帮助信息",
+                "type": "application",
+                "homepage": "https://nonebot.dev/",
+                "supported_adapters": None,
+            },
+            "validation": None,
+        },
+    }
+    assert new_plugin == {
+        "project_link": "project_link",
+        "module_name": "module_name",
+        "tags": [],
+        "name": "帮助",
+        "desc": "获取插件帮助信息",
+        "author": "author",
+        "homepage": "https://nonebot.dev/",
+        "is_official": False,
+        "supported_adapters": None,
+        "type": "application",
+        "time": "2023-08-23T09:22:14.836035+08:00",
+        "valid": True,
+        "version": None,
+        "skip_plugin_test": True,
+    }
+
+    assert not mocked_api["homepage"].called
+
+    mocked_plugin_test.assert_not_called()

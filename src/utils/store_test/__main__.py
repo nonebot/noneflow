@@ -16,8 +16,9 @@ def main(limit: int, offset: int, force: bool, key: str | None):
 
     # 通过环境变量传递插件配置
     config = os.environ.get("PLUGIN_CONFIG")
+    data = os.environ.get("PLUGIN_DATA")
 
-    run(test.run(key, config))
+    run(test.run(key, config, data))
 
 
 if __name__ == "__main__":
