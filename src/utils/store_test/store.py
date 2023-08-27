@@ -84,6 +84,12 @@ class StoreTest:
             return True
         return False
 
+    def skip_plugin_test(self, key: str) -> bool:
+        """是否跳过插件测试"""
+        if key in self._previous_plugins:
+            return self._previous_plugins[key].get("skip_plugin_test", False)
+        return False
+
     async def run(
         self, key: str | None = None, config: str | None = None, data: str | None = None
     ):
@@ -92,9 +98,15 @@ class StoreTest:
         new_plugins: dict[str, Plugin] = {}
 
         if key:
+            if self.should_skip(key):
+                return
+
             print(f"正在测试插件 {key} ...")
             new_results[key], new_plugin = await validate_plugin(
-                self._store_plugins[key], config or "", data
+                self._store_plugins[key],
+                config or "",
+                self.skip_plugin_test(key),
+                data,
             )
             if new_plugin:
                 new_plugins[key] = new_plugin
@@ -121,7 +133,9 @@ class StoreTest:
                 print(f"{i}/{self._limit} 正在测试插件 {key} ...")
 
                 new_results[key], new_plugin = await validate_plugin(
-                    plugin, plugin_configs.get(key, "")
+                    plugin,
+                    plugin_configs.get(key, ""),
+                    self.skip_plugin_test(key),
                 )
                 if new_plugin:
                     new_plugins[key] = new_plugin
@@ -142,17 +156,6 @@ class StoreTest:
 
             # 更新插件列表
             if key in new_plugins:
-                # 需要针对跳过插件测试的情况进行特殊处理
-                # 当跳过测试的插件首次通过测试，则不再标记为跳过测试
-                if key in self._previous_plugins:
-                    skip_plugin_test = self._previous_plugins[key].get(
-                        "skip_plugin_test", False
-                    )
-                    new_plugins[key]["skip_plugin_test"] = (
-                        False
-                        if skip_plugin_test and new_plugins[key]["valid"]
-                        else skip_plugin_test
-                    )
                 plugins[key] = new_plugins[key]
             elif key in self._previous_plugins:
                 plugins[key] = self._previous_plugins[key]

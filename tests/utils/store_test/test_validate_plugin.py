@@ -45,7 +45,7 @@ async def test_validate_plugin(
         is_official=False,
     )
 
-    result, new_plugin = await validate_plugin(plugin, "")
+    result, new_plugin = await validate_plugin(plugin, "", False)
 
     assert result == {
         "time": "2023-08-23T09:22:14.836035+08:00",
@@ -129,7 +129,7 @@ async def test_validate_plugin_with_data(
         "supported_adapters": None,
     }
 
-    result, new_plugin = await validate_plugin(plugin, "", json.dumps(data))
+    result, new_plugin = await validate_plugin(plugin, "", False, json.dumps(data))
 
     assert result == {
         "time": "2023-08-23T09:22:14.836035+08:00",

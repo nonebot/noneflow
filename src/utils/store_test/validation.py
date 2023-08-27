@@ -33,7 +33,7 @@ def extract_version(path: Path) -> str | None:
 
 
 async def validate_plugin(
-    plugin: StorePlugin, config: str, data: str | None = None
+    plugin: StorePlugin, config: str, skip_plugin_test: bool, data: str | None = None
 ) -> tuple[TestResult, Plugin | None]:
     """验证插件
 
@@ -88,12 +88,17 @@ async def validate_plugin(
         # 测试并提取完数据后删除测试文件夹
         shutil.rmtree(test.path)
 
+        # 当跳过测试的插件首次通过加载测试，则不再标记为跳过测试
+        should_skip = (
+            False if plugin_test_result and skip_plugin_test else skip_plugin_test
+        )
+
         raw_data = {
             "module_name": module_name,
             "project_link": project_link,
             "author": plugin["author"],
             "tags": json.dumps(plugin["tags"]),
-            "skip_plugin_test": False,
+            "skip_plugin_test": should_skip,
             "plugin_test_result": plugin_test_result,
             "plugin_test_output": "",
             "plugin_test_metadata": metadata,
@@ -116,7 +121,7 @@ async def validate_plugin(
             new_plugin["valid"] = validation_info_result["valid"]
             new_plugin["version"] = version
             new_plugin["time"] = now_str
-            new_plugin["skip_plugin_test"] = False
+            new_plugin["skip_plugin_test"] = should_skip
 
         validation_result = validation_info_result["valid"]
         validation_output = (
