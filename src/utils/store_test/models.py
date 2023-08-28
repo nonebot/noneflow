@@ -26,7 +26,7 @@ class Plugin(TypedDict):
     tags: list[Any]
     is_official: bool
     type: str
-    supported_adapters: list[str]
+    supported_adapters: list[str] | None
     valid: bool
     time: str
     version: str | None
