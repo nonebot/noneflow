@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 修正字段名称为 skip_test
+
 ## [3.0.1] - 2023-08-28
 
 ### Fixed

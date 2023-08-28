@@ -87,7 +87,7 @@ class StoreTest:
     def skip_plugin_test(self, key: str) -> bool:
         """是否跳过插件测试"""
         if key in self._previous_plugins:
-            return self._previous_plugins[key].get("skip_plugin_test", False)
+            return self._previous_plugins[key].get("skip_test", False)
         return False
 
     async def run(

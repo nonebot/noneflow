@@ -83,7 +83,7 @@ async def test_validate_plugin(
         "type": "application",
         "valid": True,
         "version": "0.3.0",
-        "skip_plugin_test": False,
+        "skip_test": False,
     }
 
     assert mocked_api["homepage"].called
@@ -166,7 +166,7 @@ async def test_validate_plugin_with_data(
         "time": "2023-08-23T09:22:14.836035+08:00",
         "valid": True,
         "version": None,
-        "skip_plugin_test": True,
+        "skip_test": True,
     }
 
     assert not mocked_api["homepage"].called
@@ -179,7 +179,7 @@ async def test_validate_plugin_skip_test(
 ) -> None:
     """跳过插件测试的情况
 
-    如果插件之前是跳过测试的，如果插件测试成功，应将 skip_plugin_test 设置为 False。
+    如果插件之前是跳过测试的，如果插件测试成功，应将 skip_test 设置为 False。
     """
     from src.utils.store_test.validation import StorePlugin, validate_plugin
 
@@ -252,7 +252,7 @@ async def test_validate_plugin_skip_test(
         "type": "application",
         "valid": True,
         "version": "0.3.0",
-        "skip_plugin_test": False,
+        "skip_test": False,
     }
 
     assert mocked_api["homepage"].called
@@ -266,7 +266,7 @@ async def test_validate_plugin_skip_test_plugin_test_failed(
 ) -> None:
     """跳过插件测试的情况
 
-    如果插件之前是跳过测试的，如果插件测试失败，应不改变 skip_plugin_test 的值。
+    如果插件之前是跳过测试的，如果插件测试失败，应不改变 skip_test 的值。
     """
     from src.utils.store_test.validation import StorePlugin, validate_plugin
 
@@ -339,7 +339,7 @@ async def test_validate_plugin_skip_test_plugin_test_failed(
         "type": "application",
         "valid": True,
         "version": "0.3.0",
-        "skip_plugin_test": True,
+        "skip_test": True,
     }
 
     assert mocked_api["homepage"].called

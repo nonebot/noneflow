@@ -33,7 +33,7 @@ def extract_version(path: Path) -> str | None:
 
 
 async def validate_plugin(
-    plugin: StorePlugin, config: str, skip_plugin_test: bool, data: str | None = None
+    plugin: StorePlugin, config: str, skip_test: bool, data: str | None = None
 ) -> tuple[TestResult, Plugin | None]:
     """验证插件
 
@@ -51,7 +51,7 @@ async def validate_plugin(
 
     # 如果传递了 data 参数
     # 则直接使用 data 作为插件数据
-    # 并且将 skip_plugin_test 设置为 True
+    # 并且将 skip_test 设置为 True
     if data:
         # 无法获取到插件版本
         version = None
@@ -66,7 +66,7 @@ async def validate_plugin(
         new_plugin["valid"] = True
         new_plugin["version"] = version
         new_plugin["time"] = now_str
-        new_plugin["skip_plugin_test"] = True
+        new_plugin["skip_test"] = True
         new_plugin = cast(Plugin, new_plugin)
 
         metadata = {
@@ -95,7 +95,7 @@ async def validate_plugin(
         shutil.rmtree(test.path)
 
         # 当跳过测试的插件首次通过加载测试，则不再标记为跳过测试
-        should_skip = False if plugin_test_result else skip_plugin_test
+        should_skip = False if plugin_test_result else skip_test
 
         raw_data = {
             "module_name": module_name,
@@ -125,7 +125,7 @@ async def validate_plugin(
             new_plugin["valid"] = validation_info_result["valid"]
             new_plugin["version"] = version
             new_plugin["time"] = now_str
-            new_plugin["skip_plugin_test"] = should_skip
+            new_plugin["skip_test"] = should_skip
             new_plugin = cast(Plugin, new_plugin)
         else:
             new_plugin = None
