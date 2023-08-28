@@ -126,15 +126,29 @@ async def test_store_test(
     await test.run()
 
     mocked_validate_plugin.assert_called_once_with(
-        {
+        plugin={
             "module_name": "nonebot_plugin_treehelp",
             "project_link": "nonebot-plugin-treehelp",
             "author": "he0119",
             "tags": [],
             "is_official": False,
         },
-        "",
-        False,
+        config="",
+        skip_test=False,
+        previous_plugin={
+            "module_name": "nonebot_plugin_treehelp",
+            "project_link": "nonebot-plugin-treehelp",
+            "name": "帮助",
+            "desc": "获取插件帮助信息",
+            "author": "he0119",
+            "homepage": "https://github.com/he0119/nonebot-plugin-treehelp",
+            "tags": [],
+            "is_official": False,
+            "type": "application",
+            "supported_adapters": None,
+            "valid": True,
+            "time": "2023-06-22 12:10:18",
+        },
     )
     assert mocked_api["project_link_treehelp"].called
     assert mocked_api["project_link_datastore"].called
@@ -174,16 +188,30 @@ async def test_store_test_with_key(
     await test.run(key="nonebot-plugin-treehelp:nonebot_plugin_treehelp")
 
     mocked_validate_plugin.assert_called_once_with(
-        {
+        plugin={
             "module_name": "nonebot_plugin_treehelp",
             "project_link": "nonebot-plugin-treehelp",
             "author": "he0119",
             "tags": [],
             "is_official": False,
         },
-        "",
-        False,
-        None,
+        config="",
+        skip_test=False,
+        data=None,
+        previous_plugin={
+            "module_name": "nonebot_plugin_treehelp",
+            "project_link": "nonebot-plugin-treehelp",
+            "name": "帮助",
+            "desc": "获取插件帮助信息",
+            "author": "he0119",
+            "homepage": "https://github.com/he0119/nonebot-plugin-treehelp",
+            "tags": [],
+            "is_official": False,
+            "type": "application",
+            "supported_adapters": None,
+            "valid": True,
+            "time": "2023-06-22 12:10:18",
+        },
     )
     assert mocked_api["project_link_treehelp"].called
     assert not mocked_api["project_link_datastore"].called
@@ -218,16 +246,17 @@ async def test_store_test_with_key_not_in_previous(
     await test.run(key="nonebot-plugin-wordcloud:nonebot_plugin_wordcloud")
 
     mocked_validate_plugin.assert_called_once_with(
-        {
+        plugin={
             "module_name": "nonebot_plugin_wordcloud",
             "project_link": "nonebot-plugin-wordcloud",
             "author": "he0119",
             "tags": [],
             "is_official": False,
         },
-        "",
-        False,
-        None,
+        config="",
+        skip_test=False,
+        data=None,
+        previous_plugin=None,
     )
 
     # 不需要判断版本号

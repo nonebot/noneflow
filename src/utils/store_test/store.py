@@ -103,10 +103,11 @@ class StoreTest:
 
             print(f"正在测试插件 {key} ...")
             new_results[key], new_plugin = await validate_plugin(
-                self._store_plugins[key],
-                config or "",
-                self.skip_plugin_test(key),
-                data,
+                plugin=self._store_plugins[key],
+                config=config or "",
+                skip_test=self.skip_plugin_test(key),
+                data=data,
+                previous_plugin=self._previous_plugins.get(key),
             )
             if new_plugin:
                 new_plugins[key] = new_plugin
@@ -133,9 +134,10 @@ class StoreTest:
                 print(f"{i}/{self._limit} 正在测试插件 {key} ...")
 
                 new_results[key], new_plugin = await validate_plugin(
-                    plugin,
-                    plugin_configs.get(key, ""),
-                    self.skip_plugin_test(key),
+                    plugin=plugin,
+                    config=plugin_configs.get(key, ""),
+                    skip_test=self.skip_plugin_test(key),
+                    previous_plugin=self._previous_plugins.get(key),
                 )
                 if new_plugin:
                     new_plugins[key] = new_plugin
