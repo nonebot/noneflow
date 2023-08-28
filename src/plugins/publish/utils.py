@@ -486,6 +486,7 @@ async def trigger_registry_update(
         if plugin_config.skip_plugin_test:
             # 重新从议题中获取数据
             result = validate_info_from_issue(issue, publish_type)
+            logger.debug(f"插件信息验证结果: {result}")
             if not result["valid"]:
                 logger.error("插件信息验证失败，跳过触发商店列表更新")
                 return
