@@ -33,7 +33,11 @@ def extract_version(path: Path) -> str | None:
 
 
 async def validate_plugin(
-    plugin: StorePlugin, config: str, skip_test: bool, data: str | None = None
+    plugin: StorePlugin,
+    config: str,
+    skip_test: bool,
+    data: str | None = None,
+    previous_plugin: Plugin | None = None,
 ) -> tuple[TestResult, Plugin | None]:
     """验证插件
 
@@ -115,6 +119,12 @@ async def validate_plugin(
             raw_data["homepage"] = metadata.get("homepage")
             raw_data["type"] = metadata.get("type")
             raw_data["supported_adapters"] = metadata.get("supported_adapters")
+        elif skip_test and previous_plugin:
+            raw_data["name"] = previous_plugin.get("name")
+            raw_data["desc"] = previous_plugin.get("desc")
+            raw_data["homepage"] = previous_plugin.get("homepage")
+            raw_data["type"] = previous_plugin.get("type")
+            raw_data["supported_adapters"] = previous_plugin.get("supported_adapters")
 
         validation_info_result = validate_info(PublishType.PLUGIN, raw_data)
 

@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ### Fixed
 
 - 修正字段名称为 skip_test
+- 跳过测试的插件需要从之前的数据中提取验证所需数据
 
 ## [3.0.1] - 2023-08-28
 

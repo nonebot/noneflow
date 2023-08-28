@@ -118,7 +118,7 @@ async def test_store_test(
             time="2023-08-28T00:00:00.000000+08:00",
             is_official=True,
             valid=True,
-            skip_plugin_test=False,
+            skip_test=False,
         ),
     )
 
@@ -126,15 +126,29 @@ async def test_store_test(
     await test.run()
 
     mocked_validate_plugin.assert_called_once_with(
-        {
+        plugin={
             "module_name": "nonebot_plugin_treehelp",
             "project_link": "nonebot-plugin-treehelp",
             "author": "he0119",
             "tags": [],
             "is_official": False,
         },
-        "",
-        False,
+        config="",
+        skip_test=False,
+        previous_plugin={
+            "module_name": "nonebot_plugin_treehelp",
+            "project_link": "nonebot-plugin-treehelp",
+            "name": "帮助",
+            "desc": "获取插件帮助信息",
+            "author": "he0119",
+            "homepage": "https://github.com/he0119/nonebot-plugin-treehelp",
+            "tags": [],
+            "is_official": False,
+            "type": "application",
+            "supported_adapters": None,
+            "valid": True,
+            "time": "2023-06-22 12:10:18",
+        },
     )
     assert mocked_api["project_link_treehelp"].called
     assert mocked_api["project_link_datastore"].called
@@ -157,7 +171,7 @@ async def test_store_test(
     )
     assert (
         mocked_store_data["plugins"].read_text(encoding="utf8")
-        == '[{"module_name":"nonebot_plugin_datastore","project_link":"nonebot-plugin-datastore","name":"数据存储","desc":"NoneBot 数据存储插件","author":"he0119","homepage":"https://github.com/he0119/nonebot-plugin-datastore","tags":[],"is_official":false,"type":"library","supported_adapters":null,"valid":true,"time":"2023-06-22 11:58:18"},{"name":"帮助","module_name":"module_name","author":"author","version":"0.3.0","desc":"获取插件帮助信息","homepage":"https://nonebot.dev/","project_link":"project_link","tags":[],"supported_adapters":null,"type":"application","time":"2023-08-28T00:00:00.000000+08:00","is_official":true,"valid":true,"skip_plugin_test":false}]'
+        == '[{"module_name":"nonebot_plugin_datastore","project_link":"nonebot-plugin-datastore","name":"数据存储","desc":"NoneBot 数据存储插件","author":"he0119","homepage":"https://github.com/he0119/nonebot-plugin-datastore","tags":[],"is_official":false,"type":"library","supported_adapters":null,"valid":true,"time":"2023-06-22 11:58:18"},{"name":"帮助","module_name":"module_name","author":"author","version":"0.3.0","desc":"获取插件帮助信息","homepage":"https://nonebot.dev/","project_link":"project_link","tags":[],"supported_adapters":null,"type":"application","time":"2023-08-28T00:00:00.000000+08:00","is_official":true,"valid":true,"skip_test":false}]'
     )
 
 
@@ -174,16 +188,30 @@ async def test_store_test_with_key(
     await test.run(key="nonebot-plugin-treehelp:nonebot_plugin_treehelp")
 
     mocked_validate_plugin.assert_called_once_with(
-        {
+        plugin={
             "module_name": "nonebot_plugin_treehelp",
             "project_link": "nonebot-plugin-treehelp",
             "author": "he0119",
             "tags": [],
             "is_official": False,
         },
-        "",
-        False,
-        None,
+        config="",
+        skip_test=False,
+        data=None,
+        previous_plugin={
+            "module_name": "nonebot_plugin_treehelp",
+            "project_link": "nonebot-plugin-treehelp",
+            "name": "帮助",
+            "desc": "获取插件帮助信息",
+            "author": "he0119",
+            "homepage": "https://github.com/he0119/nonebot-plugin-treehelp",
+            "tags": [],
+            "is_official": False,
+            "type": "application",
+            "supported_adapters": None,
+            "valid": True,
+            "time": "2023-06-22 12:10:18",
+        },
     )
     assert mocked_api["project_link_treehelp"].called
     assert not mocked_api["project_link_datastore"].called
@@ -218,16 +246,17 @@ async def test_store_test_with_key_not_in_previous(
     await test.run(key="nonebot-plugin-wordcloud:nonebot_plugin_wordcloud")
 
     mocked_validate_plugin.assert_called_once_with(
-        {
+        plugin={
             "module_name": "nonebot_plugin_wordcloud",
             "project_link": "nonebot-plugin-wordcloud",
             "author": "he0119",
             "tags": [],
             "is_official": False,
         },
-        "",
-        False,
-        None,
+        config="",
+        skip_test=False,
+        data=None,
+        previous_plugin=None,
     )
 
     # 不需要判断版本号

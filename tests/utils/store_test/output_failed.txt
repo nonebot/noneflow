@@ -1,0 +1,16 @@
+RESULT=False
+OUTPUT<<EOF
+插件 nonebot-plugin-treehelp 的信息如下：
+     name         : nonebot-plugin-treehelp 
+     version      : 0.3.0                   
+     description  : 适用于 Nonebot2 的树形帮助插件    
+    
+    dependencies
+     - nonebot2 >=2.0.0,<3.0.0
+插件 nonebot-plugin-treehelp 依赖的插件如下：
+    
+插件 nonebot_plugin_treehelp 加载正常：
+    08-23 09:00:03 [SUCCESS] nonebot | NoneBot is initializing...
+    08-23 09:00:03 [INFO] nonebot | Current Env: prod
+    08-23 09:00:03 [SUCCESS] nonebot | Succeeded to load plugin "nonebot_plugin_treehelp"
+EOF
