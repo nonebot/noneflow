@@ -484,7 +484,13 @@ async def trigger_registry_update(
             bot, repo_info, issue.number
         )
         if plugin_config.skip_plugin_test:
-            # 重新从议题中获取数据
+            # 重新从议题中获取数据，并验证，防止中间有人修改了插件信息
+            # 因为此时已经将新插件的信息添加到插件列表中
+            # 直接将插件列表变成空列表，避免重新验证时出现重复报错
+            with plugin_config.input_config.plugin_path.open(
+                "w", encoding="utf-8"
+            ) as f:
+                json.dump([], f)
             result = validate_info_from_issue(issue, publish_type)
             logger.debug(f"插件信息验证结果: {result}")
             if not result["valid"]:
