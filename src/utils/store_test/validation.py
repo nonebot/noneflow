@@ -49,19 +49,25 @@ async def validate_plugin(
     module_name = plugin["module_name"]
     is_official = plugin["is_official"]
 
-    # 如果传递了 data 参数，则直接使用 data 作为插件数据
+    # 如果传递了 data 参数
+    # 则直接使用 data 作为插件数据
+    # 并且将 skip_plugin_test 设置为 True
     if data:
+        # 无法获取到插件版本
         version = None
-        validation_result = True
-        validation_output = None
+        # 因为跳过测试，测试结果无意义
         plugin_test_result = True
         plugin_test_output = "已跳过测试"
-
+        # 提供了 data 参数，所以验证默认通过
+        validation_result = True
+        validation_output = None
+        # 为插件数据添加上所需的信息
         new_plugin = json.loads(data)
         new_plugin["valid"] = True
         new_plugin["version"] = version
         new_plugin["time"] = now_str
         new_plugin["skip_plugin_test"] = True
+        new_plugin = cast(Plugin, new_plugin)
 
         metadata = {
             "name": new_plugin.get("name"),
@@ -112,23 +118,26 @@ async def validate_plugin(
 
         validation_info_result = validate_info(PublishType.PLUGIN, raw_data)
 
-        new_plugin = validation_info_result["data"]
-        if new_plugin:
+        if validation_info_result["valid"]:
+            new_plugin = validation_info_result["data"]
             # 插件验证过程中无法获取是否是官方插件，因此需要从原始数据中获取
             new_plugin["is_official"] = is_official
             new_plugin["valid"] = validation_info_result["valid"]
             new_plugin["version"] = version
             new_plugin["time"] = now_str
             new_plugin["skip_plugin_test"] = should_skip
+            new_plugin = cast(Plugin, new_plugin)
+        else:
+            new_plugin = None
 
         validation_result = validation_info_result["valid"]
         validation_output = (
-            {
+            None
+            if validation_info_result["valid"]
+            else {
                 "data": validation_info_result["data"],
                 "errors": validation_info_result["errors"],
             }
-            if not validation_info_result["valid"]
-            else None
         )
 
     result: TestResult = {
@@ -147,4 +156,4 @@ async def validate_plugin(
         },
     }
 
-    return result, cast(Plugin, new_plugin)
+    return result, new_plugin

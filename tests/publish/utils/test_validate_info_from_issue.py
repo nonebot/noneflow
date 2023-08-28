@@ -68,6 +68,7 @@ async def test_validate_info_from_issue_plugin_metadata(
     from src.plugins.publish.utils import validate_info_from_issue
     from src.utils.validation.models import PublishType
 
+    mocker.patch.object(plugin_config, "plugin_test_result", True)
     mocker.patch.object(
         plugin_config,
         "plugin_test_metadata",
