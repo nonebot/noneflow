@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [3.0.1] - 2023-08-28
+
+### Fixed
+
+- 支持发布跳过插件测试的插件
+
 ## [3.0.0] - 2023-08-23
 
 ### Added
@@ -313,7 +319,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/noneflow/compare/v3.0.0...HEAD
+[unreleased]: https://github.com/nonebot/noneflow/compare/v3.0.1...HEAD
+[3.0.1]: https://github.com/nonebot/noneflow/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/nonebot/noneflow/compare/v2.7.3...v3.0.0
 [2.7.3]: https://github.com/nonebot/noneflow/compare/v2.7.2...v2.7.3
 [2.7.2]: https://github.com/nonebot/noneflow/compare/v2.7.1...v2.7.2
