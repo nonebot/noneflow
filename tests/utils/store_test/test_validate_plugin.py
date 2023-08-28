@@ -278,7 +278,7 @@ async def test_validate_plugin_skip_test_plugin_test_failed(
     plugin_test_dir = tmp_path / "plugin_test"
     plugin_test_dir.mkdir()
 
-    output_path = Path(__file__).parent / "output.txt"
+    output_path = Path(__file__).parent / "output_failed.txt"
     temp_output_path = plugin_test_dir / "output.txt"
     shutil.copyfile(output_path, temp_output_path)
 
@@ -301,7 +301,27 @@ async def test_validate_plugin_skip_test_plugin_test_failed(
         is_official=False,
     )
 
-    result, new_plugin = await validate_plugin(plugin, "", True)
+    result, new_plugin = await validate_plugin(
+        plugin,
+        "",
+        True,
+        previous_plugin={
+            "module_name": "nonebot_plugin_treehelp",
+            "project_link": "nonebot-plugin-treehelp",
+            "name": "帮助",
+            "desc": "获取插件帮助信息",
+            "author": "he0119",
+            "homepage": "https://nonebot.dev/",
+            "tags": [],
+            "is_official": False,
+            "type": "application",
+            "supported_adapters": None,
+            "valid": True,
+            "time": "2023-06-22 12:10:18",
+            "version": "0.3.0",
+            "skip_test": True,
+        },
+    )
 
     assert result == {
         "time": "2023-08-23T09:22:14.836035+08:00",
@@ -309,19 +329,12 @@ async def test_validate_plugin_skip_test_plugin_test_failed(
         "inputs": {"config": ""},
         "results": {
             "load": False,
-            "metadata": True,
+            "metadata": False,
             "validation": True,
         },
         "outputs": {
             "load": "output",
-            "metadata": {
-                "name": "帮助",
-                "description": "获取插件帮助信息",
-                "usage": "获取插件列表\n/help\n获取插件树\n/help -t\n/help --tree\n获取某个插件的帮助\n/help 插件名\n获取某个插件的树\n/help --tree 插件名\n",
-                "type": "application",
-                "homepage": "https://nonebot.dev/",
-                "supported_adapters": None,
-            },
+            "metadata": None,
             "validation": None,
         },
     }

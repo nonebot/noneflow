@@ -30,7 +30,7 @@ class Plugin(TypedDict):
     valid: bool
     time: str
     version: str | None
-    skip_plugin_test: bool
+    skip_test: bool
 
 
 class Metadata(TypedDict):

@@ -118,7 +118,7 @@ async def test_store_test(
             time="2023-08-28T00:00:00.000000+08:00",
             is_official=True,
             valid=True,
-            skip_plugin_test=False,
+            skip_test=False,
         ),
     )
 
@@ -171,7 +171,7 @@ async def test_store_test(
     )
     assert (
         mocked_store_data["plugins"].read_text(encoding="utf8")
-        == '[{"module_name":"nonebot_plugin_datastore","project_link":"nonebot-plugin-datastore","name":"数据存储","desc":"NoneBot 数据存储插件","author":"he0119","homepage":"https://github.com/he0119/nonebot-plugin-datastore","tags":[],"is_official":false,"type":"library","supported_adapters":null,"valid":true,"time":"2023-06-22 11:58:18"},{"name":"帮助","module_name":"module_name","author":"author","version":"0.3.0","desc":"获取插件帮助信息","homepage":"https://nonebot.dev/","project_link":"project_link","tags":[],"supported_adapters":null,"type":"application","time":"2023-08-28T00:00:00.000000+08:00","is_official":true,"valid":true,"skip_plugin_test":false}]'
+        == '[{"module_name":"nonebot_plugin_datastore","project_link":"nonebot-plugin-datastore","name":"数据存储","desc":"NoneBot 数据存储插件","author":"he0119","homepage":"https://github.com/he0119/nonebot-plugin-datastore","tags":[],"is_official":false,"type":"library","supported_adapters":null,"valid":true,"time":"2023-06-22 11:58:18"},{"name":"帮助","module_name":"module_name","author":"author","version":"0.3.0","desc":"获取插件帮助信息","homepage":"https://nonebot.dev/","project_link":"project_link","tags":[],"supported_adapters":null,"type":"application","time":"2023-08-28T00:00:00.000000+08:00","is_official":true,"valid":true,"skip_test":false}]'
     )
 
 
