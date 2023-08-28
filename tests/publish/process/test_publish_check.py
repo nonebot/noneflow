@@ -908,7 +908,7 @@ async def test_skip_plugin_check(
                 "owner": "he0119",
                 "repo": "action-test",
                 "issue_number": 70,
-                "body": '### 插件名称\n\n### 插件描述\n\n### 插件项目仓库/主页链接\n\n### 插件类型\n\n### 插件支持的适配器\n\n### PyPI 项目名\n\nproject_link\n\n### 插件 import 包名\n\nmodule_name\n\n### 标签\n\n[{"label": "test", "color": "#ffffff"}]',
+                "body": '### 插件名称\n\n### 插件描述\n\n### 插件项目仓库/主页链接\n\n### 插件类型\n\n### 插件支持的适配器\n\n### PyPI 项目名\n\nproject_link\n\n### 插件 import 包名\n\nmodule_name\n\n### 标签\n\n[{"label": "test", "color": "#ffffff"}]\n\n### 插件配置项\n\n```dotenv\nlog_level=DEBUG\n```',
             },
             True,
         )

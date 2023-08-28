@@ -474,33 +474,46 @@ async def ensure_issue_content(
 
 
 async def trigger_registry_update(
-    bot: GitHubBot,
-    publish_type: PublishType,
-    pull: "PullRequestClosedPropPullRequest",
-    issue: "Issue",
+    bot: GitHubBot, repo_info: RepoInfo, publish_type: PublishType, issue: "Issue"
 ):
     """通过 repository_dispatch 触发商店列表更新"""
-    if not pull.merged:
-        logger.info("拉取请求未合并，跳过触发商店列表更新")
-        return
-
     if publish_type == PublishType.PLUGIN:
-        with plugin_config.input_config.plugin_path.open() as f:
-            plugins = json.load(f)
-
-        if not plugins:
-            return
-
-        plugin = plugins[-1]
-        project_link = plugin["project_link"]
-        module_name = plugin["module_name"]
         config = PLUGIN_CONFIG_PATTERN.search(issue.body) if issue.body else ""
+        # 插件测试是否被跳过
+        plugin_config.skip_plugin_test = await should_skip_plugin_test(
+            bot, repo_info, issue.number
+        )
+        if plugin_config.skip_plugin_test:
+            # 重新从议题中获取数据
+            result = validate_info_from_issue(issue, publish_type)
+            if not result["valid"]:
+                logger.error("插件信息验证失败，跳过触发商店列表更新")
+                return
 
-        client_payload = {
-            "type": publish_type.value,
-            "key": f"{project_link}:{module_name}",
-            "config": config.group(1) if config else "",
-        }
+            client_payload = {
+                "type": publish_type.value,
+                "key": f"{result['data']['project_link']}:{result['data']['module_name']}",
+                "config": config.group(1) if config else "",
+                "data": json.dumps(result["data"]),
+            }
+        else:
+            with plugin_config.input_config.plugin_path.open() as f:
+                plugins = json.load(f)
+
+            if not plugins:
+                logger.error("插件列表为空，跳过触发商店列表更新")
+                return
+
+            plugin = plugins[-1]
+            project_link = plugin["project_link"]
+            module_name = plugin["module_name"]
+            config = PLUGIN_CONFIG_PATTERN.search(issue.body) if issue.body else ""
+
+            client_payload = {
+                "type": publish_type.value,
+                "key": f"{project_link}:{module_name}",
+                "config": config.group(1) if config else "",
+            }
     else:
         client_payload = {"type": publish_type.value}
 

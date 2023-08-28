@@ -103,7 +103,7 @@ def validate_info(
             )
 
     return {
-        "valid": errors is None,
+        "valid": errors_with_input == [],
         "data": data,
         "errors": errors_with_input,
         # 方便插件使用的数据

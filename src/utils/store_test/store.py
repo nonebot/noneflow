@@ -84,11 +84,32 @@ class StoreTest:
             return True
         return False
 
-    async def run(self, key: str | None = None, config: str | None = None):
+    def skip_plugin_test(self, key: str) -> bool:
+        """是否跳过插件测试"""
+        if key in self._previous_plugins:
+            return self._previous_plugins[key].get("skip_plugin_test", False)
+        return False
+
+    async def run(
+        self, key: str | None = None, config: str | None = None, data: str | None = None
+    ):
         """测试商店内插件情况"""
+        new_results: dict[str, TestResult] = {}
+        new_plugins: dict[str, Plugin] = {}
+
         if key:
-            test_plugins = [(key, self._store_plugins[key])]
-            plugin_configs = {key: config or ""}
+            if self.should_skip(key):
+                return
+
+            print(f"正在测试插件 {key} ...")
+            new_results[key], new_plugin = await validate_plugin(
+                self._store_plugins[key],
+                config or "",
+                self.skip_plugin_test(key),
+                data,
+            )
+            if new_plugin:
+                new_plugins[key] = new_plugin
         else:
             test_plugins = list(self._store_plugins.items())[self._offset :]
             plugin_configs = {
@@ -98,29 +119,28 @@ class StoreTest:
                 for key, _ in test_plugins
             }
 
-        new_results: dict[str, TestResult] = {}
-        new_plugins: dict[str, Plugin] = {}
+            i = 1
+            for key, plugin in test_plugins:
+                if i > self._limit:
+                    print(f"已达到测试上限 {self._limit}，测试停止")
+                    break
+                if key.startswith("git+http"):
+                    continue
 
-        i = 1
-        for key, plugin in test_plugins:
-            if i > self._limit:
-                print(f"已达到测试上限 {self._limit}，测试停止")
-                break
-            if key.startswith("git+http"):
-                continue
+                if self.should_skip(key):
+                    continue
 
-            if self.should_skip(key):
-                continue
+                print(f"{i}/{self._limit} 正在测试插件 {key} ...")
 
-            print(f"{i}/{self._limit} 正在测试插件 {key} ...")
+                new_results[key], new_plugin = await validate_plugin(
+                    plugin,
+                    plugin_configs.get(key, ""),
+                    self.skip_plugin_test(key),
+                )
+                if new_plugin:
+                    new_plugins[key] = new_plugin
 
-            new_results[key], new_plugin = await validate_plugin(
-                plugin, plugin_configs.get(key, "")
-            )
-            if new_plugin:
-                new_plugins[key] = new_plugin
-
-            i += 1
+                i += 1
 
         results: dict[str, TestResult] = {}
         plugins: dict[str, Plugin] = {}

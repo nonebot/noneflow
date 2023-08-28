@@ -117,6 +117,36 @@ def mocked_api(respx_mock: MockRouter):
         "https://pypi.org/pypi/project_link/json", name="project_link"
     ).respond()
     respx_mock.get(
+        "https://pypi.org/pypi/nonebot-plugin-treehelp/json",
+        name="project_link_treehelp",
+    ).respond(
+        json={
+            "info": {
+                "version": "0.3.1",
+            }
+        }
+    )
+    respx_mock.get(
+        "https://pypi.org/pypi/nonebot-plugin-datastore/json",
+        name="project_link_datastore",
+    ).respond(
+        json={
+            "info": {
+                "version": "1.0.0",
+            }
+        }
+    )
+    respx_mock.get(
+        "https://pypi.org/pypi/nonebot-plugin-wordcloud/json",
+        name="project_link_wordcloud",
+    ).respond(
+        json={
+            "info": {
+                "version": "0.5.0",
+            }
+        }
+    )
+    respx_mock.get(
         "https://pypi.org/pypi/project_link1/json", name="project_link1"
     ).respond()
     respx_mock.get(
