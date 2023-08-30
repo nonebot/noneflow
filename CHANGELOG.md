@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 翻译 Pydantic 验证错误信息
 
+### Fixed
+
+- 修复支持的适配器字段验证信息错误的问题
+
 ## [3.0.2] - 2023-08-28
 
 ### Fixed
