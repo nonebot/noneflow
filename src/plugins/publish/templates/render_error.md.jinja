@@ -35,6 +35,8 @@ PyPI 项目名 {{ error.input }} 不符合规范。<dt>请确保项目名正确�
 {{ loc|loc_to_name }}: 格式错误。<dt>请确保其为字典。</dt>
 {%- elif type == "type_error.list" %}
 {{ loc|loc_to_name }}: 格式错误。<dt>请确保其为列表。</dt>
+{%- elif type == "type_error.set" %}
+{{ loc|loc_to_name }}: 格式错误。<dt>请确保其为集合。</dt>
 {%- elif type == "value_error.json" %}
 {{ loc|loc_to_name }}: 解码失败。<dt>请确保其为 JSON 格式。</dt>
 {%- elif type == "value_error.any_str.max_length" %}

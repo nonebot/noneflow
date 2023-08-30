@@ -4,7 +4,7 @@ from typing import Any, cast
 
 from pydantic import validate_model
 
-from .constants import CUSTOM_MESSAGES
+from .constants import CUSTOM_MESSAGES, VALIDATION_CONTEXT
 from .models import AdapterPublishInfo, BotPublishInfo, PluginPublishInfo, PublishInfo
 from .models import PublishType as PublishType
 from .models import Tag
@@ -25,6 +25,14 @@ def validate_info(
     if publish_type not in validation_model_map:
         raise ValueError("⚠️ 未知的发布类型。")  # pragma: no cover
 
+    # 如果升级至 pydantic 2 后，可以使用 validation-context
+    # https://docs.pydantic.dev/latest/usage/validators/#validation-context
+    validation_context = {
+        "previous_data": raw_data.get("previous_data"),
+        "skip_plugin_test": raw_data.get("skip_plugin_test"),
+    }
+    VALIDATION_CONTEXT.set(validation_context)
+
     data, _, errors = validate_model(validation_model_map[publish_type], raw_data)
 
     # tags 会被转成 list[Tag]，需要转成 dict
@@ -37,11 +45,6 @@ def validate_info(
             }
             for tag in tags
         ]
-
-    # 这个字段仅用于判断是否重复
-    # 如果升级至 pydantic 2 后，可以使用 validation-context
-    # https://docs.pydantic.dev/latest/usage/validators/#validation-context
-    data.pop("previous_data", None)
 
     errors_with_input = []
     if errors:

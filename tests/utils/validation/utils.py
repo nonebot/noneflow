@@ -59,7 +59,7 @@ def generate_plugin_data(
     desc: str | None = "desc",
     homepage: str | None = "https://nonebot.dev",
     type: str | None = "application",
-    supported_adapters: list[str] | None = None,
+    supported_adapters: Any = None,
     skip_test: bool | None = False,
     plugin_test_result: bool | None = True,
     plugin_test_output: str | None = "plugin_test_output",
@@ -75,10 +75,8 @@ def generate_plugin_data(
             "desc": desc,
             "homepage": homepage,
             "type": type,
-            "supported_adapters": json.dumps(supported_adapters)
-            if supported_adapters is not None
-            else None,
-            "skip_test": skip_test,
+            "supported_adapters": supported_adapters,
+            "skip_plugin_test": skip_test,
             "plugin_test_result": plugin_test_result,
             "plugin_test_output": plugin_test_output,
             "plugin_test_metadata": {},

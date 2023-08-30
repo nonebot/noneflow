@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, TypedDict
 
 from pydantic import BaseModel, Field, root_validator, validator
 from pydantic.color import Color
-from pydantic.errors import JsonError, ListError
+from pydantic.errors import JsonError, SetError
 
 if TYPE_CHECKING:
     from pydantic.error_wrappers import ErrorDict as PydanticErrorDict
@@ -19,6 +19,7 @@ from .constants import (
     PLUGIN_VALID_TYPE,
     PYPI_PACKAGE_NAME_PATTERN,
     PYTHON_MODULE_NAME_REGEX,
+    VALIDATION_CONTEXT,
 )
 from .errors import (
     DuplicationError,
@@ -56,8 +57,6 @@ class PyPIMixin(BaseModel):
     module_name: str
     project_link: str
 
-    previous_data: list[dict[str, Any]]
-
     @validator("module_name", pre=True)
     def module_name_validator(cls, v: str) -> str:
         if not PYTHON_MODULE_NAME_REGEX.match(v):
@@ -78,7 +77,7 @@ class PyPIMixin(BaseModel):
         module_name = values.get("module_name")
         project_link = values.get("project_link")
 
-        data = values.get("previous_data")
+        data = VALIDATION_CONTEXT.get().get("previous_data")
         if data is None:
             raise ValueError("未获取到数据列表")
 
@@ -155,8 +154,9 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     def supported_adapters_validator(
         cls, v: str | list[str] | None
     ) -> list[str] | None:
+        skip_plugin_test = VALIDATION_CONTEXT.get().get("skip_plugin_test")
         # 如果是从 issue 中获取的数据，需要先解码
-        if isinstance(v, str):
+        if skip_plugin_test and isinstance(v, str):
             try:
                 v = json.loads(v)
             except json.JSONDecodeError:
@@ -166,8 +166,8 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
         if v is None:
             return None
 
-        if not isinstance(v, list):
-            raise ListError()
+        if not isinstance(v, (list, set)):
+            raise SetError()
 
         supported_adapters = {resolve_adapter_name(x) for x in v}
         store_adapters = get_adapters()
