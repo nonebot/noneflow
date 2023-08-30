@@ -4,11 +4,12 @@ from typing import Any, cast
 
 from pydantic import validate_model
 
+from .constants import CUSTOM_MESSAGES
 from .models import AdapterPublishInfo, BotPublishInfo, PluginPublishInfo, PublishInfo
 from .models import PublishType as PublishType
 from .models import Tag
 from .models import ValidationDict as ValidationDict
-from .utils import color_to_hex
+from .utils import color_to_hex, convert_errors
 
 validation_model_map = {
     PublishType.BOT: BotPublishInfo,
@@ -44,7 +45,7 @@ def validate_info(
 
     errors_with_input = []
     if errors:
-        for error in errors.errors():
+        for error in convert_errors(errors, CUSTOM_MESSAGES):
             error = cast(dict[str, Any], error)
             match error["loc"]:
                 case (name,) if isinstance(name, str):

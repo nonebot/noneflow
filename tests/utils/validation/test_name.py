@@ -82,6 +82,7 @@ async def test_name_too_long(mocked_api: MockRouter) -> None:
     assert result["errors"]
     assert result["errors"][0]["loc"] == ("name",)
     assert result["errors"][0]["type"] == "value_error.any_str.max_length"
+    assert result["errors"][0]["msg"] == "字符串长度不能超过 50 个字符"
 
     assert mocked_api["project_link"].called
     assert mocked_api["homepage"].called

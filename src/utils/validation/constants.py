@@ -19,3 +19,14 @@ PLUGIN_VALID_TYPE = ["application", "library"]
 
 # NoneBot Store
 STORE_ADAPTERS_URL = "https://nonebot.dev/adapters.json"
+
+# Pydantic 错误信息翻译
+CUSTOM_MESSAGES = {
+    "type_error.dict": "值不是合法的字典",
+    "type_error.list": "值不是合法的列表",
+    "value_error.json": "JSON 格式不合法",
+    "value_error.missing": "字段不存在",
+    "value_error.color": "颜色格式不正确",
+    "value_error.any_str.max_length": "字符串长度不能超过 {limit_value} 个字符",
+    "value_error.list.max_items": "列表长度不能超过 {limit_value} 个元素",
+}

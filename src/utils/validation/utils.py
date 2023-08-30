@@ -1,10 +1,15 @@
 from functools import cache
+from typing import TYPE_CHECKING
 
 import httpx
 from nonebot import logger
+from pydantic import ValidationError
 from pydantic.color import Color, float_to_255
 
 from .constants import STORE_ADAPTERS_URL
+
+if TYPE_CHECKING:
+    from pydantic.error_wrappers import ErrorDict
 
 
 def check_pypi(project_link: str) -> bool:
@@ -49,3 +54,17 @@ def color_to_hex(color: Color) -> str:
     values = [float_to_255(c) for c in color._rgba[:3]]
     hex = "".join(f"{v:02x}" for v in values)
     return f"#{hex}"
+
+
+def convert_errors(
+    e: ValidationError, custom_messages: dict[str, str]
+) -> list["ErrorDict"]:
+    """翻译 Pydantic 错误信息"""
+    new_errors: list["ErrorDict"] = []
+    for error in e.errors():
+        custom_message = custom_messages.get(error["type"])
+        if custom_message:
+            ctx = error.get("ctx")
+            error["msg"] = custom_message.format(**ctx) if ctx else custom_message
+        new_errors.append(error)
+    return new_errors
