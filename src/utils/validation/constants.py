@@ -24,6 +24,7 @@ STORE_ADAPTERS_URL = "https://nonebot.dev/adapters.json"
 CUSTOM_MESSAGES = {
     "type_error.dict": "值不是合法的字典",
     "type_error.list": "值不是合法的列表",
+    "type_error.none.not_allowed": "值不能为 None",
     "value_error.json": "JSON 格式不合法",
     "value_error.missing": "字段不存在",
     "value_error.color": "颜色格式不正确",
