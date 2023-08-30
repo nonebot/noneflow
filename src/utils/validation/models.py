@@ -80,7 +80,7 @@ class PyPIMixin(BaseModel):
 
         data = values.get("previous_data")
         if data is None:
-            raise ValueError("未获取到数据列表。")
+            raise ValueError("未获取到数据列表")
 
         if (
             module_name
