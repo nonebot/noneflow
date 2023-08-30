@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [3.0.3] - 2023-08-30
+
 ### Added
 
 - 翻译 Pydantic 验证错误信息
@@ -334,7 +336,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/noneflow/compare/v3.0.2...HEAD
+[unreleased]: https://github.com/nonebot/noneflow/compare/v3.0.3...HEAD
+[3.0.3]: https://github.com/nonebot/noneflow/compare/v3.0.2...v3.0.3
 [3.0.2]: https://github.com/nonebot/noneflow/compare/v3.0.1...v3.0.2
 [3.0.1]: https://github.com/nonebot/noneflow/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/nonebot/noneflow/compare/v2.7.3...v3.0.0
