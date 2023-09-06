@@ -12,7 +12,7 @@ from src.utils.plugin_test import PluginTest, strip_ansi
 from src.utils.validation import PublishType, validate_info
 
 from .models import Metadata, Plugin, StorePlugin, TestResult
-from .utils import get_upload_time
+from .utils import get_latest_version, get_upload_time
 
 
 def extract_metadata(path: Path) -> Metadata | None:
@@ -54,14 +54,15 @@ async def validate_plugin(
     project_link = plugin["project_link"]
     module_name = plugin["module_name"]
     is_official = plugin["is_official"]
-    # 获取插件上传时间
-    upload_time_str = get_upload_time(project_link)
+    # 从 PyPI 获取信息
+    pypi_version = get_latest_version(project_link)
+    pypi_time = get_upload_time(project_link)
     # 如果传递了 data 参数
     # 则直接使用 data 作为插件数据
     # 并且将 skip_test 设置为 True
     if data:
-        # 无法获取到插件版本
-        version = None
+        # 跳过测试时无法获取到测试的版本
+        test_version = None
         # 因为跳过测试，测试结果无意义
         plugin_test_result = True
         plugin_test_output = "已跳过测试"
@@ -71,8 +72,8 @@ async def validate_plugin(
         # 为插件数据添加上所需的信息
         new_plugin = json.loads(data)
         new_plugin["valid"] = True
-        new_plugin["version"] = version
-        new_plugin["time"] = upload_time_str or now_time_str
+        new_plugin["version"] = pypi_version
+        new_plugin["time"] = pypi_time
         new_plugin["skip_test"] = True
         new_plugin = cast(Plugin, new_plugin)
 
@@ -96,7 +97,7 @@ async def validate_plugin(
         plugin_test_result, plugin_test_output = await test.run()
 
         metadata = extract_metadata(test.path)
-        version = extract_version(test.path)
+        test_version = extract_version(test.path)
 
         # 测试并提取完数据后删除测试文件夹
         shutil.rmtree(test.path)
@@ -136,8 +137,9 @@ async def validate_plugin(
             # 插件验证过程中无法获取是否是官方插件，因此需要从原始数据中获取
             new_plugin["is_official"] = is_official
             new_plugin["valid"] = validation_info_result["valid"]
-            new_plugin["version"] = version
-            new_plugin["time"] = upload_time_str or now_time_str
+            # 优先使用测试中获取的版本号
+            new_plugin["version"] = test_version or pypi_version
+            new_plugin["time"] = pypi_time
             new_plugin["skip_test"] = should_skip
             new_plugin = cast(Plugin, new_plugin)
         else:
@@ -155,7 +157,7 @@ async def validate_plugin(
 
     result: TestResult = {
         "time": now_time_str,
-        "version": version,
+        "version": test_version,
         "results": {
             "validation": validation_result,
             "load": plugin_test_result,
