@@ -48,6 +48,8 @@ async def validate_plugin(
 
     如果插件验证失败，返回的插件数据为 None
     """
+    # 当前时间
+    now_time_str = datetime.now(ZoneInfo("Asia/Shanghai")).isoformat()
     # 需要从商店插件数据中获取的信息
     project_link = plugin["project_link"]
     module_name = plugin["module_name"]
@@ -70,7 +72,7 @@ async def validate_plugin(
         new_plugin = json.loads(data)
         new_plugin["valid"] = True
         new_plugin["version"] = version
-        new_plugin["time"] = upload_time_str
+        new_plugin["time"] = upload_time_str or now_time_str
         new_plugin["skip_test"] = True
         new_plugin = cast(Plugin, new_plugin)
 
@@ -135,7 +137,7 @@ async def validate_plugin(
             new_plugin["is_official"] = is_official
             new_plugin["valid"] = validation_info_result["valid"]
             new_plugin["version"] = version
-            new_plugin["time"] = upload_time_str
+            new_plugin["time"] = upload_time_str or now_time_str
             new_plugin["skip_test"] = should_skip
             new_plugin = cast(Plugin, new_plugin)
         else:
@@ -152,7 +154,7 @@ async def validate_plugin(
         )
 
     result: TestResult = {
-        "time": datetime.now(ZoneInfo("Asia/Shanghai")).isoformat(),
+        "time": now_time_str,
         "version": version,
         "results": {
             "validation": validation_result,

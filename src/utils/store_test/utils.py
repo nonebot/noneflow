@@ -1,9 +1,7 @@
 import json
-from datetime import datetime
 from functools import cache
 from pathlib import Path
 from typing import Any
-from zoneinfo import ZoneInfo
 
 import httpx
 
@@ -44,9 +42,8 @@ def get_latest_version(project_link: str) -> str | None:
         return data["info"]["version"]
 
 
-def get_upload_time(project_link: str) -> str:
+def get_upload_time(project_link: str) -> str | None:
     """获取插件的上传时间"""
     if data := get_pypi_data(project_link):
         if len(data["urls"]) != 0:
             return data["urls"][0]["upload_time_iso_8601"]
-    return datetime.now(ZoneInfo("Asia/Shanghai")).isoformat()
