@@ -25,8 +25,8 @@ class Plugin(TypedDict):
     type: str
     supported_adapters: list[str] | None
     valid: bool
-    time: str | None
-    version: str | None
+    time: str
+    version: str
     skip_test: bool
 
 
