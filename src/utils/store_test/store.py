@@ -1,5 +1,3 @@
-import httpx
-
 from .constants import (
     ADAPTERS_PATH,
     BOTS_PATH,
@@ -15,7 +13,7 @@ from .constants import (
     STORE_PLUGINS_PATH,
 )
 from .models import Plugin, StorePlugin, TestResult
-from .utils import dump_json, load_json
+from .utils import dump_json, get_latest_version, load_json
 from .validation import validate_plugin
 
 
@@ -53,18 +51,6 @@ class StoreTest:
             for plugin in load_json(PREVIOUS_PLUGINS_PATH)
         }
 
-    @staticmethod
-    def get_latest_version(project_link: str) -> str | None:
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
-        }
-        url = f"https://pypi.org/pypi/{project_link}/json"
-        r = httpx.get(url, headers=headers)
-        if r.status_code == 200:
-            return r.json()["info"]["version"]
-        else:
-            return None
-
     def should_skip(self, key: str) -> bool:
         """是否跳过测试"""
         # 如果强制测试，则不跳过
@@ -78,7 +64,7 @@ class StoreTest:
             return False
 
         # 如果插件为最新版本，则跳过测试
-        latest_version = self.get_latest_version(previous_plugin["project_link"])
+        latest_version = get_latest_version(previous_plugin["project_link"])
         if latest_version == previous_result["version"]:
             print(f"插件 {key} 为最新版本（{latest_version}），跳过测试")
             return True

@@ -12,6 +12,7 @@ from src.utils.plugin_test import PluginTest, strip_ansi
 from src.utils.validation import PublishType, validate_info
 
 from .models import Metadata, Plugin, StorePlugin, TestResult
+from .utils import get_upload_time
 
 
 def extract_metadata(path: Path) -> Metadata | None:
@@ -47,12 +48,14 @@ async def validate_plugin(
 
     如果插件验证失败，返回的插件数据为 None
     """
-    now_str = datetime.now(ZoneInfo("Asia/Shanghai")).isoformat()
+    # 当前时间
+    now_time_str = datetime.now(ZoneInfo("Asia/Shanghai")).isoformat()
     # 需要从商店插件数据中获取的信息
     project_link = plugin["project_link"]
     module_name = plugin["module_name"]
     is_official = plugin["is_official"]
-
+    # 获取插件上传时间
+    upload_time_str = get_upload_time(project_link)
     # 如果传递了 data 参数
     # 则直接使用 data 作为插件数据
     # 并且将 skip_test 设置为 True
@@ -69,7 +72,7 @@ async def validate_plugin(
         new_plugin = json.loads(data)
         new_plugin["valid"] = True
         new_plugin["version"] = version
-        new_plugin["time"] = now_str
+        new_plugin["time"] = upload_time_str or now_time_str
         new_plugin["skip_test"] = True
         new_plugin = cast(Plugin, new_plugin)
 
@@ -134,7 +137,7 @@ async def validate_plugin(
             new_plugin["is_official"] = is_official
             new_plugin["valid"] = validation_info_result["valid"]
             new_plugin["version"] = version
-            new_plugin["time"] = now_str
+            new_plugin["time"] = upload_time_str or now_time_str
             new_plugin["skip_test"] = should_skip
             new_plugin = cast(Plugin, new_plugin)
         else:
@@ -151,7 +154,7 @@ async def validate_plugin(
         )
 
     result: TestResult = {
-        "time": now_str,
+        "time": now_time_str,
         "version": version,
         "results": {
             "validation": validation_result,

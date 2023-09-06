@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Changed
+
+- 用 PyPI 项目的文件上传时间替换测试时间
+
 ## [3.0.3] - 2023-08-30
 
 ### Added
