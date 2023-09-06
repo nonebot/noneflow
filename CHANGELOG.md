@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [3.0.5] - 2023-09-06
+
 ### Fixed
 
 - 修复跳过插件测试时无法获取插件版本与时间的问题
@@ -346,7 +348,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/noneflow/compare/v3.0.4...HEAD
+[unreleased]: https://github.com/nonebot/noneflow/compare/v3.0.5...HEAD
+[3.0.5]: https://github.com/nonebot/noneflow/compare/v3.0.4...v3.0.5
 [3.0.4]: https://github.com/nonebot/noneflow/compare/v3.0.3...v3.0.4
 [3.0.3]: https://github.com/nonebot/noneflow/compare/v3.0.2...v3.0.3
 [3.0.2]: https://github.com/nonebot/noneflow/compare/v3.0.1...v3.0.2
