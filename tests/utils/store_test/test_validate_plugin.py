@@ -1,6 +1,8 @@
 import json
 import shutil
+from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from pytest_mock import MockerFixture
 from respx import MockRouter
@@ -11,6 +13,11 @@ async def test_validate_plugin(
 ) -> None:
     """验证插件信息"""
     from src.utils.store_test.validation import StorePlugin, validate_plugin
+
+    mock_datetime = mocker.patch("src.utils.store_test.validation.datetime")
+    mock_datetime.now.return_value = datetime(
+        2023, 8, 23, 9, 22, 14, 836035, tzinfo=ZoneInfo("Asia/Shanghai")
+    )
 
     plugin_test_dir = tmp_path / "plugin_test"
     plugin_test_dir.mkdir()
@@ -41,7 +48,7 @@ async def test_validate_plugin(
     result, new_plugin = await validate_plugin(plugin, "", False)
 
     assert result == {
-        "time": "2023-09-01T00:00:00+00:00Z",
+        "time": "2023-08-23T09:22:14.836035+08:00",
         "version": "0.3.0",
         "inputs": {"config": ""},
         "results": {
@@ -94,6 +101,11 @@ async def test_validate_plugin_with_data(
     """
     from src.utils.store_test.validation import StorePlugin, validate_plugin
 
+    mock_datetime = mocker.patch("src.utils.store_test.validation.datetime")
+    mock_datetime.now.return_value = datetime(
+        2023, 8, 23, 9, 22, 14, 836035, tzinfo=ZoneInfo("Asia/Shanghai")
+    )
+
     mocked_plugin_test = mocker.patch("src.utils.store_test.validation.PluginTest")
 
     plugin = StorePlugin(
@@ -120,7 +132,7 @@ async def test_validate_plugin_with_data(
     result, new_plugin = await validate_plugin(plugin, "", False, json.dumps(data))
 
     assert result == {
-        "time": "2023-09-01T00:00:00+00:00Z",
+        "time": "2023-08-23T09:22:14.836035+08:00",
         "version": None,
         "inputs": {"config": ""},
         "results": {
@@ -171,6 +183,11 @@ async def test_validate_plugin_skip_test(
     """
     from src.utils.store_test.validation import StorePlugin, validate_plugin
 
+    mock_datetime = mocker.patch("src.utils.store_test.validation.datetime")
+    mock_datetime.now.return_value = datetime(
+        2023, 8, 23, 9, 22, 14, 836035, tzinfo=ZoneInfo("Asia/Shanghai")
+    )
+
     plugin_test_dir = tmp_path / "plugin_test"
     plugin_test_dir.mkdir()
 
@@ -200,7 +217,7 @@ async def test_validate_plugin_skip_test(
     result, new_plugin = await validate_plugin(plugin, "", True)
 
     assert result == {
-        "time": "2023-09-01T00:00:00+00:00Z",
+        "time": "2023-08-23T09:22:14.836035+08:00",
         "version": "0.3.0",
         "inputs": {"config": ""},
         "results": {
@@ -253,6 +270,11 @@ async def test_validate_plugin_skip_test_plugin_test_failed(
     """
     from src.utils.store_test.validation import StorePlugin, validate_plugin
 
+    mock_datetime = mocker.patch("src.utils.store_test.validation.datetime")
+    mock_datetime.now.return_value = datetime(
+        2023, 8, 23, 9, 22, 14, 836035, tzinfo=ZoneInfo("Asia/Shanghai")
+    )
+
     plugin_test_dir = tmp_path / "plugin_test"
     plugin_test_dir.mkdir()
 
@@ -302,7 +324,7 @@ async def test_validate_plugin_skip_test_plugin_test_failed(
     )
 
     assert result == {
-        "time": "2023-09-01T00:00:00+00:00Z",
+        "time": "2023-08-23T09:22:14.836035+08:00",
         "version": "0.3.0",
         "inputs": {"config": ""},
         "results": {
@@ -345,6 +367,11 @@ async def test_validate_plugin_failed(
     """插件验证失败的情况"""
     from src.utils.store_test.validation import StorePlugin, validate_plugin
 
+    mock_datetime = mocker.patch("src.utils.store_test.validation.datetime")
+    mock_datetime.now.return_value = datetime(
+        2023, 8, 23, 9, 22, 14, 836035, tzinfo=ZoneInfo("Asia/Shanghai")
+    )
+
     plugin_test_dir = tmp_path / "plugin_test"
     plugin_test_dir.mkdir()
 
@@ -374,7 +401,7 @@ async def test_validate_plugin_failed(
     result, new_plugin = await validate_plugin(plugin, "", False)
 
     assert result == {
-        "time": "2023-09-01T00:00:00+00:00Z",
+        "time": "2023-08-23T09:22:14.836035+08:00",
         "version": "0.3.0",
         "inputs": {"config": ""},
         "results": {
