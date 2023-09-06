@@ -165,7 +165,7 @@ async def test_validate_plugin_with_data(
         "type": "application",
         "time": "2023-09-01T00:00:00+00:00Z",
         "valid": True,
-        "version": None,
+        "version": "0.0.1",
         "skip_test": True,
     }
 
