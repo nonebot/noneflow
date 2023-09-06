@@ -1,8 +1,6 @@
 import json
 import shutil
-from datetime import datetime
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 from pytest_mock import MockerFixture
 from respx import MockRouter
@@ -13,11 +11,6 @@ async def test_validate_plugin(
 ) -> None:
     """验证插件信息"""
     from src.utils.store_test.validation import StorePlugin, validate_plugin
-
-    mock_datetime = mocker.patch("src.utils.store_test.validation.datetime")
-    mock_datetime.now.return_value = datetime(
-        2023, 8, 23, 9, 22, 14, 836035, tzinfo=ZoneInfo("Asia/Shanghai")
-    )
 
     plugin_test_dir = tmp_path / "plugin_test"
     plugin_test_dir.mkdir()
@@ -48,7 +41,7 @@ async def test_validate_plugin(
     result, new_plugin = await validate_plugin(plugin, "", False)
 
     assert result == {
-        "time": "2023-08-23T09:22:14.836035+08:00",
+        "time": "2023-09-01T00:00:00+00:00Z",
         "version": "0.3.0",
         "inputs": {"config": ""},
         "results": {
@@ -79,7 +72,7 @@ async def test_validate_plugin(
         "project_link": "project_link",
         "supported_adapters": None,
         "tags": [],
-        "time": "2023-08-23T09:22:14.836035+08:00",
+        "time": "2023-09-01T00:00:00+00:00Z",
         "type": "application",
         "valid": True,
         "version": "0.3.0",
@@ -100,11 +93,6 @@ async def test_validate_plugin_with_data(
     应该不会调用 API，直接使用传递进来的数据，并且 metadata 会缺少 usage（因为拉取请求关闭时无法获取，所以并没有传递过来）。
     """
     from src.utils.store_test.validation import StorePlugin, validate_plugin
-
-    mock_datetime = mocker.patch("src.utils.store_test.validation.datetime")
-    mock_datetime.now.return_value = datetime(
-        2023, 8, 23, 9, 22, 14, 836035, tzinfo=ZoneInfo("Asia/Shanghai")
-    )
 
     mocked_plugin_test = mocker.patch("src.utils.store_test.validation.PluginTest")
 
@@ -132,7 +120,7 @@ async def test_validate_plugin_with_data(
     result, new_plugin = await validate_plugin(plugin, "", False, json.dumps(data))
 
     assert result == {
-        "time": "2023-08-23T09:22:14.836035+08:00",
+        "time": "2023-09-01T00:00:00+00:00Z",
         "version": None,
         "inputs": {"config": ""},
         "results": {
@@ -163,7 +151,7 @@ async def test_validate_plugin_with_data(
         "is_official": False,
         "supported_adapters": None,
         "type": "application",
-        "time": "2023-08-23T09:22:14.836035+08:00",
+        "time": "2023-09-01T00:00:00+00:00Z",
         "valid": True,
         "version": None,
         "skip_test": True,
@@ -182,11 +170,6 @@ async def test_validate_plugin_skip_test(
     如果插件之前是跳过测试的，如果插件测试成功，应将 skip_test 设置为 False。
     """
     from src.utils.store_test.validation import StorePlugin, validate_plugin
-
-    mock_datetime = mocker.patch("src.utils.store_test.validation.datetime")
-    mock_datetime.now.return_value = datetime(
-        2023, 8, 23, 9, 22, 14, 836035, tzinfo=ZoneInfo("Asia/Shanghai")
-    )
 
     plugin_test_dir = tmp_path / "plugin_test"
     plugin_test_dir.mkdir()
@@ -217,7 +200,7 @@ async def test_validate_plugin_skip_test(
     result, new_plugin = await validate_plugin(plugin, "", True)
 
     assert result == {
-        "time": "2023-08-23T09:22:14.836035+08:00",
+        "time": "2023-09-01T00:00:00+00:00Z",
         "version": "0.3.0",
         "inputs": {"config": ""},
         "results": {
@@ -248,7 +231,7 @@ async def test_validate_plugin_skip_test(
         "project_link": "project_link",
         "supported_adapters": None,
         "tags": [],
-        "time": "2023-08-23T09:22:14.836035+08:00",
+        "time": "2023-09-01T00:00:00+00:00Z",
         "type": "application",
         "valid": True,
         "version": "0.3.0",
@@ -269,11 +252,6 @@ async def test_validate_plugin_skip_test_plugin_test_failed(
     如果插件之前是跳过测试的，如果插件测试失败，应不改变 skip_test 的值。
     """
     from src.utils.store_test.validation import StorePlugin, validate_plugin
-
-    mock_datetime = mocker.patch("src.utils.store_test.validation.datetime")
-    mock_datetime.now.return_value = datetime(
-        2023, 8, 23, 9, 22, 14, 836035, tzinfo=ZoneInfo("Asia/Shanghai")
-    )
 
     plugin_test_dir = tmp_path / "plugin_test"
     plugin_test_dir.mkdir()
@@ -324,7 +302,7 @@ async def test_validate_plugin_skip_test_plugin_test_failed(
     )
 
     assert result == {
-        "time": "2023-08-23T09:22:14.836035+08:00",
+        "time": "2023-09-01T00:00:00+00:00Z",
         "version": "0.3.0",
         "inputs": {"config": ""},
         "results": {
@@ -348,7 +326,7 @@ async def test_validate_plugin_skip_test_plugin_test_failed(
         "project_link": "project_link",
         "supported_adapters": None,
         "tags": [],
-        "time": "2023-08-23T09:22:14.836035+08:00",
+        "time": "2023-09-01T00:00:00+00:00Z",
         "type": "application",
         "valid": True,
         "version": "0.3.0",
@@ -366,11 +344,6 @@ async def test_validate_plugin_failed(
 ) -> None:
     """插件验证失败的情况"""
     from src.utils.store_test.validation import StorePlugin, validate_plugin
-
-    mock_datetime = mocker.patch("src.utils.store_test.validation.datetime")
-    mock_datetime.now.return_value = datetime(
-        2023, 8, 23, 9, 22, 14, 836035, tzinfo=ZoneInfo("Asia/Shanghai")
-    )
 
     plugin_test_dir = tmp_path / "plugin_test"
     plugin_test_dir.mkdir()
@@ -401,7 +374,7 @@ async def test_validate_plugin_failed(
     result, new_plugin = await validate_plugin(plugin, "", False)
 
     assert result == {
-        "time": "2023-08-23T09:22:14.836035+08:00",
+        "time": "2023-09-01T00:00:00+00:00Z",
         "version": "0.3.0",
         "inputs": {"config": ""},
         "results": {

@@ -99,7 +99,11 @@ async def app(app: App, tmp_path: Path, mocker: MockerFixture):
     mocker.patch.object(plugin_config.input_config, "plugin_path", plugin_path)
     mocker.patch.object(plugin_config, "skip_plugin_test", False)
 
-    return app
+    yield app
+
+    from src.utils.store_test.utils import get_pypi_data
+
+    get_pypi_data.cache_clear()
 
 
 @pytest.fixture(autouse=True, scope="function")
@@ -115,7 +119,18 @@ def mocked_api(respx_mock: MockRouter):
     respx_mock.get("exception", name="exception").mock(side_effect=httpx.ConnectError)
     respx_mock.get(
         "https://pypi.org/pypi/project_link/json", name="project_link"
-    ).respond()
+    ).respond(
+        json={
+            "info": {
+                "version": "0.0.1",
+            },
+            "urls": [
+                {
+                    "upload_time_iso_8601": "2023-09-01T00:00:00+00:00Z",
+                }
+            ],
+        }
+    )
     respx_mock.get(
         "https://pypi.org/pypi/nonebot-plugin-treehelp/json",
         name="project_link_treehelp",
@@ -123,7 +138,12 @@ def mocked_api(respx_mock: MockRouter):
         json={
             "info": {
                 "version": "0.3.1",
-            }
+            },
+            "urls": [
+                {
+                    "upload_time_iso_8601": "2021-08-01T00:00:00+00:00",
+                }
+            ],
         }
     )
     respx_mock.get(
