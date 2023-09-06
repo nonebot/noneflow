@@ -35,14 +35,18 @@ profile = "black"
 line_length = 88
 skip_gitignore = true
 
+[tool.ruff]
+select = ["E", "W", "F", "UP", "C", "T", "PYI", "Q"]
+ignore = ["E402", "E501", "C901", "UP037", "T201"]
+
+[tool.pyright]
+typeCheckingMode = "basic"
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 
 [tool.coverage.report]
-exclude_also = [
-  "if TYPE_CHECKING:",
-  "raise NotImplementedError",
-]
+exclude_also = ["if TYPE_CHECKING:", "raise NotImplementedError"]
 
 [tool.coverage.run]
 omit = ["src/utils/plugin_test.py"]

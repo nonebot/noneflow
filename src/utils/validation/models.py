@@ -85,11 +85,8 @@ class PyPIMixin(BaseModel):
             module_name
             and project_link
             and any(
-                map(
-                    lambda x: x["module_name"] == module_name
-                    and x["project_link"] == project_link,
-                    data,
-                )
+                x["module_name"] == module_name and x["project_link"] == project_link
+                for x in data
             )
         ):
             raise DuplicationError(project_link=project_link, module_name=module_name)

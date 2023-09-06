@@ -1,7 +1,4 @@
-from typing import TYPE_CHECKING, Any, Literal, TypedDict
-
-if TYPE_CHECKING:
-    from src.utils.validation.models import ErrorDict
+from typing import Any, Literal, TypedDict
 
 
 class StorePlugin(TypedDict):

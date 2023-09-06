@@ -37,7 +37,7 @@ async def handle_github_action_event():
         ):
             bot = nonebot.get_bot()
             await handle_event(bot, event)
-    except:
+    except Exception:
         logger.exception("处理 GitHub Action 事件时出现异常")
     finally:
         # 处理一次之后就退出
@@ -51,7 +51,7 @@ class Adapter(GITHUBAdapter):
     async def _startup(self):
         try:
             await super()._startup()
-        except:
+        except Exception:
             logger.exception("启动 GitHub 适配器时出现异常")
             driver = cast(Driver, self.driver)
             driver.exit(True)

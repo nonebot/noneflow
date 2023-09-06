@@ -1,6 +1,3 @@
-from nonebug import App
-
-
 async def test_missing_info():
     """测试缺失信息的情况
 
