@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [3.0.4] - 2023-09-06
+
 ### Changed
 
 - 用 PyPI 项目的文件上传时间替换测试时间
@@ -340,7 +342,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/noneflow/compare/v3.0.3...HEAD
+[unreleased]: https://github.com/nonebot/noneflow/compare/v3.0.4...HEAD
+[3.0.4]: https://github.com/nonebot/noneflow/compare/v3.0.3...v3.0.4
 [3.0.3]: https://github.com/nonebot/noneflow/compare/v3.0.2...v3.0.3
 [3.0.2]: https://github.com/nonebot/noneflow/compare/v3.0.1...v3.0.2
 [3.0.1]: https://github.com/nonebot/noneflow/compare/v3.0.0...v3.0.1
