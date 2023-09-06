@@ -33,7 +33,7 @@ def _loc_to_name(loc: str) -> str:
 
 def loc_to_name(loc: list[str | int]) -> str:
     """将 loc 转换为可读名称"""
-    return " > ".join([_loc_to_name(str(l)) for l in loc])
+    return " > ".join([_loc_to_name(str(item)) for item in loc])
 
 
 env = jinja2.Environment(

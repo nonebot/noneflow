@@ -54,7 +54,6 @@ if TYPE_CHECKING:
         IssuesReopenedPropIssue,
     )
     from githubkit.webhooks.models import Label as WebhookLabel
-    from githubkit.webhooks.models import PullRequestClosedPropPullRequest
 
 
 def run_shell_command(command: list[str]):
@@ -127,7 +126,7 @@ def commit_and_push(result: ValidationDict, branch_name: str, issue_number: int)
     run_shell_command(["git", "add", "-A"])
     try:
         run_shell_command(["git", "commit", "-m", commit_message])
-    except:
+    except Exception:
         # 如果提交失败，因为是 pre-commit hooks 格式化代码导致的，所以需要再次提交
         run_shell_command(["git", "add", "-A"])
         run_shell_command(["git", "commit", "-m", commit_message])
@@ -139,7 +138,7 @@ def commit_and_push(result: ValidationDict, branch_name: str, issue_number: int)
             raise Exception
         else:
             logger.info("检测到本地分支与远程分支一致，跳过推送")
-    except:
+    except Exception:
         logger.info("检测到本地分支与远程分支不一致，尝试强制推送")
         run_shell_command(["git", "push", "origin", branch_name, "-f"])
 
@@ -339,7 +338,7 @@ def update_file(result: ValidationDict) -> None:
         json.dump(data, f, ensure_ascii=False, indent=2)
         # 结尾加上换行符，不然会被 pre-commit fix
         f.write("\n")
-    logger.info(f"文件更新完成")
+    logger.info("文件更新完成")
 
 
 async def should_skip_plugin_test(

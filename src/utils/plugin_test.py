@@ -1,10 +1,10 @@
-""" 插件加载测试 
+""" 插件加载测试
 
 测试代码修改自 <https://github.com/Lancercmd/nonebot2-store-test>，谢谢 [Lan 佬](https://github.com/Lancercmd)。
 
 在 GitHub Actions 中运行，通过 GitHub Event 文件获取所需信息。并将测试结果保存至 GitHub Action 的输出文件中。
 
-当前会输出 RESULT, OUTPUT, METADATA 三个数据，分别对应测试结果、测试输出、插件元数据。 
+当前会输出 RESULT, OUTPUT, METADATA 三个数据，分别对应测试结果、测试输出、插件元数据。
 
 经测试可以直接在 Python 3.10+ 环境下运行，无需额外依赖。
 """

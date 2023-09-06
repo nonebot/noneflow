@@ -111,8 +111,8 @@ async def handle_pr_close(
                     event.payload.pull_request.head.ref,
                 ]
             )
-            logger.info(f"已删除对应分支")
-        except:
+            logger.info("已删除对应分支")
+        except Exception:
             logger.info("对应分支不存在或已删除")
 
         if event.payload.pull_request.merged:

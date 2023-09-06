@@ -60,7 +60,6 @@ async def test_get_type_by_title():
 
 async def test_get_type_by_title_wrong():
     from src.plugins.publish.utils import get_type_by_title
-    from src.utils.validation.models import PublishType
 
     title = "Something: test"
     publish_type = get_type_by_title(title)
