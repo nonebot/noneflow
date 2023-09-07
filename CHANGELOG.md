@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [3.0.6] - 2023-09-07
+
 ### Fixed
 
 - 修复版本解析失败时无法匹配到插件版本的问题
@@ -352,7 +354,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/noneflow/compare/v3.0.5...HEAD
+[unreleased]: https://github.com/nonebot/noneflow/compare/v3.0.6...HEAD
+[3.0.6]: https://github.com/nonebot/noneflow/compare/v3.0.5...v3.0.6
 [3.0.5]: https://github.com/nonebot/noneflow/compare/v3.0.4...v3.0.5
 [3.0.4]: https://github.com/nonebot/noneflow/compare/v3.0.3...v3.0.4
 [3.0.3]: https://github.com/nonebot/noneflow/compare/v3.0.2...v3.0.3
