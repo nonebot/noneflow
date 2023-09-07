@@ -24,11 +24,21 @@ def extract_metadata(path: Path) -> Metadata | None:
         return json.loads(match.group(1))
 
 
-def extract_version(path: Path) -> str | None:
+def extract_version(path: Path, project_link: str) -> str | None:
     """提取插件版本"""
     with open(path / "output.txt", encoding="utf8") as f:
         output = f.read()
-    match = re.search(r"version\s+:\s+(\S+)", strip_ansi(output))
+    output = strip_ansi(output)
+
+    # 匹配 poetry show 的输出
+    match = re.search(r"version\s+:\s+(\S+)", output)
+    if match:
+        return match.group(1).strip()
+
+    # 匹配版本解析失败的情况
+    match = re.search(
+        rf"depends on {project_link} \(\^(\S+)\), version solving failed\.", output
+    )
     if match:
         return match.group(1).strip()
 
@@ -97,7 +107,7 @@ async def validate_plugin(
         plugin_test_result, plugin_test_output = await test.run()
 
         metadata = extract_metadata(test.path)
-        test_version = extract_version(test.path)
+        test_version = extract_version(test.path, project_link)
 
         # 测试并提取完数据后删除测试文件夹
         shutil.rmtree(test.path)
