@@ -135,6 +135,7 @@ async def test_store_test(
         },
         config="",
         skip_test=False,
+        data=None,
         previous_plugin={
             "module_name": "nonebot_plugin_treehelp",
             "project_link": "nonebot-plugin-treehelp",
@@ -296,6 +297,7 @@ async def test_store_test_raise(
                 },
                 config="",
                 skip_test=False,
+                data=None,
                 previous_plugin={
                     "module_name": "nonebot_plugin_treehelp",
                     "project_link": "nonebot-plugin-treehelp",
@@ -321,6 +323,7 @@ async def test_store_test_raise(
                 },
                 config="",
                 skip_test=False,
+                data=None,
                 previous_plugin=None,
             ),  # type: ignore
         ],

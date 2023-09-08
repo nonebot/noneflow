@@ -1,3 +1,5 @@
+import click
+
 from .constants import (
     ADAPTERS_PATH,
     BOTS_PATH,
@@ -54,7 +56,7 @@ class StoreTest:
     def should_skip(self, key: str) -> bool:
         """是否跳过测试"""
         if key.startswith("git+http"):
-            print(f"插件 {key} 为 Git 插件，无法测试，已跳过")
+            click.echo(f"插件 {key} 为 Git 插件，无法测试，已跳过")
             return True
 
         # 如果强制测试，则不跳过
@@ -70,7 +72,7 @@ class StoreTest:
         # 如果插件为最新版本，则跳过测试
         latest_version = get_latest_version(previous_plugin["project_link"])
         if latest_version == previous_result["version"]:
-            print(f"插件 {key} 为最新版本（{latest_version}），跳过测试")
+            click.echo(f"插件 {key} 为最新版本（{latest_version}），跳过测试")
             return True
         return False
 
@@ -91,23 +93,9 @@ class StoreTest:
         new_plugins: dict[str, Plugin] = {}
 
         if key:
-            try:
-                if self.should_skip(key):
-                    # 直接返回上次测试的结果
-                    return self._previous_results, self._previous_plugins
-
-                print(f"正在测试插件 {key} ...")
-                new_results[key], new_plugin = await validate_plugin(
-                    plugin=self._store_plugins[key],
-                    config=config or "",
-                    skip_test=self.skip_plugin_test(key),
-                    data=data,
-                    previous_plugin=self._previous_plugins.get(key),
-                )
-                if new_plugin:
-                    new_plugins[key] = new_plugin
-            except Exception as e:
-                print(f"测试插件 {key} 失败：{e}")
+            test_plugins = [(key, self._store_plugins[key])]
+            plugin_configs = {key: config or ""}
+            plugin_datas = {key: data}
         else:
             test_plugins = list(self._store_plugins.items())[self._offset :]
             plugin_configs = {
@@ -116,33 +104,38 @@ class StoreTest:
                 .get("config", "")
                 for key, _ in test_plugins
             }
+            plugin_datas = {}
 
-            i = 1
-            for key, plugin in test_plugins:
-                if i > self._limit:
-                    print(f"已达到测试上限 {self._limit}，测试停止")
-                    break
+        # 测试上限不可能超过插件总数
+        limit = min(self._limit, len(test_plugins))
 
-                try:
-                    if self.should_skip(key):
-                        continue
+        i = 1
+        for key, plugin in test_plugins:
+            if i > limit:
+                click.echo(f"已达到测试上限 {limit}，测试停止")
+                break
 
-                    print(f"{i}/{self._limit} 正在测试插件 {key} ...")
-
-                    new_results[key], new_plugin = await validate_plugin(
-                        plugin=plugin,
-                        config=plugin_configs.get(key, ""),
-                        skip_test=self.skip_plugin_test(key),
-                        previous_plugin=self._previous_plugins.get(key),
-                    )
-                    if new_plugin:
-                        new_plugins[key] = new_plugin
-                except Exception as e:
-                    # 如果测试中遇到意外错误，则跳过该插件
-                    print(f"测试插件 {key} 失败：{e}")
+            try:
+                if self.should_skip(key):
                     continue
 
-                i += 1
+                click.echo(f"{i}/{limit} 正在测试插件 {key} ...")
+
+                new_results[key], new_plugin = await validate_plugin(
+                    plugin=plugin,
+                    config=plugin_configs.get(key, ""),
+                    skip_test=self.skip_plugin_test(key),
+                    data=plugin_datas.get(key),
+                    previous_plugin=self._previous_plugins.get(key),
+                )
+                if new_plugin:
+                    new_plugins[key] = new_plugin
+            except Exception as e:
+                # 如果测试中遇到意外错误，则跳过该插件
+                click.echo(e)
+                continue
+
+            i += 1
 
         results: dict[str, TestResult] = {}
         plugins: dict[str, Plugin] = {}

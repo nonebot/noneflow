@@ -142,8 +142,15 @@ async def validate_plugin(
 
         validation_info_result = validate_info(PublishType.PLUGIN, raw_data)
 
+        # 如果验证失败，则使用上次的插件数据
         if validation_info_result["valid"]:
-            new_plugin = validation_info_result["data"]
+            new_plugin = cast(Plugin, validation_info_result["data"])
+        elif previous_plugin:
+            new_plugin = previous_plugin
+        else:
+            new_plugin = None
+
+        if new_plugin:
             # 插件验证过程中无法获取是否是官方插件，因此需要从原始数据中获取
             new_plugin["is_official"] = is_official
             new_plugin["valid"] = validation_info_result["valid"]
@@ -151,9 +158,6 @@ async def validate_plugin(
             new_plugin["version"] = test_version or pypi_version
             new_plugin["time"] = pypi_time
             new_plugin["skip_test"] = should_skip
-            new_plugin = cast(Plugin, new_plugin)
-        else:
-            new_plugin = None
 
         validation_result = validation_info_result["valid"]
         validation_output = (
