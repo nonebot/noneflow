@@ -449,3 +449,128 @@ async def test_validate_plugin_failed(
 
     assert not temp_output_path.exists()
     assert not plugin_test_dir.exists()
+
+
+async def test_validate_plugin_failed_with_previous(
+    tmp_path: Path, mocked_api: MockRouter, mocker: MockerFixture
+) -> None:
+    """插件验证失败，但提供了之前插件信息的情况"""
+    from src.utils.store_test.validation import StorePlugin, validate_plugin
+
+    mock_datetime = mocker.patch("src.utils.store_test.validation.datetime")
+    mock_datetime.now.return_value = datetime(
+        2023, 8, 23, 9, 22, 14, 836035, tzinfo=ZoneInfo("Asia/Shanghai")
+    )
+
+    plugin_test_dir = tmp_path / "plugin_test"
+    plugin_test_dir.mkdir()
+
+    output_path = Path(__file__).parent / "output.txt"
+    temp_output_path = plugin_test_dir / "output.txt"
+    shutil.copyfile(output_path, temp_output_path)
+
+    assert temp_output_path.exists()
+
+    mock_plugin_test = mocker.MagicMock()
+    mocker.patch(
+        "src.utils.store_test.validation.PluginTest", return_value=mock_plugin_test
+    )
+    mock_run = mocker.AsyncMock()
+    mock_run.return_value = (False, "output")
+    mock_plugin_test.run = mock_run
+    mock_plugin_test.path = plugin_test_dir
+
+    plugin = StorePlugin(
+        module_name="module_name",
+        project_link="project_link",
+        author="author",
+        tags=[],
+        is_official=False,
+    )
+
+    result, new_plugin = await validate_plugin(
+        plugin,
+        "",
+        False,
+        previous_plugin={
+            "module_name": "module_name",
+            "project_link": "project_link",
+            "name": "name",
+            "author": "author",
+            "desc": "desc",
+            "homepage": "homepage",
+            "tags": [],
+            "is_official": False,
+            "type": "application",
+            "supported_adapters": None,
+            "valid": True,
+            "time": "2023-06-22 12:10:18",
+            "version": "0.2.0",
+            "skip_test": False,
+        },
+    )
+
+    assert result == {
+        "time": "2023-08-23T09:22:14.836035+08:00",
+        "version": "0.3.0",
+        "inputs": {"config": ""},
+        "results": {
+            "load": False,
+            "metadata": True,
+            "validation": False,
+        },
+        "outputs": {
+            "load": "output",
+            "metadata": {
+                "name": "帮助",
+                "description": "获取插件帮助信息",
+                "usage": "获取插件列表\n/help\n获取插件树\n/help -t\n/help --tree\n获取某个插件的帮助\n/help 插件名\n获取某个插件的树\n/help --tree 插件名\n",
+                "type": "application",
+                "homepage": "https://nonebot.dev/",
+                "supported_adapters": None,
+            },
+            "validation": {
+                "data": {
+                    "module_name": "module_name",
+                    "project_link": "project_link",
+                    "name": "帮助",
+                    "desc": "获取插件帮助信息",
+                    "author": "author",
+                    "homepage": "https://nonebot.dev/",
+                    "tags": [],
+                    "is_official": False,
+                    "type": "application",
+                    "supported_adapters": None,
+                },
+                "errors": [
+                    {
+                        "loc": ("plugin_test",),
+                        "msg": "插件无法正常加载",
+                        "type": "value_error.plugin_test",
+                        "ctx": {"output": ""},
+                    }
+                ],
+            },
+        },
+    }
+    assert new_plugin == {
+        "module_name": "module_name",
+        "project_link": "project_link",
+        "name": "name",
+        "author": "author",
+        "desc": "desc",
+        "homepage": "homepage",
+        "tags": [],
+        "is_official": False,
+        "type": "application",
+        "supported_adapters": None,
+        "valid": False,
+        "time": "2023-09-01T00:00:00+00:00Z",
+        "version": "0.3.0",
+        "skip_test": False,
+    }
+
+    assert mocked_api["homepage"].called
+
+    assert not temp_output_path.exists()
+    assert not plugin_test_dir.exists()

@@ -37,7 +37,7 @@ skip_gitignore = true
 
 [tool.ruff]
 select = ["E", "W", "F", "UP", "C", "T", "PYI", "Q"]
-ignore = ["E402", "E501", "C901", "UP037", "T201"]
+ignore = ["E402", "E501", "C901", "UP037"]
 
 [tool.pyright]
 typeCheckingMode = "basic"
