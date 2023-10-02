@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [3.1.0] - 2023-10-02
+
 ### Changed
 
 - 使用商店的新格式
@@ -368,7 +370,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/noneflow/compare/v3.0.7...HEAD
+[unreleased]: https://github.com/nonebot/noneflow/compare/v3.1.0...HEAD
+[3.1.0]: https://github.com/nonebot/noneflow/compare/v3.0.7...v3.1.0
 [3.0.7]: https://github.com/nonebot/noneflow/compare/v3.0.6...v3.0.7
 [3.0.6]: https://github.com/nonebot/noneflow/compare/v3.0.5...v3.0.6
 [3.0.5]: https://github.com/nonebot/noneflow/compare/v3.0.4...v3.0.5
