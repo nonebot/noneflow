@@ -150,6 +150,13 @@ def extract_issue_number_from_ref(ref: str) -> int | None:
         return int(match.group(1))
 
 
+def extract_name_from_title(title: str, publish_type: PublishType) -> str | None:
+    """从标题中提取名称"""
+    match = re.search(rf"{publish_type.value}: (.+)", title)
+    if match:
+        return match.group(1)
+
+
 def validate_info_from_issue(
     issue: "IssuesOpenedPropIssue | IssuesReopenedPropIssue | IssueCommentCreatedPropIssue | Issue | WebhookIssue",
     publish_type: PublishType,
@@ -279,7 +286,14 @@ async def resolve_conflict_pull_requests(
             # 因为当前分支为触发处理冲突的分支，所以需要切换到每个拉取请求对应的分支
             run_shell_command(["git", "checkout", pull.head.ref])
             # 获取数据
-            result = generate_validation_dict_from_file(publish_type)
+            result = generate_validation_dict_from_file(
+                publish_type,
+                # 提交时的 commit message 中包含插件名称
+                # 但因为仓库内的 plugins.json 中没有插件名称，所以需要从标题中提取
+                extract_name_from_title(pull.title, publish_type)
+                if publish_type == PublishType.PLUGIN
+                else None,
+            )
             # 回到主分支
             run_shell_command(["git", "checkout", plugin_config.input_config.base])
             # 切换到对应分支
@@ -289,7 +303,10 @@ async def resolve_conflict_pull_requests(
             logger.info("拉取请求更新完毕")
 
 
-def generate_validation_dict_from_file(publish_type: PublishType) -> ValidationDict:
+def generate_validation_dict_from_file(
+    publish_type: PublishType,
+    name: str | None = None,
+) -> ValidationDict:
     """从文件中获取发布所需数据"""
     match publish_type:
         case PublishType.ADAPTER:
@@ -308,6 +325,8 @@ def generate_validation_dict_from_file(publish_type: PublishType) -> ValidationD
             ) as f:
                 data: list[dict[str, str]] = json.load(f)
             raw_data = data[-1]
+            assert name, "插件名称不能为空"
+            raw_data["name"] = name
 
     return ValidationDict(
         valid=True,
@@ -321,6 +340,7 @@ def generate_validation_dict_from_file(publish_type: PublishType) -> ValidationD
 
 def update_file(result: ValidationDict) -> None:
     """更新文件"""
+    new_data = result["data"]
     match result["type"]:
         case PublishType.ADAPTER:
             path = plugin_config.input_config.adapter_path
@@ -328,13 +348,20 @@ def update_file(result: ValidationDict) -> None:
             path = plugin_config.input_config.bot_path
         case PublishType.PLUGIN:
             path = plugin_config.input_config.plugin_path
+            # nonebot2 仓库内只需要这部分数据
+            new_data = {
+                "module_name": new_data["module_name"],
+                "project_link": new_data["project_link"],
+                "author": new_data["author"],
+                "tags": new_data["tags"],
+                "is_official": new_data["is_official"],
+            }
 
     logger.info(f"正在更新文件: {path}")
     with path.open("r", encoding="utf-8") as f:
         data: list[dict[str, str]] = json.load(f)
     with path.open("w", encoding="utf-8") as f:
-        # TODO: 以后换成 store 的格式
-        data.append(result["data"])
+        data.append(new_data)
         json.dump(data, f, ensure_ascii=False, indent=2)
         # 结尾加上换行符，不然会被 pre-commit fix
         f.write("\n")

@@ -355,4 +355,3 @@ async def test_extract_issue_number_from_ref_failed(
 
     # 测试 git 命令
     mock_subprocess_run.assert_not_called()
-    mock_subprocess_run.assert_not_called()

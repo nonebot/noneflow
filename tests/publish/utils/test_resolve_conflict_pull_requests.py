@@ -278,6 +278,7 @@ async def test_resolve_conflict_pull_requests_plugin(
     mock_pull.head.ref = "publish/issue1"
     mock_pull.draft = False
     mock_pull.labels = [mock_label]
+    mock_pull.title = "Plugin: 帮助"
 
     with open(tmp_path / "plugins.json", "w", encoding="utf8") as f:
         json.dump(
@@ -285,14 +286,9 @@ async def test_resolve_conflict_pull_requests_plugin(
                 {
                     "module_name": "nonebot_plugin_treehelp",
                     "project_link": "nonebot-plugin-treehelp",
-                    "name": "帮助",
-                    "desc": "获取插件帮助信息",
                     "author": "he0119",
-                    "homepage": "https://github.com/he0119/nonebot-plugin-treehelp",
                     "tags": [],
                     "is_official": True,
-                    "type": "application",
-                    "supported_adapters": None,
                 }
             ],
             f,
@@ -367,26 +363,16 @@ async def test_resolve_conflict_pull_requests_plugin(
             {
                 "module_name": "nonebot_plugin_treehelp",
                 "project_link": "nonebot-plugin-treehelp",
-                "name": "帮助",
-                "desc": "获取插件帮助信息",
                 "author": "he0119",
-                "homepage": "https://github.com/he0119/nonebot-plugin-treehelp",
                 "tags": [],
                 "is_official": True,
-                "type": "application",
-                "supported_adapters": None,
             },
             {
                 "module_name": "nonebot_plugin_treehelp",
                 "project_link": "nonebot-plugin-treehelp",
-                "name": "帮助",
-                "desc": "获取插件帮助信息",
                 "author": "he0119",
-                "homepage": "https://github.com/he0119/nonebot-plugin-treehelp",
                 "tags": [],
                 "is_official": True,
-                "type": "application",
-                "supported_adapters": None,
             },
         ],
     )
