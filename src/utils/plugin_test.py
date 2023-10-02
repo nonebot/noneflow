@@ -18,7 +18,9 @@ from pathlib import Path
 from urllib.request import urlopen
 
 # NoneBot Store
-STORE_PLUGINS_URL = "https://nonebot.dev/plugins.json"
+STORE_PLUGINS_URL = (
+    "https://raw.githubusercontent.com/nonebot/nonebot2/master/assets/plugins.json"
+)
 
 # 匹配信息的正则表达式
 ISSUE_PATTERN = r"### {}\s+([^\s#].*?)(?=(?:\s+###|$))"
