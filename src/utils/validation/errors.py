@@ -49,7 +49,7 @@ class PluginTypeError(PydanticValueError):
 class PluginSupportedAdaptersMissingError(PydanticValueError):
     code = "plugin.supported_adapters.missing"
 
-    def __init__(self, *, missing_adapters: set[str]) -> None:
+    def __init__(self, *, missing_adapters: list[str]) -> None:
         super().__init__(missing_adapters=missing_adapters)
 
     def __str__(self) -> str:
