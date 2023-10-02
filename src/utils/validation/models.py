@@ -171,7 +171,9 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
 
         missing_adapters = supported_adapters - store_adapters
         if missing_adapters:
-            raise PluginSupportedAdaptersMissingError(missing_adapters=missing_adapters)
+            raise PluginSupportedAdaptersMissingError(
+                missing_adapters=list(missing_adapters)
+            )
         return sorted(supported_adapters)
 
     @classmethod

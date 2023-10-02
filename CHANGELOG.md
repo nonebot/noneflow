@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 修复因 missing_adapters 的类型为集合导致的编码报错
+
 ## [3.0.7] - 2023-09-08
 
 ### Fixed
