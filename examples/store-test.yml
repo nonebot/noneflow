@@ -30,7 +30,7 @@ jobs:
     name: NoneBot2 plugin test
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: nonebot/noneflow
           fetch-depth: 0
@@ -49,10 +49,10 @@ jobs:
           mkdir -p plugin_test/store
           curl -sSL https://raw.githubusercontent.com/nonebot/registry/results/results.json -o plugin_test/store/previous_results.json
           curl -sSL https://raw.githubusercontent.com/nonebot/registry/results/plugins.json -o plugin_test/store/previous_plugins.json
-          curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/website/static/adapters.json -o plugin_test/store/adapters.json
-          curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/website/static/bots.json -o plugin_test/store/bots.json
-          curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/website/static/drivers.json -o plugin_test/store/drivers.json
-          curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/website/static/plugins.json -o plugin_test/store/plugins.json
+          curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/assets/adapters.json -o plugin_test/store/adapters.json
+          curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/assets/bots.json -o plugin_test/store/bots.json
+          curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/assets/drivers.json -o plugin_test/store/drivers.json
+          curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/assets/plugins.json -o plugin_test/store/plugins.json
 
       - name: Test plugin
         if: ${{ !contains(fromJSON('["Bot", "Adapter", "Plugin"]'), github.event.client_payload.type) }}
@@ -89,7 +89,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: results
 
@@ -117,7 +117,7 @@ jobs:
       statuses: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
 
@@ -132,6 +132,9 @@ jobs:
 
       - name: Build Website
         run: pnpm build
+        env:
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
       - name: Get Branch Name
         run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV

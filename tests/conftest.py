@@ -174,7 +174,10 @@ def mocked_api(respx_mock: MockRouter):
     ).respond(404)
     respx_mock.get("https://www.baidu.com", name="homepage_failed").respond(404)
     respx_mock.get("https://nonebot.dev/", name="homepage").respond()
-    respx_mock.get("https://nonebot.dev/adapters.json", name="store_adapters").respond(
+    respx_mock.get(
+        "https://raw.githubusercontent.com/nonebot/nonebot2/master/assets/adapters.json",
+        name="store_adapters",
+    ).respond(
         json=[
             {
                 "module_name": "nonebot.adapters.onebot.v11",
