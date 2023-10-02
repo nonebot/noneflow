@@ -20,7 +20,9 @@ PLUGIN_VALID_TYPE = ["application", "library"]
 """插件类型当前只支持 application 和 library"""
 
 # NoneBot Store
-STORE_ADAPTERS_URL = "https://nonebot.dev/adapters.json"
+STORE_ADAPTERS_URL = (
+    "https://raw.githubusercontent.com/nonebot/nonebot2/master/assets/adapters.json"
+)
 
 # Pydantic 错误信息翻译
 CUSTOM_MESSAGES = {
