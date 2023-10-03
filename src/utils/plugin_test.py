@@ -21,7 +21,6 @@ from urllib.request import urlopen
 STORE_PLUGINS_URL = (
     "https://raw.githubusercontent.com/nonebot/nonebot2/master/assets/plugins.json"
 )
-
 # 匹配信息的正则表达式
 ISSUE_PATTERN = r"### {}\s+([^\s#].*?)(?=(?:\s+###|$))"
 # 插件信息
@@ -306,8 +305,8 @@ async def main():
         print("议题未开启，已跳过")
         return
 
-    title = issue.get("title")
-    if not title.startswith("Plugin"):
+    labels = issue.get("labels", [])
+    if not any(label["name"] == "Plugin" for label in labels):
         print("议题与插件发布无关，已跳过")
         return
 
