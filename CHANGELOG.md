@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Added
+
+- 插件测试时检查元数据的配置是否为 BaseModel 子类
+
 ### Fixed
 
 - 修复未通过标签判断是否是插件发布的问题

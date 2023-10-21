@@ -32,6 +32,7 @@ RUNNER = """import json
 import os
 
 from nonebot import init, load_plugin, require
+from pydantic import BaseModel
 
 
 class SetEncoder(json.JSONEncoder):
@@ -57,6 +58,14 @@ else:
         }}
         with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf8") as f:
             f.write(f"METADATA<<EOF\\n{{json.dumps(metadata, cls=SetEncoder)}}\\nEOF\\n")
+
+        try:
+            if plugin.metadata.config and not issubclass(plugin.metadata.config, BaseModel):
+                print("插件配置项不是 Pydantic BaseModel 的子类")
+                exit(1)
+        except TypeError:
+            print("插件配置项应该为 Pydantic BaseModel 子类而不是实例")
+            exit(1)
 
 {}
 """
