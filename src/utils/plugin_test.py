@@ -31,7 +31,7 @@ CONFIG_PATTERN = re.compile(r"### 插件配置项\s+```(?:\w+)?\s?([\s\S]*?)```"
 RUNNER = """import json
 import os
 
-from nonebot import init, load_plugin, require
+from nonebot import init, load_plugin, require, logger
 from pydantic import BaseModel
 
 
@@ -59,12 +59,8 @@ else:
         with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf8") as f:
             f.write(f"METADATA<<EOF\\n{{json.dumps(metadata, cls=SetEncoder)}}\\nEOF\\n")
 
-        try:
-            if plugin.metadata.config and not issubclass(plugin.metadata.config, BaseModel):
-                print("插件配置项不是 Pydantic BaseModel 的子类")
-                exit(1)
-        except TypeError:
-            print("插件配置项应该为 Pydantic BaseModel 子类而不是实例")
+        if plugin.metadata.config and not issubclass(plugin.metadata.config, BaseModel):
+            logger.error("插件配置项不是 Pydantic BaseModel 的子类")
             exit(1)
 
 {}
