@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [3.2.0] - 2023-10-21
+
 ### Added
 
 - 插件测试时检查元数据的配置是否为 BaseModel 子类
@@ -385,7 +387,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/noneflow/compare/v3.1.1...HEAD
+[unreleased]: https://github.com/nonebot/noneflow/compare/v3.2.0...HEAD
+[3.2.0]: https://github.com/nonebot/noneflow/compare/v3.1.1...v3.2.0
 [3.1.1]: https://github.com/nonebot/noneflow/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/nonebot/noneflow/compare/v3.0.7...v3.1.0
 [3.0.7]: https://github.com/nonebot/noneflow/compare/v3.0.6...v3.0.7
