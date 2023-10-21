@@ -30,7 +30,6 @@ CONFIG_PATTERN = re.compile(r"### 插件配置项\s+```(?:\w+)?\s?([\s\S]*?)```"
 
 RUNNER = """import json
 import os
-from dataclasses import asdict
 
 from nonebot import init, load_plugin, require
 
@@ -48,12 +47,14 @@ if not plugin:
     exit(1)
 else:
     if plugin.metadata:
-        metadata = asdict(
-            plugin.metadata,
-            dict_factory=lambda x: {{
-                k: v for (k, v) in x if k not in ("config", "extra")
-            }},
-        )
+        metadata = {{
+            "name": plugin.metadata.name,
+            "description": plugin.metadata.description,
+            "usage": plugin.metadata.usage,
+            "type": plugin.metadata.type,
+            "homepage": plugin.metadata.homepage,
+            "supported_adapters": plugin.metadata.supported_adapters,
+        }}
         with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf8") as f:
             f.write(f"METADATA<<EOF\\n{{json.dumps(metadata, cls=SetEncoder)}}\\nEOF\\n")
 
