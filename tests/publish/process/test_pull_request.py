@@ -119,7 +119,7 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
         any_order=True,
     )
 
-    mock_sleep.assert_awaited_once_with(60)
+    mock_sleep.assert_awaited_once_with(120)
 
 
 async def test_process_pull_request_not_merged(app: App, mocker: MockerFixture) -> None:
@@ -308,7 +308,7 @@ async def test_process_pull_request_skip_plugin_test(
         any_order=True,
     )
 
-    mock_sleep.assert_awaited_once_with(60)
+    mock_sleep.assert_awaited_once_with(120)
 
 
 async def test_not_publish(app: App, mocker: MockerFixture) -> None:
