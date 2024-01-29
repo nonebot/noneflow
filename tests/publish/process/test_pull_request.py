@@ -17,6 +17,7 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
     event_path = Path(__file__).parent.parent / "events" / "pr-close.json"
 
     mock_subprocess_run = mocker.patch("subprocess.run")
+    mock_sleep = mocker.patch("asyncio.sleep")
 
     mock_issue = mocker.MagicMock()
     mock_issue.state = "open"
@@ -74,6 +75,11 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
             True,
         )
         ctx.should_call_api(
+            "rest.pulls.async_list",
+            {"owner": "he0119", "repo": "action-test", "state": "open"},
+            mock_pulls_resp,
+        )
+        ctx.should_call_api(
             "rest.issues.async_list_comments",
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
             mock_list_comments_resp,
@@ -91,11 +97,6 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
                 },
             },
             True,
-        )
-        ctx.should_call_api(
-            "rest.pulls.async_list",
-            {"owner": "he0119", "repo": "action-test", "state": "open"},
-            mock_pulls_resp,
         )
 
         ctx.receive_event(bot, event)
@@ -116,6 +117,8 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
         ],  # type: ignore
         any_order=True,
     )
+
+    mock_sleep.assert_awaited_once_with(60)
 
 
 async def test_process_pull_request_not_merged(app: App, mocker: MockerFixture) -> None:
@@ -199,6 +202,7 @@ async def test_process_pull_request_skip_plugin_test(
     event_path = Path(__file__).parent.parent / "events" / "pr-close.json"
 
     mock_subprocess_run = mocker.patch("subprocess.run")
+    mock_sleep = mocker.patch("asyncio.sleep")
 
     mock_issue = mocker.MagicMock()
     mock_issue.state = "open"
@@ -258,6 +262,11 @@ async def test_process_pull_request_skip_plugin_test(
             True,
         )
         ctx.should_call_api(
+            "rest.pulls.async_list",
+            {"owner": "he0119", "repo": "action-test", "state": "open"},
+            mock_pulls_resp,
+        )
+        ctx.should_call_api(
             "rest.issues.async_list_comments",
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
             mock_list_comments_resp,
@@ -276,11 +285,6 @@ async def test_process_pull_request_skip_plugin_test(
                 },
             },
             True,
-        )
-        ctx.should_call_api(
-            "rest.pulls.async_list",
-            {"owner": "he0119", "repo": "action-test", "state": "open"},
-            mock_pulls_resp,
         )
 
         ctx.receive_event(bot, event)
@@ -301,6 +305,8 @@ async def test_process_pull_request_skip_plugin_test(
         ],  # type: ignore
         any_order=True,
     )
+
+    mock_sleep.assert_awaited_once_with(60)
 
 
 async def test_not_publish(app: App, mocker: MockerFixture) -> None:
