@@ -1,3 +1,5 @@
+import asyncio
+
 from nonebot import logger, on_type
 from nonebot.adapters.github import (
     GitHubBot,
@@ -95,12 +97,6 @@ async def handle_pr_close(
             )
         logger.info(f"议题 #{related_issue_number} 已关闭")
 
-        # 如果商店更新则触发 registry 更新
-        if event.payload.pull_request.merged:
-            await trigger_registry_update(bot, repo_info, publish_type, issue)
-        else:
-            logger.info("拉取请求未合并，跳过触发商店列表更新")
-
         try:
             run_shell_command(
                 [
@@ -123,6 +119,14 @@ async def handle_pr_close(
             await resolve_conflict_pull_requests(pull_requests)
         else:
             logger.info("发布的拉取请求未合并，已跳过")
+
+        # 如果商店更新则触发 registry 更新
+        if event.payload.pull_request.merged:
+            # GitHub 的缓存一般 2 分钟左右会刷新
+            await asyncio.sleep(120)
+            await trigger_registry_update(bot, repo_info, publish_type, issue)
+        else:
+            logger.info("拉取请求未合并，跳过触发商店列表更新")
 
 
 async def check_rule(
