@@ -18,6 +18,7 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_sleep = mocker.patch("asyncio.sleep")
+    mock_sleep.return_value = None
 
     mock_issue = mocker.MagicMock()
     mock_issue.state = "open"
@@ -203,6 +204,7 @@ async def test_process_pull_request_skip_plugin_test(
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_sleep = mocker.patch("asyncio.sleep")
+    mock_sleep.return_value = None
 
     mock_issue = mocker.MagicMock()
     mock_issue.state = "open"
