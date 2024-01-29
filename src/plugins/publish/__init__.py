@@ -123,7 +123,7 @@ async def handle_pr_close(
         # 如果商店更新则触发 registry 更新
         if event.payload.pull_request.merged:
             # GitHub 的缓存一般 2 分钟左右会刷新
-            await asyncio.sleep(delay=120)
+            await asyncio.sleep(120)
             await trigger_registry_update(bot, repo_info, publish_type, issue)
         else:
             logger.info("拉取请求未合并，跳过触发商店列表更新")
