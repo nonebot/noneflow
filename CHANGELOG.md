@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [3.2.1] - 2024-01-29
+
 ### Fixed
 
 - 等待 2 分钟后再触发 registry_update
