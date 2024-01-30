@@ -137,3 +137,5 @@ cython_debug/
 
 plugin_test/
 .vscode/
+
+node_modules/

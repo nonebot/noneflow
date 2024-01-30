@@ -28,7 +28,10 @@ async def test_missing_info():
     assert name.group(1).strip() == "监测群事件"
 
     assert desc is not None
-    assert desc.group(1).strip() == "监测群成员变动、文件上传、红包运气王、管理员变动等等..."
+    assert (
+        desc.group(1).strip()
+        == "监测群成员变动、文件上传、红包运气王、管理员变动等等..."
+    )
 
     assert homepage is not None
     assert (
