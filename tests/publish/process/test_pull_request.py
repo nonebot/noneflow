@@ -121,12 +121,8 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
 
     # NOTE: 不知道为什么会调用两次
     # 那个 0 不知道哪里来的。
-    mock_sleep.assert_has_awaits(
-        [
-            mocker.call(120),
-            mocker.call(0),
-        ]  # type: ignore
-    )
+    # 在 GitHub Actions 上又只有一个了，看来是本地的环境问题。
+    mock_sleep.assert_awaited_once_with(120)
 
 
 async def test_process_pull_request_not_merged(app: App, mocker: MockerFixture) -> None:
