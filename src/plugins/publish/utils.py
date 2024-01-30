@@ -1,3 +1,4 @@
+import asyncio
 import json
 import re
 import subprocess
@@ -530,27 +531,33 @@ async def trigger_registry_update(
                 "data": json.dumps(result["data"]),
             }
         else:
-            with plugin_config.input_config.plugin_path.open() as f:
-                plugins = json.load(f)
+            # 从议题中获取的插件信息
+            # 这样如果在 json 更新后再次运行也不会获取到不属于该插件的信息
+            body = issue.body if issue.body else ""
+            module_name = PLUGIN_MODULE_NAME_PATTERN.search(body)
+            project_link = PROJECT_LINK_PATTERN.search(body)
+            config = PLUGIN_CONFIG_PATTERN.search(body)
 
-            if not plugins:
-                logger.error("插件列表为空，跳过触发商店列表更新")
+            if not module_name or not project_link:
+                logger.error("无法从议题中获取插件信息，跳过触发商店列表更新")
                 return
 
-            plugin = plugins[-1]
-            project_link = plugin["project_link"]
-            module_name = plugin["module_name"]
-            config = PLUGIN_CONFIG_PATTERN.search(issue.body) if issue.body else ""
+            module_name = module_name.group(1)
+            project_link = project_link.group(1)
+            config = config.group(1) if config else ""
 
             client_payload = {
                 "type": publish_type.value,
                 "key": f"{project_link}:{module_name}",
-                "config": config.group(1) if config else "",
+                "config": config,
             }
     else:
         client_payload = {"type": publish_type.value}
 
     owner, repo = plugin_config.input_config.registry_repository.split("/")
+    # GitHub 的缓存一般 2 分钟左右会刷新
+    logger.info("准备触发商店列表更新，等待 2 分钟")
+    await asyncio.sleep(120)
     # 触发商店列表更新
     await bot.rest.repos.async_create_dispatch_event(
         repo=repo,
