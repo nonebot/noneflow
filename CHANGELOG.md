@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [3.2.2] - 2024-01-30
+
 ### Fixed
 
 - 从议题中获取的插件信息
@@ -397,7 +399,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/noneflow/compare/v3.2.0...HEAD
+[unreleased]: https://github.com/nonebot/noneflow/compare/v3.2.2...HEAD
+[3.2.2]: https://github.com/nonebot/noneflow/compare/v3.2.1...v3.2.2
+[3.2.1]: https://github.com/nonebot/noneflow/compare/v3.2.0...v3.2.1
 [3.2.0]: https://github.com/nonebot/noneflow/compare/v3.1.1...v3.2.0
 [3.1.1]: https://github.com/nonebot/noneflow/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/nonebot/noneflow/compare/v3.0.7...v3.1.0
