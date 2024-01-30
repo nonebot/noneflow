@@ -22,7 +22,7 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
 
     mock_issue = mocker.MagicMock()
     mock_issue.state = "open"
-    mock_issue.body = "### 插件配置项\n\n```dotenv\nlog_level=DEBUG\n```"
+    mock_issue.body = "### PyPI 项目名\n\nproject_link1\n\n### 插件 import 包名\n\nmodule_name1\n\n### 插件配置项\n\n```dotenv\nlog_level=DEBUG\n```"
     mock_issue.number = 80
 
     mock_issues_resp = mocker.MagicMock()
@@ -119,6 +119,9 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
         any_order=True,
     )
 
+    # NOTE: 不知道为什么会调用两次
+    # 那个 0 不知道哪里来的。
+    # 在 GitHub Actions 上又只有一个了，看来是本地的环境问题。
     mock_sleep.assert_awaited_once_with(120)
 
 

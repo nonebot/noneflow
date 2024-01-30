@@ -1,4 +1,3 @@
-import json
 from typing import cast
 
 from nonebot import get_adapter
@@ -19,9 +18,12 @@ async def test_trigger_registry_update(app: App, mocker: MockerFixture):
     from src.plugins.publish.utils import trigger_registry_update
     from src.utils.validation import PublishType
 
+    mock_sleep = mocker.patch("asyncio.sleep")
+    mock_sleep.return_value = None
+
     mock_issue = mocker.MagicMock()
     mock_issue.state = "open"
-    mock_issue.body = "### 插件配置项\n\n```dotenv\nlog_level=DEBUG\n```"
+    mock_issue.body = "### PyPI 项目名\n\nproject_link1\n\n### 插件 import 包名\n\nmodule_name1\n\n### 插件配置项\n\n```dotenv\nlog_level=DEBUG\n```"
     mock_issue.number = 1
 
     mock_comment = mocker.MagicMock()
@@ -66,6 +68,8 @@ async def test_trigger_registry_update(app: App, mocker: MockerFixture):
             mock_issue,
         )
 
+    mock_sleep.assert_awaited_once_with(120)
+
 
 async def test_trigger_registry_update_skip_test(
     app: App, mocker: MockerFixture, mocked_api: MockRouter
@@ -74,6 +78,9 @@ async def test_trigger_registry_update_skip_test(
     from src.plugins.publish.models import RepoInfo
     from src.plugins.publish.utils import trigger_registry_update
     from src.utils.validation import PublishType
+
+    mock_sleep = mocker.patch("asyncio.sleep")
+    mock_sleep.return_value = None
 
     mock_issue = mocker.MagicMock()
     mock_issue.state = "open"
@@ -125,12 +132,17 @@ async def test_trigger_registry_update_skip_test(
             mock_issue,
         )
 
+    mock_sleep.assert_awaited_once_with(120)
+
 
 async def test_trigger_registry_update_bot(app: App, mocker: MockerFixture):
     """机器人发布的情况"""
     from src.plugins.publish.models import RepoInfo
     from src.plugins.publish.utils import trigger_registry_update
     from src.utils.validation import PublishType
+
+    mock_sleep = mocker.patch("asyncio.sleep")
+    mock_sleep.return_value = None
 
     mock_issue = mocker.MagicMock()
     mock_issue.state = "open"
@@ -164,12 +176,13 @@ async def test_trigger_registry_update_bot(app: App, mocker: MockerFixture):
             mock_issue,
         )
 
+    mock_sleep.assert_awaited_once_with(120)
 
-async def test_trigger_registry_update_plugins_file_empty(
+
+async def test_trigger_registry_update_plugins_issue_body_info_missing(
     app: App, mocker: MockerFixture
 ):
-    """如果插件列表为空，应该不会触发更新"""
-    from src.plugins.publish.config import plugin_config
+    """如果议题信息不全，应该不会触发更新"""
     from src.plugins.publish.models import RepoInfo
     from src.plugins.publish.utils import trigger_registry_update
     from src.utils.validation import PublishType
@@ -184,9 +197,6 @@ async def test_trigger_registry_update_plugins_file_empty(
 
     mock_list_comments_resp = mocker.MagicMock()
     mock_list_comments_resp.parsed_data = [mock_comment]
-
-    with plugin_config.input_config.plugin_path.open("w") as f:
-        json.dump([], f)
 
     async with app.test_api() as ctx:
         adapter = get_adapter(Adapter)
