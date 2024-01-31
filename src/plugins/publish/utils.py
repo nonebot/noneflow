@@ -5,7 +5,7 @@ import subprocess
 from typing import TYPE_CHECKING, Union
 
 from githubkit.exception import RequestFailed
-from githubkit.rest.models import PullRequest, PullRequestSimple
+from githubkit.rest import PullRequest, PullRequestSimple
 from nonebot import logger
 from nonebot.adapters.github import Bot, GitHubBot
 
@@ -41,20 +41,13 @@ from .models import RepoInfo
 from .render import render_comment
 
 if TYPE_CHECKING:
-    from githubkit.rest.models import (
+    from githubkit.rest import (
         Issue,
         IssuePropLabelsItemsOneof1,
         Label,
         PullRequestPropLabelsItems,
         PullRequestSimplePropLabelsItems,
     )
-    from githubkit.webhooks.models import Issue as WebhookIssue
-    from githubkit.webhooks.models import (
-        IssueCommentCreatedPropIssue,
-        IssuesOpenedPropIssue,
-        IssuesReopenedPropIssue,
-    )
-    from githubkit.webhooks.models import Label as WebhookLabel
 
 
 def run_shell_command(command: list[str]):
@@ -76,7 +69,6 @@ def run_shell_command(command: list[str]):
 
 def get_type_by_labels(
     labels: list["Label"]
-    | list["WebhookLabel"]
     | list[Union[str, "IssuePropLabelsItemsOneof1"]]
     | list["PullRequestSimplePropLabelsItems"]
     | list["PullRequestPropLabelsItems"],
@@ -159,7 +151,7 @@ def extract_name_from_title(title: str, publish_type: PublishType) -> str | None
 
 
 def validate_info_from_issue(
-    issue: "IssuesOpenedPropIssue | IssuesReopenedPropIssue | IssueCommentCreatedPropIssue | Issue | WebhookIssue",
+    issue: "Issue",
     publish_type: PublishType,
 ) -> ValidationDict:
     """从议题中提取发布所需数据"""
@@ -377,7 +369,7 @@ async def should_skip_plugin_test(
     """判断是否跳过插件测试"""
     comments = (
         await bot.rest.issues.async_list_comments(
-            **repo_info.dict(), issue_number=issue_number
+            **repo_info.model_dump(), issue_number=issue_number
         )
     ).parsed_data
     for comment in comments:
@@ -409,7 +401,7 @@ async def create_pull_request(
     try:
         # 创建拉取请求
         resp = await bot.rest.pulls.async_create(
-            **repo_info.dict(),
+            **repo_info.model_dump(),
             title=title,
             body=body,
             base=plugin_config.input_config.base,
@@ -418,7 +410,9 @@ async def create_pull_request(
         pull = resp.parsed_data
         # 自动给拉取请求添加标签
         await bot.rest.issues.async_add_labels(
-            **repo_info.dict(), issue_number=pull.number, labels=[result["type"].value]
+            **repo_info.model_dump(),
+            issue_number=pull.number,
+            labels=[result["type"].value],
         )
         logger.info("拉取请求创建完毕")
     except RequestFailed:
@@ -426,12 +420,12 @@ async def create_pull_request(
 
         pull = (
             await bot.rest.pulls.async_list(
-                **repo_info.dict(), head=f"{repo_info.owner}:{branch_name}"
+                **repo_info.model_dump(), head=f"{repo_info.owner}:{branch_name}"
             )
         ).parsed_data[0]
         if pull.title != title:
             await bot.rest.pulls.async_update(
-                **repo_info.dict(), pull_number=pull.number, title=title
+                **repo_info.model_dump(), pull_number=pull.number, title=title
             )
             logger.info(f"拉取请求标题已修改为 {title}")
         if pull.draft:
@@ -456,7 +450,7 @@ async def comment_issue(
     # 如果发现之前评论过，直接修改之前的评论
     comments = (
         await bot.rest.issues.async_list_comments(
-            **repo_info.dict(), issue_number=issue_number
+            **repo_info.model_dump(), issue_number=issue_number
         )
     ).parsed_data
     reusable_comment = next(
@@ -469,14 +463,14 @@ async def comment_issue(
         logger.info(f"发现已有评论 {reusable_comment.id}，正在修改")
         if reusable_comment.body != comment:
             await bot.rest.issues.async_update_comment(
-                **repo_info.dict(), comment_id=reusable_comment.id, body=comment
+                **repo_info.model_dump(), comment_id=reusable_comment.id, body=comment
             )
             logger.info("评论修改完成")
         else:
             logger.info("评论内容无变化，跳过修改")
     else:
         await bot.rest.issues.async_create_comment(
-            **repo_info.dict(), issue_number=issue_number, body=comment
+            **repo_info.model_dump(), issue_number=issue_number, body=comment
         )
         logger.info("评论创建完成")
 
@@ -495,7 +489,9 @@ async def ensure_issue_content(
     if new_content:
         new_content.append(issue_body)
         await bot.rest.issues.async_update(
-            **repo_info.dict(), issue_number=issue_number, body="\n\n".join(new_content)
+            **repo_info.model_dump(),
+            issue_number=issue_number,
+            body="\n\n".join(new_content),
         )
         logger.info("检测到议题内容缺失，已更新")
 

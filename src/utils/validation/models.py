@@ -3,34 +3,27 @@ import json
 from enum import Enum
 from typing import TYPE_CHECKING, Any, TypedDict
 
-from pydantic import BaseModel, Field, root_validator, validator
-from pydantic.color import Color
-from pydantic.errors import JsonError, SetError
-
-if TYPE_CHECKING:
-    from pydantic.error_wrappers import ErrorDict as PydanticErrorDict
-
-    class ErrorDict(PydanticErrorDict, total=False):
-        input: Any
-
+from pydantic import (
+    BaseModel,
+    Field,
+    ValidationInfo,
+    ValidatorFunctionWrapHandler,
+    field_validator,
+    model_validator,
+)
+from pydantic_core import PydanticCustomError
+from pydantic_extra_types.color import Color
 
 from .constants import (
     MAX_NAME_LENGTH,
     PLUGIN_VALID_TYPE,
     PYPI_PACKAGE_NAME_PATTERN,
     PYTHON_MODULE_NAME_REGEX,
-    VALIDATION_CONTEXT,
-)
-from .errors import (
-    DuplicationError,
-    HomepageError,
-    ModuleNameError,
-    PluginSupportedAdaptersMissingError,
-    PluginTypeError,
-    ProjectLinkNameError,
-    ProjectLinkNotFoundError,
 )
 from .utils import check_pypi, check_url, get_adapters, resolve_adapter_name
+
+if TYPE_CHECKING:
+    from pydantic_core import ErrorDetails
 
 
 class ValidationDict(TypedDict):
@@ -39,7 +32,7 @@ class ValidationDict(TypedDict):
     name: str
     author: str
     data: dict[str, Any]
-    errors: "list[ErrorDict]"
+    errors: "list[ErrorDetails]"
 
 
 class PublishType(Enum):
@@ -57,27 +50,32 @@ class PyPIMixin(BaseModel):
     module_name: str
     project_link: str
 
-    @validator("module_name", pre=True)
+    @field_validator("module_name", mode="before")
     def module_name_validator(cls, v: str) -> str:
         if not PYTHON_MODULE_NAME_REGEX.match(v):
-            raise ModuleNameError()
+            raise PydanticCustomError("module_name", "包名不符合规范")
         return v
 
-    @validator("project_link", pre=True)
+    @field_validator("project_link", mode="before")
     def project_link_validator(cls, v: str) -> str:
         if not PYPI_PACKAGE_NAME_PATTERN.match(v):
-            raise ProjectLinkNameError()
+            raise PydanticCustomError("project_link.name", "PyPI 项目名不符合规范")
 
         if v and not check_pypi(v):
-            raise ProjectLinkNotFoundError()
+            raise PydanticCustomError("project_link.not_found", "PyPI 项目名不存在")
         return v
 
-    @root_validator
-    def prevent_duplication(cls, values: dict[str, Any]) -> dict[str, Any]:
+    @model_validator(mode="before")
+    def prevent_duplication(
+        cls, values: dict[str, Any], info: ValidationInfo
+    ) -> dict[str, Any]:
         module_name = values.get("module_name")
         project_link = values.get("project_link")
 
-        data = VALIDATION_CONTEXT.get().get("previous_data")
+        context = info.context
+        if context is None:
+            raise ValueError("未获取到验证上下文")
+        data = context.get("previous_data")
         if data is None:
             raise ValueError("未获取到数据列表")
 
@@ -89,7 +87,11 @@ class PyPIMixin(BaseModel):
                 for x in data
             )
         ):
-            raise DuplicationError(project_link=project_link, module_name=module_name)
+            raise PydanticCustomError(
+                "duplication",
+                "PyPI 项目名 {project_link} 加包名 {module_name} 的值与商店重复",
+                {"project_link": project_link, "module_name": module_name},
+            )
         return values
 
 
@@ -107,23 +109,39 @@ class PublishInfo(abc.ABC, BaseModel):
     desc: str
     author: str
     homepage: str
-    tags: list[Tag] = Field(max_items=3)
+    tags: list[Tag] = Field(max_length=3)
     is_official: bool = False
 
-    @validator("homepage", pre=True)
+    @field_validator("*", mode="wrap")
+    def collect_valid_values(
+        cls, v: Any, handler: ValidatorFunctionWrapHandler, info: ValidationInfo
+    ):
+        context = info.context
+        if context is None:
+            raise ValueError("未获取到验证上下文")
+
+        result = handler(v)
+        context["valid_data"][info.field_name] = result
+        return result
+
+    @field_validator("homepage", mode="before")
     def homepage_validator(cls, v: str) -> str:
         if v:
             status_code, msg = check_url(v)
             if status_code != 200:
-                raise HomepageError(status_code=status_code, msg=msg)
+                raise PydanticCustomError(
+                    "homepage",
+                    "项目主页无法访问",
+                    {"status_code": status_code, "msg": msg},
+                )
         return v
 
-    @validator("tags", pre=True)
+    @field_validator("tags", mode="before")
     def tags_validator(cls, v: str) -> list[dict[str, str]]:
         try:
             tags: list[Any] | Any = json.loads(v)
         except json.JSONDecodeError:
-            raise JsonError()
+            raise
         return tags
 
     @classmethod
@@ -138,41 +156,61 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
 
     type: str
     """插件类型"""
-    supported_adapters: list[str] | None
+    supported_adapters: list[str] | None = None
     """插件支持的适配器"""
 
-    @validator("type", pre=True)
+    @field_validator("*", mode="wrap")
+    def collect_valid_values(
+        cls, v: Any, handler: ValidatorFunctionWrapHandler, info: ValidationInfo
+    ):
+        context = info.context
+        if context is None:
+            raise ValueError("未获取到验证上下文")
+
+        result = handler(v)
+        context["valid_data"][info.field_name] = result
+        return result
+
+    @field_validator("type", mode="before")
     def type_validator(cls, v: str) -> str:
         if v not in PLUGIN_VALID_TYPE:
-            raise PluginTypeError()
+            raise PydanticCustomError("plugin.type", "插件类型不符合规范")
         return v
 
-    @validator("supported_adapters", pre=True)
+    @field_validator("supported_adapters", mode="before")
     def supported_adapters_validator(
-        cls, v: str | list[str] | None
+        cls,
+        v: str | list[str] | None,
+        info: ValidationInfo,
     ) -> list[str] | None:
-        skip_plugin_test = VALIDATION_CONTEXT.get().get("skip_plugin_test")
+        context = info.context
+        if context is None:
+            raise ValueError("未获取到验证上下文")
+
+        skip_plugin_test = context.get("skip_plugin_test")
         # 如果是从 issue 中获取的数据，需要先解码
         if skip_plugin_test and isinstance(v, str):
             try:
                 v = json.loads(v)
             except json.JSONDecodeError:
-                raise JsonError()
+                raise
 
         # 如果是支持所有适配器，值应该是 None，不需要检查
         if v is None:
             return None
 
         if not isinstance(v, (list, set)):
-            raise SetError()
+            raise PydanticCustomError("type_error.set", "值应该是一个集合")
 
         supported_adapters = {resolve_adapter_name(x) for x in v}
         store_adapters = get_adapters()
 
         missing_adapters = supported_adapters - store_adapters
         if missing_adapters:
-            raise PluginSupportedAdaptersMissingError(
-                missing_adapters=list(missing_adapters)
+            raise PydanticCustomError(
+                "plugin.supported_adapters.missing",
+                "适配器 {missing_adapters} 不存在",
+                {"missing_adapters": list(missing_adapters)},
             )
         return sorted(supported_adapters)
 

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 import httpx
 from nonebot import logger
 from pydantic import ValidationError
-from pydantic.color import Color, float_to_255
+from pydantic_extra_types.color import Color, float_to_255
 
 from .constants import STORE_ADAPTERS_URL
 
