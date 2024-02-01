@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 延长 registry_update 触发等待时间到 5 分钟
+
 ## [3.2.2] - 2024-01-30
 
 ### Fixed

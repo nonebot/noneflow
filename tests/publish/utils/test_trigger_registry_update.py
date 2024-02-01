@@ -68,7 +68,7 @@ async def test_trigger_registry_update(app: App, mocker: MockerFixture):
             mock_issue,
         )
 
-    mock_sleep.assert_awaited_once_with(120)
+    mock_sleep.assert_awaited_once_with(300)
 
 
 async def test_trigger_registry_update_skip_test(
@@ -132,7 +132,7 @@ async def test_trigger_registry_update_skip_test(
             mock_issue,
         )
 
-    mock_sleep.assert_awaited_once_with(120)
+    mock_sleep.assert_awaited_once_with(300)
 
 
 async def test_trigger_registry_update_bot(app: App, mocker: MockerFixture):
@@ -176,7 +176,7 @@ async def test_trigger_registry_update_bot(app: App, mocker: MockerFixture):
             mock_issue,
         )
 
-    mock_sleep.assert_awaited_once_with(120)
+    mock_sleep.assert_awaited_once_with(300)
 
 
 async def test_trigger_registry_update_plugins_issue_body_info_missing(
