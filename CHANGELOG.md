@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [3.2.3] - 2024-02-01
+
 ### Fixed
 
 - 延长 registry_update 触发等待时间到 5 分钟
@@ -403,7 +405,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/noneflow/compare/v3.2.2...HEAD
+[unreleased]: https://github.com/nonebot/noneflow/compare/v3.2.3...HEAD
+[3.2.3]: https://github.com/nonebot/noneflow/compare/v3.2.2...v3.2.3
 [3.2.2]: https://github.com/nonebot/noneflow/compare/v3.2.1...v3.2.2
 [3.2.1]: https://github.com/nonebot/noneflow/compare/v3.2.0...v3.2.1
 [3.2.0]: https://github.com/nonebot/noneflow/compare/v3.1.1...v3.2.0
