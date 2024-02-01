@@ -3,6 +3,7 @@ from githubkit.rest import (
     Label,
     PullRequestPropLabelsItems,
     PullRequestSimple,
+    WebhookIssueCommentCreatedPropIssueAllof0PropLabelsItems,
     WebhookIssuesOpenedPropIssuePropLabelsItems,
     WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems,
 )
@@ -65,6 +66,7 @@ def get_type_by_labels(
     | list[str | IssuePropLabelsItemsOneof1]
     | list[PullRequestPropLabelsItems]
     | list[WebhookIssuesOpenedPropIssuePropLabelsItems]
+    | list[WebhookIssueCommentCreatedPropIssueAllof0PropLabelsItems]
     | list[WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems] = Depends(
         get_labels
     ),

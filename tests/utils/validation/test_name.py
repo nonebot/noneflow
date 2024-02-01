@@ -34,8 +34,8 @@ async def test_module_name_invalid(mocked_api: MockRouter) -> None:
     assert result["errors"][0]["loc"] == ("module_name",)
     assert result["errors"][0]["type"] == "value_error.module_name"
 
-    assert not mocked_api["project_link"].called
-    assert not mocked_api["homepage"].called
+    assert mocked_api["project_link"].called
+    assert mocked_api["homepage"].called
 
 
 async def test_name_duplication(mocked_api: MockRouter) -> None:

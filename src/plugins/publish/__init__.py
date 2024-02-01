@@ -129,9 +129,11 @@ async def check_rule(
     event: IssuesOpened | IssuesReopened | IssuesEdited | IssueCommentCreated,
     publish_type: PublishType | None = Depends(get_type_by_labels),
 ) -> bool:
-    if isinstance(
-        event, IssueCommentCreated
-    ) and event.payload.comment.user.login.endswith(BOT_MARKER):
+    if (
+        isinstance(event, IssueCommentCreated)
+        and event.payload.comment.user
+        and event.payload.comment.user.login.endswith(BOT_MARKER)
+    ):
         logger.info("评论来自机器人，已跳过")
         return False
     if event.payload.issue.pull_request:

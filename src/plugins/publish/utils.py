@@ -48,6 +48,7 @@ if TYPE_CHECKING:
         PullRequestPropLabelsItems,
         PullRequestSimple,
         PullRequestSimplePropLabelsItems,
+        WebhookIssueCommentCreatedPropIssueAllof0PropLabelsItems,
         WebhookIssuesOpenedPropIssuePropLabelsItems,
         WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems,
     )
@@ -75,6 +76,7 @@ def get_type_by_labels(
     | list[Union[str, "IssuePropLabelsItemsOneof1"]]
     | list["PullRequestSimplePropLabelsItems"]
     | list["PullRequestPropLabelsItems"]
+    | list["WebhookIssueCommentCreatedPropIssueAllof0PropLabelsItems"]
     | list["WebhookIssuesOpenedPropIssuePropLabelsItems"]
     | list["WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems"],
 ) -> PublishType | None:
