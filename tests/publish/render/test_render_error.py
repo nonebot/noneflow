@@ -143,10 +143,11 @@ async def test_render_error_plugin(app: App, mocker: MockFixture):
         },
         "errors": [
             {
-                "loc": ("__root__",),
+                "loc": (),
                 "msg": "PyPI 项目名 project_link 加包名 module_name 的值与商店重复。",
                 "type": "value_error.duplication",
                 "ctx": {"project_link": "project_link", "module_name": "module_name"},
+                "input": None,
             },
             {
                 "loc": ("name",),
@@ -179,6 +180,7 @@ async def test_render_error_plugin(app: App, mocker: MockFixture):
                 "loc": ("type",),
                 "msg": "field required",
                 "type": "missing",
+                "input": None,
             },
         ],
         "type": PublishType.PLUGIN,
@@ -214,12 +216,14 @@ async def test_render_error_plugin_load_test(app: App):
                 "msg": "无法获取到插件元数据。",
                 "type": "value_error.metadata",
                 "ctx": {"plugin_test_result": False},
+                "input": None,
             },
             {
                 "loc": ("plugin_test",),
                 "msg": "插件无法正常加载",
                 "type": "value_error.plugin_test",
                 "ctx": {"output": "output"},
+                "input": None,
             },
         ],
         "type": PublishType.PLUGIN,
@@ -255,6 +259,7 @@ async def test_render_error_plugin_metadata(app: App, mocker: MockFixture):
                 "msg": "无法获取到插件元数据。",
                 "type": "value_error.metadata",
                 "ctx": {"plugin_test_result": True},
+                "input": None,
             },
         ],
         "type": PublishType.PLUGIN,
