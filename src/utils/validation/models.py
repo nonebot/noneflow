@@ -51,12 +51,14 @@ class PyPIMixin(BaseModel):
     project_link: str
 
     @field_validator("module_name", mode="before")
+    @classmethod
     def module_name_validator(cls, v: str) -> str:
         if not PYTHON_MODULE_NAME_REGEX.match(v):
             raise PydanticCustomError("value_error.module_name", "包名不符合规范")
         return v
 
     @field_validator("project_link", mode="before")
+    @classmethod
     def project_link_validator(cls, v: str) -> str:
         if not PYPI_PACKAGE_NAME_PATTERN.match(v):
             raise PydanticCustomError(
@@ -70,6 +72,7 @@ class PyPIMixin(BaseModel):
         return v
 
     @model_validator(mode="before")
+    @classmethod
     def prevent_duplication(
         cls, values: dict[str, Any], info: ValidationInfo
     ) -> dict[str, Any]:
@@ -117,6 +120,7 @@ class PublishInfo(abc.ABC, BaseModel):
     is_official: bool = False
 
     @field_validator("*", mode="wrap")
+    @classmethod
     def collect_valid_values(
         cls, v: Any, handler: ValidatorFunctionWrapHandler, info: ValidationInfo
     ):
@@ -129,6 +133,7 @@ class PublishInfo(abc.ABC, BaseModel):
         return result
 
     @field_validator("homepage", mode="before")
+    @classmethod
     def homepage_validator(cls, v: str) -> str:
         if v:
             status_code, msg = check_url(v)
@@ -141,6 +146,7 @@ class PublishInfo(abc.ABC, BaseModel):
         return v
 
     @field_validator("tags", mode="before")
+    @classmethod
     def tags_validator(cls, v: str) -> list[dict[str, str]]:
         try:
             tags: list[Any] | Any = json.loads(v)
@@ -164,12 +170,14 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     """插件支持的适配器"""
 
     @field_validator("type", mode="before")
+    @classmethod
     def type_validator(cls, v: str) -> str:
         if v not in PLUGIN_VALID_TYPE:
             raise PydanticCustomError("value_error.plugin.type", "插件类型不符合规范")
         return v
 
     @field_validator("supported_adapters", mode="before")
+    @classmethod
     def supported_adapters_validator(
         cls,
         v: str | list[str] | None,
