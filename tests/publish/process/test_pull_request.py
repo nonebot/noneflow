@@ -122,7 +122,7 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
     # NOTE: 不知道为什么会调用两次
     # 那个 0 不知道哪里来的。
     # 在 GitHub Actions 上又只有一个了，看来是本地的环境问题。
-    mock_sleep.assert_awaited_once_with(120)
+    mock_sleep.assert_awaited_once_with(300)
 
 
 async def test_process_pull_request_not_merged(app: App, mocker: MockerFixture) -> None:
@@ -311,7 +311,7 @@ async def test_process_pull_request_skip_plugin_test(
         any_order=True,
     )
 
-    mock_sleep.assert_awaited_once_with(120)
+    mock_sleep.assert_awaited_once_with(300)
 
 
 async def test_not_publish(app: App, mocker: MockerFixture) -> None:

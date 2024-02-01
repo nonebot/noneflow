@@ -556,8 +556,8 @@ async def trigger_registry_update(
 
     owner, repo = plugin_config.input_config.registry_repository.split("/")
     # GitHub 的缓存一般 2 分钟左右会刷新
-    logger.info("准备触发商店列表更新，等待 2 分钟")
-    await asyncio.sleep(120)
+    logger.info("准备触发商店列表更新，等待 5 分钟")
+    await asyncio.sleep(300)
     # 触发商店列表更新
     await bot.rest.repos.async_create_dispatch_event(
         repo=repo,
