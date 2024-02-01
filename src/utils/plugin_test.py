@@ -86,9 +86,6 @@ def get_plugin_list() -> dict[str, str]:
     return {plugin["project_link"]: plugin["module_name"] for plugin in plugins}
 
 
-PLUGIN_LIST = get_plugin_list()
-
-
 class PluginTest:
     def __init__(
         self, project_link: str, module_name: str, config: str | None = None
@@ -96,6 +93,7 @@ class PluginTest:
         self.project_link = project_link
         self.module_name = module_name
         self.config = config
+        self._plugin_list = None
 
         self._create = False
         self._run = False
@@ -274,6 +272,13 @@ class PluginTest:
         print(output)
         self._output_lines.append(output)
 
+    @property
+    def plugin_list(self) -> dict[str, str]:
+        """获取插件列表"""
+        if self._plugin_list is None:
+            self._plugin_list = get_plugin_list()
+        return self._plugin_list
+
     def _get_plugin_module_name(self, require: str) -> str | None:
         # anyio==3.6.2 ; python_version >= "3.11" and python_version < "4.0"
         # pydantic[dotenv]==1.10.6 ; python_version >= "3.10" and python_version < "4.0"
@@ -281,8 +286,8 @@ class PluginTest:
         if match:
             package_name = match.group(1)
             # 不用包括自己
-            if package_name in PLUGIN_LIST and package_name != self.project_link:
-                return PLUGIN_LIST[package_name]
+            if package_name in self.plugin_list and package_name != self.project_link:
+                return self.plugin_list[package_name]
 
 
 async def main():

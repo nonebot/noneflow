@@ -24,13 +24,13 @@ STORE_ADAPTERS_URL = (
 
 # Pydantic 错误信息翻译
 CUSTOM_MESSAGES = {
-    "type_error.dict": "值不是合法的字典",
-    "type_error.list": "值不是合法的列表",
+    "model_type": "值不是合法的字典",
+    "list_type": "值不是合法的列表",
     "type_error.set": "值不是合法的集合",
     "type_error.none.not_allowed": "值不能为 None",
     "value_error.json": "JSON 格式不合法",
-    "value_error.missing": "字段不存在",
-    "value_error.color": "颜色格式不正确",
-    "value_error.any_str.max_length": "字符串长度不能超过 {limit_value} 个字符",
-    "value_error.list.max_items": "列表长度不能超过 {limit_value} 个元素",
+    "missing": "字段不存在",
+    "color_error": "颜色格式不正确",
+    "string_too_long": "字符串长度不能超过 {max_length} 个字符",
+    "too_long": "列表长度不能超过 {max_length} 个元素",
 }

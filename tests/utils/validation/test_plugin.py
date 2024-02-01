@@ -40,12 +40,7 @@ async def test_plugin_info_validation_failed(mocked_api: MockRouter) -> None:
             {"label": "test", "color": "#ffffff"},
             {"label": "testtoolong", "color": "#fffffff"},
         ],
-        previous_data=[
-            {
-                "module_name": "module_name",
-                "project_link": "project_link",
-            }
-        ],
+        previous_data=[],
         type="invalid",
         supported_adapters=["missing", "~onebot.v11"],
     )

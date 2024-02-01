@@ -1,4 +1,11 @@
-from githubkit.rest import IssuePropLabelsItemsOneof1, Label, PullRequestSimple
+from githubkit.rest import (
+    IssuePropLabelsItemsOneof1,
+    Label,
+    PullRequestPropLabelsItems,
+    PullRequestSimple,
+    WebhookIssuesOpenedPropIssuePropLabelsItems,
+    WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems,
+)
 from nonebot.adapters.github import (
     Bot,
     GitHubBot,
@@ -54,7 +61,13 @@ def get_issue_title(
 
 
 def get_type_by_labels(
-    labels: list[Label] | list[str | IssuePropLabelsItemsOneof1] = Depends(get_labels),
+    labels: list[Label]
+    | list[str | IssuePropLabelsItemsOneof1]
+    | list[PullRequestPropLabelsItems]
+    | list[WebhookIssuesOpenedPropIssuePropLabelsItems]
+    | list[WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems] = Depends(
+        get_labels
+    ),
 ) -> PublishType | None:
     """通过标签获取类型"""
     return utils.get_type_by_labels(labels)

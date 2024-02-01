@@ -46,7 +46,10 @@ if TYPE_CHECKING:
         IssuePropLabelsItemsOneof1,
         Label,
         PullRequestPropLabelsItems,
+        PullRequestSimple,
         PullRequestSimplePropLabelsItems,
+        WebhookIssuesOpenedPropIssuePropLabelsItems,
+        WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems,
     )
 
 
@@ -71,7 +74,9 @@ def get_type_by_labels(
     labels: list["Label"]
     | list[Union[str, "IssuePropLabelsItemsOneof1"]]
     | list["PullRequestSimplePropLabelsItems"]
-    | list["PullRequestPropLabelsItems"],
+    | list["PullRequestPropLabelsItems"]
+    | list["WebhookIssuesOpenedPropIssuePropLabelsItems"]
+    | list["WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems"],
 ) -> PublishType | None:
     """通过标签获取类型"""
     for label in labels:

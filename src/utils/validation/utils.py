@@ -3,13 +3,12 @@ from typing import TYPE_CHECKING
 
 import httpx
 from nonebot import logger
-from pydantic import ValidationError
 from pydantic_extra_types.color import Color, float_to_255
 
 from .constants import STORE_ADAPTERS_URL
 
 if TYPE_CHECKING:
-    from pydantic.error_wrappers import ErrorDict
+    from pydantic_core import ErrorDetails
 
 
 def check_pypi(project_link: str) -> bool:
@@ -57,11 +56,11 @@ def color_to_hex(color: Color) -> str:
 
 
 def convert_errors(
-    e: ValidationError, custom_messages: dict[str, str]
-) -> list["ErrorDict"]:
+    errors: list["ErrorDetails"], custom_messages: dict[str, str]
+) -> list["ErrorDetails"]:
     """翻译 Pydantic 错误信息"""
-    new_errors: list["ErrorDict"] = []
-    for error in e.errors():
+    new_errors: list["ErrorDetails"] = []
+    for error in errors:
         custom_message = custom_messages.get(error["type"])
         if custom_message:
             ctx = error.get("ctx")

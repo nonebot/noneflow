@@ -34,8 +34,8 @@ async def test_module_name_invalid(mocked_api: MockRouter) -> None:
     assert result["errors"][0]["loc"] == ("module_name",)
     assert result["errors"][0]["type"] == "value_error.module_name"
 
-    assert mocked_api["project_link"].called
-    assert mocked_api["homepage"].called
+    assert not mocked_api["project_link"].called
+    assert not mocked_api["homepage"].called
 
 
 async def test_name_duplication(mocked_api: MockRouter) -> None:
@@ -60,11 +60,11 @@ async def test_name_duplication(mocked_api: MockRouter) -> None:
 
     assert not result["valid"]
     assert result["errors"]
-    assert result["errors"][0]["loc"] == ("__root__",)
+    assert result["errors"][0]["loc"] == ()
     assert result["errors"][0]["type"] == "value_error.duplication"
 
-    assert mocked_api["project_link1"].called
-    assert mocked_api["homepage"].called
+    assert not mocked_api["project_link1"].called
+    assert not mocked_api["homepage"].called
 
 
 async def test_name_too_long(mocked_api: MockRouter) -> None:
@@ -81,7 +81,7 @@ async def test_name_too_long(mocked_api: MockRouter) -> None:
     assert "name" not in result["data"]
     assert result["errors"]
     assert result["errors"][0]["loc"] == ("name",)
-    assert result["errors"][0]["type"] == "value_error.any_str.max_length"
+    assert result["errors"][0]["type"] == "string_too_long"
     assert result["errors"][0]["msg"] == "字符串长度不能超过 50 个字符"
 
     assert mocked_api["project_link"].called

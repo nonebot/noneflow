@@ -61,7 +61,6 @@ async def test_bot_info_validation_failed_json_error(mocked_api: MockRouter) -> 
     assert result["errors"]
     assert result["errors"][0]["loc"] == ("tags",)
     assert result["errors"][0]["type"] == "value_error.json"
-    assert "input" in result["errors"][0]
     assert result["errors"][0]["input"] == "not a json"
     assert result["errors"][0]["msg"] == "JSON 格式不合法"
 
@@ -83,8 +82,8 @@ async def test_bot_info_validation_failed_tag_field_missing(
     assert "tags" not in result["data"]
     assert result["errors"]
     assert result["errors"][0]["loc"] == ("tags", 0, "color")
-    assert result["errors"][0]["type"] == "value_error.missing"
-    assert "input" not in result["errors"][0]
+    assert result["errors"][0]["type"] == "missing"
+    assert result["errors"][0]["input"] == {"label": "test"}
 
     assert mocked_api["homepage"].called
 

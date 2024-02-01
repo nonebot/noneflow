@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Any
 
 from nonebot import get_driver
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from src.utils.plugin_test import strip_ansi
 
@@ -16,6 +16,8 @@ class PublishConfig(BaseModel):
 
 
 class Config(BaseModel, extra="ignore"):
+    model_config = ConfigDict(coerce_numbers_to_str=True)
+
     input_config: PublishConfig
     github_repository: str
     github_run_id: str

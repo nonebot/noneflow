@@ -17,7 +17,7 @@ async def test_tags_color_missing(mocked_api: MockRouter) -> None:
     assert "tags" not in result["data"]
     assert result["errors"]
     assert result["errors"][0]["loc"] == ("tags", 0, "color")
-    assert result["errors"][0]["type"] == "value_error.missing"
+    assert result["errors"][0]["type"] == "missing"
     assert result["errors"][0]["msg"] == "字段不存在"
 
     assert mocked_api["project_link"].called
@@ -36,7 +36,7 @@ async def test_tags_color_invalid(mocked_api: MockRouter) -> None:
     assert "tags" not in result["data"]
     assert result["errors"]
     assert result["errors"][0]["loc"] == ("tags", 0, "color")
-    assert result["errors"][0]["type"] == "value_error.color"
+    assert result["errors"][0]["type"] == "color_error"
     assert result["errors"][0]["msg"] == "颜色格式不正确"
 
     assert mocked_api["project_link"].called
@@ -55,7 +55,7 @@ async def test_tags_label_invalid(mocked_api: MockRouter) -> None:
     assert "tags" not in result["data"]
     assert result["errors"]
     assert result["errors"][0]["loc"] == ("tags", 0, "label")
-    assert result["errors"][0]["type"] == "value_error.any_str.max_length"
+    assert result["errors"][0]["type"] == "string_too_long"
 
     assert mocked_api["project_link"].called
     assert mocked_api["homepage"].called
@@ -80,7 +80,7 @@ async def test_tags_number_invalid(mocked_api: MockRouter) -> None:
     assert "tags" not in result["data"]
     assert result["errors"]
     assert result["errors"][0]["loc"] == ("tags",)
-    assert result["errors"][0]["type"] == "value_error.list.max_items"
+    assert result["errors"][0]["type"] == "too_long"
     assert result["errors"][0]["msg"] == "列表长度不能超过 3 个元素"
 
     assert mocked_api["project_link"].called
@@ -119,7 +119,7 @@ async def test_tags_json_not_list(mocked_api: MockRouter) -> None:
     assert "tags" not in result["data"]
     assert result["errors"]
     assert result["errors"][0]["loc"] == ("tags",)
-    assert result["errors"][0]["type"] == "type_error.list"
+    assert result["errors"][0]["type"] == "list_type"
     assert result["errors"][0]["msg"] == "值不是合法的列表"
 
     assert mocked_api["project_link"].called
@@ -138,7 +138,7 @@ async def test_tags_json_not_dict(mocked_api: MockRouter) -> None:
     assert "tags" not in result["data"]
     assert result["errors"]
     assert result["errors"][0]["loc"] == ("tags", 1)
-    assert result["errors"][0]["type"] == "type_error.dict"
+    assert result["errors"][0]["type"] == "model_type"
     assert result["errors"][0]["msg"] == "值不是合法的字典"
 
     assert mocked_api["project_link"].called

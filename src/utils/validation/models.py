@@ -53,16 +53,20 @@ class PyPIMixin(BaseModel):
     @field_validator("module_name", mode="before")
     def module_name_validator(cls, v: str) -> str:
         if not PYTHON_MODULE_NAME_REGEX.match(v):
-            raise PydanticCustomError("module_name", "包名不符合规范")
+            raise PydanticCustomError("value_error.module_name", "包名不符合规范")
         return v
 
     @field_validator("project_link", mode="before")
     def project_link_validator(cls, v: str) -> str:
         if not PYPI_PACKAGE_NAME_PATTERN.match(v):
-            raise PydanticCustomError("project_link.name", "PyPI 项目名不符合规范")
+            raise PydanticCustomError(
+                "value_error.project_link.name", "PyPI 项目名不符合规范"
+            )
 
         if v and not check_pypi(v):
-            raise PydanticCustomError("project_link.not_found", "PyPI 项目名不存在")
+            raise PydanticCustomError(
+                "value_error.project_link.not_found", "PyPI 项目名不存在"
+            )
         return v
 
     @model_validator(mode="before")
@@ -88,7 +92,7 @@ class PyPIMixin(BaseModel):
             )
         ):
             raise PydanticCustomError(
-                "duplication",
+                "value_error.duplication",
                 "PyPI 项目名 {project_link} 加包名 {module_name} 的值与商店重复",
                 {"project_link": project_link, "module_name": module_name},
             )
@@ -130,7 +134,7 @@ class PublishInfo(abc.ABC, BaseModel):
             status_code, msg = check_url(v)
             if status_code != 200:
                 raise PydanticCustomError(
-                    "homepage",
+                    "value_error.homepage",
                     "项目主页无法访问",
                     {"status_code": status_code, "msg": msg},
                 )
@@ -141,7 +145,7 @@ class PublishInfo(abc.ABC, BaseModel):
         try:
             tags: list[Any] | Any = json.loads(v)
         except json.JSONDecodeError:
-            raise
+            raise PydanticCustomError("value_error.json", "JSON 格式不合法")
         return tags
 
     @classmethod
@@ -159,22 +163,10 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     supported_adapters: list[str] | None = None
     """插件支持的适配器"""
 
-    @field_validator("*", mode="wrap")
-    def collect_valid_values(
-        cls, v: Any, handler: ValidatorFunctionWrapHandler, info: ValidationInfo
-    ):
-        context = info.context
-        if context is None:
-            raise ValueError("未获取到验证上下文")
-
-        result = handler(v)
-        context["valid_data"][info.field_name] = result
-        return result
-
     @field_validator("type", mode="before")
     def type_validator(cls, v: str) -> str:
         if v not in PLUGIN_VALID_TYPE:
-            raise PydanticCustomError("plugin.type", "插件类型不符合规范")
+            raise PydanticCustomError("value_error.plugin.type", "插件类型不符合规范")
         return v
 
     @field_validator("supported_adapters", mode="before")
@@ -193,7 +185,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
             try:
                 v = json.loads(v)
             except json.JSONDecodeError:
-                raise
+                raise PydanticCustomError("value_error.json", "JSON 格式不合法")
 
         # 如果是支持所有适配器，值应该是 None，不需要检查
         if v is None:
@@ -208,9 +200,12 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
         missing_adapters = supported_adapters - store_adapters
         if missing_adapters:
             raise PydanticCustomError(
-                "plugin.supported_adapters.missing",
-                "适配器 {missing_adapters} 不存在",
-                {"missing_adapters": list(missing_adapters)},
+                "value_error.plugin.supported_adapters.missing",
+                "适配器 {missing_adapters_str} 不存在",
+                {
+                    "missing_adapters": list(missing_adapters),
+                    "missing_adapters_str": ", ".join(missing_adapters),
+                },
             )
         return sorted(supported_adapters)
 

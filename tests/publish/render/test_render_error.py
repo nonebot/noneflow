@@ -18,9 +18,9 @@ async def test_render_error_bot(app: App):
             {
                 "loc": ("name",),
                 "msg": "名称不能超过 50 个字符。",
-                "type": "value_error.any_str.max_length",
+                "type": "string_too_long",
                 "input": "tooooooooooooooooooooooooooooooooooooooooooooooooog",
-                "ctx": {"limit_value": 50},
+                "ctx": {"max_length": 50},
             },
             {
                 "loc": ("homepage",),
@@ -32,14 +32,14 @@ async def test_render_error_bot(app: App):
             {
                 "loc": ("tags", 1, "label"),
                 "msg": "标签名称超过 10 个字符。",
-                "type": "value_error.any_str.max_length",
+                "type": "string_too_long",
                 "input": "testtoolong",
-                "ctx": {"limit_value": 10},
+                "ctx": {"max_length": 10},
             },
             {
                 "loc": ("tags", 1, "color"),
                 "msg": "标签颜色不符合十六进制颜色码规则。",
-                "type": "value_error.color",
+                "type": "color_error",
                 "input": "#fffffff",
             },
         ],
@@ -85,9 +85,9 @@ async def test_render_error_adapter(app: App):
             {
                 "loc": ("name",),
                 "msg": "名称不能超过 50 个字符。",
-                "type": "value_error.any_str.max_length",
+                "type": "string_too_long",
                 "input": "tooooooooooooooooooooooooooooooooooooooooooooooooog",
-                "ctx": {"limit_value": 50},
+                "ctx": {"max_length": 50},
             },
             {
                 "loc": ("homepage",),
@@ -99,14 +99,14 @@ async def test_render_error_adapter(app: App):
             {
                 "loc": ("tags", 1, "label"),
                 "msg": "标签名称超过 10 个字符。",
-                "type": "value_error.any_str.max_length",
+                "type": "string_too_long",
                 "input": "testtoolong",
-                "ctx": {"limit_value": 10},
+                "ctx": {"max_length": 10},
             },
             {
                 "loc": ("tags", 1, "color"),
                 "msg": "标签颜色不符合十六进制颜色码规则。",
-                "type": "value_error.color",
+                "type": "color_error",
                 "input": "#fffffff",
             },
         ],
@@ -151,9 +151,9 @@ async def test_render_error_plugin(app: App, mocker: MockFixture):
             {
                 "loc": ("name",),
                 "msg": "名称不能超过 50 个字符。",
-                "type": "value_error.any_str.max_length",
+                "type": "string_too_long",
                 "input": "tooooooooooooooooooooooooooooooooooooooooooooooooog",
-                "ctx": {"limit_value": 50},
+                "ctx": {"max_length": 50},
             },
             {
                 "loc": ("homepage",),
@@ -165,20 +165,20 @@ async def test_render_error_plugin(app: App, mocker: MockFixture):
             {
                 "loc": ("tags", 1, "label"),
                 "msg": "标签名称超过 10 个字符。",
-                "type": "value_error.any_str.max_length",
+                "type": "string_too_long",
                 "input": "testtoolong",
-                "ctx": {"limit_value": 10},
+                "ctx": {"max_length": 10},
             },
             {
                 "loc": ("tags", 1, "color"),
                 "msg": "标签颜色不符合十六进制颜色码规则。",
-                "type": "value_error.color",
+                "type": "color_error",
                 "input": "#fffffff",
             },
             {
                 "loc": ("type",),
                 "msg": "field required",
-                "type": "value_error.missing",
+                "type": "missing",
             },
         ],
         "type": PublishType.PLUGIN,
@@ -289,13 +289,13 @@ async def test_render_error_tags_invalid(app: App, mocker: MockFixture):
             {
                 "loc": ("tags", 2),
                 "msg": "value is not a valid dict",
-                "type": "type_error.dict",
+                "type": "model_type",
                 "input": 1,
             },
             {
                 "loc": ("tags",),
                 "msg": "value is not a valid list",
-                "type": "type_error.list",
+                "type": "list_type",
                 "input": '"test"',
             },
             {

@@ -4,6 +4,7 @@ from typing import Any, cast
 
 from pydantic import ValidationError
 
+from .constants import CUSTOM_MESSAGES
 from .models import (
     AdapterPublishInfo,
     BotPublishInfo,
@@ -13,7 +14,7 @@ from .models import (
 )
 from .models import PublishType as PublishType
 from .models import ValidationDict as ValidationDict
-from .utils import color_to_hex
+from .utils import color_to_hex, convert_errors
 
 validation_model_map: dict[PublishType, type[PublishInfo]] = {
     PublishType.BOT: BotPublishInfo,
@@ -47,6 +48,9 @@ def validate_info(
     except ValidationError as exc:
         errors = exc.errors()
         data: dict[str, Any] = validation_context["valid_data"]
+
+    # 翻译错误
+    errors = convert_errors(errors, CUSTOM_MESSAGES)
 
     # tags 会被转成 list[Tag]，需要转成 dict
     if "tags" in data:
