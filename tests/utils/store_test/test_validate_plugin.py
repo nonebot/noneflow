@@ -436,7 +436,7 @@ async def test_validate_plugin_failed(
                     {
                         "loc": ("plugin_test",),
                         "msg": "插件无法正常加载",
-                        "type": "value_error.plugin_test",
+                        "type": "plugin_test",
                         "ctx": {"output": ""},
                         "input": None,
                     }
@@ -547,7 +547,7 @@ async def test_validate_plugin_failed_with_previous(
                     {
                         "loc": ("plugin_test",),
                         "msg": "插件无法正常加载",
-                        "type": "value_error.plugin_test",
+                        "type": "plugin_test",
                         "ctx": {"output": ""},
                         "input": None,
                     }

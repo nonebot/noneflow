@@ -25,7 +25,7 @@ async def test_render_error_bot(app: App):
             {
                 "loc": ("homepage",),
                 "msg": "项目主页不可访问。",
-                "type": "value_error.homepage",
+                "type": "homepage",
                 "ctx": {"status_code": 404},
                 "input": "https://www.baidu.com",
             },
@@ -73,13 +73,13 @@ async def test_render_error_adapter(app: App):
             {
                 "loc": ("module_name",),
                 "msg": "包名不符合规范。",
-                "type": "value_error.module_name",
+                "type": "module_name",
                 "input": "module_name/",
             },
             {
                 "loc": ("project_link",),
                 "msg": "PyPI 项目名不存在。",
-                "type": "value_error.project_link.not_found",
+                "type": "project_link.not_found",
                 "input": "project_link_failed",
             },
             {
@@ -92,7 +92,7 @@ async def test_render_error_adapter(app: App):
             {
                 "loc": ("homepage",),
                 "msg": "项目主页不可访问。",
-                "type": "value_error.homepage",
+                "type": "homepage",
                 "ctx": {"status_code": 404},
                 "input": "https://www.baidu.com",
             },
@@ -145,7 +145,7 @@ async def test_render_error_plugin(app: App, mocker: MockFixture):
             {
                 "loc": (),
                 "msg": "PyPI 项目名 project_link 加包名 module_name 的值与商店重复。",
-                "type": "value_error.duplication",
+                "type": "duplication",
                 "ctx": {"project_link": "project_link", "module_name": "module_name"},
                 "input": None,
             },
@@ -159,7 +159,7 @@ async def test_render_error_plugin(app: App, mocker: MockFixture):
             {
                 "loc": ("homepage",),
                 "msg": "项目主页不可访问。",
-                "type": "value_error.homepage",
+                "type": "homepage",
                 "ctx": {"status_code": 404},
                 "input": "https://www.baidu.com",
             },
@@ -214,14 +214,14 @@ async def test_render_error_plugin_load_test(app: App):
             {
                 "loc": ("metadata",),
                 "msg": "无法获取到插件元数据。",
-                "type": "value_error.metadata",
+                "type": "metadata",
                 "ctx": {"plugin_test_result": False},
                 "input": None,
             },
             {
                 "loc": ("plugin_test",),
                 "msg": "插件无法正常加载",
-                "type": "value_error.plugin_test",
+                "type": "plugin_test",
                 "ctx": {"output": "output"},
                 "input": None,
             },
@@ -257,7 +257,7 @@ async def test_render_error_plugin_metadata(app: App, mocker: MockFixture):
             {
                 "loc": ("metadata",),
                 "msg": "无法获取到插件元数据。",
-                "type": "value_error.metadata",
+                "type": "metadata",
                 "ctx": {"plugin_test_result": True},
                 "input": None,
             },
@@ -306,7 +306,7 @@ async def test_render_error_tags_invalid(app: App, mocker: MockFixture):
             {
                 "loc": ("tags",),
                 "msg": "Invalid JSON",
-                "type": "value_error.json",
+                "type": "json_type",
                 "input": "not json",
             },
         ],
@@ -342,20 +342,20 @@ async def test_render_type_eroor(app: App, mocker: MockFixture):
             {
                 "loc": ("type",),
                 "msg": "插件类型不符合规范。",
-                "type": "value_error.plugin.type",
+                "type": "plugin.type",
                 "input": "invalid",
             },
             {
                 "loc": ("supported_adapters",),
                 "msg": "适配器 missing 不存在。",
-                "type": "value_error.plugin.supported_adapters.missing",
+                "type": "supported_adapters.missing",
                 "ctx": {"missing_adapters": {"missing"}},
                 "input": ["missing", "~onebot.v11"],
             },
             {
                 "loc": ("supported_adapters",),
                 "msg": "value is not a valid set",
-                "type": "type_error.set",
+                "type": "set_type",
                 "input": '"test"',
             },
         ],
@@ -427,14 +427,14 @@ async def test_render_http_error(app: App, mocker: MockFixture):
             {
                 "loc": ("homepage",),
                 "msg": "项目主页不可访问。",
-                "type": "value_error.homepage",
+                "type": "homepage",
                 "ctx": {"status_code": 404},
                 "input": "https://www.baidu.com",
             },
             {
                 "loc": ("homepage",),
                 "msg": "项目主页无法访问。",
-                "type": "value_error.homepage",
+                "type": "homepage",
                 "ctx": {
                     "status_code": -1,
                     "msg": "Request URL is missing an 'http://' or 'https://' protocol.",

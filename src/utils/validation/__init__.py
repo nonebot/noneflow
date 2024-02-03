@@ -75,7 +75,7 @@ def validate_info(
                 {
                     "loc": ("metadata",),
                     "msg": "无法获取到插件元数据。",
-                    "type": "value_error.metadata",
+                    "type": "metadata",
                     "ctx": {"plugin_test_result": plugin_test_result},
                     "input": None,
                 }
@@ -93,7 +93,7 @@ def validate_info(
                 {
                     "loc": ("plugin_test",),
                     "msg": "插件无法正常加载",
-                    "type": "value_error.plugin_test",
+                    "type": "plugin_test",
                     "ctx": {"output": plugin_test_output},
                     "input": None,
                 }

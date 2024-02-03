@@ -60,7 +60,7 @@ async def test_bot_info_validation_failed_json_error(mocked_api: MockRouter) -> 
     assert "tags" not in result["data"]
     assert result["errors"]
     assert result["errors"][0]["loc"] == ("tags",)
-    assert result["errors"][0]["type"] == "value_error.json"
+    assert result["errors"][0]["type"] == "json_type"
     assert result["errors"][0]["input"] == "not a json"
     assert result["errors"][0]["msg"] == "JSON 格式不合法"
 

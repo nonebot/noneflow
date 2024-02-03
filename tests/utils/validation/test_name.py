@@ -15,7 +15,7 @@ async def test_pypi_project_name_invalid(mocked_api: MockRouter) -> None:
     assert "project_link" not in result["data"]
     assert result["errors"]
     assert result["errors"][0]["loc"] == ("project_link",)
-    assert result["errors"][0]["type"] == "value_error.project_link.name"
+    assert result["errors"][0]["type"] == "project_link.name"
 
     assert mocked_api["homepage"].called
 
@@ -32,7 +32,7 @@ async def test_module_name_invalid(mocked_api: MockRouter) -> None:
     assert "module_name" not in result["data"]
     assert result["errors"]
     assert result["errors"][0]["loc"] == ("module_name",)
-    assert result["errors"][0]["type"] == "value_error.module_name"
+    assert result["errors"][0]["type"] == "module_name"
 
     assert mocked_api["project_link"].called
     assert mocked_api["homepage"].called
@@ -61,7 +61,7 @@ async def test_name_duplication(mocked_api: MockRouter) -> None:
     assert not result["valid"]
     assert result["errors"]
     assert result["errors"][0]["loc"] == ()
-    assert result["errors"][0]["type"] == "value_error.duplication"
+    assert result["errors"][0]["type"] == "duplication"
 
     assert not mocked_api["project_link1"].called
     assert not mocked_api["homepage"].called

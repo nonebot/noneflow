@@ -100,7 +100,7 @@ async def test_tags_json_invalid(mocked_api: MockRouter) -> None:
     assert "tags" not in result["data"]
     assert result["errors"]
     assert result["errors"][0]["loc"] == ("tags",)
-    assert result["errors"][0]["type"] == "value_error.json"
+    assert result["errors"][0]["type"] == "json_type"
 
     assert mocked_api["project_link"].called
     assert mocked_api["homepage"].called
