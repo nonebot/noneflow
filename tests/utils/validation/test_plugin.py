@@ -26,6 +26,10 @@ async def test_plugin_info_validation_success(mocked_api: MockRouter) -> None:
         type="application",
         supported_adapters=None,
     )
+    assert not result["errors"]
+    assert result["type"] == PublishType.PLUGIN
+    assert result["name"] == "name"
+    assert result["author"] == "author"
 
     assert mocked_api["homepage"].called
 
@@ -47,9 +51,57 @@ async def test_plugin_info_validation_failed(mocked_api: MockRouter) -> None:
 
     result = validate_info(PublishType.PLUGIN, data)
 
-    assert not result["valid"]
-    assert "homepage" not in result["data"]
-    assert "tags" not in result["data"]
-    assert result["errors"]
+    assert result == {
+        "valid": False,
+        "data": {
+            "module_name": "module_name",
+            "project_link": "project_link",
+            "name": "name",
+            "desc": "desc",
+            "author": "author",
+        },
+        "errors": [
+            {
+                "type": "homepage",
+                "loc": ("homepage",),
+                "msg": "项目主页无法访问",
+                "input": "https://www.baidu.com",
+                "ctx": {"status_code": 404, "msg": ""},
+            },
+            {
+                "type": "string_too_long",
+                "loc": ("tags", 1, "label"),
+                "msg": "字符串长度不能超过 10 个字符",
+                "input": "testtoolong",
+                "ctx": {"max_length": 10},
+                "url": "https://errors.pydantic.dev/2.6/v/string_too_long",
+            },
+            {
+                "type": "color_error",
+                "loc": ("tags", 1, "color"),
+                "msg": "颜色格式不正确",
+                "input": "#fffffff",
+            },
+            {
+                "type": "plugin.type",
+                "loc": ("type",),
+                "msg": "插件类型不符合规范",
+                "input": "invalid",
+            },
+            {
+                "type": "supported_adapters.missing",
+                "loc": ("supported_adapters",),
+                "msg": "适配器 missing 不存在",
+                "input": ["missing", "~onebot.v11"],
+                "ctx": {
+                    "missing_adapters": ["missing"],
+                    "missing_adapters_str": "missing",
+                },
+            },
+        ],
+        "type": PublishType.PLUGIN,
+        "name": "name",
+        "author": "author",
+    }
 
     assert mocked_api["homepage_failed"].called

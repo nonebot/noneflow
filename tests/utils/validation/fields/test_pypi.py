@@ -3,7 +3,7 @@ from respx import MockRouter
 from tests.utils.validation.utils import generate_adapter_data
 
 
-async def test_pypi_project_name_invalid(mocked_api: MockRouter) -> None:
+async def test_project_link_invalid(mocked_api: MockRouter) -> None:
     """测试 PyPI 项目名错误的情况"""
     from src.utils.validation import PublishType, validate_info
 
@@ -13,9 +13,14 @@ async def test_pypi_project_name_invalid(mocked_api: MockRouter) -> None:
 
     assert not result["valid"]
     assert "project_link" not in result["data"]
-    assert result["errors"]
-    assert result["errors"][0]["loc"] == ("project_link",)
-    assert result["errors"][0]["type"] == "project_link.name"
+    assert result["errors"] == [
+        {
+            "type": "project_link.name",
+            "loc": ("project_link",),
+            "msg": "PyPI 项目名不符合规范",
+            "input": "project_link/",
+        }
+    ]
 
     assert mocked_api["homepage"].called
 
@@ -30,9 +35,14 @@ async def test_module_name_invalid(mocked_api: MockRouter) -> None:
 
     assert not result["valid"]
     assert "module_name" not in result["data"]
-    assert result["errors"]
-    assert result["errors"][0]["loc"] == ("module_name",)
-    assert result["errors"][0]["type"] == "module_name"
+    assert result["errors"] == [
+        {
+            "type": "module_name",
+            "loc": ("module_name",),
+            "msg": "包名不符合规范",
+            "input": "1module_name",
+        }
+    ]
 
     assert mocked_api["project_link"].called
     assert mocked_api["homepage"].called
@@ -59,30 +69,33 @@ async def test_name_duplication(mocked_api: MockRouter) -> None:
     result = validate_info(PublishType.ADAPTER, data)
 
     assert not result["valid"]
-    assert result["errors"]
-    assert result["errors"][0]["loc"] == ()
-    assert result["errors"][0]["type"] == "duplication"
+    assert not result["data"]
+    assert result["errors"] == [
+        {
+            "type": "duplication",
+            "loc": (),
+            "msg": "PyPI 项目名 project_link1 加包名 module_name1 的值与商店重复",
+            "input": {
+                "name": "name",
+                "desc": "desc",
+                "author": "author",
+                "module_name": "module_name1",
+                "project_link": "project_link1",
+                "homepage": "https://nonebot.dev",
+                "tags": '[{"label": "test", "color": "#ffffff"}]',
+                "previous_data": [
+                    {
+                        "module_name": "module_name1",
+                        "project_link": "project_link1",
+                        "name": "name",
+                        "desc": "desc",
+                        "author": "author",
+                    }
+                ],
+            },
+            "ctx": {"project_link": "project_link1", "module_name": "module_name1"},
+        }
+    ]
 
     assert not mocked_api["project_link1"].called
     assert not mocked_api["homepage"].called
-
-
-async def test_name_too_long(mocked_api: MockRouter) -> None:
-    """测试名称过长的情况"""
-    from src.utils.validation import PublishType, validate_info
-
-    data = generate_adapter_data(
-        name="looooooooooooooooooooooooooooooooooooooooooooooooooooooooong"
-    )
-
-    result = validate_info(PublishType.ADAPTER, data)
-
-    assert not result["valid"]
-    assert "name" not in result["data"]
-    assert result["errors"]
-    assert result["errors"][0]["loc"] == ("name",)
-    assert result["errors"][0]["type"] == "string_too_long"
-    assert result["errors"][0]["msg"] == "字符串长度不能超过 50 个字符"
-
-    assert mocked_api["project_link"].called
-    assert mocked_api["homepage"].called
