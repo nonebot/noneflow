@@ -61,6 +61,10 @@ def test_extract_version_failed(tmp_path: Path):
 
     assert version == "0.2.1"
 
+    version = extract_version(tmp_path, "nonebot_plugin_mockingbird")
+
+    assert version == "0.2.1"
+
     version = extract_version(tmp_path, "nonebot2")
 
     assert version is None

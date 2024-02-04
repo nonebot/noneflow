@@ -36,6 +36,8 @@ def extract_version(path: Path, project_link: str) -> str | None:
         return match.group(1).strip()
 
     # 匹配版本解析失败的情况
+    # 目前有很多插件都把信息填错了，没有使用 - 而是使用了 _
+    project_link = project_link.replace("_", "-")
     match = re.search(
         rf"depends on {project_link} \(\^(\S+)\), version solving failed\.", output
     )
