@@ -5,7 +5,9 @@ import httpx
 from nonebot import logger
 from pydantic_extra_types.color import Color, float_to_255
 
-from .constants import MESSAGE_TRANSLATIONS, STORE_ADAPTERS_URL
+from src.utils.constants import STORE_ADAPTERS_URL
+
+from .constants import MESSAGE_TRANSLATIONS
 
 if TYPE_CHECKING:
     from pydantic_core import ErrorDetails

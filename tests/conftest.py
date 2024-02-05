@@ -11,6 +11,8 @@ from nonebug.app import App
 from pytest_mock import MockerFixture
 from respx import MockRouter
 
+from src.utils.constants import STORE_ADAPTERS_URL
+
 if TYPE_CHECKING:
     from nonebot.plugin import Plugin
 
@@ -175,7 +177,7 @@ def mocked_api(respx_mock: MockRouter):
     respx_mock.get("https://www.baidu.com", name="homepage_failed").respond(404)
     respx_mock.get("https://nonebot.dev/", name="homepage").respond()
     respx_mock.get(
-        "https://raw.githubusercontent.com/nonebot/nonebot2/master/assets/adapters.json",
+        STORE_ADAPTERS_URL,
         name="store_adapters",
     ).respond(
         json=[

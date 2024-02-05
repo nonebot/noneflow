@@ -13,7 +13,7 @@ from nonebot.params import Depends
 from src.utils.validation.models import PublishType
 
 from .config import plugin_config
-from .constants import BOT_MARKER, BRANCH_NAME_PREFIX, MAX_NAME_LENGTH
+from .constants import BOT_MARKER, BRANCH_NAME_PREFIX, TITLE_MAX_LENGTH
 from .depends import (
     get_installation_id,
     get_issue_number,
@@ -190,7 +190,7 @@ async def handle_publish_check(
 
         # 设置拉取请求与议题的标题
         # 限制标题长度，过长的标题不好看
-        title = f"{publish_type.value}: {result['name'][:MAX_NAME_LENGTH]}"
+        title = f"{publish_type.value}: {result['name'][:TITLE_MAX_LENGTH]}"
 
         # 分支命名示例 publish/issue123
         branch_name = f"{BRANCH_NAME_PREFIX}{issue_number}"
