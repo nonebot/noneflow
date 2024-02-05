@@ -76,11 +76,11 @@ class PyPIMixin(BaseModel):
         project_link = values.get("project_link")
 
         context = info.context
-        if context is None:
-            raise ValueError("未获取到验证上下文")
+        if context is None:  # pragma: no cover
+            raise PydanticCustomError("validation_context", "未获取到验证上下文")
         data = context.get("previous_data")
         if data is None:
-            raise ValueError("未获取到数据列表")
+            raise PydanticCustomError("previous_data", "未获取到数据列表")
 
         if (
             module_name
@@ -121,8 +121,8 @@ class PublishInfo(abc.ABC, BaseModel):
         cls, v: Any, handler: ValidatorFunctionWrapHandler, info: ValidationInfo
     ):
         context = info.context
-        if context is None:
-            raise ValueError("未获取到验证上下文")
+        if context is None:  # pragma: no cover
+            raise PydanticCustomError("validation_context", "未获取到验证上下文")
 
         result = handler(v)
         context["valid_data"][info.field_name] = result
@@ -180,8 +180,8 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
         info: ValidationInfo,
     ) -> list[str] | None:
         context = info.context
-        if context is None:
-            raise ValueError("未获取到验证上下文")
+        if context is None:  # pragma: no cover
+            raise PydanticCustomError("validation_context", "未获取到验证上下文")
 
         skip_plugin_test = context.get("skip_plugin_test")
         # 如果是从 issue 中获取的数据，需要先解码

@@ -99,3 +99,38 @@ async def test_name_duplication(mocked_api: MockRouter) -> None:
 
     assert not mocked_api["project_link1"].called
     assert not mocked_api["homepage"].called
+
+
+async def test_name_duplication_previos_data_missing(mocked_api: MockRouter) -> None:
+    """没有提供 previos_data 的情况"""
+    from src.utils.validation import PublishType, validate_info
+
+    data = generate_adapter_data(
+        module_name="module_name1",
+        project_link="project_link1",
+        previous_data=None,
+    )
+
+    result = validate_info(PublishType.ADAPTER, data)
+
+    assert not result["valid"]
+    assert not result["data"]
+    assert result["errors"] == [
+        {
+            "type": "previous_data",
+            "loc": (),
+            "msg": "未获取到数据列表",
+            "input": {
+                "name": "name",
+                "desc": "desc",
+                "author": "author",
+                "module_name": "module_name1",
+                "project_link": "project_link1",
+                "homepage": "https://nonebot.dev",
+                "tags": '[{"label": "test", "color": "#ffffff"}]',
+            },
+        }
+    ]
+
+    assert not mocked_api["project_link1"].called
+    assert not mocked_api["homepage"].called
