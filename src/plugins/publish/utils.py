@@ -5,7 +5,6 @@ import subprocess
 from typing import TYPE_CHECKING, Union
 
 from githubkit.exception import RequestFailed
-from githubkit.rest import PullRequest, PullRequestSimple
 from nonebot import logger
 from nonebot.adapters.github import Bot, GitHubBot
 
@@ -45,6 +44,7 @@ if TYPE_CHECKING:
         Issue,
         IssuePropLabelsItemsOneof1,
         Label,
+        PullRequest,
         PullRequestPropLabelsItems,
         PullRequestSimple,
         PullRequestSimplePropLabelsItems,
@@ -262,7 +262,7 @@ def validate_info_from_issue(
 
 
 async def resolve_conflict_pull_requests(
-    pulls: list[PullRequestSimple] | list[PullRequest],
+    pulls: list["PullRequestSimple"] | list["PullRequest"],
 ):
     """根据关联的议题提交来解决冲突
 
