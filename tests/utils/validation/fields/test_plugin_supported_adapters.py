@@ -28,9 +28,14 @@ async def test_plugin_supported_adapters_set(mocked_api: MockRouter) -> None:
 
     assert not result["valid"]
     assert "supported_adapters" not in result["data"]
-    assert result["errors"]
-    assert result["errors"][0]["type"] == "type_error.set"
-    assert result["errors"][0]["msg"] == "值不是合法的集合"
+    assert result["errors"] == [
+        {
+            "type": "set_type",
+            "loc": ("supported_adapters",),
+            "msg": "值不是合法的集合",
+            "input": "test",
+        }
+    ]
 
     assert mocked_api["homepage"].called
 
@@ -45,9 +50,14 @@ async def test_plugin_supported_adapters_json(mocked_api: MockRouter) -> None:
 
     assert not result["valid"]
     assert "supported_adapters" not in result["data"]
-    assert result["errors"]
-    assert result["errors"][0]["type"] == "value_error.json"
-    assert result["errors"][0]["msg"] == "JSON 格式不合法"
+    assert result["errors"] == [
+        {
+            "type": "json_type",
+            "loc": ("supported_adapters",),
+            "msg": "JSON 格式不合法",
+            "input": "test",
+        }
+    ]
 
     assert mocked_api["homepage"].called
 
@@ -67,12 +77,17 @@ async def test_plugin_supported_adapters_missing_adapters(
 
     assert not result["valid"]
     assert "supported_adapters" not in result["data"]
-    assert result["errors"]
-    assert (
-        result["errors"][0]["type"] == "value_error.plugin.supported_adapters.missing"
-    )
-    assert result["errors"][0]["msg"] == "适配器 nonebot.adapters.qq 不存在"
-    assert "ctx" in result["errors"][0]
-    assert result["errors"][0]["ctx"]["missing_adapters"] == ["nonebot.adapters.qq"]
+    assert result["errors"] == [
+        {
+            "type": "supported_adapters.missing",
+            "loc": ("supported_adapters",),
+            "msg": "适配器 nonebot.adapters.qq 不存在",
+            "input": {"nonebot.adapters.qq"},
+            "ctx": {
+                "missing_adapters": ["nonebot.adapters.qq"],
+                "missing_adapters_str": "nonebot.adapters.qq",
+            },
+        }
+    ]
 
     assert mocked_api["homepage"].called

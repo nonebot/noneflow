@@ -80,13 +80,13 @@ async def handle_pr_close(
     async with bot.as_installation(installation_id):
         issue = (
             await bot.rest.issues.async_get(
-                **repo_info.dict(), issue_number=related_issue_number
+                **repo_info.model_dump(), issue_number=related_issue_number
             )
         ).parsed_data
         if issue.state == "open":
             logger.info(f"正在关闭议题 #{related_issue_number}")
             await bot.rest.issues.async_update(
-                **repo_info.dict(),
+                **repo_info.model_dump(),
                 issue_number=related_issue_number,
                 state="closed",
                 state_reason="completed"
@@ -129,9 +129,11 @@ async def check_rule(
     event: IssuesOpened | IssuesReopened | IssuesEdited | IssueCommentCreated,
     publish_type: PublishType | None = Depends(get_type_by_labels),
 ) -> bool:
-    if isinstance(
-        event, IssueCommentCreated
-    ) and event.payload.comment.user.login.endswith(BOT_MARKER):
+    if (
+        isinstance(event, IssueCommentCreated)
+        and event.payload.comment.user
+        and event.payload.comment.user.login.endswith(BOT_MARKER)
+    ):
         logger.info("评论来自机器人，已跳过")
         return False
     if event.payload.issue.pull_request:
@@ -165,7 +167,7 @@ async def handle_publish_check(
         # 所以需要获取最新的议题状态
         issue = (
             await bot.rest.issues.async_get(
-                **repo_info.dict(), issue_number=issue_number
+                **repo_info.model_dump(), issue_number=issue_number
             )
         ).parsed_data
 
@@ -206,7 +208,7 @@ async def handle_publish_check(
             # 如果之前已经创建了拉取请求，则将其转换为草稿
             pulls = (
                 await bot.rest.pulls.async_list(
-                    **repo_info.dict(), head=f"{repo_info.owner}:{branch_name}"
+                    **repo_info.model_dump(), head=f"{repo_info.owner}:{branch_name}"
                 )
             ).parsed_data
             if pulls and (pull := pulls[0]) and not pull.draft:
@@ -227,7 +229,7 @@ async def handle_publish_check(
         # 不然会因为修改议题触发 Actions 导致标签没有正常打上
         if issue.title != title:
             await bot.rest.issues.async_update(
-                **repo_info.dict(), issue_number=issue_number, title=title
+                **repo_info.model_dump(), issue_number=issue_number, title=title
             )
             logger.info(f"议题标题已修改为 {title}")
 
@@ -266,7 +268,7 @@ async def handle_auto_merge(
     async with bot.as_installation(installation_id):
         pull_request = (
             await bot.rest.pulls.async_get(
-                **repo_info.dict(), pull_number=event.payload.pull_request.number
+                **repo_info.model_dump(), pull_number=event.payload.pull_request.number
             )
         ).parsed_data
 
@@ -275,7 +277,7 @@ async def handle_auto_merge(
             await resolve_conflict_pull_requests([pull_request])
 
         await bot.rest.pulls.async_merge(
-            **repo_info.dict(),
+            **repo_info.model_dump(),
             pull_number=event.payload.pull_request.number,
             merge_method="rebase",
         )

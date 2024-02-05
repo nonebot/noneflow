@@ -2,10 +2,10 @@ import json
 import shutil
 from datetime import datetime
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 from pytest_mock import MockerFixture
 from respx import MockRouter
+from zoneinfo import ZoneInfo
 
 
 async def test_validate_plugin(
@@ -436,8 +436,9 @@ async def test_validate_plugin_failed(
                     {
                         "loc": ("plugin_test",),
                         "msg": "插件无法正常加载",
-                        "type": "value_error.plugin_test",
+                        "type": "plugin_test",
                         "ctx": {"output": ""},
+                        "input": None,
                     }
                 ],
             },
@@ -546,8 +547,9 @@ async def test_validate_plugin_failed_with_previous(
                     {
                         "loc": ("plugin_test",),
                         "msg": "插件无法正常加载",
-                        "type": "value_error.plugin_test",
+                        "type": "plugin_test",
                         "ctx": {"output": ""},
+                        "input": None,
                     }
                 ],
             },

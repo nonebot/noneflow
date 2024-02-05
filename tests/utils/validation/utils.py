@@ -3,7 +3,11 @@ from typing import Any
 
 
 def exclude_none(data: dict[str, Any]) -> dict[str, Any]:
-    return {k: v for k, v in data.items() if v is not None}
+    """去除字典中的 None 值
+
+    supported_adapters 字段除外
+    """
+    return {k: v for k, v in data.items() if v is not None or k == "supported_adapters"}
 
 
 def generate_adapter_data(

@@ -2,16 +2,20 @@
 
 from typing import Any, cast
 
-from pydantic import validate_model
+from pydantic import ValidationError
 
-from .constants import CUSTOM_MESSAGES, VALIDATION_CONTEXT
-from .models import AdapterPublishInfo, BotPublishInfo, PluginPublishInfo, PublishInfo
+from .models import (
+    AdapterPublishInfo,
+    BotPublishInfo,
+    PluginPublishInfo,
+    PublishInfo,
+    Tag,
+)
 from .models import PublishType as PublishType
-from .models import Tag
 from .models import ValidationDict as ValidationDict
-from .utils import color_to_hex, convert_errors
+from .utils import color_to_hex, translate_errors
 
-validation_model_map = {
+validation_model_map: dict[PublishType, type[PublishInfo]] = {
     PublishType.BOT: BotPublishInfo,
     PublishType.ADAPTER: AdapterPublishInfo,
     PublishType.PLUGIN: PluginPublishInfo,
@@ -30,10 +34,22 @@ def validate_info(
     validation_context = {
         "previous_data": raw_data.get("previous_data"),
         "skip_plugin_test": raw_data.get("skip_plugin_test"),
+        "valid_data": {},
     }
-    VALIDATION_CONTEXT.set(validation_context)
 
-    data, _, errors = validate_model(validation_model_map[publish_type], raw_data)
+    try:
+        data = dict(
+            validation_model_map[publish_type].model_validate(
+                raw_data, context=validation_context
+            )
+        )
+        errors = []
+    except ValidationError as exc:
+        errors = exc.errors()
+        data: dict[str, Any] = validation_context["valid_data"]
+
+    # 翻译错误
+    errors = translate_errors(errors)
 
     # tags 会被转成 list[Tag]，需要转成 dict
     if "tags" in data:
@@ -46,28 +62,6 @@ def validate_info(
             for tag in tags
         ]
 
-    errors_with_input = []
-    if errors:
-        for error in convert_errors(errors, CUSTOM_MESSAGES):
-            error = cast(dict[str, Any], error)
-            match error["loc"]:
-                case (name,) if isinstance(name, str):
-                    # 可能会有字段数据缺失的情况，这种时候不设置 input
-                    if name in raw_data:
-                        error["input"] = raw_data[name]
-                case ("tags", index) if isinstance(index, int):
-                    error["input"] = PublishInfo.tags_validator(raw_data["tags"])[index]
-                # 标签 list[Tag] 的情况
-                case ("tags", index, field) if isinstance(index, int) and isinstance(
-                    field, str
-                ):
-                    tags = PublishInfo.tags_validator(raw_data["tags"])
-                    if field in tags[index]:
-                        error["input"] = tags[index][field]
-                case _:
-                    continue
-            errors_with_input.append(error)
-
     # 如果是插件，还需要额外验证插件加载测试结果
     if publish_type == PublishType.PLUGIN:
         skip_plugin_test = raw_data.get("skip_plugin_test")
@@ -76,40 +70,38 @@ def validate_info(
         plugin_test_metadata = raw_data.get("plugin_test_metadata")
 
         if plugin_test_metadata is None and not skip_plugin_test:
-            errors_with_input.append(
+            errors.append(
                 {
                     "loc": ("metadata",),
                     "msg": "无法获取到插件元数据。",
-                    "type": "value_error.metadata",
+                    "type": "metadata",
                     "ctx": {"plugin_test_result": plugin_test_result},
+                    "input": None,
                 }
             )
             # 如果没有跳过测试且缺少插件元数据，则跳过元数据相关的错误
             # 因为这个时候这些项都会报错，错误在此时没有意义
             metadata_keys = ["name", "desc", "homepage", "type", "supported_adapters"]
-            errors_with_input = [
-                error
-                for error in errors_with_input
-                if error["loc"][0] not in metadata_keys
-            ]
+            errors = [error for error in errors if error["loc"][0] not in metadata_keys]
             # 元数据缺失时，需要删除元数据相关的字段
             for key in metadata_keys:
                 data.pop(key, None)
 
         if not skip_plugin_test and not plugin_test_result:
-            errors_with_input.append(
+            errors.append(
                 {
                     "loc": ("plugin_test",),
                     "msg": "插件无法正常加载",
-                    "type": "value_error.plugin_test",
+                    "type": "plugin_test",
                     "ctx": {"output": plugin_test_output},
+                    "input": None,
                 }
             )
 
     return {
-        "valid": errors_with_input == [],
+        "valid": not errors,
         "data": data,
-        "errors": errors_with_input,
+        "errors": errors,
         # 方便插件使用的数据
         "type": publish_type,
         "name": data.get("name") or raw_data.get("name", ""),

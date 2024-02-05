@@ -1,5 +1,12 @@
-from githubkit.rest.models import IssuePropLabelsItemsOneof1, Label, PullRequestSimple
-from githubkit.webhooks.models import Label as WebhookLabel
+from githubkit.rest import (
+    IssuePropLabelsItemsOneof1,
+    Label,
+    PullRequestPropLabelsItems,
+    PullRequestSimple,
+    WebhookIssueCommentCreatedPropIssueAllof0PropLabelsItems,
+    WebhookIssuesOpenedPropIssuePropLabelsItems,
+    WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems,
+)
 from nonebot.adapters.github import (
     Bot,
     GitHubBot,
@@ -56,8 +63,13 @@ def get_issue_title(
 
 def get_type_by_labels(
     labels: list[Label]
-    | list[WebhookLabel]
-    | list[str | IssuePropLabelsItemsOneof1] = Depends(get_labels),
+    | list[str | IssuePropLabelsItemsOneof1]
+    | list[PullRequestPropLabelsItems]
+    | list[WebhookIssuesOpenedPropIssuePropLabelsItems]
+    | list[WebhookIssueCommentCreatedPropIssueAllof0PropLabelsItems]
+    | list[WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems] = Depends(
+        get_labels
+    ),
 ) -> PublishType | None:
     """通过标签获取类型"""
     return utils.get_type_by_labels(labels)
@@ -74,7 +86,7 @@ async def get_pull_requests_by_label(
     publish_type: PublishType = Depends(get_type_by_labels),
 ) -> list[PullRequestSimple]:
     pulls = (
-        await bot.rest.pulls.async_list(**repo_info.dict(), state="open")
+        await bot.rest.pulls.async_list(**repo_info.model_dump(), state="open")
     ).parsed_data
     return [
         pull
@@ -96,7 +108,7 @@ async def get_installation_id(
 ) -> int:
     """获取 GitHub App 的 Installation ID"""
     installation = (
-        await bot.rest.apps.async_get_repo_installation(**repo_info.dict())
+        await bot.rest.apps.async_get_repo_installation(**repo_info.model_dump())
     ).parsed_data
     return installation.id
 

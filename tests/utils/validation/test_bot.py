@@ -22,6 +22,10 @@ async def test_bot_info_validation_success(mocked_api: MockRouter) -> None:
         tags=[{"label": "test", "color": "#ffffff"}],
         is_official=False,
     )
+    assert not result["errors"]
+    assert result["type"] == PublishType.BOT
+    assert result["name"] == "name"
+    assert result["author"] == "author"
 
     assert mocked_api["homepage"].called
 
@@ -41,82 +45,43 @@ async def test_bot_info_validation_failed(mocked_api: MockRouter) -> None:
 
     result = validate_info(PublishType.BOT, data)
 
-    assert not result["valid"]
-    assert "homepage" not in result["data"]
-    assert "tags" not in result["data"]
-    assert result["errors"]
+    assert result == {
+        "valid": False,
+        "data": {"desc": "desc", "author": "author"},
+        "errors": [
+            {
+                "type": "string_too_long",
+                "loc": ("name",),
+                "msg": "字符串长度不能超过 50 个字符",
+                "input": "tooooooooooooooooooooooooooooooooooooooooooooooooog",
+                "ctx": {"max_length": 50},
+                "url": "https://errors.pydantic.dev/2.6/v/string_too_long",
+            },
+            {
+                "type": "homepage",
+                "loc": ("homepage",),
+                "msg": "项目主页无法访问",
+                "input": "https://www.baidu.com",
+                "ctx": {"status_code": 404, "msg": ""},
+            },
+            {
+                "type": "string_too_long",
+                "loc": ("tags", 1, "label"),
+                "msg": "字符串长度不能超过 10 个字符",
+                "input": "testtoolong",
+                "ctx": {"max_length": 10},
+                "url": "https://errors.pydantic.dev/2.6/v/string_too_long",
+            },
+            {
+                "type": "color_error",
+                "loc": ("tags", 1, "color"),
+                "msg": "颜色格式不正确",
+                "input": "#fffffff",
+            },
+        ],
+        "type": PublishType.BOT,
+        "name": "tooooooooooooooooooooooooooooooooooooooooooooooooog",
+        "author": "author",
+    }
 
     assert mocked_api["homepage_failed"].called
-
-
-async def test_bot_info_validation_failed_json_error(mocked_api: MockRouter) -> None:
-    """测试验证失败的情况，JSON 解析错误"""
-    from src.utils.validation import PublishType, validate_info
-
-    data = generate_bot_data(tags="not a json")
-
-    result = validate_info(PublishType.BOT, data)
-
-    assert "tags" not in result["data"]
-    assert result["errors"]
-    assert result["errors"][0]["loc"] == ("tags",)
-    assert result["errors"][0]["type"] == "value_error.json"
-    assert "input" in result["errors"][0]
-    assert result["errors"][0]["input"] == "not a json"
-    assert result["errors"][0]["msg"] == "JSON 格式不合法"
-
-    assert mocked_api["homepage"].called
-
-
-async def test_bot_info_validation_failed_tag_field_missing(
-    mocked_api: MockRouter,
-) -> None:
-    """测试验证失败的情况，tag 字段缺失"""
-    from src.utils.validation import PublishType, validate_info
-
-    data = generate_bot_data(
-        tags=[{"label": "test"}, {"label": "test", "color": "#ffffff"}]
-    )
-
-    result = validate_info(PublishType.BOT, data)
-
-    assert "tags" not in result["data"]
-    assert result["errors"]
-    assert result["errors"][0]["loc"] == ("tags", 0, "color")
-    assert result["errors"][0]["type"] == "value_error.missing"
-    assert "input" not in result["errors"][0]
-
-    assert mocked_api["homepage"].called
-
-
-async def test_bot_info_validation_failed_name_tags_missing(
-    mocked_api: MockRouter,
-) -> None:
-    """测试验证失败的情况，name, tags 字段缺失"""
-    from src.utils.validation import PublishType, validate_info
-
-    data = generate_bot_data(name=None, tags=None)
-
-    result = validate_info(PublishType.BOT, data)
-
-    assert "name" not in result["data"]
-    assert "tags" not in result["data"]
-    assert result["errors"]
-
-    assert mocked_api["homepage"].called
-
-
-async def test_bot_info_validation_failed_http_exception(
-    mocked_api: MockRouter,
-) -> None:
-    """测试验证失败的情况，HTTP 请求报错"""
-    from src.utils.validation import PublishType, validate_info
-
-    data = generate_bot_data(homepage="exception")
-
-    result = validate_info(PublishType.BOT, data)
-
-    assert "homepage" not in result["data"]
-    assert result["errors"]
-
-    assert mocked_api["exception"].called
