@@ -156,7 +156,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
 
     type: str
     """插件类型"""
-    supported_adapters: list[str] | None = None
+    supported_adapters: list[str] | None
     """插件支持的适配器"""
 
     @field_validator("type", mode="before")
