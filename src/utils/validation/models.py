@@ -150,12 +150,6 @@ class PublishInfo(abc.ABC, BaseModel):
             raise PydanticCustomError("json_type", "JSON 格式不合法")
         return tags
 
-    @classmethod
-    @abc.abstractmethod
-    def get_type(cls) -> PublishType:
-        """获取发布类型"""
-        raise NotImplementedError
-
 
 class PluginPublishInfo(PublishInfo, PyPIMixin):
     """发布插件所需信息"""
@@ -213,22 +207,10 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
             )
         return sorted(supported_adapters)
 
-    @classmethod
-    def get_type(cls) -> PublishType:
-        return PublishType.PLUGIN
-
 
 class AdapterPublishInfo(PublishInfo, PyPIMixin):
     """发布适配器所需信息"""
 
-    @classmethod
-    def get_type(cls) -> PublishType:
-        return PublishType.ADAPTER
-
 
 class BotPublishInfo(PublishInfo):
     """发布机器人所需信息"""
-
-    @classmethod
-    def get_type(cls) -> PublishType:
-        return PublishType.BOT
