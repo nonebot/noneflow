@@ -23,7 +23,7 @@ STORE_ADAPTERS_URL = (
 )
 
 # Pydantic 错误信息翻译
-CUSTOM_MESSAGES = {
+MESSAGE_TRANSLATIONS = {
     "model_type": "值不是合法的字典",
     "list_type": "值不是合法的列表",
     "set_type": "值不是合法的集合",

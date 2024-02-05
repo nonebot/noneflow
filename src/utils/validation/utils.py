@@ -5,7 +5,7 @@ import httpx
 from nonebot import logger
 from pydantic_extra_types.color import Color, float_to_255
 
-from .constants import STORE_ADAPTERS_URL
+from .constants import MESSAGE_TRANSLATIONS, STORE_ADAPTERS_URL
 
 if TYPE_CHECKING:
     from pydantic_core import ErrorDetails
@@ -55,15 +55,13 @@ def color_to_hex(color: Color) -> str:
     return f"#{hex}"
 
 
-def convert_errors(
-    errors: list["ErrorDetails"], custom_messages: dict[str, str]
-) -> list["ErrorDetails"]:
+def translate_errors(errors: list["ErrorDetails"]) -> list["ErrorDetails"]:
     """翻译 Pydantic 错误信息"""
     new_errors: list["ErrorDetails"] = []
     for error in errors:
-        custom_message = custom_messages.get(error["type"])
-        if custom_message:
+        translation = MESSAGE_TRANSLATIONS.get(error["type"])
+        if translation:
             ctx = error.get("ctx")
-            error["msg"] = custom_message.format(**ctx) if ctx else custom_message
+            error["msg"] = translation.format(**ctx) if ctx else translation
         new_errors.append(error)
     return new_errors
