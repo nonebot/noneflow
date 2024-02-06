@@ -28,7 +28,8 @@ async def handle_github_action_event():
     try:
         config = driver.config
         # 从环境变量中获取事件信息
-        event_id = config.github_run_id
+        # 读取到的 gitub_run_id 会因为 nonebot 配置加载机制转成 int，需要转回 str
+        event_id = str(config.github_run_id)
         event_name = config.github_event_name
         github_event_path = Path(config.github_event_path)
         # 生成事件
