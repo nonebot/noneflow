@@ -59,7 +59,7 @@ def mocked_store_data(
     mocked_api.get(REGISTRY_RESULTS_URL).respond(json=load_json("registry_results"))
     mocked_api.get(REGISTRY_PLUGINS_URL).respond(json=load_json("registry_plugins"))
     mocked_api.get(STORE_ADAPTERS_URL).respond(json=load_json("store_adapters"))
-    mocked_api.get(STORE_BOTS_URL).respond(json=load_json("STORE_BOTS"))
+    mocked_api.get(STORE_BOTS_URL).respond(json=load_json("store_bots"))
     mocked_api.get(STORE_DRIVERS_URL).respond(json=load_json("store_drivers"))
     mocked_api.get(STORE_PLUGINS_URL).respond(json=load_json("store_plugins"))
 
