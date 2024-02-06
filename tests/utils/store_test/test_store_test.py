@@ -1,15 +1,34 @@
-import shutil
+import json
 from pathlib import Path
 
 import pytest
 from pytest_mock import MockerFixture
 from respx import MockRouter
 
+from src.utils.constants import (
+    REGISTRY_PLUGINS_URL,
+    REGISTRY_RESULTS_URL,
+    STORE_ADAPTERS_URL,
+    STORE_BOTS_URL,
+    STORE_DRIVERS_URL,
+    STORE_PLUGINS_URL,
+)
+
+
+def load_json(name: str) -> dict:
+    path = Path(__file__).parent / "store" / f"{name}.json"
+    with path.open("r", encoding="utf-8") as f:
+        return json.load(f)
+
 
 @pytest.fixture
-def mocked_store_data(tmp_path: Path, mocker: MockerFixture) -> dict[str, Path]:
+def mocked_store_data(
+    tmp_path: Path,
+    mocker: MockerFixture,
+    mocked_api: MockRouter,
+) -> dict[str, Path]:
     plugin_test_path = tmp_path / "plugin_test"
-    store_path = plugin_test_path / "store"
+    plugin_test_path.mkdir()
 
     paths = {
         "results": plugin_test_path / "results.json",
@@ -17,12 +36,6 @@ def mocked_store_data(tmp_path: Path, mocker: MockerFixture) -> dict[str, Path]:
         "bots": plugin_test_path / "bots.json",
         "drivers": plugin_test_path / "drivers.json",
         "plugins": plugin_test_path / "plugins.json",
-        "store_adapters": store_path / "adapters.json",
-        "store_bots": store_path / "bots.json",
-        "store_drivers": store_path / "drivers.json",
-        "store_plugins": store_path / "plugins.json",
-        "previous_results": store_path / "previous_results.json",
-        "previous_plugins": store_path / "previous_plugins.json",
     }
 
     mocker.patch(
@@ -43,29 +56,13 @@ def mocked_store_data(tmp_path: Path, mocker: MockerFixture) -> dict[str, Path]:
         paths["plugins"],
     )
 
-    mocker.patch(
-        "src.utils.store_test.store.STORE_ADAPTERS_PATH",
-        paths["store_adapters"],
-    )
-    mocker.patch("src.utils.store_test.store.STORE_BOTS_PATH", paths["store_bots"])
-    mocker.patch(
-        "src.utils.store_test.store.STORE_DRIVERS_PATH",
-        paths["store_drivers"],
-    )
-    mocker.patch(
-        "src.utils.store_test.store.STORE_PLUGINS_PATH",
-        paths["store_plugins"],
-    )
-    mocker.patch(
-        "src.utils.store_test.store.PREVIOUS_RESULTS_PATH",
-        paths["previous_results"],
-    )
-    mocker.patch(
-        "src.utils.store_test.store.PREVIOUS_PLUGINS_PATH",
-        paths["previous_plugins"],
-    )
+    mocked_api.get(REGISTRY_RESULTS_URL).respond(json=load_json("registry_results"))
+    mocked_api.get(REGISTRY_PLUGINS_URL).respond(json=load_json("registry_plugins"))
+    mocked_api.get(STORE_ADAPTERS_URL).respond(json=load_json("store_adapters"))
+    mocked_api.get(STORE_BOTS_URL).respond(json=load_json("STORE_BOTS"))
+    mocked_api.get(STORE_DRIVERS_URL).respond(json=load_json("store_drivers"))
+    mocked_api.get(STORE_PLUGINS_URL).respond(json=load_json("store_plugins"))
 
-    shutil.copytree(Path(__file__).parent / "store", store_path)
     return paths
 
 

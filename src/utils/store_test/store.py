@@ -1,21 +1,24 @@
 import click
 
+from src.utils.constants import (
+    REGISTRY_PLUGINS_URL,
+    REGISTRY_RESULTS_URL,
+    STORE_ADAPTERS_URL,
+    STORE_BOTS_URL,
+    STORE_DRIVERS_URL,
+    STORE_PLUGINS_URL,
+)
+
 from .constants import (
     ADAPTERS_PATH,
     BOTS_PATH,
     DRIVERS_PATH,
     PLUGIN_KEY_TEMPLATE,
     PLUGINS_PATH,
-    PREVIOUS_PLUGINS_PATH,
-    PREVIOUS_RESULTS_PATH,
     RESULTS_PATH,
-    STORE_ADAPTERS_PATH,
-    STORE_BOTS_PATH,
-    STORE_DRIVERS_PATH,
-    STORE_PLUGINS_PATH,
 )
 from .models import Plugin, StorePlugin, TestResult
-from .utils import dump_json, get_latest_version, load_json
+from .utils import download_file, dump_json, get_latest_version
 from .validation import validate_plugin
 
 
@@ -33,24 +36,26 @@ class StoreTest:
         self._force = force
 
         # NoneBot 仓库中的数据
-        self._store_adapters = load_json(STORE_ADAPTERS_PATH)
-        self._store_bots = load_json(STORE_BOTS_PATH)
-        self._store_drivers = load_json(STORE_DRIVERS_PATH)
+        self._store_adapters = download_file(STORE_ADAPTERS_URL)
+        self._store_bots = download_file(STORE_BOTS_URL)
+        self._store_drivers = download_file(STORE_DRIVERS_URL)
         self._store_plugins: dict[str, StorePlugin] = {
             PLUGIN_KEY_TEMPLATE.format(
                 project_link=plugin["project_link"],
                 module_name=plugin["module_name"],
             ): plugin
-            for plugin in load_json(STORE_PLUGINS_PATH)
+            for plugin in download_file(STORE_PLUGINS_URL)
         }
         # 上次测试的结果
-        self._previous_results: dict[str, TestResult] = load_json(PREVIOUS_RESULTS_PATH)
+        self._previous_results: dict[str, TestResult] = download_file(
+            REGISTRY_RESULTS_URL
+        )
         self._previous_plugins: dict[str, Plugin] = {
             PLUGIN_KEY_TEMPLATE.format(
                 project_link=plugin["project_link"],
                 module_name=plugin["module_name"],
             ): plugin
-            for plugin in load_json(PREVIOUS_PLUGINS_PATH)
+            for plugin in download_file(REGISTRY_PLUGINS_URL)
         }
 
     def should_skip(self, key: str) -> bool:
@@ -161,7 +166,6 @@ class StoreTest:
         self, key: str | None = None, config: str | None = None, data: str | None = None
     ):
         """测试商店内插件情况"""
-
         results, plugins = await self.test_plugins(key, config, data)
 
         # 保存测试结果与生成的列表

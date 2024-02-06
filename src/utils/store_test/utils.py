@@ -6,15 +6,6 @@ from typing import Any
 import httpx
 
 
-def load_json(path: Path) -> dict:
-    """加载 JSON 文件"""
-    if not path.exists():
-        raise Exception(f"文件 {path} 不存在")
-
-    with open(path, encoding="utf8") as f:
-        return json.load(f)
-
-
 def dump_json(path: Path, data: dict | list):
     """保存 JSON 文件
 
@@ -47,3 +38,11 @@ def get_upload_time(project_link: str) -> str:
     """获取插件的上传时间"""
     data = get_pypi_data(project_link)
     return data["urls"][0]["upload_time_iso_8601"]
+
+
+def download_file(url: str):
+    """下载文件"""
+    r = httpx.get(url)
+    if r.status_code != 200:
+        raise ValueError(f"下载文件失败：{r.text}")
+    return r.json()
