@@ -18,7 +18,7 @@ from .constants import (
     RESULTS_PATH,
 )
 from .models import Plugin, StorePlugin, TestResult
-from .utils import download_file, dump_json, get_latest_version
+from .utils import dump_json, get_latest_version, load_json
 from .validation import validate_plugin
 
 
@@ -36,26 +36,24 @@ class StoreTest:
         self._force = force
 
         # NoneBot 仓库中的数据
-        self._store_adapters = download_file(STORE_ADAPTERS_URL)
-        self._store_bots = download_file(STORE_BOTS_URL)
-        self._store_drivers = download_file(STORE_DRIVERS_URL)
+        self._store_adapters = load_json(STORE_ADAPTERS_URL)
+        self._store_bots = load_json(STORE_BOTS_URL)
+        self._store_drivers = load_json(STORE_DRIVERS_URL)
         self._store_plugins: dict[str, StorePlugin] = {
             PLUGIN_KEY_TEMPLATE.format(
                 project_link=plugin["project_link"],
                 module_name=plugin["module_name"],
             ): plugin
-            for plugin in download_file(STORE_PLUGINS_URL)
+            for plugin in load_json(STORE_PLUGINS_URL)
         }
         # 上次测试的结果
-        self._previous_results: dict[str, TestResult] = download_file(
-            REGISTRY_RESULTS_URL
-        )
+        self._previous_results: dict[str, TestResult] = load_json(REGISTRY_RESULTS_URL)
         self._previous_plugins: dict[str, Plugin] = {
             PLUGIN_KEY_TEMPLATE.format(
                 project_link=plugin["project_link"],
                 module_name=plugin["module_name"],
             ): plugin
-            for plugin in download_file(REGISTRY_PLUGINS_URL)
+            for plugin in load_json(REGISTRY_PLUGINS_URL)
         }
 
     def should_skip(self, key: str) -> bool:
