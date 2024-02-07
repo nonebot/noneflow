@@ -6,13 +6,12 @@ from typing import Any
 import httpx
 
 
-def load_json(path: Path) -> dict:
-    """加载 JSON 文件"""
-    if not path.exists():
-        raise Exception(f"文件 {path} 不存在")
-
-    with open(path, encoding="utf8") as f:
-        return json.load(f)
+def load_json(url: str):
+    """从网络加载 JSON 文件"""
+    r = httpx.get(url)
+    if r.status_code != 200:
+        raise ValueError(f"下载文件失败：{r.text}")
+    return r.json()
 
 
 def dump_json(path: Path, data: dict | list):
@@ -32,9 +31,9 @@ def get_pypi_data(project_link: str) -> dict[str, Any]:
     }
     url = f"https://pypi.org/pypi/{project_link}/json"
     r = httpx.get(url, headers=headers)
-    if r.status_code == 200:
-        return r.json()
-    raise ValueError(f"获取 PyPI 数据失败：{r.text}")
+    if r.status_code != 200:
+        raise ValueError(f"获取 PyPI 数据失败：{r.text}")
+    return r.json()
 
 
 def get_latest_version(project_link: str) -> str:

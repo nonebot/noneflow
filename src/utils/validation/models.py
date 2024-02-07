@@ -15,7 +15,7 @@ from pydantic_core import PydanticCustomError
 from pydantic_extra_types.color import Color
 
 from .constants import (
-    MAX_NAME_LENGTH,
+    NAME_MAX_LENGTH,
     PLUGIN_VALID_TYPE,
     PYPI_PACKAGE_NAME_PATTERN,
     PYTHON_MODULE_NAME_REGEX,
@@ -108,7 +108,7 @@ class Tag(BaseModel):
 class PublishInfo(abc.ABC, BaseModel):
     """发布信息"""
 
-    name: str = Field(max_length=MAX_NAME_LENGTH)
+    name: str = Field(max_length=NAME_MAX_LENGTH)
     desc: str
     author: str
     homepage: str

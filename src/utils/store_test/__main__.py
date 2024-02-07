@@ -1,5 +1,5 @@
+import asyncio
 import os
-from asyncio import run
 
 import click
 
@@ -18,7 +18,7 @@ def main(limit: int, offset: int, force: bool, key: str | None):
     config = os.environ.get("PLUGIN_CONFIG")
     data = os.environ.get("PLUGIN_DATA")
 
-    run(test.run(key, config, data))
+    asyncio.run(test.run(key, config, data))
 
 
 if __name__ == "__main__":

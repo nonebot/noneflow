@@ -11,8 +11,8 @@ COMMIT_MESSAGE_PREFIX = ":beers: publish"
 
 BRANCH_NAME_PREFIX = "publish/issue"
 
-MAX_NAME_LENGTH = 50
-"""名称最大长度"""
+TITLE_MAX_LENGTH = 50
+"""标题最大长度"""
 
 # 匹配信息的正则表达式
 # 格式：### {标题}\n\n{内容}

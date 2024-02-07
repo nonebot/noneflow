@@ -11,16 +11,11 @@ PYTHON_MODULE_NAME_REGEX = re.compile(
     re.IGNORECASE,
 )
 
-MAX_NAME_LENGTH = 50
+NAME_MAX_LENGTH = 50
 """名称最大长度"""
 
 PLUGIN_VALID_TYPE = ["application", "library"]
 """插件类型当前只支持 application 和 library"""
-
-# NoneBot Store
-STORE_ADAPTERS_URL = (
-    "https://raw.githubusercontent.com/nonebot/nonebot2/master/assets/adapters.json"
-)
 
 # Pydantic 错误信息翻译
 MESSAGE_TRANSLATIONS = {

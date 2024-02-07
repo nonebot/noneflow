@@ -2,10 +2,11 @@ from functools import cache
 from typing import TYPE_CHECKING
 
 import httpx
-from nonebot import logger
 from pydantic_extra_types.color import Color, float_to_255
 
-from .constants import MESSAGE_TRANSLATIONS, STORE_ADAPTERS_URL
+from src.utils.constants import STORE_ADAPTERS_URL
+
+from .constants import MESSAGE_TRANSLATIONS
 
 if TYPE_CHECKING:
     from pydantic_core import ErrorDetails
@@ -24,7 +25,6 @@ def check_url(url: str) -> tuple[int, str]:
 
     返回状态码，如果报错则返回 -1
     """
-    logger.info(f"检查网址 {url}")
     try:
         r = httpx.get(url, follow_redirects=True)
         return r.status_code, ""
