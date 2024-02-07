@@ -1,12 +1,13 @@
 from githubkit.rest import (
-    IssuePropLabelsItemsOneof1,
-    Label,
     PullRequestPropLabelsItems,
     PullRequestSimple,
     WebhookIssueCommentCreatedPropIssueAllof0PropLabelsItems,
+    WebhookIssuesEditedPropIssuePropLabelsItems,
     WebhookIssuesOpenedPropIssuePropLabelsItems,
+    WebhookIssuesReopenedPropIssueMergedLabels,
     WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems,
 )
+from githubkit.typing import Missing
 from nonebot.adapters.github import (
     Bot,
     GitHubBot,
@@ -62,12 +63,12 @@ def get_issue_title(
 
 
 def get_type_by_labels(
-    labels: list[Label]
-    | list[str | IssuePropLabelsItemsOneof1]
-    | list[PullRequestPropLabelsItems]
-    | list[WebhookIssuesOpenedPropIssuePropLabelsItems]
-    | list[WebhookIssueCommentCreatedPropIssueAllof0PropLabelsItems]
-    | list[WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems] = Depends(
+    labels: list[PullRequestPropLabelsItems]
+    | list[WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems]
+    | Missing[list[WebhookIssuesOpenedPropIssuePropLabelsItems]]
+    | Missing[list[WebhookIssuesReopenedPropIssueMergedLabels]]
+    | Missing[list[WebhookIssuesEditedPropIssuePropLabelsItems]]
+    | list[WebhookIssueCommentCreatedPropIssueAllof0PropLabelsItems] = Depends(
         get_labels
     ),
 ) -> PublishType | None:

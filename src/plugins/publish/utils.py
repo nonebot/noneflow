@@ -2,9 +2,10 @@ import asyncio
 import json
 import re
 import subprocess
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from githubkit.exception import RequestFailed
+from githubkit.typing import Missing
 from nonebot import logger
 from nonebot.adapters.github import Bot, GitHubBot
 
@@ -42,14 +43,14 @@ from .render import render_comment
 if TYPE_CHECKING:
     from githubkit.rest import (
         Issue,
-        IssuePropLabelsItemsOneof1,
-        Label,
         PullRequest,
         PullRequestPropLabelsItems,
         PullRequestSimple,
         PullRequestSimplePropLabelsItems,
         WebhookIssueCommentCreatedPropIssueAllof0PropLabelsItems,
+        WebhookIssuesEditedPropIssuePropLabelsItems,
         WebhookIssuesOpenedPropIssuePropLabelsItems,
+        WebhookIssuesReopenedPropIssueMergedLabels,
         WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems,
     )
 
@@ -72,15 +73,18 @@ def run_shell_command(command: list[str]):
 
 
 def get_type_by_labels(
-    labels: list["Label"]
-    | list[Union[str, "IssuePropLabelsItemsOneof1"]]
+    labels: list["PullRequestPropLabelsItems"]
     | list["PullRequestSimplePropLabelsItems"]
-    | list["PullRequestPropLabelsItems"]
-    | list["WebhookIssueCommentCreatedPropIssueAllof0PropLabelsItems"]
-    | list["WebhookIssuesOpenedPropIssuePropLabelsItems"]
-    | list["WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems"],
+    | list["WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems"]
+    | Missing[list["WebhookIssuesOpenedPropIssuePropLabelsItems"]]
+    | Missing[list["WebhookIssuesReopenedPropIssueMergedLabels"]]
+    | Missing[list["WebhookIssuesEditedPropIssuePropLabelsItems"]]
+    | list["WebhookIssueCommentCreatedPropIssueAllof0PropLabelsItems"],
 ) -> PublishType | None:
     """通过标签获取类型"""
+    if not labels:
+        return None
+
     for label in labels:
         if isinstance(label, str):
             continue
