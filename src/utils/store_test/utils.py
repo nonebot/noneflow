@@ -31,9 +31,9 @@ def get_pypi_data(project_link: str) -> dict[str, Any]:
     }
     url = f"https://pypi.org/pypi/{project_link}/json"
     r = httpx.get(url, headers=headers)
-    if r.status_code == 200:
-        return r.json()
-    raise ValueError(f"获取 PyPI 数据失败：{r.text}")
+    if r.status_code != 200:
+        raise ValueError(f"获取 PyPI 数据失败：{r.text}")
+    return r.json()
 
 
 def get_latest_version(project_link: str) -> str:
