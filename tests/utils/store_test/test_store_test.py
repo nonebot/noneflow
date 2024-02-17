@@ -130,7 +130,7 @@ async def test_store_test(
             "tags": [],
             "is_official": False,
         },
-        config="",
+        config="TEST_CONFIG=true",
         skip_test=False,
         data=None,
         previous_plugin={
@@ -193,7 +193,7 @@ async def test_store_test_with_key(
             "tags": [],
             "is_official": False,
         },
-        config="",
+        config="TEST_CONFIG=true",
         skip_test=False,
         data=None,
         previous_plugin={
@@ -292,7 +292,7 @@ async def test_store_test_raise(
                     "tags": [],
                     "is_official": False,
                 },
-                config="",
+                config="TEST_CONFIG=true",
                 skip_test=False,
                 data=None,
                 previous_plugin={
@@ -329,7 +329,7 @@ async def test_store_test_raise(
     # 数据没有更新，只是被压缩
     assert (
         mocked_store_data["results"].read_text(encoding="utf8")
-        == '{"nonebot-plugin-datastore:nonebot_plugin_datastore":{"time":"2023-06-26T22:08:18.945584+08:00","version":"1.0.0","results":{"validation":true,"load":true,"metadata":true},"inputs":{"config":""},"outputs":{"validation":"通过","load":"datastore","metadata":{"name":"数据存储","description":"NoneBot 数据存储插件","usage":"请参考文档","type":"library","homepage":"https://github.com/he0119/nonebot-plugin-datastore","supported_adapters":null}}},"nonebot-plugin-treehelp:nonebot_plugin_treehelp":{"time":"2023-06-26T22:20:41.833311+08:00","version":"0.3.0","results":{"validation":true,"load":true,"metadata":true},"inputs":{"config":""},"outputs":{"validation":"通过","load":"treehelp","metadata":{"name":"帮助","description":"获取插件帮助信息","usage":"获取插件列表\\n/help\\n获取插件树\\n/help -t\\n/help --tree\\n获取某个插件的帮助\\n/help 插件名\\n获取某个插件的树\\n/help --tree 插件名\\n","type":"application","homepage":"https://github.com/he0119/nonebot-plugin-treehelp","supported_adapters":null}}}}'
+        == '{"nonebot-plugin-datastore:nonebot_plugin_datastore":{"time":"2023-06-26T22:08:18.945584+08:00","version":"1.0.0","results":{"validation":true,"load":true,"metadata":true},"inputs":{"config":""},"outputs":{"validation":"通过","load":"datastore","metadata":{"name":"数据存储","description":"NoneBot 数据存储插件","usage":"请参考文档","type":"library","homepage":"https://github.com/he0119/nonebot-plugin-datastore","supported_adapters":null}}},"nonebot-plugin-treehelp:nonebot_plugin_treehelp":{"time":"2023-06-26T22:20:41.833311+08:00","version":"0.3.0","results":{"validation":true,"load":true,"metadata":true},"inputs":{"config":"TEST_CONFIG=true"},"outputs":{"validation":"通过","load":"treehelp","metadata":{"name":"帮助","description":"获取插件帮助信息","usage":"获取插件列表\\n/help\\n获取插件树\\n/help -t\\n/help --tree\\n获取某个插件的帮助\\n/help 插件名\\n获取某个插件的树\\n/help --tree 插件名\\n","type":"application","homepage":"https://github.com/he0119/nonebot-plugin-treehelp","supported_adapters":null}}}}'
     )
     assert (
         mocked_store_data["adapters"].read_text(encoding="utf8")
@@ -378,7 +378,7 @@ async def test_store_test_with_key_raise(
     # 数据没有更新，只是被压缩
     assert (
         mocked_store_data["results"].read_text(encoding="utf8")
-        == '{"nonebot-plugin-datastore:nonebot_plugin_datastore":{"time":"2023-06-26T22:08:18.945584+08:00","version":"1.0.0","results":{"validation":true,"load":true,"metadata":true},"inputs":{"config":""},"outputs":{"validation":"通过","load":"datastore","metadata":{"name":"数据存储","description":"NoneBot 数据存储插件","usage":"请参考文档","type":"library","homepage":"https://github.com/he0119/nonebot-plugin-datastore","supported_adapters":null}}},"nonebot-plugin-treehelp:nonebot_plugin_treehelp":{"time":"2023-06-26T22:20:41.833311+08:00","version":"0.3.0","results":{"validation":true,"load":true,"metadata":true},"inputs":{"config":""},"outputs":{"validation":"通过","load":"treehelp","metadata":{"name":"帮助","description":"获取插件帮助信息","usage":"获取插件列表\\n/help\\n获取插件树\\n/help -t\\n/help --tree\\n获取某个插件的帮助\\n/help 插件名\\n获取某个插件的树\\n/help --tree 插件名\\n","type":"application","homepage":"https://github.com/he0119/nonebot-plugin-treehelp","supported_adapters":null}}}}'
+        == '{"nonebot-plugin-datastore:nonebot_plugin_datastore":{"time":"2023-06-26T22:08:18.945584+08:00","version":"1.0.0","results":{"validation":true,"load":true,"metadata":true},"inputs":{"config":""},"outputs":{"validation":"通过","load":"datastore","metadata":{"name":"数据存储","description":"NoneBot 数据存储插件","usage":"请参考文档","type":"library","homepage":"https://github.com/he0119/nonebot-plugin-datastore","supported_adapters":null}}},"nonebot-plugin-treehelp:nonebot_plugin_treehelp":{"time":"2023-06-26T22:20:41.833311+08:00","version":"0.3.0","results":{"validation":true,"load":true,"metadata":true},"inputs":{"config":"TEST_CONFIG=true"},"outputs":{"validation":"通过","load":"treehelp","metadata":{"name":"帮助","description":"获取插件帮助信息","usage":"获取插件列表\\n/help\\n获取插件树\\n/help -t\\n/help --tree\\n获取某个插件的帮助\\n/help 插件名\\n获取某个插件的树\\n/help --tree 插件名\\n","type":"application","homepage":"https://github.com/he0119/nonebot-plugin-treehelp","supported_adapters":null}}}}'
     )
     assert (
         mocked_store_data["adapters"].read_text(encoding="utf8")

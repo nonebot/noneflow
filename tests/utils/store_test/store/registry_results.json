@@ -32,7 +32,7 @@
       "metadata": true
     },
     "inputs": {
-      "config": ""
+      "config": "TEST_CONFIG=true"
     },
     "outputs": {
       "validation": "通过",
