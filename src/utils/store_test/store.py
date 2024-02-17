@@ -85,6 +85,10 @@ class StoreTest:
             return self._previous_plugins[key].get("skip_test", False)
         return False
 
+    def read_plugin_config(self, key: str) -> str:
+        """读取插件配置"""
+        return self._previous_results.get(key, {}).get("inputs", {}).get("config", "")
+
     async def test_plugins(
         self,
         key: str | None = None,
@@ -97,15 +101,13 @@ class StoreTest:
 
         if key:
             test_plugins = [(key, self._store_plugins[key])]
-            plugin_configs = {key: config or ""}
+            # 优先使用传入的配置
+            plugin_configs = {key: config if config else self.read_plugin_config(key)}
             plugin_datas = {key: data}
         else:
             test_plugins = list(self._store_plugins.items())[self._offset :]
             plugin_configs = {
-                key: self._previous_results.get(key, {})
-                .get("inputs", {})
-                .get("config", "")
-                for key, _ in test_plugins
+                key: self.read_plugin_config(key) for key, _ in test_plugins
             }
             plugin_datas = {}
 

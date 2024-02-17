@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 使用 Pydantic 2.0
 
+### Fixed
+
+- 修复指定 key 时无法正确读取配置的问题
+
 ## [3.2.4] - 2024-02-04
 
 ### Fixed
