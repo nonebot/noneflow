@@ -40,9 +40,9 @@ async def handle_github_action_event():
             await handle_event(bot, event)
     except Exception:
         logger.exception("处理 GitHub Action 事件时出现异常")
-    finally:
-        # 处理一次之后就退出
-        driver.exit(True)
+
+
+handle_event_task = None
 
 
 class Adapter(GITHUBAdapter):
@@ -50,15 +50,18 @@ class Adapter(GITHUBAdapter):
         self.driver.on_startup(self._startup)
 
     async def _startup(self):
+        driver = cast(Driver, self.driver)
         try:
             await super()._startup()
         except Exception:
             logger.exception("启动 GitHub 适配器时出现异常")
-            driver = cast(Driver, self.driver)
             driver.exit(True)
             return
+
         # 完成启动后创建任务处理 GitHub Action 事件
-        asyncio.create_task(handle_github_action_event())
+        handle_event_task = asyncio.create_task(handle_github_action_event())
+        # 处理完成之后就退出
+        handle_event_task.add_done_callback(lambda _: driver.exit(True))
 
     @classmethod
     def payload_to_event(

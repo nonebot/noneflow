@@ -1,4 +1,4 @@
-""" 验证数据是否符合规范 """
+"""验证数据是否符合规范"""
 
 from typing import Any, cast
 

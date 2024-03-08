@@ -189,7 +189,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
         if v is None:
             return None
 
-        if not isinstance(v, (list, set)):
+        if not isinstance(v, list | set):
             raise PydanticCustomError("set_type", "值应该是一个集合")
 
         supported_adapters = {resolve_adapter_name(x) for x in v}
