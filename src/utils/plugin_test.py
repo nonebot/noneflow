@@ -1,4 +1,4 @@
-""" 插件加载测试
+"""插件加载测试
 
 测试代码修改自 <https://github.com/Lancercmd/nonebot2-store-test>，谢谢 [Lan 佬](https://github.com/Lancercmd)。
 
@@ -8,7 +8,7 @@
 
 经测试可以直接在 Python 3.10+ 环境下运行，无需额外依赖。
 """
-# ruff: noqa: T201
+# ruff: noqa: T201, ASYNC101
 
 import json
 import os

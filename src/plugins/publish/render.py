@@ -66,9 +66,9 @@ async def render_comment(result: "ValidationDict", reuse: bool = False) -> str:
     if result["type"] == PublishType.PLUGIN:
         # https://github.com/he0119/action-test/actions/runs/4469672520
         if plugin_config.plugin_test_result or plugin_config.skip_plugin_test:
-            result["data"][
-                "action_url"
-            ] = f"https://github.com/{plugin_config.github_repository}/actions/runs/{plugin_config.github_run_id}"
+            result["data"]["action_url"] = (
+                f"https://github.com/{plugin_config.github_repository}/actions/runs/{plugin_config.github_run_id}"
+            )
 
     template = env.get_template("comment.md.jinja")
     return await template.render_async(

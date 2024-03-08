@@ -108,15 +108,15 @@ async def app(app: App, tmp_path: Path, mocker: MockerFixture):
     get_pypi_data.cache_clear()
 
 
-@pytest.fixture(autouse=True, scope="function")
-def clear_cache(app: App):
+@pytest.fixture(autouse=True)
+def _clear_cache(app: App):
     """每次运行前都清除 cache"""
     from src.utils.validation.utils import check_url
 
     check_url.cache_clear()
 
 
-@pytest.fixture
+@pytest.fixture()
 def mocked_api(respx_mock: MockRouter):
     respx_mock.get("exception", name="exception").mock(side_effect=httpx.ConnectError)
     respx_mock.get(
@@ -203,4 +203,4 @@ def mocked_api(respx_mock: MockRouter):
             },
         ],
     )
-    yield respx_mock
+    return respx_mock

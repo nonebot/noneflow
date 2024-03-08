@@ -1,3 +1,4 @@
+# ruff: noqa: ASYNC101
 import json
 from pathlib import Path
 from typing import Any, cast

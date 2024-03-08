@@ -1,4 +1,5 @@
-""" 测试并验证插件 """
+"""测试并验证插件"""
+
 import json
 import os
 import re

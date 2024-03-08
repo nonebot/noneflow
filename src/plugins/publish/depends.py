@@ -48,7 +48,7 @@ def get_labels(
     | IssueCommentCreated,
 ):
     """获取议题或拉取请求的标签"""
-    if isinstance(event, (PullRequestClosed, PullRequestReviewSubmitted)):
+    if isinstance(event, PullRequestClosed | PullRequestReviewSubmitted):
         labels = event.payload.pull_request.labels
     else:
         labels = event.payload.issue.labels
