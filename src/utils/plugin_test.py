@@ -213,13 +213,18 @@ class PluginTest:
         env.pop("VIRTUAL_ENV", None)
         # 启用 LOGURU 的颜色输出
         env["LOGURU_COLORIZE"] = "true"
+        # Poetry 配置
+        # https://python-poetry.org/docs/configuration/#virtualenvsin-project
+        env["POETRY_VIRTUALENVS_IN_PROJECT"] = "true"
+        # https://python-poetry.org/docs/configuration/#virtualenvsprefer-active-python-experimental
+        env["POETRY_VIRTUALENVS_PREFER_ACTIVE_PYTHON"] = "true"
         return env
 
     async def create_poetry_project(self) -> None:
         if not self.path.exists():
             self.path.mkdir()
             proc = await create_subprocess_shell(
-                f"""poetry init -n && sed -i "s/\\^/~/g" pyproject.toml && poetry config virtualenvs.in-project true --local && poetry env info --ansi && poetry add {self.project_link}""",
+                f"""poetry init -n && sed -i "s/\\^/~/g" pyproject.toml && poetry env info --ansi && poetry add {self.project_link}""",
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 cwd=self.path,
