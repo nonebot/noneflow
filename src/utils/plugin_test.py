@@ -10,6 +10,7 @@
 """
 # ruff: noqa: T201, ASYNC101
 
+import asyncio
 import json
 import os
 import re
@@ -297,15 +298,21 @@ class PluginTest:
                     )
                 )
 
-            proc = await create_subprocess_shell(
-                "poetry run python runner.py",
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                cwd=self.path,
-                env=self.get_env(),
-            )
-            stdout, stderr = await proc.communicate()
-            code = proc.returncode
+            try:
+                proc = await create_subprocess_shell(
+                    "poetry run python runner.py",
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    cwd=self.path,
+                    env=self.get_env(),
+                )
+                stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=600)
+                code = proc.returncode
+            except asyncio.TimeoutError:
+                proc.terminate()
+                stdout = b""
+                stderr = "测试超时".encode()
+                code = 1
 
             self._run = not code
 
