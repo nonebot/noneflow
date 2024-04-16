@@ -31,7 +31,6 @@ CONFIG_PATTERN = re.compile(r"### 插件配置项\s+```(?:\w+)?\s?([\s\S]*?)```"
 
 RUNNER = """import json
 import os
-from typing import override
 
 from nonebot import init, load_plugin, logger, require
 from nonebot.drivers import (
@@ -43,6 +42,7 @@ from nonebot.drivers import (
 )
 from nonebot.drivers import Driver as BaseDriver
 from pydantic import BaseModel
+from typing_extensions import override
 
 
 class Driver(BaseDriver, ASGIMixin, HTTPClientMixin, WebSocketClientMixin):
