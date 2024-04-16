@@ -29,10 +29,7 @@ PROJECT_LINK_PATTERN = re.compile(ISSUE_PATTERN.format("PyPI 项目名"))
 MODULE_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("插件 import 包名"))
 CONFIG_PATTERN = re.compile(r"### 插件配置项\s+```(?:\w+)?\s?([\s\S]*?)```")
 
-RUNNER = """import json
-import os
-
-from nonebot import init, load_plugin, logger, require
+FAKE_SCRIPT = """from nonebot import logger
 from nonebot.drivers import (
     ASGIMixin,
     HTTPClientMixin,
@@ -41,7 +38,6 @@ from nonebot.drivers import (
     WebSocketClientMixin,
 )
 from nonebot.drivers import Driver as BaseDriver
-from pydantic import BaseModel
 from typing_extensions import override
 
 
@@ -85,6 +81,13 @@ class Driver(BaseDriver, ASGIMixin, HTTPClientMixin, WebSocketClientMixin):
     @override
     async def websocket(self, setup: Request) -> Response:
         raise NotImplementedError
+"""
+
+RUNNER_SCRIPT = """import json
+import os
+
+from nonebot import init, load_plugin, logger, require
+from pydantic import BaseModel
 
 
 class SetEncoder(json.JSONEncoder):
@@ -94,7 +97,7 @@ class SetEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-init(driver="runner")
+init(driver="fake")
 plugin = load_plugin("{}")
 
 if not plugin:
@@ -295,9 +298,12 @@ class PluginTest:
                 with open(self.path / ".env.prod", "w", encoding="utf8") as f:
                     f.write(self.config)
 
+            with open(self.path / "fake.py", "w", encoding="utf8") as f:
+                f.write(FAKE_SCRIPT)
+
             with open(self.path / "runner.py", "w", encoding="utf8") as f:
                 f.write(
-                    RUNNER.format(
+                    RUNNER_SCRIPT.format(
                         self.module_name,
                         "\n".join([f"require('{i}')" for i in self._deps]),
                     )
