@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ### Added
 
 - 使用 Pydantic 2.0
+- 默认使用 fake 适配器
 
 ### Fixed
 

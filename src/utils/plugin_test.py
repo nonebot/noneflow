@@ -30,9 +30,60 @@ CONFIG_PATTERN = re.compile(r"### 插件配置项\s+```(?:\w+)?\s?([\s\S]*?)```"
 
 RUNNER = """import json
 import os
+from typing import override
 
-from nonebot import init, load_plugin, require, logger
+from nonebot import init, load_plugin, logger, require
+from nonebot.drivers import (
+    ASGIMixin,
+    HTTPClientMixin,
+    Request,
+    Response,
+    WebSocketClientMixin,
+)
+from nonebot.drivers import Driver as BaseDriver
 from pydantic import BaseModel
+
+
+class Driver(BaseDriver, ASGIMixin, HTTPClientMixin, WebSocketClientMixin):
+    @property
+    @override
+    def type(self) -> str:
+        return "fake"
+
+    @property
+    @override
+    def logger(self):
+        return logger
+
+    @override
+    def run(self, *args, **kwargs):
+        super().run(*args, **kwargs)
+
+    @property
+    @override
+    def server_app(self):
+        raise NotImplementedError
+
+    @property
+    @override
+    def asgi(self):
+        raise NotImplementedError
+
+    @override
+    def setup_http_server(self, setup):
+        raise NotImplementedError
+
+    @override
+    def setup_websocket_server(self, setup):
+        raise NotImplementedError
+
+    @override
+    async def request(self, setup: Request) -> Response:
+        raise NotImplementedError
+
+    @override
+    async def websocket(self, setup: Request) -> Response:
+        raise NotImplementedError
 
 
 class SetEncoder(json.JSONEncoder):
@@ -41,7 +92,8 @@ class SetEncoder(json.JSONEncoder):
             return list(obj)
         return json.JSONEncoder.default(self, obj)
 
-init()
+
+init(driver="runner")
 plugin = load_plugin("{}")
 
 if not plugin:
