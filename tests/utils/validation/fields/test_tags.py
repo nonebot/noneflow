@@ -21,7 +21,7 @@ async def test_tags_color_missing(mocked_api: MockRouter) -> None:
             "loc": ("tags", 0, "color"),
             "msg": "字段不存在",
             "input": {"label": "test"},
-            "url": "https://errors.pydantic.dev/2.6/v/missing",
+            "url": "https://errors.pydantic.dev/2.7/v/missing",
         }
     ]
 
@@ -69,7 +69,7 @@ async def test_tags_label_invalid(mocked_api: MockRouter) -> None:
             "msg": "字符串长度不能超过 10 个字符",
             "input": "12345678901",
             "ctx": {"max_length": 10},
-            "url": "https://errors.pydantic.dev/2.6/v/string_too_long",
+            "url": "https://errors.pydantic.dev/2.7/v/string_too_long",
         }
     ]
 
@@ -106,7 +106,7 @@ async def test_tags_number_invalid(mocked_api: MockRouter) -> None:
                 {"label": "4", "color": "#ffffff"},
             ],
             "ctx": {"field_type": "List", "max_length": 3, "actual_length": 4},
-            "url": "https://errors.pydantic.dev/2.6/v/too_long",
+            "url": "https://errors.pydantic.dev/2.7/v/too_long",
         }
     ]
 
@@ -155,7 +155,7 @@ async def test_tags_json_not_list(mocked_api: MockRouter) -> None:
             "loc": ("tags",),
             "msg": "值不是合法的列表",
             "input": {"test": "test"},
-            "url": "https://errors.pydantic.dev/2.6/v/list_type",
+            "url": "https://errors.pydantic.dev/2.7/v/list_type",
         }
     ]
 
@@ -180,7 +180,7 @@ async def test_tags_json_not_dict(mocked_api: MockRouter) -> None:
             "msg": "值不是合法的字典",
             "input": "1",
             "ctx": {"class_name": "Tag"},
-            "url": "https://errors.pydantic.dev/2.6/v/model_type",
+            "url": "https://errors.pydantic.dev/2.7/v/model_type",
         }
     ]
 
