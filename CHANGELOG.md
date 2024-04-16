@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [3.3.0] - 2024-04-16
+
 ### Added
 
 - 使用 Pydantic 2.0
@@ -422,7 +424,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/noneflow/compare/v3.2.4...HEAD
+[unreleased]: https://github.com/nonebot/noneflow/compare/v3.3.0...HEAD
+[3.3.0]: https://github.com/nonebot/noneflow/compare/v3.2.4...v3.3.0
 [3.2.4]: https://github.com/nonebot/noneflow/compare/v3.2.3...v3.2.4
 [3.2.3]: https://github.com/nonebot/noneflow/compare/v3.2.2...v3.2.3
 [3.2.2]: https://github.com/nonebot/noneflow/compare/v3.2.1...v3.2.2
