@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ### Fixed
 
 - 修复指定 key 时无法正确读取配置的问题
+- 插件测试时设置为 10 分钟超时
 
 ## [3.2.4] - 2024-02-04
 
