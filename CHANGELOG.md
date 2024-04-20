@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 修复 Fake Driver 的 server_app 方法抛出异常导致部分插件测试报错的问题
+
 ## [3.3.0] - 2024-04-16
 
 ### Added
