@@ -59,7 +59,7 @@ class Driver(BaseDriver, ASGIMixin, HTTPClientMixin, WebSocketClientMixin):
     @property
     @override
     def server_app(self):
-        raise NotImplementedError
+        return None
 
     @property
     @override
