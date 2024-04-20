@@ -97,7 +97,7 @@ class SetEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-init(driver="fake")
+init()
 plugin = load_plugin("{}")
 
 if not plugin:
@@ -290,9 +290,9 @@ class PluginTest:
 
     async def run_poetry_project(self) -> None:
         if self.path.exists():
-            # 默认使用 ~none 驱动
+            # 默认使用 fake 驱动
             with open(self.path / ".env", "w", encoding="utf8") as f:
-                f.write("DRIVER=~none")
+                f.write("DRIVER=fake")
             # 如果提供了插件配置项，则写入配置文件
             if self.config is not None:
                 with open(self.path / ".env.prod", "w", encoding="utf8") as f:
