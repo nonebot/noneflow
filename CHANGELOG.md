@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [3.3.1] - 2024-04-20
+
 ### Fixed
 
 - 修复 Fake Driver 的 server_app 方法抛出异常导致部分插件测试报错的问题
@@ -429,7 +431,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/noneflow/compare/v3.3.0...HEAD
+[unreleased]: https://github.com/nonebot/noneflow/compare/v3.3.1...HEAD
+[3.3.1]: https://github.com/nonebot/noneflow/compare/v3.3.0...v3.3.1
 [3.3.0]: https://github.com/nonebot/noneflow/compare/v3.2.4...v3.3.0
 [3.2.4]: https://github.com/nonebot/noneflow/compare/v3.2.3...v3.2.4
 [3.2.3]: https://github.com/nonebot/noneflow/compare/v3.2.2...v3.2.3
