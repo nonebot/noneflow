@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 更新至 NoneBot 2.3.0
 
+### Fixed
+
+- 修复 NoneBot 2.3.0 添加的 HTTP 客户端会话支持导致测试失败的问题
+
 ## [3.3.1] - 2024-04-20
 
 ### Fixed
