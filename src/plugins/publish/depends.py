@@ -4,7 +4,7 @@ from githubkit.rest import (
     WebhookIssueCommentCreatedPropIssueAllof0PropLabelsItems,
     WebhookIssuesEditedPropIssuePropLabelsItems,
     WebhookIssuesOpenedPropIssuePropLabelsItems,
-    WebhookIssuesReopenedPropIssueMergedLabels,
+    WebhookIssuesReopenedPropIssuePropLabelsItems,
     WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems,
 )
 from githubkit.typing import Missing
@@ -66,7 +66,7 @@ def get_type_by_labels(
     labels: list[PullRequestPropLabelsItems]
     | list[WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems]
     | Missing[list[WebhookIssuesOpenedPropIssuePropLabelsItems]]
-    | Missing[list[WebhookIssuesReopenedPropIssueMergedLabels]]
+    | Missing[list[WebhookIssuesReopenedPropIssuePropLabelsItems]]
     | Missing[list[WebhookIssuesEditedPropIssuePropLabelsItems]]
     | list[WebhookIssueCommentCreatedPropIssueAllof0PropLabelsItems] = Depends(
         get_labels

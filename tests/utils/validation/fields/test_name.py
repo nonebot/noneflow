@@ -22,7 +22,7 @@ async def test_name_too_long(mocked_api: MockRouter) -> None:
             "msg": "字符串长度不能超过 50 个字符",
             "input": "looooooooooooooooooooooooooooooooooooooooooooooooooooooooong",
             "ctx": {"max_length": 50},
-            "url": "https://errors.pydantic.dev/2.7/v/string_too_long",
+            "url": "https://errors.pydantic.dev/2.8/v/string_too_long",
         }
     ]
 
