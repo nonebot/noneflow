@@ -55,7 +55,7 @@ async def test_bot_info_validation_failed(mocked_api: MockRouter) -> None:
                 "msg": "字符串长度不能超过 50 个字符",
                 "input": "tooooooooooooooooooooooooooooooooooooooooooooooooog",
                 "ctx": {"max_length": 50},
-                "url": "https://errors.pydantic.dev/2.7/v/string_too_long",
+                "url": "https://errors.pydantic.dev/2.8/v/string_too_long",
             },
             {
                 "type": "homepage",
@@ -70,7 +70,7 @@ async def test_bot_info_validation_failed(mocked_api: MockRouter) -> None:
                 "msg": "字符串长度不能超过 10 个字符",
                 "input": "testtoolong",
                 "ctx": {"max_length": 10},
-                "url": "https://errors.pydantic.dev/2.7/v/string_too_long",
+                "url": "https://errors.pydantic.dev/2.8/v/string_too_long",
             },
             {
                 "type": "color_error",
