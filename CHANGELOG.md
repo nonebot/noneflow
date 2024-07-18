@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [3.3.3] - 2024-07-18
+
 ### Fixed
 
 - 修复主页为空字符串也能通过测试的问题
@@ -445,7 +447,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/noneflow/compare/v3.3.2...HEAD
+[unreleased]: https://github.com/nonebot/noneflow/compare/v3.3.3...HEAD
+[3.3.3]: https://github.com/nonebot/noneflow/compare/v3.3.2...v3.3.3
 [3.3.2]: https://github.com/nonebot/noneflow/compare/v3.3.1...v3.3.2
 [3.3.1]: https://github.com/nonebot/noneflow/compare/v3.3.0...v3.3.1
 [3.3.0]: https://github.com/nonebot/noneflow/compare/v3.2.4...v3.3.0
