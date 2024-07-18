@@ -50,7 +50,7 @@ if TYPE_CHECKING:
         WebhookIssueCommentCreatedPropIssueAllof0PropLabelsItems,
         WebhookIssuesEditedPropIssuePropLabelsItems,
         WebhookIssuesOpenedPropIssuePropLabelsItems,
-        WebhookIssuesReopenedPropIssueMergedLabels,
+        WebhookIssuesReopenedPropIssuePropLabelsItems,
         WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems,
     )
 
@@ -77,7 +77,7 @@ def get_type_by_labels(
     | list["PullRequestSimplePropLabelsItems"]
     | list["WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems"]
     | Missing[list["WebhookIssuesOpenedPropIssuePropLabelsItems"]]
-    | Missing[list["WebhookIssuesReopenedPropIssueMergedLabels"]]
+    | Missing[list["WebhookIssuesReopenedPropIssuePropLabelsItems"]]
     | Missing[list["WebhookIssuesEditedPropIssuePropLabelsItems"]]
     | list["WebhookIssueCommentCreatedPropIssueAllof0PropLabelsItems"],
 ) -> PublishType | None:
