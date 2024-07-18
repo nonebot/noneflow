@@ -49,12 +49,13 @@ select = [
   "RUF",   # Ruff-specific rules
 ]
 ignore = [
-  "E402",   # module-import-not-at-top-of-file
-  "E501",   # line-too-long
-  "UP037",  # quoted-annotation
-  "RUF001", # ambiguous-unicode-character-string
-  "RUF002", # ambiguous-unicode-character-docstring
-  "RUF003", # ambiguous-unicode-character-comment
+  "E402",     # module-import-not-at-top-of-file
+  "E501",     # line-too-long
+  "UP037",    # quoted-annotation
+  "RUF001",   # ambiguous-unicode-character-string
+  "RUF002",   # ambiguous-unicode-character-docstring
+  "RUF003",   # ambiguous-unicode-character-comment
+  "ASYNC230", # blocking-open-call-in-async-function
 ]
 
 [tool.pyright]
