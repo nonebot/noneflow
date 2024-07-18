@@ -24,3 +24,28 @@ async def test_homepage_failed_http_exception(mocked_api: MockRouter) -> None:
     ]
 
     assert mocked_api["exception"].called
+
+
+async def test_homepage_failed_empty_homepage(mocked_api: MockRouter) -> None:
+    """主页为空字符串的情况"""
+    from src.utils.validation import PublishType, validate_info
+
+    data = generate_bot_data(homepage="")
+
+    result = validate_info(PublishType.BOT, data)
+
+    assert not result["valid"]
+    assert "homepage" not in result["data"]
+    assert result["errors"] == [
+        {
+            "type": "string_pattern_mismatch",
+            "loc": ("homepage",),
+            "msg": "字符串应满足格式 '^https?://.*$'",
+            "input": "",
+            "ctx": {"pattern": "^https?://.*$"},
+            "url": "https://errors.pydantic.dev/2.7/v/string_pattern_mismatch",
+        }
+    ]
+
+    assert not mocked_api["homepage"].called
+    assert not mocked_api["homepage_failed"].called

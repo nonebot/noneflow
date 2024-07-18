@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 修复主页为空字符串也能通过测试的问题
+
 ## [3.3.2] - 2024-05-01
 
 ### Added
