@@ -1,11 +1,12 @@
 import abc
 import json
 from enum import Enum
-from typing import TYPE_CHECKING, Any, TypedDict
+from typing import TYPE_CHECKING, Annotated, Any, TypedDict
 
 from pydantic import (
     BaseModel,
     Field,
+    StringConstraints,
     ValidationInfo,
     ValidatorFunctionWrapHandler,
     field_validator,
@@ -111,7 +112,10 @@ class PublishInfo(abc.ABC, BaseModel):
     name: str = Field(max_length=NAME_MAX_LENGTH)
     desc: str
     author: str
-    homepage: str
+    homepage: Annotated[
+        str,
+        StringConstraints(strip_whitespace=True, pattern=r"^https?://.*$"),
+    ]
     tags: list[Tag] = Field(max_length=3)
     is_official: bool = False
 
@@ -120,6 +124,11 @@ class PublishInfo(abc.ABC, BaseModel):
     def collect_valid_values(
         cls, v: Any, handler: ValidatorFunctionWrapHandler, info: ValidationInfo
     ):
+        """收集验证通过的数据
+
+        NOTE: 其他所有的验证器都应该在这个验证器之前执行
+        所以不能用 after 模式，只能用 before 模式
+        """
         context = info.context
         if context is None:  # pragma: no cover
             raise PydanticCustomError("validation_context", "未获取到验证上下文")

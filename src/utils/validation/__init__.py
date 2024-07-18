@@ -29,7 +29,6 @@ def validate_info(
     if publish_type not in validation_model_map:
         raise ValueError("⚠️ 未知的发布类型。")  # pragma: no cover
 
-    # 如果升级至 pydantic 2 后，可以使用 validation-context
     # https://docs.pydantic.dev/latest/usage/validators/#validation-context
     validation_context = {
         "previous_data": raw_data.get("previous_data"),

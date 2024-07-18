@@ -27,4 +27,5 @@ MESSAGE_TRANSLATIONS = {
     "color_error": "颜色格式不正确",
     "string_too_long": "字符串长度不能超过 {max_length} 个字符",
     "too_long": "列表长度不能超过 {max_length} 个元素",
+    "string_pattern_mismatch": "字符串应满足格式 '{pattern}'",
 }
