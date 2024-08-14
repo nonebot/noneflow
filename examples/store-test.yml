@@ -45,6 +45,7 @@ jobs:
       - name: Prepare test
         run: |
           git checkout `git describe --abbrev=0 --tags`
+          poetry config virtualenvs.prefer-active-python true
           poetry install
 
       - name: Test plugin
