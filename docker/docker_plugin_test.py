@@ -12,9 +12,9 @@
 
 import asyncio
 import json
-import os
 import re
-from asyncio import create_subprocess_shell, run, subprocess
+import os
+from asyncio import create_subprocess_shell, subprocess
 from pathlib import Path
 from urllib.request import urlopen
 
@@ -24,11 +24,8 @@ STORE_PLUGINS_URL = (
 )
 # 匹配信息的正则表达式
 ISSUE_PATTERN = r"### {}\s+([^\s#].*?)(?=(?:\s+###|$))"
-# 插件信息
-PROJECT_LINK_PATTERN = re.compile(ISSUE_PATTERN.format("PyPI 项目名"))
-MODULE_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("插件 import 包名"))
-CONFIG_PATTERN = re.compile(r"### 插件配置项\s+```(?:\w+)?\s?([\s\S]*?)```")
 
+# 伪造的驱动
 FAKE_SCRIPT = """from typing import Optional, Union
 
 from nonebot import logger
@@ -133,8 +130,8 @@ else:
             "homepage": plugin.metadata.homepage,
             "supported_adapters": plugin.metadata.supported_adapters,
         }}
-        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf8") as f:
-            f.write(f"METADATA<<EOF\\n{{json.dumps(metadata, cls=SetEncoder)}}\\nEOF\\n")
+        with open("metadata.json", "w", encoding="utf-8") as f:
+            f.write(f"{{json.dumps(metadata, cls=SetEncoder)}}")
 
         if plugin.metadata.config and not issubclass(plugin.metadata.config, BaseModel):
             logger.error("插件配置项不是 Pydantic BaseModel 的子类")
@@ -163,27 +160,47 @@ def get_plugin_list() -> dict[str, str]:
     return {plugin["project_link"]: plugin["module_name"] for plugin in plugins}
 
 
+def extract_version(output: str, project_link: str) -> str | None:
+    """提取插件版本"""
+    output = strip_ansi(output)
+
+    # 匹配 poetry show 的输出
+    match = re.search(r"version\s+:\s+(\S+)", output)
+    if match:
+        return match.group(1).strip()
+
+    # 匹配版本解析失败的情况
+    # 目前有很多插件都把信息填错了，没有使用 - 而是使用了 _
+    project_link = project_link.replace("_", "-")
+    match = re.search(
+        rf"depends on {project_link} \(\^(\S+)\), version solving failed\.", output
+    )
+    if match:
+        return match.group(1).strip()
+
+
 class PluginTest:
-    def __init__(
-        self, project_link: str, module_name: str, config: str | None = None
-    ) -> None:
-        self.project_link = project_link
-        self.module_name = module_name
+    def __init__(self, project_info: str, config: str | None = None) -> None:
+        """插件测试构造函数
+
+        Args:
+            project_info (str): 项目信息，格式为 project_link:module_name
+            config (str | None, optional): 插件配置. 默认为 None.
+        """
+        self.project_link = project_info.split(":")[0]
+        self.module_name = project_info.split(":")[1]
         self.config = config
+        self._version = None
         self._plugin_list = None
 
         self._create = False
         self._run = False
         self._deps = []
 
-        # 输出信息
-        self._output_lines: list[str] = []
+        self._lines_output = []
 
         # 插件测试目录
         self.test_dir = Path("plugin_test")
-        # 通过环境变量获取 GITHUB 输出文件位置
-        self.github_output_file = Path(os.environ.get("GITHUB_OUTPUT", ""))
-        self.github_step_summary_file = Path(os.environ.get("GITHUB_STEP_SUMMARY", ""))
 
     @property
     def key(self) -> str:
@@ -199,38 +216,10 @@ class PluginTest:
         """插件测试目录"""
         # 替换 : 为 -，防止文件名不合法
         key = self.key.replace(":", "-")
-        return self.test_dir / f"{key}-test"
+        return self.test_dir / f"{key}"
 
-    async def run(self):
-        # 运行前创建测试目录
-        if not self.test_dir.exists():
-            self.test_dir.mkdir()
-
-        await self.create_poetry_project()
-        if self._create:
-            await self.show_package_info()
-            await self.show_plugin_dependencies()
-            await self.run_poetry_project()
-
-        # 输出测试结果
-        with open(self.github_output_file, "a", encoding="utf8") as f:
-            f.write(f"RESULT={self._run}\n")
-        # 输出测试输出
-        output = "\n".join(self._output_lines)
-        # GitHub 不支持 ANSI 转义字符所以去掉
-        ansiless_output = strip_ansi(output)
-        # 限制输出长度，防止评论过长，评论最大长度为 65536
-        ansiless_output = ansiless_output[:50000]
-        with open(self.github_output_file, "a", encoding="utf8") as f:
-            f.write(f"OUTPUT<<EOF\n{ansiless_output}\nEOF\n")
-        # 输出至作业摘要
-        with open(self.github_step_summary_file, "a", encoding="utf8") as f:
-            summary = f"插件 {self.project_link} 加载测试结果：{'通过' if self._run else '未通过'}\n"
-            summary += f"<details><summary>测试输出</summary><pre><code>{ansiless_output}</code></pre></details>"
-            f.write(f"{summary}")
-        return self._run, output
-
-    def get_env(self) -> dict[str, str]:
+    @property
+    def env(self) -> dict[str, str]:
         """获取环境变量"""
         env = os.environ.copy()
         # 删除虚拟环境变量，防止 poetry 使用运行当前脚本的虚拟环境
@@ -244,85 +233,131 @@ class PluginTest:
         env["POETRY_VIRTUALENVS_PREFER_ACTIVE_PYTHON"] = "true"
         return env
 
-    async def create_poetry_project(self) -> None:
-        if not self.path.exists():
-            self.path.mkdir()
+    def _log_output(self, msg: str):
+        # print(msg)
+        self._lines_output.append(msg)
+
+    async def run(self):
+        """插件测试入口"""
+
+        # 创建测试目录
+        if not self.test_dir.exists():
+            self.test_dir.mkdir()
+            self._log_output(f"创建测试目录 {self.test_dir}")
+
+        # 创建插件测试项目
+        await self.create_poetry_project()
+        if self._create:
+            await asyncio.gather(
+                self.show_package_info(),
+                self.show_plugin_dependencies(),
+            )
+            await self.run_poetry_project()
+
+        metadata = {}
+        metadata_path = self.path / "metadata.json"
+        if metadata_path.exists():
+            with open(self.path / "metadata.json", "r", encoding="utf-8") as f:
+                metadata = json.load(f)
+
+        # 输出测试结果
+        print(
+            json.dumps(
+                {
+                    "metadata": metadata,
+                    "outputs": self._lines_output,
+                    "load": self._run,
+                    "run": self._create,
+                    "version": self._version,
+                    "config": self.config,
+                }
+            )
+        )
+
+        return self._run, self._lines_output
+
+    async def command(self, cmd: str, timeout: int = 300) -> tuple[bool, str, str]:
+        """执行命令
+
+        Args:
+            cmd (str): 命令
+            timeout (int, optional): 超时限制. Defaults to 300.
+
+        Returns:
+            tuple[bool, str, str]: 命令执行返回值，标准输出，标准错误
+        """
+        try:
             proc = await create_subprocess_shell(
-                f"""poetry init -n && sed -i "s/\\^/~/g" pyproject.toml && poetry env info --ansi && poetry add {self.project_link}""",
+                cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 cwd=self.path,
-                env=self.get_env(),
+                env=self.env,
             )
-            stdout, stderr = await proc.communicate()
+            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout)
             code = proc.returncode
+        except TimeoutError:
+            proc.terminate()
+            stdout, stderr = b"", "执行命令超时".encode()
+            code = 1
 
-            self._create = not code
+        return not code, stdout.decode(), stderr.decode()
+
+    async def create_poetry_project(self):
+        """创建 poetry 项目用来测试插件"""
+        if not self.path.exists():
+            self.path.mkdir()
+
+            code, stdout, stderr = await self.command(
+                f"""poetry init -n && sed -i "s/\\^/~/g" pyproject.toml && poetry env info --ansi && poetry add {self.project_link}"""
+            )
+
+            self._create = code
+
             if self._create:
-                print(f"项目 {self.project_link} 创建成功。")
-                for i in stdout.decode().strip().splitlines():
-                    print(f"    {i}")
+                self._log_output(f"项目 {self.project_link} 创建成功。")
+                for i in stdout.strip().splitlines():
+                    self._log_output(f"    {i}")
             else:
                 self._log_output(f"项目 {self.project_link} 创建失败：")
-                for i in stderr.decode().strip().splitlines():
+                for i in stderr.strip().splitlines():
                     self._log_output(f"    {i}")
         else:
             self._log_output(f"项目 {self.project_link} 已存在，跳过创建。")
             self._create = True
 
     async def show_package_info(self) -> None:
+        """获取插件的版本与插件信息"""
         if self.path.exists():
-            proc = await create_subprocess_shell(
-                f"poetry show {self.project_link} --ansi",
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                cwd=self.path,
-                env=self.get_env(),
+            code, stdout, stderr = await self.command(
+                f"poetry show {self.project_link}"
             )
-            stdout, _ = await proc.communicate()
-            code = proc.returncode
-            if not code:
+            if code:
+                # 获取插件版本
+                self._version = extract_version(stdout, self.project_link)
+
+                # 记录插件信息至输出
                 self._log_output(f"插件 {self.project_link} 的信息如下：")
-                for i in stdout.decode().splitlines():
+                for i in stdout.strip().splitlines():
                     self._log_output(f"    {i}")
             else:
                 self._log_output(f"插件 {self.project_link} 信息获取失败。")
 
-    async def show_plugin_dependencies(self) -> None:
-        if self.path.exists():
-            proc = await create_subprocess_shell(
-                "poetry export --without-hashes",
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                cwd=self.path,
-                env=self.get_env(),
-            )
-            stdout, _ = await proc.communicate()
-            code = proc.returncode
-            if not code:
-                self._log_output(f"插件 {self.project_link} 依赖的插件如下：")
-                for i in stdout.decode().strip().splitlines():
-                    module_name = self._get_plugin_module_name(i)
-                    if module_name:
-                        self._deps.append(module_name)
-                self._log_output(f"    {', '.join(self._deps)}")
-            else:
-                self._log_output(f"插件 {self.project_link} 依赖获取失败。")
-
     async def run_poetry_project(self) -> None:
+        """运行插件"""
         if self.path.exists():
             # 默认使用 fake 驱动
-            with open(self.path / ".env", "w", encoding="utf8") as f:
+            with open(self.path / ".env", "w", encoding="utf-8") as f:
                 f.write("DRIVER=fake")
             # 如果提供了插件配置项，则写入配置文件
             if self.config is not None:
-                with open(self.path / ".env.prod", "w", encoding="utf8") as f:
+                with open(self.path / ".env.prod", "w", encoding="utf-8") as f:
                     f.write(self.config)
 
-            with open(self.path / "fake.py", "w", encoding="utf8") as f:
+            with open(self.path / "fake.py", "w", encoding="utf-8") as f:
                 f.write(FAKE_SCRIPT)
 
-            with open(self.path / "runner.py", "w", encoding="utf8") as f:
+            with open(self.path / "runner.py", "w", encoding="utf-8") as f:
                 f.write(
                     RUNNER_SCRIPT.format(
                         self.module_name,
@@ -330,47 +365,53 @@ class PluginTest:
                     )
                 )
 
-            try:
-                proc = await create_subprocess_shell(
-                    "poetry run python runner.py",
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    cwd=self.path,
-                    env=self.get_env(),
-                )
-                stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=600)
-                code = proc.returncode
-            except asyncio.TimeoutError:
-                proc.terminate()
-                stdout = b""
-                stderr = "测试超时".encode()
-                code = 1
+            code, stdout, stderr = await self.command(
+                "poetry run python runner.py", timeout=600
+            )
 
-            self._run = not code
+            self._run = code
 
-            status = "正常" if self._run else "出错"
-            self._log_output(f"插件 {self.module_name} 加载{status}：")
+            if self._run:
+                self._log_output(f"插件 {self.module_name} 加载正常：")
+            else:
+                self._log_output(f"插件 {self.module_name} 加载出错：")
 
-            _out = stdout.decode().strip().splitlines()
-            _err = stderr.decode().strip().splitlines()
+            _out = stdout.strip().splitlines()
+            _err = stderr.strip().splitlines()
             for i in _out:
                 self._log_output(f"    {i}")
+
             for i in _err:
                 self._log_output(f"    {i}")
 
-    def _log_output(self, output: str) -> None:
-        """记录输出，同时打印到控制台"""
-        print(output)
-        self._output_lines.append(output)
+    async def show_plugin_dependencies(self) -> None:
+        """获取插件的依赖"""
+        if self.path.exists():
+            code, stdout, stderr = await self.command("poetry export --without-hashes")
+
+            if code:
+                self._log_output(f"插件 {self.project_link} 依赖的插件如下：")
+                for i in stdout.strip().splitlines():
+                    module_name = self._get_plugin_module_name(i)
+                    if module_name:
+                        self._deps.append(module_name)
+                self._log_output(f"    {', '.join(self._deps)}")
+            else:
+                self._log_output(f"插件 {self.project_link} 依赖获取失败。")
 
     @property
     def plugin_list(self) -> dict[str, str]:
-        """获取插件列表"""
+        """
+        获取插件列表
+        """
         if self._plugin_list is None:
             self._plugin_list = get_plugin_list()
         return self._plugin_list
 
     def _get_plugin_module_name(self, require: str) -> str | None:
+        """
+        解析插件的依赖名称
+        """
         # anyio==3.6.2 ; python_version >= "3.11" and python_version < "4.0"
         # pydantic[dotenv]==1.10.6 ; python_version >= "3.10" and python_version < "4.0"
         match = re.match(r"^(.+?)(?:\[.+\])?==", require.strip())
@@ -381,54 +422,19 @@ class PluginTest:
                 return self.plugin_list[package_name]
 
 
-async def main():
-    event_path = os.environ.get("GITHUB_EVENT_PATH")
-    if not event_path:
-        print("未找到 GITHUB_EVENT_PATH，已跳过")
-        return
+def main():
+    """
+    根据传入的环境变量 PLUGIN_INFO 和 PLUGIN_CONFIG 进行测试
 
-    with open(event_path, encoding="utf8") as f:
-        event = json.load(f)
+    PLUGIN_INFO 即为该插件的 KEY
+    """
 
-    event_name = os.environ.get("GITHUB_EVENT_NAME")
-    if event_name not in ["issues", "issue_comment"]:
-        print(f"不支持的事件: {event_name}，已跳过")
-        return
+    plugin_info = os.environ.get("PLUGIN_INFO", "")
+    plugin_config = os.environ.get("PLUGIN_CONFIG", None)
+    plugin = PluginTest(plugin_info, plugin_config)
 
-    issue = event["issue"]
-
-    pull_request = issue.get("pull_request")
-    if pull_request:
-        print("评论在拉取请求下，已跳过")
-        return
-
-    state = issue.get("state")
-    if state != "open":
-        print("议题未开启，已跳过")
-        return
-
-    labels = issue.get("labels", [])
-    if not any(label["name"] == "Plugin" for label in labels):
-        print("议题与插件发布无关，已跳过")
-        return
-
-    issue_body = issue.get("body")
-    project_link = PROJECT_LINK_PATTERN.search(issue_body)
-    module_name = MODULE_NAME_PATTERN.search(issue_body)
-    config = CONFIG_PATTERN.search(issue_body)
-
-    if not project_link or not module_name:
-        print("议题中没有插件信息，已跳过")
-        return
-
-    # 测试插件
-    test = PluginTest(
-        project_link.group(1).strip(),
-        module_name.group(1).strip(),
-        config.group(1).strip() if config else None,
-    )
-    await test.run()
+    asyncio.run(plugin.run())
 
 
 if __name__ == "__main__":
-    run(main())
+    main()
