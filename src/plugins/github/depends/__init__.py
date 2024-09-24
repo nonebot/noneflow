@@ -8,7 +8,7 @@ from nonebot.adapters.github import (
 )
 from nonebot.params import Depends
 
-from plugins.github.typing import IssuesEvent, PullRequestEvent
+from src.plugins.github.typing import IssuesEvent, PullRequestEvent
 from src.plugins.github.constants import BOT_MARKER
 from src.plugins.github.models import GithubHandler, RepoInfo
 from src.plugins.github.utils import run_shell_command
