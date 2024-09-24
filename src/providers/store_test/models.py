@@ -2,7 +2,13 @@ from datetime import datetime
 from typing import Any, Literal
 from zoneinfo import ZoneInfo
 
-from pydantic import BaseModel, Field, field_serializer, field_validator
+from pydantic import (
+    BaseModel,
+    Field,
+    field_serializer,
+    field_validator,
+    model_validator,
+)
 from pydantic_extra_types.color import Color
 
 
@@ -52,10 +58,17 @@ class Metadata(BaseModel):
     """插件元数据"""
 
     name: str
-    description: str = Field(serialization_alias="desc", validation_alias="desc")
+    desc: str
     homepage: str
     type: str | None = None
     supported_adapters: list[str] | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def model_validator(cls, data: dict[str, Any]):
+        if data.get("desc") is None:
+            data["desc"] = data.get("description")
+        return data
 
 
 class Plugin(TagModel):

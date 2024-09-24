@@ -11,7 +11,7 @@ from nonebot.adapters.github.event import (
 from pydantic_core import PydanticCustomError
 
 
-from src.plugins.github.utils import run_shell_command
+from src.plugins.github.constants import TITLE_MAX_LENGTH
 from src.plugins.github.models import IssueHandler
 from src.plugins.github.depends import (
     bypass_git,
@@ -148,7 +148,7 @@ async def handle_remove_check(
             await handler.comment_issue(await render_error(err))
             await remove_check_matcher.finish()
 
-        title = f"{result.type}: Remove {result.name or 'Unknown'}"
+        title = f"{result.type}: Remove {result.name or 'Unknown'}"[:TITLE_MAX_LENGTH]
         branch_name = f"{BRANCH_NAME_PREFIX}{issue_number}"
 
         # 处理拉取请求和议题标题
