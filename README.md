@@ -41,4 +41,4 @@ _✨ NoneBot 工作流管理机器人 ✨_
 
 ## 测试
 
-在 [action-test](https://github.com/he0119/action-test) 仓库中测试。
+在 [action-test](https://github.com/BigOrangeQWQ/action-test) 仓库中测试。
