@@ -160,11 +160,13 @@ async def resolve_conflict_pull_requests(
             run_shell_command(["git", "switch", "-C", pull.head.ref])
             # 更新文件
             update_file(result)
-            handler.commit_and_push(
-                commit_message(result.type, result.name, issue_number),
-                pull.head.ref,
-                result.author,
-            )
+            message = commit_message(result.type, result.name, issue_number)
+
+            if isinstance(handler, IssueHandler):
+                handler.commit_and_push(message, pull.head.ref)
+            else:
+                handler.commit_and_push(message, pull.head.ref, result.author)
+
             logger.info("拉取请求更新完毕")
 
 
