@@ -1,19 +1,20 @@
 import abc
 import json
 from enum import Enum
-from typing import TYPE_CHECKING, Annotated, Any, TypedDict
+from typing import Any, Annotated
 
 from pydantic import (
     BaseModel,
     Field,
     StringConstraints,
+    ValidationError,
     ValidationInfo,
     ValidatorFunctionWrapHandler,
     field_validator,
     model_validator,
 )
-from pydantic_core import PydanticCustomError
-from pydantic_extra_types.color import Color
+from pydantic_core import PydanticCustomError, to_jsonable_python
+from src.providers.store_test.models import Metadata, Tag
 
 from .constants import (
     NAME_MAX_LENGTH,
@@ -21,19 +22,14 @@ from .constants import (
     PYPI_PACKAGE_NAME_PATTERN,
     PYTHON_MODULE_NAME_REGEX,
 )
-from .utils import check_pypi, check_url, get_adapters, resolve_adapter_name
+from .utils import (
+    check_pypi,
+    check_url,
+    get_adapters,
+    resolve_adapter_name,
+)
 
-if TYPE_CHECKING:
-    from pydantic_core import ErrorDetails
-
-
-class ValidationDict(TypedDict):
-    valid: bool
-    type: "PublishType"
-    name: str
-    author: str
-    data: dict[str, Any]
-    errors: "list[ErrorDetails]"
+from pydantic_core import ErrorDetails
 
 
 class PublishType(Enum):
@@ -45,6 +41,27 @@ class PublishType(Enum):
     BOT = "Bot"
     PLUGIN = "Plugin"
     ADAPTER = "Adapter"
+    UNKNOWN = "Unknown"
+
+    def __str__(self) -> str:
+        return self.value
+
+
+class ValidationDict(BaseModel):
+    valid: bool
+    type: PublishType
+    name: str
+    author: str
+    data: dict[str, Any] = {}
+    errors: list[ErrorDetails] = []
+
+    @field_validator("data", mode="before")
+    @classmethod
+    def data_validator(cls, v: dict[str, Any] | BaseModel) -> dict[str, Any]:
+        """
+        序列化 data 字段
+        """
+        return to_jsonable_python(v)
 
 
 class PyPIMixin(BaseModel):
@@ -99,25 +116,19 @@ class PyPIMixin(BaseModel):
         return values
 
 
-class Tag(BaseModel):
-    """标签"""
-
-    label: str = Field(max_length=10)
-    color: Color
-
-
 class PublishInfo(abc.ABC, BaseModel):
     """发布信息"""
 
     name: str = Field(max_length=NAME_MAX_LENGTH)
     desc: str
     author: str
+    author_id: int
     homepage: Annotated[
         str,
         StringConstraints(strip_whitespace=True, pattern=r"^https?://.*$"),
     ]
     tags: list[Tag] = Field(max_length=3)
-    is_official: bool = False
+    is_official: bool = Field(default=False)
 
     @field_validator("*", mode="wrap")
     @classmethod
@@ -167,6 +178,10 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     """插件类型"""
     supported_adapters: list[str] | None
     """插件支持的适配器"""
+    load: bool = False
+    """"插件测试结果"""
+    metadata: Metadata
+    """插件测试元数据"""
 
     @field_validator("type", mode="before")
     @classmethod
@@ -215,6 +230,44 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
                 },
             )
         return sorted(supported_adapters)
+
+    @field_validator("load", mode="before")
+    @classmethod
+    def plugin_test_load_validator(cls, v: bool, info: ValidationInfo) -> bool:
+        context = info.context
+        if context is None:
+            raise PydanticCustomError("validation_context", "未获取到验证上下文")
+
+        context["load"] = v  # 提供给元数据验证器使用
+        if v or context.get("skip_plugin_test"):
+            return True
+        raise PydanticCustomError(
+            "plugin.test",
+            "插件无法正常加载",
+            {"output": context.get("plugin_test_output")},
+        )
+
+    @field_validator("metadata", mode="before")
+    @classmethod
+    def plugin_test_metadata_validator(
+        cls, v: Metadata | None, info: ValidationInfo
+    ) -> Metadata:
+        context = info.context
+        if context is None:
+            raise PydanticCustomError("validation_context", "未获取到验证上下文")
+        if v is None:
+            # 如果没有传入插件元数据，尝试从上下文中获取
+            try:
+                return Metadata(**context["valid_data"])
+            except ValidationError as err:
+                raise PydanticCustomError(
+                    "plugin.metadata",
+                    "插件无法获取到元数据",
+                    {
+                        "load": context.get("load", True),
+                    },
+                )
+        return v
 
 
 class AdapterPublishInfo(PublishInfo, PyPIMixin):
