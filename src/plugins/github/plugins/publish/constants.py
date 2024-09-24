@@ -1,6 +1,6 @@
 import re
 
-NONEFLOW_MARKER = "<!-- NONEFLOW -->"
+from src.plugins.github.constants import ISSUE_PATTERN
 
 BOT_MARKER = "[bot]"
 """机器人的名字结尾都会带有这个"""
@@ -11,14 +11,9 @@ COMMIT_MESSAGE_PREFIX = ":beers: publish"
 
 BRANCH_NAME_PREFIX = "publish/issue"
 
-TITLE_MAX_LENGTH = 50
-"""标题最大长度"""
 
 # 匹配信息的正则表达式
 # 格式：### {标题}\n\n{内容}
-ISSUE_PATTERN = r"### {}\s+([^\s#].*?)(?=(?:\s+###|$))"
-ISSUE_FIELD_TEMPLATE = "### {}"
-ISSUE_FIELD_PATTERN = r"### {}\s+"
 
 # 基本信息
 PROJECT_LINK_PATTERN = re.compile(ISSUE_PATTERN.format("PyPI 项目名"))
@@ -38,6 +33,11 @@ PLUGIN_HOMEPAGE_PATTERN = re.compile(ISSUE_PATTERN.format(PLUGIN_HOMEPAGE_STRING
 PLUGIN_TYPE_STRING = "插件类型"
 PLUGIN_TYPE_PATTERN = re.compile(ISSUE_PATTERN.format(PLUGIN_TYPE_STRING))
 PLUGIN_CONFIG_PATTERN = re.compile(r"### 插件配置项\s+```(?:\w+)?\s?([\s\S]*?)```")
+PLUGIN_TEST_STRING = "插件测试"
+PLUGIN_TEST_BUTTON_STRING = "- [x] 单击左侧按钮重新测试，完成时勾选框将被选中"
+PLUGIN_TEST_BUTTON_PATTERN = re.compile(
+    r"- \[([ |x])\] 单击左侧按钮重新测试，完成时勾选框将被选中"
+)
 PLUGIN_SUPPORTED_ADAPTERS_STRING = "插件支持的适配器"
 PLUGIN_SUPPORTED_ADAPTERS_PATTERN = re.compile(
     ISSUE_PATTERN.format(PLUGIN_SUPPORTED_ADAPTERS_STRING)
@@ -65,4 +65,6 @@ LOC_NAME_MAP = {
     "homepage": "项目仓库/主页链接",
     "type": "插件类型",
     "supported_adapters": "插件支持的适配器",
+    "metadata": "插件测试元数据",
+    "load": "插件是否成功加载",
 }

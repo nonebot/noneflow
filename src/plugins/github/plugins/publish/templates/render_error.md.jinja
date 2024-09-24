@@ -1,0 +1,64 @@
+{%- macro render_tag_error(index, message, dt_message) %}
+第 {{ index + 1 }} 个标签{{ message }}。<dt>{{ dt_message }}</dt>
+{%- endmacro %}
+
+{%- macro detail_message(summary, detail) %}
+<details><summary>{{ summary }}</summary>{{ detail }}</details>
+{%- endmacro %}
+
+{%- macro render_error(error) %}
+{%- set loc = error.loc %}
+{%- set type = error.type %}
+{%- set ctx = error.ctx %} 
+{%- set name = loc|loc_to_name %}
+{%- set input = error.input %}
+{%- if loc|length == 3 and loc[0] == "tags" %}
+{%- if type == "missing" %}
+{{ render_tag_error(loc[1], "缺少第" ~ loc[2] ~ " 字段", "请确保标签字段完整。") }}
+{%- elif type == "string_too_long" %}
+{{ render_tag_error(loc[1], "名称过长", "请确保标签名称不超过 10 个字符。") }}
+{%- elif type == "color_error" %}
+{{ render_tag_error(loc[1], "颜色错误", "请确保标签颜色符合十六进制颜色码规则。") }}
+{%- endif %}
+{%- elif loc|length == 2 and loc[0] == "tags" and type == "model_type" %}
+{{ render_tag_error(loc[1], "格式错误", "请确保标签为字典。") }}
+{%- elif type == "homepage" %}
+{%- if ctx.status_code != -1 %}
+项目 <a href="{{ input }}">主页</a> 返回状态码 {{ ctx.status_code }}。<dt>请确保你的项目主页可访问。</dt>
+{%- else %}
+项目 <a href="{{ input }}">主页</a> 访问出错。{{ detail_message("错误信息", ctx.error) }}
+{%- endif %}
+{%- elif type == "project_link.not_found" %}
+项目 <a href="https://pypi.org/project/{{ input }}/">{{ input }}</a> 未发布至 PyPI。<dt>请将你的项目发布至 PyPI。</dt>
+{%- elif type == "project_link.name" %}
+PyPI 项目名 {{ input }} 不符合规范。<dt>请确保项目名正确。</dt>
+{%- elif type == "module_name" %}
+包名 {{ input }} 不符合规范。<dt>请确保包名正确。</dt>
+{%- elif type == "duplication" %}
+{{ error.msg }}<dt>请确保没有重复发布。</dt>
+{%- elif type == "plugin.test" %}
+插件加载测试未通过。{{ detail_message("测试输出", ctx.output) }}
+{%- elif type == "plugin.metadata" %}
+无法获取到插件元数据。<dt>{{ "请填写插件元数据" if ctx.load else "请确保插件正常加载" }}。</dt>
+{%- elif type == "plugin.type" %}
+插件类型 {{ input }} 不符合规范。<dt>请确保插件类型正确，当前仅支持 application 与 library。</dt>
+{%- elif type == "supported_adapters.missing" %}
+适配器 {{ ', '.join(ctx.missing_adapters) }} 不存在。<dt>请确保适配器模块名称正确。</dt>
+{%- elif type == "missing" %}
+{{ name }}: 无法匹配到数据。<dt>请确保填写该数据项。</dt>
+{%- elif type == "string_type" %}
+{{ name }}: 无法匹配到数据或值并不合法。<dt>请确保填写该数据项。</dt>
+{%- elif type == "model_type" %}
+{{ name }}: 格式错误。<dt>请确保其为字典。</dt>
+{%- elif type == "list_type" %}
+{{ name }}: 格式错误。<dt>请确保其为列表。</dt>
+{%- elif type == "set_type" %}
+{{ name }}: 格式错误。<dt>请确保其为集合。</dt>
+{%- elif type == "json_type" %}
+{{ name }}: 解码失败。<dt>请确保其为 JSON 格式。</dt>
+{%- elif type == "string_too_long" %}
+{{ name }}: 字符过多。<dt>请确保其不超过 {{ ctx.max_length }} 个字符。</dt>
+{%- else %}
+{{ error.name }}: {{ error.msg }}
+{%- endif %}
+{%- endmacro %}
