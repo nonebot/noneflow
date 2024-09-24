@@ -5,7 +5,7 @@ from tests.utils.validation.utils import generate_adapter_data
 
 async def test_name_too_long(mocked_api: MockRouter) -> None:
     """测试名称过长的情况"""
-    from src.utils.validation import PublishType, validate_info
+    from src.providers.validation import PublishType, validate_info
 
     data = generate_adapter_data(
         name="looooooooooooooooooooooooooooooooooooooooooooooooooooooooong"

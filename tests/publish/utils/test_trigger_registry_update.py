@@ -14,9 +14,9 @@ from tests.publish.utils import (
 
 
 async def test_trigger_registry_update(app: App, mocker: MockerFixture):
-    from src.plugins.publish.models import RepoInfo
-    from src.plugins.publish.utils import trigger_registry_update
-    from src.utils.validation import PublishType
+    from src.plugins.github.models import RepoInfo
+    from src.plugins.github.plugins.publish.utils import trigger_registry_update
+    from src.providers.validation import PublishType
 
     mock_sleep = mocker.patch("asyncio.sleep")
     mock_sleep.return_value = None
@@ -75,9 +75,9 @@ async def test_trigger_registry_update_skip_test(
     app: App, mocker: MockerFixture, mocked_api: MockRouter
 ):
     """跳过插件加载测试的情况"""
-    from src.plugins.publish.models import RepoInfo
-    from src.plugins.publish.utils import trigger_registry_update
-    from src.utils.validation import PublishType
+    from src.plugins.github.models import RepoInfo
+    from src.plugins.github.plugins.publish.utils import trigger_registry_update
+    from src.providers.validation import PublishType
 
     mock_sleep = mocker.patch("asyncio.sleep")
     mock_sleep.return_value = None
@@ -119,7 +119,7 @@ async def test_trigger_registry_update_skip_test(
                     "type": "Plugin",
                     "key": "project_link:module_name",
                     "config": "log_level=DEBUG\n",
-                    "data": '{"module_name": "module_name", "project_link": "project_link", "name": "name", "desc": "desc", "author": "user", "homepage": "https://nonebot.dev", "tags": [{"label": "test", "color": "#ffffff"}], "is_official": false, "type": "application", "supported_adapters": ["nonebot.adapters.onebot.v11"]}',
+                    "data": '{"module_name": "module_name", "project_link": "project_link", "name": "name", "desc": "desc", "author": "user", "author_id": 1, "homepage": "https://nonebot.dev", "tags": [{"label": "test", "color": "#ffffff"}], "is_official": false, "type": "application", "supported_adapters": ["nonebot.adapters.onebot.v11"], "load": false, "metadata": {"name": "name", "description": "desc", "homepage": "https://nonebot.dev", "type": "application", "supported_adapters": ["nonebot.adapters.onebot.v11"]}}',
                 },
             },
             True,
@@ -137,9 +137,9 @@ async def test_trigger_registry_update_skip_test(
 
 async def test_trigger_registry_update_bot(app: App, mocker: MockerFixture):
     """机器人发布的情况"""
-    from src.plugins.publish.models import RepoInfo
-    from src.plugins.publish.utils import trigger_registry_update
-    from src.utils.validation import PublishType
+    from src.plugins.github.models import RepoInfo
+    from src.plugins.github.plugins.publish.utils import trigger_registry_update
+    from src.providers.validation import PublishType
 
     mock_sleep = mocker.patch("asyncio.sleep")
     mock_sleep.return_value = None
@@ -183,9 +183,9 @@ async def test_trigger_registry_update_plugins_issue_body_info_missing(
     app: App, mocker: MockerFixture
 ):
     """如果议题信息不全，应该不会触发更新"""
-    from src.plugins.publish.models import RepoInfo
-    from src.plugins.publish.utils import trigger_registry_update
-    from src.utils.validation import PublishType
+    from src.plugins.github.models import RepoInfo
+    from src.plugins.github.plugins.publish.utils import trigger_registry_update
+    from src.providers.validation import PublishType
 
     mock_issue = mocker.MagicMock()
     mock_issue.state = "open"
@@ -225,9 +225,9 @@ async def test_trigger_registry_update_validation_failed(
     app: App, mocker: MockerFixture, mocked_api: MockRouter
 ):
     """验证失败时也不会触发更新"""
-    from src.plugins.publish.models import RepoInfo
-    from src.plugins.publish.utils import trigger_registry_update
-    from src.utils.validation import PublishType
+    from src.plugins.github.models import RepoInfo
+    from src.plugins.github.plugins.publish.utils import trigger_registry_update
+    from src.providers.validation import PublishType
 
     mock_issue = mocker.MagicMock()
     mock_issue.state = "open"

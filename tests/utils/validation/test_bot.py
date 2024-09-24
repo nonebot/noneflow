@@ -7,7 +7,7 @@ from tests.utils.validation.utils import generate_bot_data
 
 async def test_bot_info_validation_success(mocked_api: MockRouter) -> None:
     """测试验证成功的情况"""
-    from src.utils.validation import PublishType, validate_info
+    from src.providers.validation import PublishType, validate_info
 
     data = generate_bot_data()
 
@@ -32,7 +32,7 @@ async def test_bot_info_validation_success(mocked_api: MockRouter) -> None:
 
 async def test_bot_info_validation_failed(mocked_api: MockRouter) -> None:
     """测试验证失败的情况"""
-    from src.utils.validation import PublishType, validate_info
+    from src.providers.validation import PublishType, validate_info
 
     data = generate_bot_data(
         name="tooooooooooooooooooooooooooooooooooooooooooooooooog",

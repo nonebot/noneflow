@@ -12,7 +12,7 @@ from tests.publish.utils import generate_issue_body_plugin_skip_test
 
 
 async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
-    from src.plugins.publish import pr_close_matcher
+    from src.plugins.github.plugins.publish import pr_close_matcher
 
     event_path = Path(__file__).parent.parent / "events" / "pr-close.json"
 
@@ -126,7 +126,7 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
 
 
 async def test_process_pull_request_not_merged(app: App, mocker: MockerFixture) -> None:
-    from src.plugins.publish import pr_close_matcher
+    from src.plugins.github.plugins.publish import pr_close_matcher
 
     event_path = Path(__file__).parent.parent / "events" / "pr-close.json"
 
@@ -201,7 +201,7 @@ async def test_process_pull_request_skip_plugin_test(
     app: App, mocker: MockerFixture, mocked_api: MockRouter
 ) -> None:
     """跳过测试的插件合并时的情况"""
-    from src.plugins.publish import pr_close_matcher
+    from src.plugins.github.plugins.publish import pr_close_matcher
 
     event_path = Path(__file__).parent.parent / "events" / "pr-close.json"
 
@@ -286,7 +286,7 @@ async def test_process_pull_request_skip_plugin_test(
                     "type": "Plugin",
                     "key": "project_link:module_name",
                     "config": "log_level=DEBUG\n",
-                    "data": '{"module_name": "module_name", "project_link": "project_link", "name": "name", "desc": "desc", "author": "user", "homepage": "https://nonebot.dev", "tags": [{"label": "test", "color": "#ffffff"}], "is_official": false, "type": "application", "supported_adapters": ["nonebot.adapters.onebot.v11"]}',
+                    "data": '{"module_name": "module_name", "project_link": "project_link", "name": "name", "desc": "desc", "author": "user", "author_id": 1, "homepage": "https://nonebot.dev", "tags": [{"label": "test", "color": "#ffffff"}], "is_official": false, "type": "application", "supported_adapters": ["nonebot.adapters.onebot.v11"], "load": false, "metadata": {"name": "name", "description": "desc", "homepage": "https://nonebot.dev", "type": "application", "supported_adapters": ["nonebot.adapters.onebot.v11"]}}',
                 },
             },
             True,
@@ -316,7 +316,7 @@ async def test_process_pull_request_skip_plugin_test(
 
 async def test_not_publish(app: App, mocker: MockerFixture) -> None:
     """测试与发布无关的拉取请求"""
-    from src.plugins.publish import pr_close_matcher
+    from src.plugins.github.plugins.publish import pr_close_matcher
 
     event_path = Path(__file__).parent.parent / "events" / "pr-close.json"
 
@@ -344,7 +344,7 @@ async def test_extract_issue_number_from_ref_failed(
     app: App, mocker: MockerFixture
 ) -> None:
     """测试从分支名中提取议题号失败"""
-    from src.plugins.publish import pr_close_matcher
+    from src.plugins.github.plugins.publish import pr_close_matcher
 
     event_path = Path(__file__).parent.parent / "events" / "pr-close.json"
 

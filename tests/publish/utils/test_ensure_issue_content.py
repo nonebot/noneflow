@@ -9,8 +9,8 @@ from pytest_mock import MockerFixture
 
 async def test_ensure_issue_content(app: App, mocker: MockerFixture):
     """确保议题内容完整"""
-    from src.plugins.publish.models import RepoInfo
-    from src.plugins.publish.utils import ensure_issue_content
+    from src.plugins.github.models import RepoInfo
+    from src.plugins.github.plugins.publish.utils import ensure_issue_content
 
     mock_comment = mocker.MagicMock()
     mock_comment.body = "Bot: test"
@@ -45,8 +45,8 @@ async def test_ensure_issue_content(app: App, mocker: MockerFixture):
 
 async def test_ensure_issue_content_partial(app: App, mocker: MockerFixture):
     """确保议题内容被补全"""
-    from src.plugins.publish.models import RepoInfo
-    from src.plugins.publish.utils import ensure_issue_content
+    from src.plugins.github.models import RepoInfo
+    from src.plugins.github.plugins.publish.utils import ensure_issue_content
 
     mock_comment = mocker.MagicMock()
     mock_comment.body = "Bot: test"
@@ -84,8 +84,8 @@ async def test_ensure_issue_content_partial(app: App, mocker: MockerFixture):
 
 async def test_ensure_issue_content_complete(app: App, mocker: MockerFixture):
     """确保议题内容已经补全之后不会再次补全"""
-    from src.plugins.publish.models import RepoInfo
-    from src.plugins.publish.utils import ensure_issue_content
+    from src.plugins.github.models import RepoInfo
+    from src.plugins.github.plugins.publish.utils import ensure_issue_content
 
     mock_comment = mocker.MagicMock()
     mock_comment.body = "Bot: test"

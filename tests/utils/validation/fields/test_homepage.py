@@ -5,7 +5,7 @@ from tests.utils.validation.utils import generate_bot_data
 
 async def test_homepage_failed_http_exception(mocked_api: MockRouter) -> None:
     """测试验证失败的情况，HTTP 请求报错"""
-    from src.utils.validation import PublishType, validate_info
+    from src.providers.validation import PublishType, validate_info
 
     data = generate_bot_data(homepage="exception")
 
