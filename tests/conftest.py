@@ -11,7 +11,7 @@ from nonebug.app import App
 from pytest_mock import MockerFixture
 from respx import MockRouter
 
-from src.utils.constants import STORE_ADAPTERS_URL
+from src.providers.constants import STORE_ADAPTERS_URL
 
 if TYPE_CHECKING:
     from nonebot.plugin import Plugin
@@ -44,7 +44,7 @@ def load_plugin(nonebug_init: None) -> set["Plugin"]:
 
 @pytest.fixture()
 async def app(app: App, tmp_path: Path, mocker: MockerFixture):
-    from src.plugins.publish.config import plugin_config
+    from src.plugins.github import plugin_config
 
     adapter_path = tmp_path / "adapters.json"
     with adapter_path.open("w") as f:
@@ -103,7 +103,7 @@ async def app(app: App, tmp_path: Path, mocker: MockerFixture):
 
     yield app
 
-    from src.utils.store_test.utils import get_pypi_data
+    from src.providers.store_test.utils import get_pypi_data
 
     get_pypi_data.cache_clear()
 
@@ -111,7 +111,7 @@ async def app(app: App, tmp_path: Path, mocker: MockerFixture):
 @pytest.fixture(autouse=True)
 def _clear_cache(app: App):
     """每次运行前都清除 cache"""
-    from src.utils.validation.utils import check_url
+    from src.providers.validation.utils import check_url
 
     check_url.cache_clear()
 

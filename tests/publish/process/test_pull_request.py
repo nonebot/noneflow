@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import cast
 
+from inline_snapshot import snapshot
 from nonebot import get_adapter
 from nonebot.adapters.github import Adapter, GitHubBot, PullRequestClosed
 from nonebot.adapters.github.config import GitHubApp
@@ -8,11 +9,15 @@ from nonebug import App
 from pytest_mock import MockerFixture
 from respx import MockRouter
 
-from tests.publish.utils import generate_issue_body_plugin_skip_test
+from tests.publish.utils import (
+    MockIssue,
+    MockUser,
+    generate_issue_body_plugin_skip_test,
+)
 
 
 async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
-    from src.plugins.publish import pr_close_matcher
+    from src.plugins.github.plugins.publish import pr_close_matcher
 
     event_path = Path(__file__).parent.parent / "events" / "pr-close.json"
 
@@ -20,10 +25,9 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
     mock_sleep = mocker.patch("asyncio.sleep")
     mock_sleep.return_value = None
 
-    mock_issue = mocker.MagicMock()
-    mock_issue.state = "open"
-    mock_issue.body = "### PyPI 项目名\n\nproject_link1\n\n### 插件 import 包名\n\nmodule_name1\n\n### 插件配置项\n\n```dotenv\nlog_level=DEBUG\n```"
-    mock_issue.number = 80
+    mock_issue = MockIssue(
+        body="### PyPI 项目名\n\nproject_link1\n\n### 插件 import 包名\n\nmodule_name1\n\n### 插件配置项\n\n```dotenv\nlog_level=DEBUG\n```"
+    ).as_mock(mocker)
 
     mock_issues_resp = mocker.MagicMock()
     mock_issues_resp.parsed_data = mock_issue
@@ -126,14 +130,13 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
 
 
 async def test_process_pull_request_not_merged(app: App, mocker: MockerFixture) -> None:
-    from src.plugins.publish import pr_close_matcher
+    from src.plugins.github.plugins.publish import pr_close_matcher
 
     event_path = Path(__file__).parent.parent / "events" / "pr-close.json"
 
     mock_subprocess_run = mocker.patch("subprocess.run")
 
-    mock_issue = mocker.MagicMock()
-    mock_issue.state = "open"
+    mock_issue = MockIssue().as_mock(mocker)
 
     mock_issues_resp = mocker.MagicMock()
     mock_issues_resp.parsed_data = mock_issue
@@ -201,7 +204,7 @@ async def test_process_pull_request_skip_plugin_test(
     app: App, mocker: MockerFixture, mocked_api: MockRouter
 ) -> None:
     """跳过测试的插件合并时的情况"""
-    from src.plugins.publish import pr_close_matcher
+    from src.plugins.github.plugins.publish import pr_close_matcher
 
     event_path = Path(__file__).parent.parent / "events" / "pr-close.json"
 
@@ -209,11 +212,10 @@ async def test_process_pull_request_skip_plugin_test(
     mock_sleep = mocker.patch("asyncio.sleep")
     mock_sleep.return_value = None
 
-    mock_issue = mocker.MagicMock()
-    mock_issue.state = "open"
-    mock_issue.body = generate_issue_body_plugin_skip_test()
-    mock_issue.number = 80
-    mock_issue.user.login = "user"
+    mock_issue = MockIssue(
+        body=generate_issue_body_plugin_skip_test(),
+        user=MockUser(login="user", id=1),
+    ).as_mock(mocker)
 
     mock_issues_resp = mocker.MagicMock()
     mock_issues_resp.parsed_data = mock_issue
@@ -282,12 +284,14 @@ async def test_process_pull_request_skip_plugin_test(
                 "repo": "registry",
                 "owner": "owner",
                 "event_type": "registry_update",
-                "client_payload": {
-                    "type": "Plugin",
-                    "key": "project_link:module_name",
-                    "config": "log_level=DEBUG\n",
-                    "data": '{"module_name": "module_name", "project_link": "project_link", "name": "name", "desc": "desc", "author": "user", "homepage": "https://nonebot.dev", "tags": [{"label": "test", "color": "#ffffff"}], "is_official": false, "type": "application", "supported_adapters": ["nonebot.adapters.onebot.v11"]}',
-                },
+                "client_payload": snapshot(
+                    {
+                        "type": "Plugin",
+                        "key": "project_link:module_name",
+                        "config": "log_level=DEBUG\n",
+                        "data": '{"module_name": "module_name", "project_link": "project_link", "name": "name", "desc": "desc", "author": "user", "author_id": 1, "homepage": "https://nonebot.dev", "tags": [{"label": "test", "color": "#ffffff"}], "is_official": false, "type": "application", "supported_adapters": ["nonebot.adapters.onebot.v11"], "load": false, "metadata": {"name": "name", "desc": "desc", "homepage": "https://nonebot.dev", "type": "application", "supported_adapters": ["nonebot.adapters.onebot.v11"]}}',
+                    }
+                ),
             },
             True,
         )
@@ -316,7 +320,7 @@ async def test_process_pull_request_skip_plugin_test(
 
 async def test_not_publish(app: App, mocker: MockerFixture) -> None:
     """测试与发布无关的拉取请求"""
-    from src.plugins.publish import pr_close_matcher
+    from src.plugins.github.plugins.publish import pr_close_matcher
 
     event_path = Path(__file__).parent.parent / "events" / "pr-close.json"
 
@@ -344,7 +348,7 @@ async def test_extract_issue_number_from_ref_failed(
     app: App, mocker: MockerFixture
 ) -> None:
     """测试从分支名中提取议题号失败"""
-    from src.plugins.publish import pr_close_matcher
+    from src.plugins.github.plugins.publish import pr_close_matcher
 
     event_path = Path(__file__).parent.parent / "events" / "pr-close.json"
 

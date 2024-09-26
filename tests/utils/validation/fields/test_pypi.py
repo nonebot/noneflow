@@ -5,7 +5,7 @@ from tests.utils.validation.utils import generate_adapter_data
 
 async def test_project_link_invalid(mocked_api: MockRouter) -> None:
     """测试 PyPI 项目名错误的情况"""
-    from src.utils.validation import PublishType, validate_info
+    from src.providers.validation import PublishType, validate_info
 
     data = generate_adapter_data(project_link="project_link/")
 
@@ -27,7 +27,7 @@ async def test_project_link_invalid(mocked_api: MockRouter) -> None:
 
 async def test_module_name_invalid(mocked_api: MockRouter) -> None:
     """测试模块名称不正确的情况"""
-    from src.utils.validation import PublishType, validate_info
+    from src.providers.validation import PublishType, validate_info
 
     data = generate_adapter_data(module_name="1module_name")
 
@@ -50,7 +50,7 @@ async def test_module_name_invalid(mocked_api: MockRouter) -> None:
 
 async def test_name_duplication(mocked_api: MockRouter) -> None:
     """测试名称重复的情况"""
-    from src.utils.validation import PublishType, validate_info
+    from src.providers.validation import PublishType, validate_info
 
     data = generate_adapter_data(
         module_name="module_name1",
@@ -103,7 +103,7 @@ async def test_name_duplication(mocked_api: MockRouter) -> None:
 
 async def test_name_duplication_previos_data_missing(mocked_api: MockRouter) -> None:
     """没有提供 previos_data 的情况"""
-    from src.utils.validation import PublishType, validate_info
+    from src.providers.validation import PublishType, validate_info
 
     data = generate_adapter_data(
         module_name="module_name1",

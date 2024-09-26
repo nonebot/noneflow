@@ -3,7 +3,7 @@ async def test_missing_info():
 
     https://github.com/nonebot/nonebot2/issues/900
     """
-    from src.plugins.publish.constants import (  # GitHub 获取的是 body 为 \r\n
+    from src.plugins.github.plugins.publish.constants import (  # GitHub 获取的是 body 为 \r\n
         PLUGIN_DESC_PATTERN,
         PLUGIN_HOMEPAGE_PATTERN,
         PLUGIN_MODULE_NAME_PATTERN,

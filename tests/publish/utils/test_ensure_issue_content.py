@@ -6,11 +6,14 @@ from nonebot.adapters.github.config import GitHubApp
 from nonebug import App
 from pytest_mock import MockerFixture
 
+from plugins.github.models import IssueHandler
+from tests.publish.utils import MockIssue
+
 
 async def test_ensure_issue_content(app: App, mocker: MockerFixture):
     """确保议题内容完整"""
-    from src.plugins.publish.models import RepoInfo
-    from src.plugins.publish.utils import ensure_issue_content
+    from src.plugins.github.models import RepoInfo, GithubHandler
+    from src.plugins.github.plugins.publish.utils import ensure_issue_content
 
     mock_comment = mocker.MagicMock()
     mock_comment.body = "Bot: test"
@@ -37,16 +40,20 @@ async def test_ensure_issue_content(app: App, mocker: MockerFixture):
             },
             True,
         )
-
-        await ensure_issue_content(
-            bot, RepoInfo(owner="owner", repo="repo"), 1, "什么都没有"
+        handler = IssueHandler(
+            bot=bot,
+            repo_info=RepoInfo(owner="owner", repo="repo"),
+            issue=MockIssue(number=1).as_mock(mocker),
+            issue_number=1,
         )
+
+        await ensure_issue_content(handler, "什么都没有")
 
 
 async def test_ensure_issue_content_partial(app: App, mocker: MockerFixture):
     """确保议题内容被补全"""
-    from src.plugins.publish.models import RepoInfo
-    from src.plugins.publish.utils import ensure_issue_content
+    from src.plugins.github.models import RepoInfo
+    from src.plugins.github.plugins.publish.utils import ensure_issue_content
 
     mock_comment = mocker.MagicMock()
     mock_comment.body = "Bot: test"
@@ -84,8 +91,8 @@ async def test_ensure_issue_content_partial(app: App, mocker: MockerFixture):
 
 async def test_ensure_issue_content_complete(app: App, mocker: MockerFixture):
     """确保议题内容已经补全之后不会再次补全"""
-    from src.plugins.publish.models import RepoInfo
-    from src.plugins.publish.utils import ensure_issue_content
+    from src.plugins.github.models import RepoInfo
+    from src.plugins.github.plugins.publish.utils import ensure_issue_content
 
     mock_comment = mocker.MagicMock()
     mock_comment.body = "Bot: test"

@@ -1,4 +1,8 @@
+from dataclasses import dataclass, field
 import json
+from typing import Any, Literal
+
+from pytest_mock import MockFixture
 
 
 def generate_issue_body_adapter(
@@ -44,3 +48,27 @@ def generate_issue_body_plugin_skip_test(
     config: str = "log_level=DEBUG",
 ):
     return f"""### 插件名称\n\n{name}\n\n### 插件描述\n\n{desc}\n\n### PyPI 项目名\n\n{project_link}\n\n### 插件 import 包名\n\n{module_name}\n\n### 插件项目仓库/主页链接\n\n{homepage}\n\n### 标签\n\n{json.dumps(tags)}\n\n### 插件类型\n\n{tyoe}\n\n### 插件支持的适配器\n\n{json.dumps(supported_adapters)}\n\n### 插件配置项\n\n```dotenv\n{config}\n```"""
+
+
+from githubkit.rest import Issue
+
+
+@dataclass
+class MockUser:
+    login: str = "test"
+    id: int = 1
+
+
+@dataclass
+class MockIssue:
+    number: int = 80
+    title: str = "Bot: test"
+    state: Literal["open", "closed"] = "open"
+    body: str = field(default=generate_issue_body_bot("test"))
+    pull_request: Any = None
+    user: MockUser = field(default_factory=MockUser)
+
+    def as_mock(self, mocker: MockFixture):
+        mocker_issue = mocker.MagicMock(spec=Issue)
+        mocker_issue.configure_mock(**self.__dict__)
+        return mocker_issue

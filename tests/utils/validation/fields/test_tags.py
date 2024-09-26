@@ -7,7 +7,7 @@ from tests.utils.validation.utils import generate_plugin_data
 
 async def test_tags_color_missing(mocked_api: MockRouter) -> None:
     """测试标签缺少颜色的情况"""
-    from src.utils.validation import PublishType, validate_info
+    from src.providers.validation import PublishType, validate_info
 
     data = generate_plugin_data(tags=[{"label": "test"}])
 
@@ -31,7 +31,7 @@ async def test_tags_color_missing(mocked_api: MockRouter) -> None:
 
 async def test_tags_color_invalid(mocked_api: MockRouter) -> None:
     """测试标签颜色不正确的情况"""
-    from src.utils.validation import PublishType, validate_info
+    from src.providers.validation import PublishType, validate_info
 
     data = generate_plugin_data(tags=[{"label": "test", "color": "#adbcdef"}])
 
@@ -54,7 +54,7 @@ async def test_tags_color_invalid(mocked_api: MockRouter) -> None:
 
 async def test_tags_label_invalid(mocked_api: MockRouter) -> None:
     """测试标签名称不正确的情况"""
-    from src.utils.validation import PublishType, validate_info
+    from src.providers.validation import PublishType, validate_info
 
     data = generate_plugin_data(tags=[{"label": "12345678901", "color": "#adbcde"}])
 
@@ -79,7 +79,7 @@ async def test_tags_label_invalid(mocked_api: MockRouter) -> None:
 
 async def test_tags_number_invalid(mocked_api: MockRouter) -> None:
     """测试标签数量不正确的情况"""
-    from src.utils.validation import PublishType, validate_info
+    from src.providers.validation import PublishType, validate_info
 
     data = generate_plugin_data(
         tags=[
@@ -116,7 +116,7 @@ async def test_tags_number_invalid(mocked_api: MockRouter) -> None:
 
 async def test_tags_json_invalid(mocked_api: MockRouter) -> None:
     """测试标签 json 格式不正确的情况"""
-    from src.utils.validation import PublishType, validate_info
+    from src.providers.validation import PublishType, validate_info
 
     data = generate_plugin_data()
     data["tags"] = json.dumps([{"label": "1", "color": "#ffffff"}]) + "1"
@@ -140,7 +140,7 @@ async def test_tags_json_invalid(mocked_api: MockRouter) -> None:
 
 async def test_tags_json_not_list(mocked_api: MockRouter) -> None:
     """测试标签 json 不是列表的情况"""
-    from src.utils.validation import PublishType, validate_info
+    from src.providers.validation import PublishType, validate_info
 
     data = generate_plugin_data()
     data["tags"] = json.dumps({"test": "test"})
@@ -165,7 +165,7 @@ async def test_tags_json_not_list(mocked_api: MockRouter) -> None:
 
 async def test_tags_json_not_dict(mocked_api: MockRouter) -> None:
     """测试标签 json 是列表但列表里不全是字典的情况"""
-    from src.utils.validation import PublishType, validate_info
+    from src.providers.validation import PublishType, validate_info
 
     data = generate_plugin_data(tags=[{"label": "1", "color": "#ffffff"}, "1"])
 
