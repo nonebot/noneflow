@@ -4,6 +4,7 @@ from nonebot import logger
 from pydantic import (
     BaseModel,
     ConfigDict,
+    Field,
     model_validator,
 )
 from nonebot.adapters.github import Bot
@@ -240,6 +241,9 @@ class IssueHandler(GithubHandler):
         if data.get("author") is None and data.get("issue"):
             issue = data["issue"]
             data["author"] = issue.user.login if issue.user else ""
+        if data.get("issue_number") is None and data.get("issue"):
+            issue = data["issue"]
+            data["issue_number"] = issue.number
         return data
 
     async def update_issue_title(

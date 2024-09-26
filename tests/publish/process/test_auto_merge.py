@@ -92,6 +92,8 @@ async def test_auto_merge_need_rebase(app: App, mocker: MockerFixture) -> None:
     需要 rebase 的情况
     """
     from src.plugins.github.plugins.publish import auto_merge_matcher
+    from src.plugins.github.models import GithubHandler, RepoInfo
+    from nonebot.adapters.github import Bot
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_resolve_conflict_pull_requests = mocker.patch(
@@ -162,7 +164,13 @@ async def test_auto_merge_need_rebase(app: App, mocker: MockerFixture) -> None:
         ],
         any_order=True,
     )
-    mock_resolve_conflict_pull_requests.assert_called_once_with([mock_pull])
+    mock_resolve_conflict_pull_requests.assert_called_once_with(
+        GithubHandler(
+            bot=bot,
+            repo_info=RepoInfo(owner="he0119", repo="action-test"),
+        ),
+        [mock_pull],
+    )
 
 
 async def test_auto_merge_not_publish(app: App, mocker: MockerFixture) -> None:

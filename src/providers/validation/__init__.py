@@ -1,6 +1,5 @@
 """验证数据是否符合规范"""
 
-from re import Pattern
 from typing import Any
 from pydantic import ValidationError
 from pydantic_core import ErrorDetails
@@ -20,20 +19,6 @@ validation_model_map: dict[PublishType, type[PublishInfo]] = {
     PublishType.ADAPTER: AdapterPublishInfo,
     PublishType.PLUGIN: PluginPublishInfo,
 }
-
-
-def extract_publish_info_from_issue(
-    patterns: dict[str, Pattern[str]], body: str
-) -> dict[str, str | None]:
-    """
-    根据提供的正则表达式和议题内容来提取所需的信息
-    """
-    matchers = {key: pattern.search(body) for key, pattern in patterns.items()}
-    data = {
-        key: match.group(1).strip() if match else None
-        for key, match in matchers.items()
-    }
-    return data
 
 
 def validate_info(

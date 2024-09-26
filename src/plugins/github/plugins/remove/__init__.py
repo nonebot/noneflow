@@ -36,7 +36,7 @@ from .validation import validate_author_info
 
 
 async def pr_close_rule(
-    is_remove: bool = check_labels("remove"),
+    is_remove: bool = check_labels(REMOVE_LABEL),
     related_issue_number: int | None = Depends(get_related_issue_number),
 ) -> bool:
     if not is_remove:
