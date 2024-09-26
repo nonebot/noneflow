@@ -189,7 +189,7 @@ async def handle_publish_plugin_check(
 
         # 验证之后创建拉取请求和修改议题的标题
         await process_pull_request(handler, result, branch_name, title)
-
+        # 确保插件重测按钮存在
         await ensure_issue_test_button(handler)
 
         comment = await render_comment(result, True)

@@ -2,7 +2,7 @@ from nonebot import logger
 from githubkit.rest import Issue
 from pydantic_core import PydanticCustomError
 
-from src.providers.validation import extract_publish_info_from_issue
+from src.plugins.github.utils import extract_publish_info_from_issue
 from src.providers.validation.models import ValidationDict
 
 from .constants import REMOVE_HOMEPAGE_PATTERN, PUBLISH_PATH

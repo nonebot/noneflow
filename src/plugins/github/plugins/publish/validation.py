@@ -7,9 +7,9 @@ from nonebot import logger
 from src.providers.validation import (
     PublishType,
     ValidationDict,
-    extract_publish_info_from_issue,
     validate_info,
 )
+from src.plugins.github.utils import extract_publish_info_from_issue
 from src.providers.constants import DOCKER_IMAGES
 from src.providers.docker_test import DockerPluginTest
 from src.providers.store_test.models import DockerTestResult, Metadata

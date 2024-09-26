@@ -8,13 +8,9 @@ from pytest_mock import MockerFixture
 
 
 async def test_comment_issue(app: App, mocker: MockerFixture):
-    from src.plugins.github.models import RepoInfo
-    from src.plugins.github.plugins.publish.utils import comment_issue
+    from src.plugins.github.models import RepoInfo, GithubHandler
 
-    mock_render_comment = mocker.patch(
-        "src.plugins.github.plugins.publish.utils.render_comment"
-    )
-    mock_render_comment.return_value = "test"
+    render_comment = "test"
 
     mock_result = mocker.AsyncMock()
     mock_result.render_issue_comment.return_value = "test"
@@ -51,20 +47,16 @@ async def test_comment_issue(app: App, mocker: MockerFixture):
             True,
         )
 
-        await comment_issue(bot, RepoInfo(owner="owner", repo="repo"), 1, mock_result)
+        handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
-    mock_render_comment.assert_called_once_with(mock_result, False)
+        await handler.comment_issue(render_comment, 1)
 
 
 async def test_comment_issue_reuse(app: App, mocker: MockerFixture):
-    from src.plugins.github.plugins.publish.constants import NONEFLOW_MARKER
-    from src.plugins.github.models import RepoInfo
-    from src.plugins.github.plugins.publish.utils import comment_issue
+    from src.plugins.github.constants import NONEFLOW_MARKER
+    from src.plugins.github.models import RepoInfo, GithubHandler
 
-    mock_render_comment = mocker.patch(
-        "src.plugins.github.plugins.publish.utils.render_comment"
-    )
-    mock_render_comment.return_value = "test"
+    render_comment = "test"
 
     mock_result = mocker.AsyncMock()
     mock_result.render_issue_comment.return_value = "test"
@@ -102,22 +94,16 @@ async def test_comment_issue_reuse(app: App, mocker: MockerFixture):
             True,
         )
 
-        await comment_issue(bot, RepoInfo(owner="owner", repo="repo"), 1, mock_result)
+        handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
-    mock_render_comment.assert_called_once_with(mock_result, True)
+        await handler.comment_issue(render_comment, 1)
 
 
 async def test_comment_issue_reuse_same(app: App, mocker: MockerFixture):
     """测试评论内容相同时不会更新评论"""
-    from src.plugins.github.models import RepoInfo
-    from src.plugins.github.plugins.publish.utils import comment_issue
+    from src.plugins.github.models import RepoInfo, GithubHandler
 
-    mock_render_comment = mocker.patch(
-        "src.plugins.github.plugins.publish.utils.render_comment"
-    )
-    mock_render_comment.return_value = "test\n<!-- NONEFLOW -->\n"
-
-    mock_result = mocker.AsyncMock()
+    render_comment = "test\n<!-- NONEFLOW -->\n"
 
     mock_comment = mocker.MagicMock()
     mock_comment.body = "test\n<!-- NONEFLOW -->\n"
@@ -141,6 +127,8 @@ async def test_comment_issue_reuse_same(app: App, mocker: MockerFixture):
             mock_list_comments_resp,
         )
 
-        await comment_issue(bot, RepoInfo(owner="owner", repo="repo"), 1, mock_result)
+        handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
-    mock_render_comment.assert_called_once_with(mock_result, True)
+        await handler.comment_issue(render_comment, 1)
+
+    # mock_render_comment.assert_called_once_with("test\n<!-- NONEFLOW -->\n", True)

@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from re import Pattern
 import subprocess
 from typing import Any
 from nonebot import logger
@@ -40,3 +41,17 @@ def dump_json(path: Path, data: Any, indent: int = 4):
         # 结尾加上换行符，不然会被 pre-commit fix
         json.dump(to_jsonable_python(data), f, ensure_ascii=False, indent=indent)
         f.write("\n")
+
+
+def extract_publish_info_from_issue(
+    patterns: dict[str, Pattern[str]], body: str
+) -> dict[str, str | None]:
+    """
+    根据提供的正则表达式和议题内容来提取所需的信息
+    """
+    matchers = {key: pattern.search(body) for key, pattern in patterns.items()}
+    data = {
+        key: match.group(1).strip() if match else None
+        for key, match in matchers.items()
+    }
+    return data

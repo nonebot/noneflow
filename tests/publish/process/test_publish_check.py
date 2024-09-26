@@ -20,7 +20,11 @@ from nonebug import App
 from pytest_mock import MockerFixture
 from respx import MockRouter
 
-from tests.publish.utils import generate_issue_body_bot, generate_issue_body_plugin
+from tests.publish.utils import (
+    MockIssue,
+    generate_issue_body_bot,
+    generate_issue_body_plugin,
+)
 
 
 def check_json_data(file: Path, data: Any) -> None:
@@ -34,6 +38,8 @@ async def test_process_publish_check(
     """测试一个正常的发布流程"""
     from src.plugins.github.plugins.publish import publish_check_matcher
     from src.plugins.github import plugin_config
+    from githubkit.rest import Issue
+    from githubkit.rest import SimpleUser
 
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
@@ -44,13 +50,7 @@ async def test_process_publish_check(
     mock_installation_resp = mocker.MagicMock()
     mock_installation_resp.parsed_data = mock_installation
 
-    mock_issue = mocker.MagicMock()
-    mock_issue.pull_request = None
-    mock_issue.title = "Bot: test"
-    mock_issue.number = 80
-    mock_issue.state = "open"
-    mock_issue.body = generate_issue_body_bot(name="test")
-    mock_issue.user.login = "test"
+    mock_issue = MockIssue().as_mock(mocker)
 
     mock_event = mocker.MagicMock()
     mock_event.issue = mock_issue
@@ -147,6 +147,7 @@ async def test_process_publish_check(
 💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
 💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
 
+♻️ 评论已更新至最新检查结果
 
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
 <!-- NONEFLOW -->
@@ -250,13 +251,7 @@ async def test_edit_title(
     mock_installation_resp = mocker.MagicMock()
     mock_installation_resp.parsed_data = mock_installation
 
-    mock_issue = mocker.MagicMock()
-    mock_issue.pull_request = None
-    mock_issue.title = "Bot: test"
-    mock_issue.number = 80
-    mock_issue.state = "open"
-    mock_issue.body = generate_issue_body_bot(name="test1")
-    mock_issue.user.login = "test"
+    mock_issue = MockIssue(body=generate_issue_body_bot(name="test1")).as_mock(mocker)
 
     mock_event = mocker.MagicMock()
     mock_event.issue = mock_issue
@@ -379,6 +374,7 @@ async def test_edit_title(
 💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
 💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
 
+♻️ 评论已更新至最新检查结果
 
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
 <!-- NONEFLOW -->
@@ -482,15 +478,11 @@ async def test_edit_title_too_long(
     mock_installation_resp = mocker.MagicMock()
     mock_installation_resp.parsed_data = mock_installation
 
-    mock_issue = mocker.MagicMock()
-    mock_issue.pull_request = None
-    mock_issue.title = "Bot: test"
-    mock_issue.number = 80
-    mock_issue.state = "open"
-    mock_issue.body = generate_issue_body_bot(
-        name="looooooooooooooooooooooooooooooooooooooooooooooooooooooong"
-    )
-    mock_issue.user.login = "test"
+    mock_issue = MockIssue(
+        body=generate_issue_body_bot(
+            name="looooooooooooooooooooooooooooooooooooooooooooooooooooooong"
+        )
+    ).as_mock(mocker)
 
     mock_event = mocker.MagicMock()
     mock_event.issue = mock_issue
@@ -585,6 +577,7 @@ async def test_edit_title_too_long(
 💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
 💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
 
+♻️ 评论已更新至最新检查结果
 
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
 <!-- NONEFLOW -->
@@ -629,15 +622,9 @@ async def test_process_publish_check_not_pass(
     mock_installation_resp = mocker.MagicMock()
     mock_installation_resp.parsed_data = mock_installation
 
-    mock_issue = mocker.MagicMock()
-    mock_issue.pull_request = None
-    mock_issue.title = "Bot: test"
-    mock_issue.number = 1
-    mock_issue.state = "open"
-    mock_issue.body = generate_issue_body_bot(
-        name="test", homepage="https://www.baidu.com"
-    )
-    mock_issue.user.login = "test"
+    mock_issue = MockIssue(
+        body=generate_issue_body_bot(name="test", homepage="https://www.baidu.com")
+    ).as_mock(mocker)
 
     mock_issues_resp = mocker.MagicMock()
     mock_issues_resp.parsed_data = mock_issue
@@ -719,6 +706,7 @@ async def test_process_publish_check_not_pass(
 💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
 💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
 
+♻️ 评论已更新至最新检查结果
 
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
 <!-- NONEFLOW -->
@@ -801,9 +789,7 @@ async def test_issue_state_closed(
     mock_installation_resp = mocker.MagicMock()
     mock_installation_resp.parsed_data = mock_installation
 
-    mock_issue = mocker.MagicMock()
-    mock_issue.pull_request = None
-    mock_issue.state = "closed"
+    mock_issue = MockIssue(state="closed").as_mock(mocker)
     mock_issues_resp = mocker.MagicMock()
     mock_issues_resp.parsed_data = mock_issue
 
@@ -914,6 +900,8 @@ async def test_skip_plugin_check(
     from src.plugins.github.plugins.publish import publish_check_matcher
     from src.plugins.github import plugin_config
 
+    from githubkit.rest import SimpleUser, Issue
+
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
     )
@@ -923,13 +911,20 @@ async def test_skip_plugin_check(
     mock_installation_resp = mocker.MagicMock()
     mock_installation_resp.parsed_data = mock_installation
 
-    mock_issue = mocker.MagicMock()
+    mock_issue = mocker.MagicMock(spec=Issue)
     mock_issue.pull_request = None
     mock_issue.title = "Plugin: project_link"
     mock_issue.number = 70
     mock_issue.state = "open"
     mock_issue.body = generate_issue_body_plugin()
-    mock_issue.user.login = "test"
+
+    mock_user = mocker.MagicMock(spec=SimpleUser)
+    mock_user.login = "test"
+    mock_user.id = 1
+    mock_issue.user = mock_user
+    # mock_issue = MockIssue(
+    #     title="Plugin: project_link", number=70, body=generate_issue_body_plugin()
+    # ).as_mock(mocker)
 
     mock_event = mocker.MagicMock()
     mock_event.issue = mock_issue
@@ -997,17 +992,7 @@ async def test_skip_plugin_check(
             },
             mock_pulls_resp,
         )
-        # 修改标题
-        ctx.should_call_api(
-            "rest.issues.async_update",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "issue_number": 70,
-                "title": "Plugin: ",
-            },
-            True,
-        )
+        # 增加重测按钮
         ctx.should_call_api(
             "rest.issues.async_update",
             {
@@ -1042,6 +1027,17 @@ log_level=DEBUG
             },
             True,
         )
+        # 修改标题
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 70,
+                "title": "Plugin: ",
+            },
+            True,
+        )
         ctx.should_call_api(
             "rest.issues.async_list_comments",
             {"owner": "he0119", "repo": "action-test", "issue_number": 70},
@@ -1073,6 +1069,7 @@ log_level=DEBUG
 💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
 💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
 
+♻️ 评论已更新至最新检查结果
 
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
 <!-- NONEFLOW -->
@@ -1122,15 +1119,10 @@ async def test_convert_pull_request_to_draft(
     mock_installation_resp = mocker.MagicMock()
     mock_installation_resp.parsed_data = mock_installation
 
-    mock_issue = mocker.MagicMock()
-    mock_issue.pull_request = None
-    mock_issue.title = "Bot: test"
-    mock_issue.number = 1
-    mock_issue.state = "open"
-    mock_issue.body = generate_issue_body_bot(
-        name="test", homepage="https://www.baidu.com"
-    )
-    mock_issue.user.login = "test"
+    mock_issue = MockIssue(
+        number=1,
+        body=generate_issue_body_bot(name="test", homepage="https://www.baidu.com"),
+    ).as_mock(mocker)
 
     mock_issues_resp = mocker.MagicMock()
     mock_issues_resp.parsed_data = mock_issue
@@ -1232,6 +1224,7 @@ async def test_convert_pull_request_to_draft(
 💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
 💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
 
+♻️ 评论已更新至最新检查结果
 
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
 <!-- NONEFLOW -->
@@ -1281,13 +1274,7 @@ async def test_process_publish_check_ready_for_review(
     mock_installation_resp = mocker.MagicMock()
     mock_installation_resp.parsed_data = mock_installation
 
-    mock_issue = mocker.MagicMock()
-    mock_issue.pull_request = None
-    mock_issue.title = "Bot: test"
-    mock_issue.number = 80
-    mock_issue.state = "open"
-    mock_issue.body = generate_issue_body_bot(name="test")
-    mock_issue.user.login = "test"
+    mock_issue = MockIssue().as_mock(mocker)
 
     mock_event = mocker.MagicMock()
     mock_event.issue = mock_issue
@@ -1335,11 +1322,7 @@ async def test_process_publish_check_ready_for_review(
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
             mock_issues_resp,
         )
-        # ctx.should_call_api(
-        #     "rest.issues.async_list_comments",
-        #     {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-        #     mock_list_comments_resp,
-        # )
+
         ctx.should_call_api(
             "rest.pulls.async_create",
             {
@@ -1369,7 +1352,15 @@ async def test_process_publish_check_ready_for_review(
         ctx.should_call_api(
             "async_graphql",
             {
-                "query": "mutation markPullRequestReadyForReview($pullRequestId: ID!) {\n                    markPullRequestReadyForReview(input: {pullRequestId: $pullRequestId}) {\n                        clientMutationId\n                    }\n                }",
+                "query": snapshot(
+                    """\
+mutation markPullRequestReadyForReview($pullRequestId: ID!) {
+                        markPullRequestReadyForReview(input: {pullRequestId: $pullRequestId}) {
+                            clientMutationId
+                        }
+                    }\
+"""
+                ),
                 "variables": {"pullRequestId": "123"},
             },
             True,
@@ -1404,6 +1395,7 @@ async def test_process_publish_check_ready_for_review(
 💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
 💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
 
+♻️ 评论已更新至最新检查结果
 
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
 <!-- NONEFLOW -->

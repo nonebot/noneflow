@@ -21,6 +21,7 @@ async def test_resolve_conflict_pull_requests_adapter(
 ) -> None:
     from src.plugins.github import plugin_config
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
+    from src.plugins.github.models import RepoInfo, GithubHandler
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_result = mocker.MagicMock()
@@ -61,7 +62,9 @@ async def test_resolve_conflict_pull_requests_adapter(
         )
         bot = cast(GitHubBot, bot)
 
-        await resolve_conflict_pull_requests([mock_pull])
+        handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
+
+        await resolve_conflict_pull_requests(handler, [mock_pull])
 
     # 测试 git 命令
     mock_subprocess_run.assert_has_calls(
@@ -147,6 +150,7 @@ async def test_resolve_conflict_pull_requests_bot(
 ) -> None:
     from src.plugins.github import plugin_config
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
+    from src.plugins.github.models import RepoInfo, GithubHandler
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_result = mocker.MagicMock()
@@ -185,7 +189,9 @@ async def test_resolve_conflict_pull_requests_bot(
         )
         bot = cast(GitHubBot, bot)
 
-        await resolve_conflict_pull_requests([mock_pull])
+        handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
+
+        await resolve_conflict_pull_requests(handler, [mock_pull])
 
     # 测试 git 命令
     mock_subprocess_run.assert_has_calls(
@@ -267,6 +273,7 @@ async def test_resolve_conflict_pull_requests_plugin(
 ) -> None:
     from src.plugins.github import plugin_config
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
+    from src.plugins.github.models import RepoInfo, GithubHandler
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_result = mocker.MagicMock()
@@ -305,7 +312,9 @@ async def test_resolve_conflict_pull_requests_plugin(
         )
         bot = cast(GitHubBot, bot)
 
-        await resolve_conflict_pull_requests([mock_pull])
+        handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
+
+        await resolve_conflict_pull_requests(handler, [mock_pull])
 
     # 测试 git 命令
     mock_subprocess_run.assert_has_calls(
@@ -386,6 +395,7 @@ async def test_resolve_conflict_pull_requests_draft(
 ) -> None:
     from src.plugins.github import plugin_config
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
+    from src.plugins.github.models import RepoInfo, GithubHandler
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_result = mocker.MagicMock()
@@ -424,7 +434,9 @@ async def test_resolve_conflict_pull_requests_draft(
         )
         bot = cast(GitHubBot, bot)
 
-        await resolve_conflict_pull_requests([mock_pull])
+        handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
+
+        await resolve_conflict_pull_requests(handler, [mock_pull])
 
     # 测试 git 命令
     mock_subprocess_run.assert_not_called()
@@ -452,6 +464,7 @@ async def test_resolve_conflict_pull_requests_ref(
 ) -> None:
     from src.plugins.github import plugin_config
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
+    from src.plugins.github.models import RepoInfo, GithubHandler
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_result = mocker.MagicMock()
@@ -490,7 +503,9 @@ async def test_resolve_conflict_pull_requests_ref(
         )
         bot = cast(GitHubBot, bot)
 
-        await resolve_conflict_pull_requests([mock_pull])
+        handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
+
+        await resolve_conflict_pull_requests(handler, [mock_pull])
 
     # 测试 git 命令
     mock_subprocess_run.assert_not_called()
