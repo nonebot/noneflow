@@ -54,6 +54,7 @@ def validate_info(
         data: dict[str, Any] = validation_context["valid_data"]
     # 翻译错误
     errors = translate_errors(errors)
+
     return ValidationDict(
         valid=not errors,
         data=data,
@@ -61,4 +62,5 @@ def validate_info(
         type=publish_type,
         name=data.get("name") or raw_data.get("name") or "",
         author=data.get("author", ""),
+        author_id=data.get("author_id", 0),
     )

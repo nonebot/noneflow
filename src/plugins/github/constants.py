@@ -15,3 +15,5 @@ TITLE_MAX_LENGTH = 50
 ISSUE_PATTERN = r"### {}\s+([^\s#].*?)(?=(?:\s+###|$))"
 ISSUE_FIELD_TEMPLATE = "### {}"
 ISSUE_FIELD_PATTERN = r"### {}\s+"
+
+SKIP_COMMENT = "/skip"

@@ -1,9 +1,8 @@
 import asyncio
 import json
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from githubkit.typing import Missing
 from nonebot import logger
 from nonebot.adapters.github import Bot, GitHubBot
 
@@ -13,12 +12,19 @@ from src.providers.validation import (
     ValidationDict,
 )
 from src.plugins.github.depends import RepoInfo
-from src.plugins.github.utils import dump_json, load_json, run_shell_command
+from src.plugins.github.utils import (
+    dump_json,
+    extract_author_info,
+    load_json,
+    run_shell_command,
+)
 from src.plugins.github.utils import commit_message as _commit_message
 from src.plugins.github import plugin_config
 from src.plugins.github.constants import ISSUE_FIELD_PATTERN, ISSUE_FIELD_TEMPLATE
+from src.plugins.github.typing import AuthorInfo, LabelsItems
 
 from .validation import validate_plugin_info_from_issue
+
 
 from .constants import (
     BRANCH_NAME_PREFIX,
@@ -37,25 +43,13 @@ if TYPE_CHECKING:
     from githubkit.rest import (
         Issue,
         PullRequest,
-        PullRequestPropLabelsItems,
         PullRequestSimple,
         PullRequestSimplePropLabelsItems,
-        WebhookIssueCommentCreatedPropIssueAllof0PropLabelsItems,
-        WebhookIssuesEditedPropIssuePropLabelsItems,
-        WebhookIssuesOpenedPropIssuePropLabelsItems,
-        WebhookIssuesReopenedPropIssueMergedLabels,
-        WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems,
     )
 
 
 def get_type_by_labels(
-    labels: list["PullRequestPropLabelsItems"]
-    | list["PullRequestSimplePropLabelsItems"]
-    | list["WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems"]
-    | Missing[list["WebhookIssuesOpenedPropIssuePropLabelsItems"]]
-    | Missing[list["WebhookIssuesReopenedPropIssueMergedLabels"]]
-    | Missing[list["WebhookIssuesEditedPropIssuePropLabelsItems"]]
-    | list["WebhookIssueCommentCreatedPropIssueAllof0PropLabelsItems"],
+    labels: LabelsItems | list["PullRequestSimplePropLabelsItems"],
 ) -> PublishType | None:
     """通过标签获取类型"""
     if not labels:
@@ -137,6 +131,7 @@ async def resolve_conflict_pull_requests(
             continue
 
         publish_type = get_type_by_labels(pull.labels)
+        author_info = extract_author_info(await handler.get_issue(issue_number))
 
         if publish_type:
             # 需要先获取远程分支，否则无法切换到对应分支
@@ -145,11 +140,12 @@ async def resolve_conflict_pull_requests(
             run_shell_command(["git", "checkout", pull.head.ref])
 
             # 获取数据
-            result = generate_validation_dict_from_file(
-                publish_type,
+            result = await generate_validation_dict_from_file(
+                publish_type=publish_type,
                 # 提交时的 commit message 中包含插件名称
                 # 但因为仓库内的 plugins.json 中没有插件名称，所以需要从标题中提取
-                extract_name_from_title(pull.title, publish_type)
+                author_info=author_info,
+                name=extract_name_from_title(pull.title, publish_type)
                 if publish_type == PublishType.PLUGIN
                 else None,
             )
@@ -170,27 +166,29 @@ async def resolve_conflict_pull_requests(
             logger.info("拉取请求更新完毕")
 
 
-def generate_validation_dict_from_file(
+async def generate_validation_dict_from_file(
     publish_type: PublishType,
+    author_info: AuthorInfo,
     name: str | None = None,
 ) -> ValidationDict:
     """从文件中获取发布所需数据"""
+    data: list[dict[str, Any]]
     match publish_type:
         case PublishType.ADAPTER:
             with plugin_config.input_config.adapter_path.open(
                 "r", encoding="utf-8"
             ) as f:
-                data: list[dict[str, str]] = json.load(f)
+                data = json.load(f)
             raw_data = data[-1]
         case PublishType.BOT:
             with plugin_config.input_config.bot_path.open("r", encoding="utf-8") as f:
-                data: list[dict[str, str]] = json.load(f)
+                data = json.load(f)
             raw_data = data[-1]
         case PublishType.PLUGIN:
             with plugin_config.input_config.plugin_path.open(
                 "r", encoding="utf-8"
             ) as f:
-                data: list[dict[str, str]] = json.load(f)
+                data = json.load(f)
             raw_data = data[-1]
             assert name, "插件名称不能为空"
             raw_data["name"] = name
@@ -199,7 +197,8 @@ def generate_validation_dict_from_file(
         valid=True,
         type=publish_type,
         name=raw_data["name"],
-        author=raw_data["author"],
+        author_id=author_info["author_id"],
+        author=author_info["author"],
         data=raw_data,
         errors=[],
     )
@@ -208,6 +207,7 @@ def generate_validation_dict_from_file(
 def update_file(result: ValidationDict) -> None:
     """更新文件"""
     new_data = result.data
+
     match result.type:
         case PublishType.ADAPTER:
             path = plugin_config.input_config.adapter_path
@@ -219,7 +219,7 @@ def update_file(result: ValidationDict) -> None:
             new_data = {
                 "module_name": new_data["module_name"],
                 "project_link": new_data["project_link"],
-                "author": new_data["author"],
+                "author_id": new_data["author_id"],
                 "tags": new_data["tags"],
                 "is_official": new_data["is_official"],
             }

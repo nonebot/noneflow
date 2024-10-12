@@ -10,7 +10,6 @@ from nonebot.adapters.github.event import (
 )
 from pydantic_core import PydanticCustomError
 
-
 from src.plugins.github.constants import TITLE_MAX_LENGTH
 from src.plugins.github.models import IssueHandler
 from src.plugins.github.depends import (
@@ -40,7 +39,7 @@ async def pr_close_rule(
     related_issue_number: int | None = Depends(get_related_issue_number),
 ) -> bool:
     if not is_remove:
-        logger.info("拉取请求与发布无关，已跳过")
+        logger.info("拉取请求与删除无关，已跳过")
         return False
 
     if not related_issue_number:

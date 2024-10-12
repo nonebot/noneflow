@@ -51,6 +51,7 @@ class ValidationDict(BaseModel):
     valid: bool
     type: PublishType
     name: str
+    author_id: int
     author: str
     data: dict[str, Any] = {}
     errors: list[ErrorDetails] = []
@@ -163,12 +164,14 @@ class PublishInfo(abc.ABC, BaseModel):
 
     @field_validator("tags", mode="before")
     @classmethod
-    def tags_validator(cls, v: str) -> list[dict[str, str]]:
+    def tags_validator(cls, v: str | list[Any]) -> list[dict[str, str]]:
+        if not isinstance(v, str):
+            return v
+
         try:
-            tags: list[Any] | Any = json.loads(v)
+            return json.loads(v)
         except json.JSONDecodeError:
             raise PydanticCustomError("json_type", "JSON 格式不合法")
-        return tags
 
 
 class PluginPublishInfo(PublishInfo, PyPIMixin):
@@ -259,7 +262,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
             # 如果没有传入插件元数据，尝试从上下文中获取
             try:
                 return Metadata(**context["valid_data"])
-            except ValidationError as err:
+            except ValidationError:
                 raise PydanticCustomError(
                     "plugin.metadata",
                     "插件无法获取到元数据",

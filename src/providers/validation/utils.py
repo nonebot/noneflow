@@ -31,6 +31,14 @@ def check_url(url: str) -> tuple[int, str]:
         return -1, str(e)
 
 
+@cache
+def get_author_name(author_id: int) -> str:
+    """通过作者的ID获取作者名字"""
+    url = f"https://api.github.com/user/{author_id}"
+    resp = httpx.get(url)
+    return resp.json()["login"]
+
+
 def get_adapters() -> set[str]:
     """获取适配器列表"""
     resp = httpx.get(STORE_ADAPTERS_URL)

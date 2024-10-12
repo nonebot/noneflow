@@ -5,6 +5,7 @@ from typing import Any
 
 import click
 
+from src.providers.validation.utils import get_author_name
 from src.providers.validation import PublishType, validate_info
 from src.providers.docker_test import DockerPluginTest
 from src.providers.constants import DOCKER_IMAGES
@@ -33,15 +34,19 @@ async def validate_plugin(
     project_link = plugin.project_link
     module_name = plugin.module_name
     is_official = plugin.is_official
+
     # 从 PyPI 获取信息
     pypi_version = get_latest_version(project_link)
     pypi_time = get_upload_time(project_link)
+
     # 如果传递了 data 参数
     # 则直接使用 data 作为插件数据
     # 并且将 skip_test 设置为 True
     if plugin_data:
         # 跳过测试时无法获取到测试的版本
         test_version = None
+        # 跳过测试时无法获取到测试的环境
+        test_env = "skip_test"
         # 因为跳过测试，测试结果无意义
         plugin_test_load = True
         plugin_test_output = "已跳过测试"
@@ -58,7 +63,7 @@ async def validate_plugin(
 
         metadata: Metadata | None = Metadata(
             name=new_plugin.name,
-            description=new_plugin.desc,
+            desc=new_plugin.desc,
             homepage=new_plugin.homepage,
             type=new_plugin.type,
             supported_adapters=new_plugin.supported_adapters,
@@ -69,30 +74,53 @@ async def validate_plugin(
         ).run("3.10")
         # 获取测试结果
         click.echo(f"测试结果：{test_result}")
+
         plugin_test_output = test_result.outputs
         plugin_test_load = test_result.load
         test_version = test_result.version
+        test_env = test_result.test_env
         metadata = test_result.metadata
+
         # 当跳过测试的插件首次通过加载测试，则不再标记为跳过测试
         should_skip: bool = False if plugin_test_load else skip_test
+
+        # 通过 Github API 获取插件作者名称
+        try:
+            author_name = get_author_name(plugin.author_id)
+        except Exception:
+            # 若无法请求，试图从上次的插件数据中获取
+            author_name = previous_plugin.author if previous_plugin else ""
 
         raw_data: dict[str, Any] = {
             "module_name": module_name,
             "project_link": project_link,
-            "author": plugin.author,
+            "author": author_name,
+            "author_id": plugin.author_id,
             "tags": plugin.tags,
-            "skip_plugin_test": should_skip,
-            "plugin_test_result": plugin_test_load,
+            "load": plugin_test_load,
             "plugin_test_output": "",
-            "plugin_test_metadata": metadata,
+            "metadata": metadata,
+        }
+        context = {
             "previous_data": [],
+            "skip_plugin_test": should_skip,
         }
 
         if metadata:
             raw_data.update(metadata.model_dump())
         elif skip_test and previous_plugin:
+            # 将上次的插件数据作为新的插件数据
+            raw_data.update(previous_plugin.model_dump())
             raw_data.update(previous_plugin.metadata().model_dump())
-        validation_data: ValidationDict = validate_info(PublishType.PLUGIN, raw_data)
+
+            # 部分字段需要重置
+            raw_data["metadata"] = previous_plugin.metadata()
+            raw_data["version"] = pypi_version
+            raw_data["time"] = pypi_time
+
+        validation_data: ValidationDict = validate_info(
+            PublishType.PLUGIN, raw_data, context
+        )
 
         new_data = {
             # 插件验证过程中无法获取是否是官方插件，因此需要从原始数据中获取
@@ -106,7 +134,7 @@ async def validate_plugin(
         if validation_data.valid:
             data = validation_data.data
             data.update(new_data)
-            new_plugin = Plugin(**validation_data.data)
+            new_plugin = Plugin(**data)
         elif previous_plugin:
             data = previous_plugin.model_dump()
             data.update(new_data)
@@ -138,7 +166,7 @@ async def validate_plugin(
             "load": plugin_test_output,
             "metadata": metadata,
         },
-        test_env={test_result.test_env: True},
+        test_env={test_env: True},
     )
 
     return result, new_plugin
