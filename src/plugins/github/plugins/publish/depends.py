@@ -1,32 +1,17 @@
-from githubkit.rest import (
-    PullRequestPropLabelsItems,
-    PullRequestSimple,
-    WebhookIssueCommentCreatedPropIssueAllof0PropLabelsItems,
-    WebhookIssuesEditedPropIssuePropLabelsItems,
-    WebhookIssuesOpenedPropIssuePropLabelsItems,
-    WebhookIssuesReopenedPropIssueMergedLabels,
-    WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems,
-)
-from githubkit.typing import Missing
-from nonebot.adapters.github import Bot
+from githubkit.rest import PullRequestSimple
 
+from nonebot.adapters.github import Bot
 from nonebot.params import Depends
 
 from src.plugins.github.depends import get_issue_title, get_labels, get_repo_info
 from src.plugins.github.plugins.publish import utils
 from src.providers.validation.models import PublishType
 from src.plugins.github.models import RepoInfo
+from src.plugins.github.typing import LabelsItems
 
 
 def get_type_by_labels(
-    labels: list[PullRequestPropLabelsItems]
-    | list[WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems]
-    | Missing[list[WebhookIssuesOpenedPropIssuePropLabelsItems]]
-    | Missing[list[WebhookIssuesReopenedPropIssueMergedLabels]]
-    | Missing[list[WebhookIssuesEditedPropIssuePropLabelsItems]]
-    | list[WebhookIssueCommentCreatedPropIssueAllof0PropLabelsItems] = Depends(
-        get_labels
-    ),
+    labels: LabelsItems = Depends(get_labels),
 ) -> PublishType | None:
     """通过标签获取类型"""
     return utils.get_type_by_labels(labels)

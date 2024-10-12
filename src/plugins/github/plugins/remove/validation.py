@@ -21,7 +21,7 @@ async def validate_author_info(issue: Issue) -> ValidationDict:
         issue.body or "",
     ).get("homepage")
     author = issue.user.login if issue.user else ""
-    author_id = issue.user.id if issue.user else None
+    author_id = issue.user.id if issue.user else 0
 
     for type, path in PUBLISH_PATH.items():
         if not path.exists():
@@ -44,6 +44,7 @@ async def validate_author_info(issue: Issue) -> ValidationDict:
                         type=type,
                         name=item.get("name") or item.get("module_name") or "",
                         author=author,
+                        author_id=author_id,
                         errors=[],
                     )
                 raise PydanticCustomError("author_info", "作者信息不匹配")

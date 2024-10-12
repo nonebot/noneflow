@@ -49,7 +49,7 @@ class StorePlugin(TagModel):
 
     module_name: str
     project_link: str
-    author: str
+    author_id: int
     tags: list[Tag]
     is_official: bool
 
@@ -79,7 +79,7 @@ class Plugin(TagModel):
     name: str
     desc: str
     author: str
-    author_id: int | None = None
+    author_id: int
     homepage: str
     tags: list[Tag]
     is_official: bool

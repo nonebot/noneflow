@@ -9,7 +9,10 @@ from src.providers.validation import (
     ValidationDict,
     validate_info,
 )
-from src.plugins.github.utils import extract_publish_info_from_issue
+from src.plugins.github.utils import (
+    extract_author_info,
+    extract_publish_info_from_issue,
+)
 from src.providers.constants import DOCKER_IMAGES
 from src.providers.docker_test import DockerPluginTest
 from src.providers.store_test.models import DockerTestResult, Metadata
@@ -44,16 +47,6 @@ def strip_ansi(text: str | None) -> str:
     return ansi_escape.sub("", text)
 
 
-def extract_author_info(issue: Issue) -> dict[str, Any]:
-    """
-    从议题中获取作者信息
-    """
-    return {
-        "author": issue.user.login if issue.user else "",
-        "author_id": issue.user.id if issue.user else None,
-    }
-
-
 async def validate_plugin_info_from_issue(issue: Issue) -> ValidationDict:
     """从议题中获取插件信息，并且运行插件测试加载且获取插件元信息后进行验证"""
     body = issue.body if issue.body else ""
@@ -68,23 +61,21 @@ async def validate_plugin_info_from_issue(issue: Issue) -> ValidationDict:
         },
         body,
     )
-    raw_data.update(extract_author_info(issue))
+    raw_data.update(extract_author_info(issue))  # 更新作者信息
 
     test_config: str = raw_data["test_config"]
     module_name: str = raw_data["module_name"]
     project_link: str = raw_data["project_link"]
 
+    # 获取插件上次的数据
     with plugin_config.input_config.plugin_path.open("r", encoding="utf-8") as f:
         previous_data: list[dict[str, str]] = json.load(f)
 
-    # 插件字段默认值
-    raw_data["name"] = project_link
+    raw_data["name"] = project_link  # 若插件没有元数据，则 name 默认为 project_link
     raw_data["metadata"] = None
 
     # 如果插件被跳过，则从议题获取插件信息
-
     plugin_test_output: str = "插件未进行测试"
-
     if plugin_config.skip_plugin_test:
         plugin_info = extract_publish_info_from_issue(
             {
@@ -117,10 +108,6 @@ async def validate_plugin_info_from_issue(issue: Issue) -> ValidationDict:
         if plugin_metadata:
             # 从插件测试结果中获得元数据
             raw_data.update(plugin_metadata.model_dump())
-        else:
-            # 插件缺少元数据
-            # 可能为插件测试未通过，或者插件未按规范编写
-            raw_data["name"] = project_link
 
     # 传入的验证插件信息的上下文
     validation_context = {

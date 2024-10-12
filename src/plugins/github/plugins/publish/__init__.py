@@ -182,7 +182,7 @@ async def handle_publish_plugin_check(
 
         # 设置拉取请求与议题的标题
         # 限制标题长度，过长的标题不好看
-        title = f"{PublishType.PLUGIN}: {result.name[:TITLE_MAX_LENGTH]}"
+        title = f"{publish_type}: {result.name[:TITLE_MAX_LENGTH]}"
 
         # 分支命名示例 publish/issue123
         branch_name = f"{BRANCH_NAME_PREFIX}{issue_number}"

@@ -162,8 +162,8 @@ class StoreTest:
                 click.echo(f"{i}/{limit} 正在测试插件 {key} ...")
                 await worker()  # TODO: 修改为并行
                 i += 1
-            except Exception as e:
-                click.echo(e)
+            except Exception as err:
+                click.echo(err)
                 continue
 
         return new_results, new_plugins
@@ -225,6 +225,14 @@ class StoreTest:
         if self.should_skip(key, force):
             return
 
-        new_result, new_plugin = await self.test_plugin(key, config, plugin_data)
+        new_plugin: Plugin | None = None
+
+        try:
+            new_result, new_plugin = await self.test_plugin(key, config, plugin_data)
+        except Exception as err:
+            click.echo(err)
+
         if new_plugin:
             await self.merge_data({key: new_result}, {key: new_plugin})
+        else:
+            await self.merge_data({}, {})
