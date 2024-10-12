@@ -30,8 +30,6 @@ def pytest_configure(config: pytest.Config) -> None:
         "github_repository": "owner/repo",
         "github_run_id": "123456",
         "github_event_path": "event_path",
-        "plugin_test_output": "test_output",
-        "plugin_test_result": False,
         "github_apps": [],
     }
 
@@ -39,7 +37,9 @@ def pytest_configure(config: pytest.Config) -> None:
 @pytest.fixture(scope="session", autouse=True)
 def load_plugin(nonebug_init: None) -> set["Plugin"]:
     nonebot.get_driver().register_adapter(Adapter)
-    return nonebot.load_plugins(str(Path(__file__).parent.parent / "src" / "plugins"))
+    return nonebot.load_plugins(
+        str(Path(__file__).parent.parent.parent / "src" / "plugins")
+    )
 
 
 @pytest.fixture()
@@ -88,6 +88,7 @@ async def app(app: App, tmp_path: Path, mocker: MockerFixture):
                     "name": "name",
                     "desc": "desc",
                     "author": "author",
+                    "author_id": 1,
                     "homepage": "https://v2.nonebot.dev",
                     "tags": [],
                     "is_official": False,
@@ -203,4 +204,8 @@ def mocked_api(respx_mock: MockRouter):
             },
         ],
     )
+    respx_mock.get(
+        "https://api.github.com/user/1",
+        name="project_link_wordcloud",
+    ).respond(json={"login": "he0119"})
     return respx_mock

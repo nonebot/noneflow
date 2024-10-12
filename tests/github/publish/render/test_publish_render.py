@@ -14,6 +14,7 @@ async def test_render_empty(app: App):
         data={},
         errors=[],
         author="author",
+        author_id=1,
     )
 
     comment = await render_comment(result)
@@ -51,6 +52,7 @@ async def test_render_reuse(app: App):
         data={},
         errors=[],
         author="author",
+        author_id=1,
     )
 
     comment = await render_comment(result, True)

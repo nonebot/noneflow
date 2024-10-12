@@ -22,6 +22,7 @@ async def test_render_data_bot(app: App):
         type=PublishType.BOT,
         name="CoolQBot",
         author="he0119",
+        author_id=1,
     )
 
     comment = await render_comment(result)
@@ -67,6 +68,7 @@ async def test_render_data_bot(app: App):
         type=PublishType.BOT,
         name="March7th",
         author="mobyw",
+        author_id=1,
     )
     comment = await render_comment(result)
     assert comment == snapshot(
@@ -116,6 +118,7 @@ async def test_render_data_adapter(app: App):
         type=PublishType.ADAPTER,
         name="大别野",
         author="CMHopeSunshine",
+        author_id=1,
     )
 
     comment = await render_comment(result)
@@ -168,6 +171,7 @@ async def test_render_data_plugin(app: App, mocker: MockFixture):
         type=PublishType.PLUGIN,
         name="帮助",
         author="he0119",
+        author_id=1,
     )
 
     comment = await render_comment(result)
@@ -214,6 +218,7 @@ async def test_render_data_plugin_supported_adapters(app: App, mocker: MockFixtu
         type=PublishType.PLUGIN,
         name="帮助",
         author="he0119",
+        author_id=1,
     )
 
     comment = await render_comment(result)

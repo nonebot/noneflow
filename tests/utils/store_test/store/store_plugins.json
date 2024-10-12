@@ -3,6 +3,7 @@
     "module_name": "nonebot_plugin_datastore",
     "project_link": "nonebot-plugin-datastore",
     "author": "he0119",
+    "author_id": 1,
     "tags": [],
     "is_official": false
   },
@@ -10,6 +11,7 @@
     "module_name": "nonebot_plugin_treehelp",
     "project_link": "nonebot-plugin-treehelp",
     "author": "he0119",
+    "author_id": 1,
     "tags": [],
     "is_official": false
   },
@@ -17,6 +19,7 @@
     "module_name": "nonebot_plugin_wordcloud",
     "project_link": "nonebot-plugin-wordcloud",
     "author": "he0119",
+    "author_id": 1,
     "tags": [],
     "is_official": false
   }

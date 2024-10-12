@@ -5,13 +5,16 @@
     "name": "数据存储",
     "desc": "NoneBot 数据存储插件",
     "author": "he0119",
+    "author_id": 1,
     "homepage": "https://github.com/he0119/nonebot-plugin-datastore",
     "tags": [],
     "is_official": false,
     "type": "library",
     "supported_adapters": null,
     "valid": true,
-    "time": "2023-06-22 11:58:18"
+    "time": "2023-06-22 11:58:18",
+    "version": "0.0.1",
+    "skip_test": false
   },
   {
     "module_name": "nonebot_plugin_treehelp",
@@ -19,12 +22,15 @@
     "name": "帮助",
     "desc": "获取插件帮助信息",
     "author": "he0119",
+    "author_id": 1,
     "homepage": "https://github.com/he0119/nonebot-plugin-treehelp",
     "tags": [],
     "is_official": false,
     "type": "application",
     "supported_adapters": null,
     "valid": true,
-    "time": "2023-06-22 12:10:18"
+    "time": "2023-06-22 12:10:18",
+    "version": "0.0.1",
+    "skip_test": false
   }
 ]

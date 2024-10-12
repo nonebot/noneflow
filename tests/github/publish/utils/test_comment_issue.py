@@ -1,10 +1,7 @@
-from typing import cast
-
-from nonebot import get_adapter
-from nonebot.adapters.github import Adapter, GitHubBot
-from nonebot.adapters.github.config import GitHubApp
 from nonebug import App
 from pytest_mock import MockerFixture
+
+from tests.github.utils import get_github_bot
 
 
 async def test_comment_issue(app: App, mocker: MockerFixture):
@@ -22,13 +19,7 @@ async def test_comment_issue(app: App, mocker: MockerFixture):
     mock_list_comments_resp.parsed_data = [mock_comment]
 
     async with app.test_api() as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
+        adapter, bot = get_github_bot(ctx)
 
         ctx.should_call_api(
             "rest.issues.async_list_comments",
@@ -69,13 +60,7 @@ async def test_comment_issue_reuse(app: App, mocker: MockerFixture):
     mock_list_comments_resp.parsed_data = [mock_comment]
 
     async with app.test_api() as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
+        adapter, bot = get_github_bot(ctx)
 
         ctx.should_call_api(
             "rest.issues.async_list_comments",
@@ -113,13 +98,7 @@ async def test_comment_issue_reuse_same(app: App, mocker: MockerFixture):
     mock_list_comments_resp.parsed_data = [mock_comment]
 
     async with app.test_api() as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
+        adapter, bot = get_github_bot(ctx)
 
         ctx.should_call_api(
             "rest.issues.async_list_comments",
@@ -130,5 +109,3 @@ async def test_comment_issue_reuse_same(app: App, mocker: MockerFixture):
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
         await handler.comment_issue(render_comment, 1)
-
-    # mock_render_comment.assert_called_once_with("test\n<!-- NONEFLOW -->\n", True)

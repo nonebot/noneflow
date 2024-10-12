@@ -1,14 +1,16 @@
 # ruff: noqa: ASYNC101
 import json
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
-from nonebot import get_adapter
-from nonebot.adapters.github import Adapter, GitHubBot
-from nonebot.adapters.github.config import GitHubApp
+
+from inline_snapshot import snapshot
 from nonebug import App
+import pytest
 from pytest_mock import MockerFixture
 from respx import MockRouter
+
+from tests.github.utils import MockIssue, MockUser, get_github_bot
 
 
 def check_json_data(file: Path, data: Any) -> None:
@@ -16,8 +18,17 @@ def check_json_data(file: Path, data: Any) -> None:
         assert json.load(f) == data
 
 
+@pytest.fixture()
+def mock_pull(mocker: MockerFixture):
+    mock_pull = mocker.MagicMock()
+    mock_pull.head.ref = "publish/issue1"
+    mock_pull.draft = False
+
+    return mock_pull
+
+
 async def test_resolve_conflict_pull_requests_adapter(
-    app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path
+    app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path, mock_pull
 ) -> None:
     from src.plugins.github import plugin_config
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
@@ -30,9 +41,12 @@ async def test_resolve_conflict_pull_requests_adapter(
     mock_label = mocker.MagicMock()
     mock_label.name = "Adapter"
 
-    mock_pull = mocker.MagicMock()
-    mock_pull.head.ref = "publish/issue1"
-    mock_pull.draft = False
+    mock_issue_repo = mocker.MagicMock()
+    mock_issue = MockIssue(
+        number=1, body="", user=MockUser(login="he0119", id=1)
+    ).as_mock(mocker)
+    mock_issue_repo.parsed_data = mock_issue
+
     mock_pull.labels = [mock_label]
 
     with open(tmp_path / "adapters.json", "w", encoding="utf-8") as f:
@@ -43,7 +57,7 @@ async def test_resolve_conflict_pull_requests_adapter(
                     "project_link": "nonebot-adapter-onebot",
                     "name": "OneBot V11",
                     "desc": "OneBot V11 协议",
-                    "author": "yanyongyu",
+                    "author_id": 1,
                     "homepage": "https://onebot.adapters.nonebot.dev/",
                     "tags": [],
                     "is_official": True,
@@ -54,18 +68,17 @@ async def test_resolve_conflict_pull_requests_adapter(
         )
 
     async with app.test_api() as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
+        adapter, bot = get_github_bot(ctx)
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
-        await resolve_conflict_pull_requests(handler, [mock_pull])
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            snapshot({"owner": "owner", "repo": "repo", "issue_number": 1}),
+            mock_issue_repo,
+        )
 
+        await resolve_conflict_pull_requests(handler, [mock_pull])
     # 测试 git 命令
     mock_subprocess_run.assert_has_calls(
         [
@@ -80,7 +93,7 @@ async def test_resolve_conflict_pull_requests_adapter(
                 capture_output=True,
             ),
             mocker.call(
-                ["git", "config", "--global", "user.name", "yanyongyu"],
+                ["git", "config", "--global", "user.name", "he0119"],
                 check=True,
                 capture_output=True,
             ),
@@ -90,7 +103,7 @@ async def test_resolve_conflict_pull_requests_adapter(
                     "config",
                     "--global",
                     "user.email",
-                    "yanyongyu@users.noreply.github.com",
+                    "he0119@users.noreply.github.com",
                 ],
                 check=True,
                 capture_output=True,
@@ -124,7 +137,7 @@ async def test_resolve_conflict_pull_requests_adapter(
                 "project_link": "nonebot-adapter-onebot",
                 "name": "OneBot V11",
                 "desc": "OneBot V11 协议",
-                "author": "yanyongyu",
+                "author_id": 1,
                 "homepage": "https://onebot.adapters.nonebot.dev/",
                 "tags": [],
                 "is_official": True,
@@ -134,7 +147,7 @@ async def test_resolve_conflict_pull_requests_adapter(
                 "project_link": "nonebot-adapter-onebot",
                 "name": "OneBot V11",
                 "desc": "OneBot V11 协议",
-                "author": "yanyongyu",
+                "author_id": 1,
                 "homepage": "https://onebot.adapters.nonebot.dev/",
                 "tags": [],
                 "is_official": True,
@@ -146,7 +159,7 @@ async def test_resolve_conflict_pull_requests_adapter(
 
 
 async def test_resolve_conflict_pull_requests_bot(
-    app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path
+    app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path, mock_pull
 ) -> None:
     from src.plugins.github import plugin_config
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
@@ -156,12 +169,15 @@ async def test_resolve_conflict_pull_requests_bot(
     mock_result = mocker.MagicMock()
     mock_subprocess_run.side_effect = lambda *args, **kwargs: mock_result
 
+    mock_issue_repo = mocker.MagicMock()
+    mock_issue = MockIssue(
+        number=1, body="", user=MockUser(login="he0119", id=1)
+    ).as_mock(mocker)
+    mock_issue_repo.parsed_data = mock_issue
+
     mock_label = mocker.MagicMock()
     mock_label.name = "Bot"
 
-    mock_pull = mocker.MagicMock()
-    mock_pull.head.ref = "publish/issue1"
-    mock_pull.draft = False
     mock_pull.labels = [mock_label]
 
     with open(tmp_path / "bots.json", "w", encoding="utf-8") as f:
@@ -170,7 +186,7 @@ async def test_resolve_conflict_pull_requests_bot(
                 {
                     "name": "CoolQBot",
                     "desc": "基于 NoneBot2 的聊天机器人",
-                    "author": "he0119",
+                    "author_id": 1,
                     "homepage": "https://github.com/he0119/CoolQBot",
                     "tags": [],
                     "is_official": False,
@@ -181,15 +197,15 @@ async def test_resolve_conflict_pull_requests_bot(
         )
 
     async with app.test_api() as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
+        adapter, bot = get_github_bot(ctx)
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
+
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            snapshot({"owner": "owner", "repo": "repo", "issue_number": 1}),
+            mock_issue_repo,
+        )
 
         await resolve_conflict_pull_requests(handler, [mock_pull])
 
@@ -249,7 +265,7 @@ async def test_resolve_conflict_pull_requests_bot(
             {
                 "name": "CoolQBot",
                 "desc": "基于 NoneBot2 的聊天机器人",
-                "author": "he0119",
+                "author_id": 1,
                 "homepage": "https://github.com/he0119/CoolQBot",
                 "tags": [],
                 "is_official": False,
@@ -257,7 +273,7 @@ async def test_resolve_conflict_pull_requests_bot(
             {
                 "name": "CoolQBot",
                 "desc": "基于 NoneBot2 的聊天机器人",
-                "author": "he0119",
+                "author_id": 1,
                 "homepage": "https://github.com/he0119/CoolQBot",
                 "tags": [],
                 "is_official": False,
@@ -269,7 +285,7 @@ async def test_resolve_conflict_pull_requests_bot(
 
 
 async def test_resolve_conflict_pull_requests_plugin(
-    app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path
+    app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path, mock_pull
 ) -> None:
     from src.plugins.github import plugin_config
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
@@ -282,9 +298,12 @@ async def test_resolve_conflict_pull_requests_plugin(
     mock_label = mocker.MagicMock()
     mock_label.name = "Plugin"
 
-    mock_pull = mocker.MagicMock()
-    mock_pull.head.ref = "publish/issue1"
-    mock_pull.draft = False
+    mock_issue_repo = mocker.MagicMock()
+    mock_issue = MockIssue(
+        number=1, body="", user=MockUser(login="he0119", id=1)
+    ).as_mock(mocker)
+    mock_issue_repo.parsed_data = mock_issue
+
     mock_pull.labels = [mock_label]
     mock_pull.title = "Plugin: 帮助"
 
@@ -294,7 +313,7 @@ async def test_resolve_conflict_pull_requests_plugin(
                 {
                     "module_name": "nonebot_plugin_treehelp",
                     "project_link": "nonebot-plugin-treehelp",
-                    "author": "he0119",
+                    "author_id": 1,
                     "tags": [],
                     "is_official": True,
                 }
@@ -304,15 +323,15 @@ async def test_resolve_conflict_pull_requests_plugin(
         )
 
     async with app.test_api() as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
+        adapter, bot = get_github_bot(ctx)
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
+
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            snapshot({"owner": "owner", "repo": "repo", "issue_number": 1}),
+            mock_issue_repo,
+        )
 
         await resolve_conflict_pull_requests(handler, [mock_pull])
 
@@ -373,14 +392,14 @@ async def test_resolve_conflict_pull_requests_plugin(
             {
                 "module_name": "nonebot_plugin_treehelp",
                 "project_link": "nonebot-plugin-treehelp",
-                "author": "he0119",
+                "author_id": 1,
                 "tags": [],
                 "is_official": True,
             },
             {
                 "module_name": "nonebot_plugin_treehelp",
                 "project_link": "nonebot-plugin-treehelp",
-                "author": "he0119",
+                "author_id": 1,
                 "tags": [],
                 "is_official": True,
             },
@@ -415,7 +434,7 @@ async def test_resolve_conflict_pull_requests_draft(
                 {
                     "name": "CoolQBot",
                     "desc": "基于 NoneBot2 的聊天机器人",
-                    "author": "he0119",
+                    "author_id": 1,
                     "homepage": "https://github.com/he0119/CoolQBot",
                     "tags": [],
                     "is_official": False,
@@ -426,13 +445,7 @@ async def test_resolve_conflict_pull_requests_draft(
         )
 
     async with app.test_api() as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
+        adapter, bot = get_github_bot(ctx)
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
@@ -448,7 +461,7 @@ async def test_resolve_conflict_pull_requests_draft(
             {
                 "name": "CoolQBot",
                 "desc": "基于 NoneBot2 的聊天机器人",
-                "author": "he0119",
+                "author_id": 1,
                 "homepage": "https://github.com/he0119/CoolQBot",
                 "tags": [],
                 "is_official": False,
@@ -484,7 +497,7 @@ async def test_resolve_conflict_pull_requests_ref(
                 {
                     "name": "CoolQBot",
                     "desc": "基于 NoneBot2 的聊天机器人",
-                    "author": "he0119",
+                    "author_id": 1,
                     "homepage": "https://github.com/he0119/CoolQBot",
                     "tags": [],
                     "is_official": False,
@@ -495,13 +508,7 @@ async def test_resolve_conflict_pull_requests_ref(
         )
 
     async with app.test_api() as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
+        adapter, bot = get_github_bot(ctx)
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
@@ -517,7 +524,7 @@ async def test_resolve_conflict_pull_requests_ref(
             {
                 "name": "CoolQBot",
                 "desc": "基于 NoneBot2 的聊天机器人",
-                "author": "he0119",
+                "author_id": 1,
                 "homepage": "https://github.com/he0119/CoolQBot",
                 "tags": [],
                 "is_official": False,

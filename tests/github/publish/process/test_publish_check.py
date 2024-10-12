@@ -2,55 +2,47 @@
 
 import json
 from pathlib import Path
-from typing import Any, cast
-
 import httpx
 from githubkit import Response
 from githubkit.exception import RequestFailed
 from inline_snapshot import snapshot
-from nonebot import get_adapter
 from nonebot.adapters.github import (
     Adapter,
-    GitHubBot,
     IssueCommentCreated,
     IssuesOpened,
 )
-from nonebot.adapters.github.config import GitHubApp
 from nonebug import App
 from pytest_mock import MockerFixture
 from respx import MockRouter
 
-from tests.publish.utils import (
+from tests.github.utils import (
+    MockBody,
     MockIssue,
+    check_json_data,
     generate_issue_body_bot,
     generate_issue_body_plugin,
+    get_github_bot,
 )
 
 
-def check_json_data(file: Path, data: Any) -> None:
-    with open(file) as f:
-        assert json.load(f) == data
-
-
 async def test_process_publish_check(
-    app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path
+    app: App,
+    mocker: MockerFixture,
+    mocked_api: MockRouter,
+    tmp_path: Path,
+    mock_installation,
 ) -> None:
     """测试一个正常的发布流程"""
     from src.plugins.github.plugins.publish import publish_check_matcher
     from src.plugins.github import plugin_config
-    from githubkit.rest import Issue
-    from githubkit.rest import SimpleUser
 
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
     )
 
-    mock_installation = mocker.MagicMock()
-    mock_installation.id = 123
-    mock_installation_resp = mocker.MagicMock()
-    mock_installation_resp.parsed_data = mock_installation
-
-    mock_issue = MockIssue().as_mock(mocker)
+    mock_issue = MockIssue(body=MockBody(type="bot", name="test").generate()).as_mock(
+        mocker
+    )
 
     mock_event = mocker.MagicMock()
     mock_event.issue = mock_issue
@@ -74,21 +66,15 @@ async def test_process_publish_check(
     check_json_data(plugin_config.input_config.bot_path, [])
 
     async with app.test_matcher(publish_check_matcher) as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
-        event_path = Path(__file__).parent.parent / "events" / "issue-open.json"
+        adapter, bot = get_github_bot(ctx)
+        event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
         assert isinstance(event, IssuesOpened)
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
-            mock_installation_resp,
+            mock_installation,
         )
         ctx.should_call_api(
             "rest.issues.async_get",
@@ -233,7 +219,11 @@ async def test_process_publish_check(
 
 
 async def test_edit_title(
-    app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path
+    app: App,
+    mocker: MockerFixture,
+    mocked_api: MockRouter,
+    tmp_path: Path,
+    mock_installation,
 ) -> None:
     """测试编辑标题
 
@@ -245,11 +235,6 @@ async def test_edit_title(
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
     )
-
-    mock_installation = mocker.MagicMock()
-    mock_installation.id = 123
-    mock_installation_resp = mocker.MagicMock()
-    mock_installation_resp.parsed_data = mock_installation
 
     mock_issue = MockIssue(body=generate_issue_body_bot(name="test1")).as_mock(mocker)
 
@@ -276,21 +261,15 @@ async def test_edit_title(
     check_json_data(plugin_config.input_config.bot_path, [])
 
     async with app.test_matcher(publish_check_matcher) as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
-        event_path = Path(__file__).parent.parent / "events" / "issue-open.json"
+        adapter, bot = get_github_bot(ctx)
+        event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
         assert isinstance(event, IssuesOpened)
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
-            mock_installation_resp,
+            mock_installation,
         )
         ctx.should_call_api(
             "rest.issues.async_get",
@@ -309,7 +288,8 @@ async def test_edit_title(
             },
             exception=RequestFailed(
                 Response(
-                    httpx.Response(422, request=httpx.Request("test", "test")), None
+                    httpx.Response(422, request=httpx.Request("test", "test")),
+                    None,  # type: ignore
                 )
             ),
         )
@@ -460,7 +440,11 @@ async def test_edit_title(
 
 
 async def test_edit_title_too_long(
-    app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path
+    app: App,
+    mocker: MockerFixture,
+    mocked_api: MockRouter,
+    tmp_path: Path,
+    mock_installation,
 ) -> None:
     """测试编辑标题
 
@@ -472,11 +456,6 @@ async def test_edit_title_too_long(
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
     )
-
-    mock_installation = mocker.MagicMock()
-    mock_installation.id = 123
-    mock_installation_resp = mocker.MagicMock()
-    mock_installation_resp.parsed_data = mock_installation
 
     mock_issue = MockIssue(
         body=generate_issue_body_bot(
@@ -504,21 +483,15 @@ async def test_edit_title_too_long(
     check_json_data(plugin_config.input_config.bot_path, [])
 
     async with app.test_matcher(publish_check_matcher) as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
-        event_path = Path(__file__).parent.parent / "events" / "issue-open.json"
+        adapter, bot = get_github_bot(ctx)
+        event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
         assert isinstance(event, IssuesOpened)
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
-            mock_installation_resp,
+            mock_installation,
         )
         ctx.should_call_api(
             "rest.issues.async_get",
@@ -607,7 +580,11 @@ async def test_edit_title_too_long(
 
 
 async def test_process_publish_check_not_pass(
-    app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path
+    app: App,
+    mocker: MockerFixture,
+    mocked_api: MockRouter,
+    tmp_path: Path,
+    mock_installation,
 ) -> None:
     """测试发布检查不通过"""
     from src.plugins.github.plugins.publish import publish_check_matcher
@@ -616,11 +593,6 @@ async def test_process_publish_check_not_pass(
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
     )
-
-    mock_installation = mocker.MagicMock()
-    mock_installation.id = 123
-    mock_installation_resp = mocker.MagicMock()
-    mock_installation_resp.parsed_data = mock_installation
 
     mock_issue = MockIssue(
         body=generate_issue_body_bot(name="test", homepage="https://www.baidu.com")
@@ -643,21 +615,15 @@ async def test_process_publish_check_not_pass(
     check_json_data(plugin_config.input_config.bot_path, [])
 
     async with app.test_matcher(publish_check_matcher) as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
-        event_path = Path(__file__).parent.parent / "events" / "issue-open.json"
+        adapter, bot = get_github_bot(ctx)
+        event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
         assert isinstance(event, IssuesOpened)
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
-            mock_installation_resp,
+            mock_installation,
         )
         ctx.should_call_api(
             "rest.issues.async_get",
@@ -754,14 +720,8 @@ async def test_comment_at_pull_request(
     )
 
     async with app.test_matcher(publish_check_matcher) as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
-        event_path = Path(__file__).parent.parent / "events" / "pr-comment.json"
+        adapter, bot = get_github_bot(ctx)
+        event_path = Path(__file__).parent.parent.parent / "events" / "pr-comment.json"
         event = Adapter.payload_to_event("1", "issue_comment", event_path.read_bytes())
         assert isinstance(event, IssueCommentCreated)
 
@@ -772,7 +732,7 @@ async def test_comment_at_pull_request(
 
 
 async def test_issue_state_closed(
-    app: App, mocker: MockerFixture, mocked_api: MockRouter
+    app: App, mocker: MockerFixture, mocked_api: MockRouter, mock_installation
 ) -> None:
     """测试议题已关闭
 
@@ -784,31 +744,20 @@ async def test_issue_state_closed(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
     )
 
-    mock_installation = mocker.MagicMock()
-    mock_installation.id = 123
-    mock_installation_resp = mocker.MagicMock()
-    mock_installation_resp.parsed_data = mock_installation
-
     mock_issue = MockIssue(state="closed").as_mock(mocker)
     mock_issues_resp = mocker.MagicMock()
     mock_issues_resp.parsed_data = mock_issue
 
     async with app.test_matcher(publish_check_matcher) as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
-        event_path = Path(__file__).parent.parent / "events" / "issue-open.json"
+        adapter, bot = get_github_bot(ctx)
+        event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
         assert isinstance(event, IssuesOpened)
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
-            mock_installation_resp,
+            mock_installation,
         )
         ctx.should_call_api(
             "rest.issues.async_get",
@@ -849,14 +798,8 @@ async def test_not_publish_issue(
     )
 
     async with app.test_matcher(publish_check_matcher) as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
-        event_path = Path(__file__).parent.parent / "events" / "issue-open.json"
+        adapter, bot = get_github_bot(ctx)
+        event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
         assert isinstance(event, IssuesOpened)
         event.payload.issue.labels = []
@@ -877,14 +820,10 @@ async def test_comment_by_self(
     )
 
     async with app.test_matcher(publish_check_matcher) as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
+        adapter, bot = get_github_bot(ctx)
+        event_path = (
+            Path(__file__).parent.parent.parent / "events" / "issue-comment-bot.json"
         )
-        bot = cast(GitHubBot, bot)
-        event_path = Path(__file__).parent.parent / "events" / "issue-comment-bot.json"
         event = Adapter.payload_to_event("1", "issue_comment", event_path.read_bytes())
         assert isinstance(event, IssueCommentCreated)
 
@@ -894,7 +833,11 @@ async def test_comment_by_self(
 
 
 async def test_skip_plugin_check(
-    app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path
+    app: App,
+    mocker: MockerFixture,
+    mocked_api: MockRouter,
+    tmp_path: Path,
+    mock_installation,
 ) -> None:
     """测试手动跳过插件测试的流程"""
     from src.plugins.github.plugins.publish import publish_check_matcher
@@ -905,11 +848,6 @@ async def test_skip_plugin_check(
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
     )
-
-    mock_installation = mocker.MagicMock()
-    mock_installation.id = 123
-    mock_installation_resp = mocker.MagicMock()
-    mock_installation_resp.parsed_data = mock_installation
 
     mock_issue = mocker.MagicMock(spec=Issue)
     mock_issue.pull_request = None
@@ -947,21 +885,17 @@ async def test_skip_plugin_check(
     check_json_data(plugin_config.input_config.plugin_path, [])
 
     async with app.test_matcher(publish_check_matcher) as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
+        adapter, bot = get_github_bot(ctx)
+        event_path = (
+            Path(__file__).parent.parent.parent / "events" / "issue-comment-skip.json"
         )
-        bot = cast(GitHubBot, bot)
-        event_path = Path(__file__).parent.parent / "events" / "issue-comment-skip.json"
         event = Adapter.payload_to_event("1", "issue_comment", event_path.read_bytes())
         assert isinstance(event, IssueCommentCreated)
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
-            mock_installation_resp,
+            mock_installation,
         )
         ctx.should_call_api(
             "rest.issues.async_get",
@@ -1104,7 +1038,11 @@ log_level=DEBUG
 
 
 async def test_convert_pull_request_to_draft(
-    app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path
+    app: App,
+    mocker: MockerFixture,
+    mocked_api: MockRouter,
+    tmp_path: Path,
+    mock_installation,
 ) -> None:
     """未通过时将拉取请求转换为草稿"""
     from src.plugins.github.plugins.publish import publish_check_matcher
@@ -1113,11 +1051,6 @@ async def test_convert_pull_request_to_draft(
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
     )
-
-    mock_installation = mocker.MagicMock()
-    mock_installation.id = 123
-    mock_installation_resp = mocker.MagicMock()
-    mock_installation_resp.parsed_data = mock_installation
 
     mock_issue = MockIssue(
         number=1,
@@ -1146,33 +1079,21 @@ async def test_convert_pull_request_to_draft(
     check_json_data(plugin_config.input_config.bot_path, [])
 
     async with app.test_matcher(publish_check_matcher) as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
-        event_path = Path(__file__).parent.parent / "events" / "issue-open.json"
+        adapter, bot = get_github_bot(ctx)
+        event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
         assert isinstance(event, IssuesOpened)
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
-            mock_installation_resp,
+            mock_installation,
         )
         ctx.should_call_api(
             "rest.issues.async_get",
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
             mock_issues_resp,
         )
-        # 检查是否需要跳过插件测试
-        # ctx.should_call_api(
-        #     "rest.issues.async_list_comments",
-        #     {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-        #     mock_list_comments_resp,
-        # )
         ctx.should_call_api(
             "rest.pulls.async_list",
             {
@@ -1259,7 +1180,11 @@ async def test_convert_pull_request_to_draft(
 
 
 async def test_process_publish_check_ready_for_review(
-    app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path
+    app: App,
+    mocker: MockerFixture,
+    mocked_api: MockRouter,
+    tmp_path: Path,
+    mock_installation,
 ) -> None:
     """当之前失败后再次通过测试时，应该将拉取请求标记为 ready for review"""
     from src.plugins.github.plugins.publish import publish_check_matcher
@@ -1269,12 +1194,9 @@ async def test_process_publish_check_ready_for_review(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
     )
 
-    mock_installation = mocker.MagicMock()
-    mock_installation.id = 123
-    mock_installation_resp = mocker.MagicMock()
-    mock_installation_resp.parsed_data = mock_installation
-
-    mock_issue = MockIssue().as_mock(mocker)
+    mock_issue = MockIssue(body=MockBody(type="bot", name="test").generate()).as_mock(
+        mocker
+    )
 
     mock_event = mocker.MagicMock()
     mock_event.issue = mock_issue
@@ -1301,21 +1223,15 @@ async def test_process_publish_check_ready_for_review(
     check_json_data(plugin_config.input_config.bot_path, [])
 
     async with app.test_matcher(publish_check_matcher) as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
-        event_path = Path(__file__).parent.parent / "events" / "issue-open.json"
+        adapter, bot = get_github_bot(ctx)
+        event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
         assert isinstance(event, IssuesOpened)
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
-            mock_installation_resp,
+            mock_installation,
         )
         ctx.should_call_api(
             "rest.issues.async_get",
@@ -1335,7 +1251,8 @@ async def test_process_publish_check_ready_for_review(
             },
             exception=RequestFailed(
                 Response(
-                    httpx.Response(422, request=httpx.Request("test", "test")), None
+                    httpx.Response(422, request=httpx.Request("test", "test")),
+                    None,  # type: ignore
                 )
             ),
         )
