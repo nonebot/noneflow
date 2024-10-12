@@ -47,6 +47,7 @@ async def test_render_error_bot(app: App):
         type=PublishType.BOT,
         name="CoolQBot",
         author="he0119",
+        author_id=1,
     )
 
     comment = await render_comment(result)
@@ -131,6 +132,7 @@ async def test_render_error_adapter(app: App):
         type=PublishType.ADAPTER,
         name="大别野",
         author="CMHopeSunshine",
+        author_id=1,
     )
 
     comment = await render_comment(result)
@@ -223,6 +225,7 @@ async def test_render_error_plugin(app: App, mocker: MockFixture):
         type=PublishType.PLUGIN,
         name="帮助",
         author="he0119",
+        author_id=1,
     )
 
     comment = await render_comment(result)
@@ -287,6 +290,7 @@ async def test_render_error_plugin_load_test(app: App):
         type=PublishType.PLUGIN,
         name="帮助",
         author="he0119",
+        author_id=1,
     )
 
     comment = await render_comment(result)
@@ -341,6 +345,7 @@ async def test_render_error_plugin_metadata(app: App, mocker: MockFixture):
         type=PublishType.PLUGIN,
         name="帮助",
         author="he0119",
+        author_id=1,
     )
 
     comment = await render_comment(result)
@@ -406,6 +411,7 @@ async def test_render_error_tags_invalid(app: App, mocker: MockFixture):
         type=PublishType.PLUGIN,
         name="帮助",
         author="he0119",
+        author_id=1,
     )
 
     comment = await render_comment(result)
@@ -472,6 +478,7 @@ async def test_render_type_error(app: App, mocker: MockFixture):
         type=PublishType.PLUGIN,
         name="帮助",
         author="he0119",
+        author_id=1,
     )
 
     comment = await render_comment(result)
@@ -525,6 +532,7 @@ async def test_render_unknown_error(app: App, mocker: MockFixture):
         type=PublishType.PLUGIN,
         name="帮助",
         author="he0119",
+        author_id=1,
     )
 
     comment = await render_comment(result)
@@ -589,6 +597,7 @@ async def test_render_http_error(app: App, mocker: MockFixture):
         type=PublishType.PLUGIN,
         name="帮助",
         author="he0119",
+        author_id=1,
     )
 
     comment = await render_comment(result)

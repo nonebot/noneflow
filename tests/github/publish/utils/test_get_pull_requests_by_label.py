@@ -1,10 +1,7 @@
-from typing import cast
-
-from nonebot import get_adapter
-from nonebot.adapters.github import Adapter, GitHubBot
-from nonebot.adapters.github.config import GitHubApp
 from nonebug import App
 from pytest_mock import MockerFixture
+
+from tests.github.utils import get_github_bot
 
 
 async def test_get_pull_requests_by_label(app: App, mocker: MockerFixture) -> None:
@@ -23,13 +20,7 @@ async def test_get_pull_requests_by_label(app: App, mocker: MockerFixture) -> No
     mock_pulls_resp.parsed_data = [mock_pull]
 
     async with app.test_api() as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
+        adapter, bot = get_github_bot(ctx)
 
         ctx.should_call_api(
             "rest.pulls.async_list",
@@ -61,13 +52,7 @@ async def test_get_pull_requests_by_label_not_match(
     mock_pulls_resp.parsed_data = [mock_pull]
 
     async with app.test_api() as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
+        adapter, bot = get_github_bot(ctx)
 
         ctx.should_call_api(
             "rest.pulls.async_list",

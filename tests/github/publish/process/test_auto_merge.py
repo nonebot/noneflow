@@ -1,14 +1,13 @@
 from pathlib import Path
-from typing import cast
 
-from nonebot import get_adapter
-from nonebot.adapters.github import Adapter, GitHubBot, PullRequestReviewSubmitted
-from nonebot.adapters.github.config import GitHubApp
+from nonebot.adapters.github import Adapter, PullRequestReviewSubmitted
 from nonebug import App
 from pytest_mock import MockerFixture
 
+from tests.github.utils import get_github_bot
 
-async def test_auto_merge(app: App, mocker: MockerFixture) -> None:
+
+async def test_auto_merge(app: App, mocker: MockerFixture, mock_installation) -> None:
     """测试审查后自动合并
 
     可直接合并的情况
@@ -17,30 +16,19 @@ async def test_auto_merge(app: App, mocker: MockerFixture) -> None:
 
     mock_subprocess_run = mocker.patch("subprocess.run")
 
-    mock_installation = mocker.MagicMock()
-    mock_installation.id = 123
-    mock_installation_resp = mocker.MagicMock()
-    mock_installation_resp.parsed_data = mock_installation
-
     mock_pull = mocker.MagicMock()
     mock_pull.mergeable = True
     mock_pull_resp = mocker.MagicMock()
     mock_pull_resp.parsed_data = mock_pull
 
     async with app.test_matcher(auto_merge_matcher) as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
+        adapter, bot = get_github_bot(ctx)
         event_path = (
-            Path(__file__).parent.parent
+            Path(__file__).parent.parent.parent
             / "events"
             / "pull_request_review_submitted.json"
         )
-        event = Adapter.payload_to_event(
+        event = adapter.payload_to_event(
             "1", "pull_request_review", event_path.read_bytes()
         )
         assert isinstance(event, PullRequestReviewSubmitted)
@@ -48,7 +36,7 @@ async def test_auto_merge(app: App, mocker: MockerFixture) -> None:
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
-            mock_installation_resp,
+            mock_installation,
         )
         ctx.should_call_api(
             "rest.pulls.async_get",
@@ -86,24 +74,20 @@ async def test_auto_merge(app: App, mocker: MockerFixture) -> None:
     )
 
 
-async def test_auto_merge_need_rebase(app: App, mocker: MockerFixture) -> None:
+async def test_auto_merge_need_rebase(
+    app: App, mocker: MockerFixture, mock_installation
+) -> None:
     """测试审查后自动合并
 
     需要 rebase 的情况
     """
     from src.plugins.github.plugins.publish import auto_merge_matcher
     from src.plugins.github.models import GithubHandler, RepoInfo
-    from nonebot.adapters.github import Bot
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_resolve_conflict_pull_requests = mocker.patch(
         "src.plugins.github.plugins.publish.resolve_conflict_pull_requests"
     )
-
-    mock_installation = mocker.MagicMock()
-    mock_installation.id = 123
-    mock_installation_resp = mocker.MagicMock()
-    mock_installation_resp.parsed_data = mock_installation
 
     mock_pull = mocker.MagicMock()
     mock_pull.mergeable = False
@@ -112,15 +96,9 @@ async def test_auto_merge_need_rebase(app: App, mocker: MockerFixture) -> None:
     mock_pull_resp.parsed_data = mock_pull
 
     async with app.test_matcher(auto_merge_matcher) as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
+        adapter, bot = get_github_bot(ctx)
         event_path = (
-            Path(__file__).parent.parent
+            Path(__file__).parent.parent.parent
             / "events"
             / "pull_request_review_submitted.json"
         )
@@ -132,7 +110,7 @@ async def test_auto_merge_need_rebase(app: App, mocker: MockerFixture) -> None:
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
-            mock_installation_resp,
+            mock_installation,
         )
         ctx.should_call_api(
             "rest.pulls.async_get",
@@ -186,15 +164,9 @@ async def test_auto_merge_not_publish(app: App, mocker: MockerFixture) -> None:
     )
 
     async with app.test_matcher(auto_merge_matcher) as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
+        adapter, bot = get_github_bot(ctx)
         event_path = (
-            Path(__file__).parent.parent
+            Path(__file__).parent.parent.parent
             / "events"
             / "pull_request_review_submitted.json"
         )
@@ -224,15 +196,9 @@ async def test_auto_merge_not_member(app: App, mocker: MockerFixture) -> None:
     )
 
     async with app.test_matcher(auto_merge_matcher) as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
+        adapter, bot = get_github_bot(ctx)
         event_path = (
-            Path(__file__).parent.parent
+            Path(__file__).parent.parent.parent
             / "events"
             / "pull_request_review_submitted.json"
         )
@@ -262,15 +228,9 @@ async def test_auto_merge_not_approve(app: App, mocker: MockerFixture) -> None:
     )
 
     async with app.test_matcher(auto_merge_matcher) as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
+        adapter, bot = get_github_bot(ctx)
         event_path = (
-            Path(__file__).parent.parent
+            Path(__file__).parent.parent.parent
             / "events"
             / "pull_request_review_submitted.json"
         )

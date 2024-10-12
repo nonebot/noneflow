@@ -33,7 +33,7 @@
 
 # def test_extract_version_failed(tmp_path: Path):
 #     """版本解析失败的情况"""
-#     from src.providers.store_test.validation import extract_version
+#     from docker_plugin_test import extract_version
 
 #     with open(tmp_path / "output.txt", "w", encoding="utf-8") as f:
 #         f.write(

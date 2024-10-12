@@ -1,25 +1,23 @@
 from pathlib import Path
-from typing import cast
 
 from inline_snapshot import snapshot
-from nonebot import get_adapter
-from nonebot.adapters.github import Adapter, GitHubBot, PullRequestClosed
-from nonebot.adapters.github.config import GitHubApp
+from nonebot.adapters.github import Adapter, PullRequestClosed
 from nonebug import App
 from pytest_mock import MockerFixture
 from respx import MockRouter
 
-from tests.publish.utils import (
+from tests.github.utils import (
     MockIssue,
     MockUser,
     generate_issue_body_plugin_skip_test,
+    get_github_bot,
 )
 
 
-async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
+async def test_process_pull_request(
+    app: App, mocker: MockerFixture, mock_installation
+) -> None:
     from src.plugins.github.plugins.publish import pr_close_matcher
-
-    event_path = Path(__file__).parent.parent / "events" / "pr-close.json"
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_sleep = mocker.patch("asyncio.sleep")
@@ -32,12 +30,6 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
     mock_issues_resp = mocker.MagicMock()
     mock_issues_resp.parsed_data = mock_issue
 
-    mock_installation = mocker.MagicMock()
-    mock_installation.id = 123
-
-    mock_installation_resp = mocker.MagicMock()
-    mock_installation_resp.parsed_data = mock_installation
-
     mock_pulls_resp = mocker.MagicMock()
     mock_pulls_resp.parsed_data = []
 
@@ -47,13 +39,8 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
     mock_list_comments_resp.parsed_data = [mock_comment]
 
     async with app.test_matcher(pr_close_matcher) as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
+        adapter, bot = get_github_bot(ctx)
+        event_path = Path(__file__).parent.parent.parent / "events" / "pr-close.json"
         event = Adapter.payload_to_event("1", "pull_request", event_path.read_bytes())
         assert isinstance(event, PullRequestClosed)
         event.payload.pull_request.merged = True
@@ -61,7 +48,7 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
-            mock_installation_resp,
+            mock_installation,
         )
         ctx.should_call_api(
             "rest.issues.async_get",
@@ -129,10 +116,12 @@ async def test_process_pull_request(app: App, mocker: MockerFixture) -> None:
     mock_sleep.assert_awaited_once_with(300)
 
 
-async def test_process_pull_request_not_merged(app: App, mocker: MockerFixture) -> None:
+async def test_process_pull_request_not_merged(
+    app: App, mocker: MockerFixture, mock_installation
+) -> None:
     from src.plugins.github.plugins.publish import pr_close_matcher
 
-    event_path = Path(__file__).parent.parent / "events" / "pr-close.json"
+    event_path = Path(__file__).parent.parent.parent / "events" / "pr-close.json"
 
     mock_subprocess_run = mocker.patch("subprocess.run")
 
@@ -141,27 +130,15 @@ async def test_process_pull_request_not_merged(app: App, mocker: MockerFixture) 
     mock_issues_resp = mocker.MagicMock()
     mock_issues_resp.parsed_data = mock_issue
 
-    mock_installation = mocker.MagicMock()
-    mock_installation.id = 123
-
-    mock_installation_resp = mocker.MagicMock()
-    mock_installation_resp.parsed_data = mock_installation
-
     async with app.test_matcher(pr_close_matcher) as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
-        event = Adapter.payload_to_event("1", "pull_request", event_path.read_bytes())
+        adapter, bot = get_github_bot(ctx)
+        event = adapter.payload_to_event("1", "pull_request", event_path.read_bytes())
         assert isinstance(event, PullRequestClosed)
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
-            mock_installation_resp,
+            mock_installation,
         )
         ctx.should_call_api(
             "rest.issues.async_get",
@@ -201,12 +178,12 @@ async def test_process_pull_request_not_merged(app: App, mocker: MockerFixture) 
 
 
 async def test_process_pull_request_skip_plugin_test(
-    app: App, mocker: MockerFixture, mocked_api: MockRouter
+    app: App, mocker: MockerFixture, mocked_api: MockRouter, mock_installation
 ) -> None:
     """跳过测试的插件合并时的情况"""
     from src.plugins.github.plugins.publish import pr_close_matcher
 
-    event_path = Path(__file__).parent.parent / "events" / "pr-close.json"
+    event_path = Path(__file__).parent.parent.parent / "events" / "pr-close.json"
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_sleep = mocker.patch("asyncio.sleep")
@@ -220,12 +197,6 @@ async def test_process_pull_request_skip_plugin_test(
     mock_issues_resp = mocker.MagicMock()
     mock_issues_resp.parsed_data = mock_issue
 
-    mock_installation = mocker.MagicMock()
-    mock_installation.id = 123
-
-    mock_installation_resp = mocker.MagicMock()
-    mock_installation_resp.parsed_data = mock_installation
-
     mock_pulls_resp = mocker.MagicMock()
     mock_pulls_resp.parsed_data = []
 
@@ -236,13 +207,7 @@ async def test_process_pull_request_skip_plugin_test(
     mock_list_comments_resp.parsed_data = [mock_comment]
 
     async with app.test_matcher(pr_close_matcher) as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
+        adapter, bot = get_github_bot(ctx)
         event = Adapter.payload_to_event("1", "pull_request", event_path.read_bytes())
         assert isinstance(event, PullRequestClosed)
         event.payload.pull_request.merged = True
@@ -250,7 +215,7 @@ async def test_process_pull_request_skip_plugin_test(
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
-            mock_installation_resp,
+            mock_installation,
         )
         ctx.should_call_api(
             "rest.issues.async_get",
@@ -322,18 +287,12 @@ async def test_not_publish(app: App, mocker: MockerFixture) -> None:
     """测试与发布无关的拉取请求"""
     from src.plugins.github.plugins.publish import pr_close_matcher
 
-    event_path = Path(__file__).parent.parent / "events" / "pr-close.json"
+    event_path = Path(__file__).parent.parent.parent / "events" / "pr-close.json"
 
     mock_subprocess_run = mocker.patch("subprocess.run")
 
     async with app.test_matcher(pr_close_matcher) as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
+        adapter, bot = get_github_bot(ctx)
         event = Adapter.payload_to_event("1", "pull_request", event_path.read_bytes())
         assert isinstance(event, PullRequestClosed)
         event.payload.pull_request.labels = []
@@ -350,18 +309,12 @@ async def test_extract_issue_number_from_ref_failed(
     """测试从分支名中提取议题号失败"""
     from src.plugins.github.plugins.publish import pr_close_matcher
 
-    event_path = Path(__file__).parent.parent / "events" / "pr-close.json"
+    event_path = Path(__file__).parent.parent.parent / "events" / "pr-close.json"
 
     mock_subprocess_run = mocker.patch("subprocess.run")
 
     async with app.test_matcher(pr_close_matcher) as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
+        adapter, bot = get_github_bot(ctx)
         event = Adapter.payload_to_event("1", "pull_request", event_path.read_bytes())
         assert isinstance(event, PullRequestClosed)
         event.payload.pull_request.head.ref = "1"

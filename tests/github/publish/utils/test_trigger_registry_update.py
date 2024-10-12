@@ -1,17 +1,14 @@
-from typing import cast
-
 from inline_snapshot import snapshot
-from nonebot import get_adapter
-from nonebot.adapters.github import Adapter, GitHubBot
-from nonebot.adapters.github.config import GitHubApp
+
 from nonebug import App
 from pytest_mock import MockerFixture
 from respx import MockRouter
 
-from tests.publish.utils import (
+from tests.github.utils import (
     MockIssue,
     generate_issue_body_bot,
     generate_issue_body_plugin_skip_test,
+    get_github_bot,
 )
 
 
@@ -35,13 +32,7 @@ async def test_trigger_registry_update(app: App, mocker: MockerFixture):
     mock_list_comments_resp.parsed_data = [mock_comment]
 
     async with app.test_api() as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
+        adapter, bot = get_github_bot(ctx)
 
         ctx.should_call_api(
             "rest.issues.async_list_comments",
@@ -100,13 +91,7 @@ async def test_trigger_registry_update_skip_test(
     mock_list_comments_resp.parsed_data = [mock_comment]
 
     async with app.test_api() as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
+        adapter, bot = get_github_bot(ctx)
 
         ctx.should_call_api(
             "rest.issues.async_list_comments",
@@ -156,13 +141,7 @@ async def test_trigger_registry_update_bot(app: App, mocker: MockerFixture):
     mock_issue.number = 1
 
     async with app.test_api() as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
+        adapter, bot = get_github_bot(ctx)
 
         ctx.should_call_api(
             "rest.repos.async_create_dispatch_event",
@@ -205,13 +184,7 @@ async def test_trigger_registry_update_plugins_issue_body_info_missing(
     mock_list_comments_resp.parsed_data = [mock_comment]
 
     async with app.test_api() as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
+        adapter, bot = get_github_bot(ctx)
 
         ctx.should_call_api(
             "rest.issues.async_list_comments",
@@ -250,13 +223,7 @@ async def test_trigger_registry_update_validation_failed(
     mock_list_comments_resp.parsed_data = [mock_comment]
 
     async with app.test_api() as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(
-            base=GitHubBot,
-            adapter=adapter,
-            self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
-        )
-        bot = cast(GitHubBot, bot)
+        adapter, bot = get_github_bot(ctx)
 
         ctx.should_call_api(
             "rest.issues.async_list_comments",

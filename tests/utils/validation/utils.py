@@ -19,6 +19,7 @@ def generate_adapter_data(
     homepage: str | None = "https://nonebot.dev",
     tags: list | None = [{"label": "test", "color": "#ffffff"}],
     previous_data: list[Any] | None = [],
+    author_id: int | None = 1,
 ):
     return exclude_none(
         {
@@ -30,6 +31,11 @@ def generate_adapter_data(
             "homepage": homepage,
             "tags": json.dumps(tags),
             "previous_data": previous_data,
+            "author_id": author_id,
+        }
+    ), exclude_none(
+        {
+            "previous_data": previous_data,
         }
     )
 
@@ -40,6 +46,7 @@ def generate_bot_data(
     author: str | None = "author",
     homepage: str | None = "https://nonebot.dev",
     tags: list | str | None = [{"label": "test", "color": "#ffffff"}],
+    author_id: int | None = 1,
 ):
     if isinstance(tags, list):
         tags = json.dumps(tags)
@@ -50,6 +57,7 @@ def generate_bot_data(
             "author": author,
             "homepage": homepage,
             "tags": tags,
+            "author_id": author_id,
         }
     )
 
@@ -65,10 +73,18 @@ def generate_plugin_data(
     type: str | None = "application",
     supported_adapters: Any = None,
     skip_test: bool | None = False,
-    plugin_test_result: bool | None = True,
-    plugin_test_output: str | None = "plugin_test_output",
     previous_data: list[Any] | None = [],
-):
+    author_id: int | None = 1,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    from src.providers.validation.models import Metadata
+
+    metadata = Metadata.model_construct(
+        name=name,
+        desc=desc,
+        homepage=homepage,
+        type=type,
+        supported_adapters=supported_adapters,
+    )
     return exclude_none(
         {
             "author": author,
@@ -81,9 +97,13 @@ def generate_plugin_data(
             "type": type,
             "supported_adapters": supported_adapters,
             "skip_plugin_test": skip_test,
-            "plugin_test_result": plugin_test_result,
-            "plugin_test_output": plugin_test_output,
-            "plugin_test_metadata": {},
+            "metadata": metadata,
+            "previous_data": previous_data,
+            "author_id": author_id,
+        }
+    ), exclude_none(
+        {
+            "skip_plugin_test": skip_test,
             "previous_data": previous_data,
         }
     )
