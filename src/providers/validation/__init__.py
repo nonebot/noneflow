@@ -60,7 +60,10 @@ def validate_info(
         data=data,
         errors=errors,  # 方便插件使用的数据
         type=publish_type,
-        name=data.get("name") or raw_data.get("name") or "",
+        name=data.get("name")
+        or raw_data.get("name")
+        or raw_data.get("project_link")
+        or "",
         author=data.get("author", ""),
         author_id=data.get("author_id", 0),
     )
