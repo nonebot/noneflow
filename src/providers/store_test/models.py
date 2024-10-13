@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 from typing import Any, Literal
 from zoneinfo import ZoneInfo
 
@@ -9,6 +10,7 @@ from pydantic import (
     field_validator,
     model_validator,
 )
+from pydantic_core import PydanticCustomError
 from pydantic_extra_types.color import Color
 
 
@@ -69,6 +71,17 @@ class Metadata(BaseModel):
         if data.get("desc") is None:
             data["desc"] = data.get("description")
         return data
+
+    @field_validator("supported_adapters", mode="before")
+    @classmethod
+    def supported_adapters_validator(cls, v: list[str] | str | None):
+        if isinstance(v, str):
+            try:
+                v = json.loads(v)
+            except json.JSONDecodeError:
+                raise PydanticCustomError("json_type", "JSON 格式不合法")
+
+        return v
 
 
 class Plugin(TagModel):

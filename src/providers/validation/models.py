@@ -258,6 +258,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
         context = info.context
         if context is None:
             raise PydanticCustomError("validation_context", "未获取到验证上下文")
+
         if v is None:
             # 如果没有传入插件元数据，尝试从上下文中获取
             try:
@@ -267,7 +268,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
                     "plugin.metadata",
                     "插件无法获取到元数据",
                     {
-                        "load": context.get("load", True),
+                        "load": context.get("load", False),
                     },
                 )
         return v

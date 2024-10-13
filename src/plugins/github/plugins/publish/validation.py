@@ -61,7 +61,8 @@ async def validate_plugin_info_from_issue(issue: Issue) -> ValidationDict:
         },
         body,
     )
-    raw_data.update(extract_author_info(issue))  # 更新作者信息
+    # 更新作者信息
+    raw_data.update(extract_author_info(issue))
 
     test_config: str = raw_data["test_config"]
     module_name: str = raw_data["module_name"]
@@ -71,13 +72,10 @@ async def validate_plugin_info_from_issue(issue: Issue) -> ValidationDict:
     with plugin_config.input_config.plugin_path.open("r", encoding="utf-8") as f:
         previous_data: list[dict[str, str]] = json.load(f)
 
-    raw_data["name"] = project_link  # 若插件没有元数据，则 name 默认为 project_link
-    raw_data["metadata"] = None
-
     # 如果插件被跳过，则从议题获取插件信息
     plugin_test_output: str = "插件未进行测试"
     if plugin_config.skip_plugin_test:
-        plugin_info = extract_publish_info_from_issue(
+        metadata = extract_publish_info_from_issue(
             {
                 "name": PLUGIN_NAME_PATTERN,
                 "desc": PLUGIN_DESC_PATTERN,
@@ -87,24 +85,26 @@ async def validate_plugin_info_from_issue(issue: Issue) -> ValidationDict:
             },
             body,
         )
-        raw_data.update(plugin_info)
-        logger.info(f"插件已跳过测试，从议题中获取的插件元信息：{plugin_info}")
+
+        raw_data.update(metadata)
+        raw_data["metadata"] = metadata
+        logger.info(f"插件已跳过测试，从议题中获取的插件元信息：{metadata}")
     else:
         # 插件不跳过则运行插件测试
         plugin_test_result: DockerTestResult = await DockerPluginTest(
             DOCKER_IMAGES, project_link, module_name, test_config
         ).run("3.10")
         plugin_metadata: Metadata | None = plugin_test_result.metadata
+        # 去除颜色字符
         plugin_test_output = strip_ansi("\n".join(plugin_test_result.outputs))
+
+        # 更新 load 和 metadata 字段
+        raw_data["load"] = plugin_test_result.load
+        raw_data["metadata"] = plugin_metadata
 
         logger.info(f"插件测试结果: {plugin_test_result}")
         logger.info(f"插件元数据: {plugin_metadata}")
-        raw_data.update(
-            {
-                "load": plugin_test_result.load,
-                "metadata": plugin_metadata,
-            }
-        )
+
         if plugin_metadata:
             # 从插件测试结果中获得元数据
             raw_data.update(plugin_metadata.model_dump())

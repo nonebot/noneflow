@@ -100,19 +100,19 @@ async def test_trigger_registry_update_skip_test(
         )
         ctx.should_call_api(
             "rest.repos.async_create_dispatch_event",
-            {
-                "repo": "registry",
-                "owner": "owner",
-                "event_type": "registry_update",
-                "client_payload": {
-                    "type": "Plugin",
-                    "key": "project_link:module_name",
-                    "config": "log_level=DEBUG\n",
-                    "data": snapshot(
-                        '{"module_name": "module_name", "project_link": "project_link", "name": "name", "desc": "desc", "author": "user", "author_id": 1, "homepage": "https://nonebot.dev", "tags": [{"label": "test", "color": "#ffffff"}], "is_official": false, "type": "application", "supported_adapters": ["nonebot.adapters.onebot.v11"], "load": false, "metadata": {"name": "name", "desc": "desc", "homepage": "https://nonebot.dev", "type": "application", "supported_adapters": ["nonebot.adapters.onebot.v11"]}}'
-                    ),
-                },
-            },
+            snapshot(
+                {
+                    "repo": "registry",
+                    "owner": "owner",
+                    "event_type": "registry_update",
+                    "client_payload": {
+                        "type": "Plugin",
+                        "key": "project_link:module_name",
+                        "config": "log_level=DEBUG\n",
+                        "data": '{"module_name": "module_name", "project_link": "project_link", "name": "name", "desc": "desc", "author": "user", "author_id": 1, "homepage": "https://nonebot.dev", "tags": [{"label": "test", "color": "#ffffff"}], "is_official": false, "type": "application", "supported_adapters": ["nonebot.adapters.onebot.v11"], "load": false, "metadata": {"name": "name", "desc": "desc", "homepage": "https://nonebot.dev", "type": "application", "supported_adapters": ["~onebot.v11"]}}',
+                    },
+                }
+            ),
             True,
         )
 

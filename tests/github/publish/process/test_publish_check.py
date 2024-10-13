@@ -860,9 +860,6 @@ async def test_skip_plugin_check(
     mock_user.login = "test"
     mock_user.id = 1
     mock_issue.user = mock_user
-    # mock_issue = MockIssue(
-    #     title="Plugin: project_link", number=70, body=generate_issue_body_plugin()
-    # ).as_mock(mocker)
 
     mock_event = mocker.MagicMock()
     mock_event.issue = mock_issue
@@ -961,17 +958,6 @@ log_level=DEBUG
             },
             True,
         )
-        # 修改标题
-        ctx.should_call_api(
-            "rest.issues.async_update",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "issue_number": 70,
-                "title": "Plugin: ",
-            },
-            True,
-        )
         ctx.should_call_api(
             "rest.issues.async_list_comments",
             {"owner": "he0119", "repo": "action-test", "issue_number": 70},
@@ -987,11 +973,11 @@ log_level=DEBUG
                     """\
 # 📃 商店发布检查结果
 
-> Plugin: 
+> Plugin: project_link
 
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
-<pre><code><li>⚠️ 名称: 无法匹配到数据或值并不合法。<dt>请确保填写该数据项。</dt></li><li>⚠️ 描述: 无法匹配到数据或值并不合法。<dt>请确保填写该数据项。</dt></li><li>⚠️ 项目仓库/主页链接: 无法匹配到数据或值并不合法。<dt>请确保填写该数据项。</dt></li><li>⚠️ 插件类型 None 不符合规范。<dt>请确保插件类型正确，当前仅支持 application 与 library。</dt></li><li>⚠️ 无法获取到插件元数据。<dt>请填写插件元数据。</dt></li></code></pre>
+<pre><code><li>⚠️ 名称: 无法匹配到数据或值并不合法。<dt>请确保填写该数据项。</dt></li><li>⚠️ 描述: 无法匹配到数据或值并不合法。<dt>请确保填写该数据项。</dt></li><li>⚠️ 项目仓库/主页链接: 无法匹配到数据或值并不合法。<dt>请确保填写该数据项。</dt></li><li>⚠️ 插件类型 None 不符合规范。<dt>请确保插件类型正确，当前仅支持 application 与 library。</dt></li><li>⚠️ 插件测试元数据 &gt; 名称: 无法匹配到数据或值并不合法。<dt>请确保填写该数据项。</dt></li><li>⚠️ 插件测试元数据 &gt; 描述: 无法匹配到数据或值并不合法。<dt>请确保填写该数据项。</dt></li><li>⚠️ 插件测试元数据 &gt; 项目仓库/主页链接: 无法匹配到数据或值并不合法。<dt>请确保填写该数据项。</dt></li></code></pre>
 
 <details>
 <summary>详情</summary>
