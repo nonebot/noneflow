@@ -29,6 +29,7 @@ class GithubHandler(GitHandler):
         )
 
     async def update_issue_content(self, issue_number: int, body: str):
+        """更新议题内容"""
         await self.bot.rest.issues.async_update(
             **self.repo_info.model_dump(),
             issue_number=issue_number,
@@ -48,48 +49,53 @@ class GithubHandler(GitHandler):
         )
 
     async def list_comments(self, issue_number: int):
+        """拉取所有评论"""
         return (
             await self.bot.rest.issues.async_list_comments(
                 **self.repo_info.model_dump(), issue_number=issue_number
             )
         ).parsed_data
 
+    async def create_comment(self, comment: str, issue_number: int):
+        """发布评论"""
+        await self.bot.rest.issues.async_create_comment(
+            **self.repo_info.model_dump(),
+            issue_number=issue_number,
+            body=comment,
+        )
+
+    async def update_comment(self, comment_id: int, comment: str):
+        """修改评论"""
+        await self.bot.rest.issues.async_update_comment(
+            **self.repo_info.model_dump(),
+            comment_id=comment_id,
+            body=comment,
+        )
+
     async def comment_issue(self, comment: str, issue_number: int):
-        """发布评论
-        若之前发布过评论，则修改之前的评论
-        """
+        """发布评论，若之前已评论过，则会进行复用"""
         logger.info("开始发布评论")
 
         # 重复利用评论
         # 如果发现之前评论过，直接修改之前的评论
-        comments = (
-            await self.bot.rest.issues.async_list_comments(
-                **self.repo_info.model_dump(), issue_number=issue_number
-            )
-        ).parsed_data
+        comments = await self.list_comments(issue_number=issue_number)
         reusable_comment = next(
-            filter(lambda x: NONEFLOW_MARKER in (x.body if x.body else ""), comments),
+            filter(
+                lambda x: NONEFLOW_MARKER in (x.body if x.body else ""),
+                comments,
+            ),
             None,
         )
 
-        # comment = await render_comment(result, bool(reusable_comment))
         if reusable_comment:
             logger.info(f"发现已有评论 {reusable_comment.id}，正在修改")
             if reusable_comment.body != comment:
-                await self.bot.rest.issues.async_update_comment(
-                    **self.repo_info.model_dump(),
-                    comment_id=reusable_comment.id,
-                    body=comment,
-                )
+                await self.update_comment(reusable_comment.id, comment)
                 logger.info("评论修改完成")
             else:
                 logger.info("评论内容无变化，跳过修改")
         else:
-            await self.bot.rest.issues.async_create_comment(
-                **self.repo_info.model_dump(),
-                issue_number=issue_number,
-                body=comment,
-            )
+            await self.create_comment(comment, issue_number)
             logger.info("评论创建完成")
 
     async def get_pull_requests_by_label(self, label: str) -> list[PullRequestSimple]:
@@ -209,6 +215,21 @@ class GithubHandler(GitHandler):
         )
         logger.info("拉取请求已标记为可评审")
 
+    async def update_pull_request_title(self, title: str, branch_name: int):
+        """修改拉取请求标题"""
+        pull = (
+            await self.bot.rest.pulls.async_list(
+                **self.repo_info.model_dump(),
+                head=f"{self.repo_info.owner}:{branch_name}",
+            )
+        ).parsed_data[0]
+
+        if pull.title != title:
+            await self.bot.rest.pulls.async_update(
+                **self.repo_info.model_dump(), pull_number=pull.number, title=title
+            )
+            logger.info(f"拉取请求标题已修改为 {title}")
+
     async def get_user_name(self, account_id: int):
         """根据用户 ID 获取用户名"""
         return (
@@ -228,18 +249,3 @@ class GithubHandler(GitHandler):
                 **self.repo_info.model_dump(), issue_number=issue_number
             )
         ).parsed_data
-
-    async def update_pull_request_title(self, title: str, branch_name: int):
-        """修改拉取请求标题"""
-        pull = (
-            await self.bot.rest.pulls.async_list(
-                **self.repo_info.model_dump(),
-                head=f"{self.repo_info.owner}:{branch_name}",
-            )
-        ).parsed_data[0]
-
-        if pull.title != title:
-            await self.bot.rest.pulls.async_update(
-                **self.repo_info.model_dump(), pull_number=pull.number, title=title
-            )
-            logger.info(f"拉取请求标题已修改为 {title}")
