@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Any, Literal
 from githubkit.rest import Issue
 from nonebot import logger
 from pydantic import (
@@ -6,7 +6,7 @@ from pydantic import (
     model_validator,
 )
 
-from src.plugins.github.models import GithubHandler
+from src.plugins.github.models import AuthorInfo, GithubHandler
 from src.plugins.github.constants import SKIP_COMMENT
 
 
@@ -22,16 +22,12 @@ class IssueHandler(GithubHandler):
 
     @model_validator(mode="before")
     @classmethod
-    def issuehandler_validator(cls, data):
-        if data.get("author_id") is None and data.get("issue"):
-            issue = data["issue"]
-            data["author_id"] = issue.user.id if issue.user else 0
-        if data.get("author") is None and data.get("issue"):
-            issue = data["issue"]
-            data["author"] = issue.user.login if issue.user else ""
-        if data.get("issue_number") is None and data.get("issue"):
-            issue = data["issue"]
+    def issuehandler_validator(cls, data: dict[str, Any]):
+        issue = data.get("issue")
+        if data.get("issue_number") is None and issue:
             data["issue_number"] = issue.number
+        if issue:
+            data.update(AuthorInfo.from_issue(issue).model_dump())
         return data
 
     async def update_issue_title(
@@ -39,20 +35,17 @@ class IssueHandler(GithubHandler):
         title: str,
     ):
         if self.issue and self.issue.title != title:
-            await self.bot.rest.issues.async_update(
-                **self.repo_info.model_dump(),
-                issue_number=self.issue_number,
-                title=title,
-            )
+            await super().update_issue_title(self.issue_number, title)
             logger.info(f"标题已修改为 {title}")
 
     async def update_issue_content(self, body: str):
         """编辑议题内容"""
-        await self.bot.rest.issues.async_update(
-            **self.repo_info.model_dump(),
-            issue_number=self.issue_number,
-            body=body,
-        )
+
+        await super().update_issue_content(self.issue_number, body)
+
+        # 更新类属性，避免重复或错误操作
+        self.issue.body = body
+
         logger.info("议题内容已修改")
 
     async def close_issue(

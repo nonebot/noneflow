@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any
 from nonebot import logger
 from nonebot.adapters.github import Bot, GitHubBot
 
-from src.plugins.github.models import GithubHandler, IssueHandler
+from src.plugins.github.models import GithubHandler, IssueHandler, AuthorInfo
 from src.providers.validation import (
     PublishType,
     ValidationDict,
@@ -14,14 +14,15 @@ from src.providers.validation import (
 from src.plugins.github.depends import RepoInfo
 from src.plugins.github.utils import (
     dump_json,
-    extract_author_info,
     load_json,
     run_shell_command,
 )
 from src.plugins.github.utils import commit_message as _commit_message
 from src.plugins.github import plugin_config
 from src.plugins.github.constants import ISSUE_FIELD_PATTERN, ISSUE_FIELD_TEMPLATE
-from src.plugins.github.typing import AuthorInfo, LabelsItems
+from src.plugins.github.typing import LabelsItems
+
+from githubkit.exception import RequestFailed
 
 from .validation import validate_plugin_info_from_issue
 
@@ -131,7 +132,7 @@ async def resolve_conflict_pull_requests(
             continue
 
         publish_type = get_type_by_labels(pull.labels)
-        author_info = extract_author_info(await handler.get_issue(issue_number))
+        author = AuthorInfo.from_issue(await handler.get_issue(issue_number))
 
         if publish_type:
             # 需要先获取远程分支，否则无法切换到对应分支
@@ -144,7 +145,7 @@ async def resolve_conflict_pull_requests(
                 publish_type=publish_type,
                 # 提交时的 commit message 中包含插件名称
                 # 但因为仓库内的 plugins.json 中没有插件名称，所以需要从标题中提取
-                author_info=author_info,
+                author_info=author,
                 name=extract_name_from_title(pull.title, publish_type)
                 if publish_type == PublishType.PLUGIN
                 else None,
@@ -197,8 +198,8 @@ async def generate_validation_dict_from_file(
         valid=True,
         type=publish_type,
         name=raw_data["name"],
-        author_id=author_info["author_id"],
-        author=author_info["author"],
+        author_id=author_info.author_id,
+        author=author_info.author,
         data=raw_data,
         errors=[],
     )
@@ -254,6 +255,17 @@ async def should_skip_plugin_test(
     return False
 
 
+def is_plugin_test_button_check(
+    issue: "Issue",
+) -> bool:
+    """判断是否跳过插件测试"""
+    body = issue.body if issue.body else ""
+    search_result = PLUGIN_TEST_BUTTON_PATTERN.search(body)
+    if search_result:
+        return search_result.group(1) == "x"
+    return False
+
+
 async def ensure_issue_content(handler: IssueHandler):
     """确保议题内容中包含所需的插件信息"""
     new_content = []
@@ -290,17 +302,6 @@ async def ensure_issue_test_button(handler: IssueHandler):
         logger.info("选中议题的插件测试按钮")
 
 
-async def should_skip_plugin_publish(
-    issue: "Issue",
-) -> bool:
-    """判断是否跳过插件测试"""
-    body = issue.body if issue.body else ""
-    search_result = PLUGIN_TEST_BUTTON_PATTERN.search(body)
-    if search_result:
-        return search_result.group(1) == "x"
-    return False
-
-
 async def process_pull_request(
     handler: IssueHandler,
     result: ValidationDict,
@@ -318,13 +319,18 @@ async def process_pull_request(
         update_file(result)
         handler.commit_and_push(commit_message, branch_name)
         # 创建拉取请求
-        await handler.create_pull_request(
-            plugin_config.input_config.base, title, branch_name, result.type.value
-        )
+        try:
+            await handler.create_pull_request(
+                plugin_config.input_config.base, title, branch_name, result.type.value
+            )
+        except RequestFailed:
+            # 如果之前已经创建了拉取请求，则将其转换为草稿
+            logger.info("该分支的拉取请求已创建，请前往查看")
+            await handler.update_pull_request_status(title, branch_name)
 
     else:
         # 如果之前已经创建了拉取请求，则将其转换为草稿
-        await handler.pull_request_to_draft(branch_name)
+        await handler.draft_pull_request(branch_name)
 
 
 async def trigger_registry_update(

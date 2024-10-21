@@ -12,7 +12,7 @@ FROM python:${PYTHON_VERSION}-slim
 
 WORKDIR /tmp
 
-COPY ./docker/docker_plugin_test.py /tmp/plugin_test.py
+COPY ./plugin_test.py /tmp/plugin_test.py
 
 COPY --from=builder install-poetry.py /tmp/install-poetry.py
 

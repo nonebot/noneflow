@@ -208,12 +208,9 @@ async def test_trigger_registry_update_validation_failed(
     from src.plugins.github.plugins.publish.utils import trigger_registry_update
     from src.providers.validation import PublishType
 
-    mock_issue = mocker.MagicMock()
-    mock_issue.state = "open"
-    mock_issue.body = generate_issue_body_plugin_skip_test(
-        homepage="https://www.baidu.com"
-    )
-    mock_issue.number = 1
+    mock_issue = MockIssue(
+        1, body=generate_issue_body_plugin_skip_test(homepage="https://www.baidu.com")
+    ).as_mock(mocker)
 
     mock_comment = mocker.MagicMock()
     mock_comment.body = "/skip"

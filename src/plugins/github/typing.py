@@ -1,4 +1,5 @@
-from typing import TypeAlias, TypedDict
+# ruff: noqa: UP040
+from typing import TypeAlias
 from nonebot.adapters.github import (
     IssueCommentCreated,
     IssuesEdited,
@@ -32,8 +33,3 @@ LabelsItems: TypeAlias = (
     | Missing[list[WebhookIssuesEditedPropIssuePropLabelsItems]]
     | list[WebhookIssueCommentCreatedPropIssueAllof0PropLabelsItems]
 )
-
-
-class AuthorInfo(TypedDict):
-    author: str
-    author_id: int

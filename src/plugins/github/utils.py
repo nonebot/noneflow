@@ -7,9 +7,6 @@ from typing import Any
 from nonebot import logger
 
 from pydantic_core import to_jsonable_python
-from githubkit.rest import Issue
-
-from src.plugins.github.typing import AuthorInfo
 
 
 def run_shell_command(command: list[str]):
@@ -60,13 +57,3 @@ def extract_publish_info_from_issue(
         for key, match in matchers.items()
     }
     return data
-
-
-def extract_author_info(issue: Issue) -> AuthorInfo:
-    """
-    从议题中获取作者信息
-    """
-    return {
-        "author": issue.user.login if issue.user else "",
-        "author_id": issue.user.id if issue.user else 0,
-    }

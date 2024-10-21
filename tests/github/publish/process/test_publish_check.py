@@ -20,19 +20,20 @@ from tests.github.utils import (
     MockIssue,
     check_json_data,
     generate_issue_body_bot,
-    generate_issue_body_plugin,
+    generate_issue_body_plugin_test_button,
     get_github_bot,
+    get_issue_labels,
 )
 
 
-async def test_process_publish_check(
+async def test_bot_process_publish_check(
     app: App,
     mocker: MockerFixture,
     mocked_api: MockRouter,
     tmp_path: Path,
     mock_installation,
 ) -> None:
-    """测试一个正常的发布流程"""
+    """测试机器人的发布流程"""
     from src.plugins.github.plugins.publish import publish_check_matcher
     from src.plugins.github import plugin_config
 
@@ -218,6 +219,217 @@ async def test_process_publish_check(
     assert mocked_api["homepage"].called
 
 
+async def test_adapter_process_publish_check(
+    app: App,
+    mocker: MockerFixture,
+    mocked_api: MockRouter,
+    tmp_path: Path,
+    mock_installation,
+) -> None:
+    """测试适配器的发布流程"""
+    from src.plugins.github.plugins.publish import publish_check_matcher
+    from src.plugins.github import plugin_config
+
+    mock_subprocess_run = mocker.patch(
+        "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
+    )
+
+    mock_issue = MockIssue(
+        body=MockBody(type="adapter", name="test").generate()
+    ).as_mock(mocker)
+
+    mock_event = mocker.MagicMock()
+    mock_event.issue = mock_issue
+
+    mock_issues_resp = mocker.MagicMock()
+    mock_issues_resp.parsed_data = mock_issue
+
+    mock_comment = mocker.MagicMock()
+    mock_comment.body = "Adapter: test"
+    mock_list_comments_resp = mocker.MagicMock()
+    mock_list_comments_resp.parsed_data = [mock_comment]
+
+    mock_pull = mocker.MagicMock()
+    mock_pull.number = 2
+    mock_pulls_resp = mocker.MagicMock()
+    mock_pulls_resp.parsed_data = mock_pull
+
+    with open(tmp_path / "adapters.json", "w") as f:
+        json.dump([], f)
+
+    check_json_data(plugin_config.input_config.adapter_path, [])
+
+    async with app.test_matcher(publish_check_matcher) as ctx:
+        adapter, bot = get_github_bot(ctx)
+        event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
+        event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
+
+        assert isinstance(event, IssuesOpened)
+        event.payload.issue.labels = get_issue_labels(["Adapter"])
+
+        ctx.should_call_api(
+            "rest.apps.async_get_repo_installation",
+            {"owner": "he0119", "repo": "action-test"},
+            mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+            mock_issues_resp,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_create",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "title": snapshot("Adapter: test"),
+                "body": "resolve #80",
+                "base": "master",
+                "head": "publish/issue80",
+            },
+            mock_pulls_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_add_labels",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 2,
+                "labels": ["Adapter"],
+            },
+            True,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            snapshot(
+                {
+                    "owner": "he0119",
+                    "repo": "action-test",
+                    "issue_number": 80,
+                    "title": "Adapter: test",
+                }
+            ),
+            True,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_create_comment",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 80,
+                "body": snapshot(
+                    """\
+# 📃 商店发布检查结果
+
+> Adapter: test
+
+**✅ 所有测试通过，一切准备就绪！**
+
+
+<details>
+<summary>详情</summary>
+<pre><code><li>✅ 项目 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 标签: test-#ffffff。</li></code></pre>
+</details>
+
+---
+
+💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
+💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
+
+♻️ 评论已更新至最新检查结果
+
+💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
+<!-- NONEFLOW -->
+"""
+                ),
+            },
+            True,
+        )
+
+        ctx.receive_event(bot, event)
+
+    # 测试 git 命令
+    mock_subprocess_run.assert_has_calls(
+        [
+            mocker.call(
+                ["git", "config", "--global", "safe.directory", "*"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                ["pre-commit", "install", "--install-hooks"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                ["git", "switch", "-C", "publish/issue80"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                ["git", "config", "--global", "user.name", "test"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                [
+                    "git",
+                    "config",
+                    "--global",
+                    "user.email",
+                    "test@users.noreply.github.com",
+                ],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(["git", "add", "-A"], check=True, capture_output=True),
+            mocker.call(
+                ["git", "commit", "-m", snapshot(":beers: publish adapter test (#80)")],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(["git", "fetch", "origin"], check=True, capture_output=True),
+            mocker.call(
+                ["git", "diff", "origin/publish/issue80", "publish/issue80"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                ["git", "push", "origin", "publish/issue80", "-f"],
+                check=True,
+                capture_output=True,
+            ),
+        ]  # type: ignore
+    )
+
+    # 检查文件是否正确
+    check_json_data(
+        plugin_config.input_config.adapter_path,
+        [
+            snapshot(
+                {
+                    "module_name": "module_name",
+                    "project_link": "project_link",
+                    "name": "test",
+                    "desc": "desc",
+                    "author": "test",
+                    "author_id": 1,
+                    "homepage": "https://nonebot.dev",
+                    "tags": [{"label": "test", "color": "#ffffff"}],
+                    "is_official": False,
+                }
+            )
+        ],
+    )
+
+    assert mocked_api["homepage"].called
+
+
 async def test_edit_title(
     app: App,
     mocker: MockerFixture,
@@ -236,7 +448,9 @@ async def test_edit_title(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
     )
 
-    mock_issue = MockIssue(body=generate_issue_body_bot(name="test1")).as_mock(mocker)
+    mock_issue = MockIssue(body=MockBody(type="bot", name="test1").generate()).as_mock(
+        mocker
+    )
 
     mock_event = mocker.MagicMock()
     mock_event.issue = mock_issue
@@ -843,23 +1057,13 @@ async def test_skip_plugin_check(
     from src.plugins.github.plugins.publish import publish_check_matcher
     from src.plugins.github import plugin_config
 
-    from githubkit.rest import SimpleUser, Issue
-
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
     )
 
-    mock_issue = mocker.MagicMock(spec=Issue)
-    mock_issue.pull_request = None
-    mock_issue.title = "Plugin: project_link"
-    mock_issue.number = 70
-    mock_issue.state = "open"
-    mock_issue.body = generate_issue_body_plugin()
-
-    mock_user = mocker.MagicMock(spec=SimpleUser)
-    mock_user.login = "test"
-    mock_user.id = 1
-    mock_issue.user = mock_user
+    mock_issue = MockIssue(number=70, body=MockBody("plugin").generate()).as_mock(
+        mocker
+    )
 
     mock_event = mocker.MagicMock()
     mock_event.issue = mock_issue
@@ -923,7 +1127,6 @@ async def test_skip_plugin_check(
             },
             mock_pulls_resp,
         )
-        # 增加重测按钮
         ctx.should_call_api(
             "rest.issues.async_update",
             {
@@ -932,6 +1135,16 @@ async def test_skip_plugin_check(
                 "issue_number": 70,
                 "body": snapshot(
                     """\
+### 插件名称
+
+### 插件描述
+
+### 插件项目仓库/主页链接
+
+### 插件类型
+
+### 插件支持的适配器
+
 ### PyPI 项目名
 
 project_link
@@ -956,6 +1169,18 @@ log_level=DEBUG
 """
                 ),
             },
+            True,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            snapshot(
+                {
+                    "owner": "he0119",
+                    "repo": "action-test",
+                    "issue_number": 70,
+                    "title": "Plugin: project_link",
+                }
+            ),
             True,
         )
         ctx.should_call_api(
@@ -1021,6 +1246,88 @@ log_level=DEBUG
     check_json_data(plugin_config.input_config.plugin_path, [])
 
     assert mocked_api["project_link"].called
+
+
+async def test_button_skip_publish_check(
+    app: App,
+    mocker: MockerFixture,
+    mocked_api: MockRouter,
+    tmp_path: Path,
+    mock_installation,
+) -> None:
+    """重测按钮被选中，跳过发布流程"""
+    from src.plugins.github.plugins.publish import publish_check_matcher
+    from src.plugins.github import plugin_config
+
+    mock_subprocess_run = mocker.patch(
+        "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
+    )
+
+    mock_issue = MockIssue(
+        body=generate_issue_body_plugin_test_button(
+            body=MockBody(type="plugin").generate(), selected=True
+        )
+    ).as_mock(mocker)
+
+    mock_event = mocker.MagicMock()
+    mock_event.issue = mock_issue
+
+    mock_issues_resp = mocker.MagicMock()
+    mock_issues_resp.parsed_data = mock_issue
+
+    mock_comment = mocker.MagicMock()
+    mock_comment.body = "OMG"
+    mock_comment.author_association = "OWNER"
+    mock_list_comments_resp = mocker.MagicMock()
+    mock_list_comments_resp.parsed_data = [mock_comment]
+
+    mock_pulls_resp = mocker.MagicMock()
+    mock_pulls_resp.parsed_data = []
+
+    with open(tmp_path / "plugins.json", "w") as f:
+        json.dump([], f)
+
+    check_json_data(plugin_config.input_config.plugin_path, [])
+
+    async with app.test_matcher(publish_check_matcher) as ctx:
+        adapter, bot = get_github_bot(ctx)
+        event_path = (
+            Path(__file__).parent.parent.parent / "events" / "issue-comment-skip.json"
+        )
+        event = Adapter.payload_to_event("1", "issue_comment", event_path.read_bytes())
+        assert isinstance(event, IssueCommentCreated)
+
+        ctx.should_call_api(
+            "rest.apps.async_get_repo_installation",
+            {"owner": "he0119", "repo": "action-test"},
+            mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 70},
+            mock_issues_resp,
+        )
+
+        ctx.receive_event(bot, event)
+
+    # 测试 git 命令
+    mock_subprocess_run.assert_has_calls(
+        [
+            mocker.call(
+                ["git", "config", "--global", "safe.directory", "*"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                ["pre-commit", "install", "--install-hooks"],
+                check=True,
+                capture_output=True,
+            ),
+        ]  # type: ignore
+    )
+
+    # 检查文件是否正确
+    check_json_data(plugin_config.input_config.plugin_path, [])
 
 
 async def test_convert_pull_request_to_draft(

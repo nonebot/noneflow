@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Any
 
 from nonebot import logger
 
-
+from src.plugins.github.models import AuthorInfo
 from src.plugins.github.depends.utils import extract_issue_number_from_ref
 from src.plugins.github.utils import (
     commit_message,
@@ -11,7 +11,8 @@ from src.plugins.github.utils import (
     dump_json,
 )
 from src.plugins.github import plugin_config
-from src.plugins.github.models import IssueHandler
+
+from src.plugins.github.models import GithubHandler, IssueHandler
 from src.providers.validation.models import ValidationDict
 
 
@@ -72,7 +73,7 @@ async def process_pull_reqeusts(
 
 
 async def resolve_conflict_pull_requests(
-    handler: IssueHandler,
+    handler: GithubHandler,
     pulls: list["PullRequestSimple"] | list["PullRequest"],
 ):
     """根据关联的议题提交来解决冲突
@@ -124,11 +125,11 @@ async def resolve_conflict_pull_requests(
                 for item in remove_items:
                     update_file(item)
                 message = commit_message(
-                    COMMIT_MESSAGE_PREFIX, pull.title, handler.issue_number
+                    COMMIT_MESSAGE_PREFIX, pull.title, issue_number
                 )
-                handler.commit_and_push(
-                    message,
-                    pull.head.ref,
-                )
+
+                author = AuthorInfo.from_issue(await handler.get_issue(pull.number))
+
+                handler.commit_and_push(message, pull.head.ref, author.author)
 
         logger.info(f"{pull.title} 处理完毕")
