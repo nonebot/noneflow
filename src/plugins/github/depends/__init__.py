@@ -9,7 +9,6 @@ from nonebot.adapters.github import (
 from nonebot.params import Depends
 
 from src.plugins.github.typing import IssuesEvent, PullRequestEvent
-from src.plugins.github.constants import BOT_MARKER
 from src.plugins.github.models import GithubHandler, RepoInfo
 from src.plugins.github.utils import run_shell_command
 
@@ -82,17 +81,18 @@ def is_bot_triggered_workflow(
     event: IssuesEvent,
 ):
     """触发议题相关的工作流"""
+
     if (
         isinstance(event, IssueCommentCreated)
         and event.payload.comment.user
-        and event.payload.comment.user.login.endswith(BOT_MARKER)
+        and event.payload.comment.user.type == "Bot"
     ):
         logger.info("评论来自机器人，已跳过")
         return True
     if (
         isinstance(event, IssuesEdited)
-        and event.payload.sender.login
-        and event.payload.sender.login.endswith(BOT_MARKER)
+        and event.payload.sender
+        and event.payload.sender.type == "Bot"
     ):
         logger.info("议题修改来自机器人，已跳过")
         return True
