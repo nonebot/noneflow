@@ -1,4 +1,4 @@
 {
-    "nonebot-plugin-treehelp:nonebot_plugin_treehelp": "TEST_CONFIG=true",
-    "nonebot-plugin-datastore:nonebot_plugin_datastore": ""
+  "nonebot-plugin-treehelp:nonebot_plugin_treehelp": "TEST_CONFIG=true",
+  "nonebot-plugin-datastore:nonebot_plugin_datastore": ""
 }
