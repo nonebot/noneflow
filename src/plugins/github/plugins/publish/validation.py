@@ -4,13 +4,13 @@ from typing import Any
 
 from githubkit.rest import Issue
 from nonebot import logger
+from src.plugins.github.models import AuthorInfo
 from src.providers.validation import (
     PublishType,
     ValidationDict,
     validate_info,
 )
 from src.plugins.github.utils import (
-    extract_author_info,
     extract_publish_info_from_issue,
 )
 from src.providers.constants import DOCKER_IMAGES
@@ -62,7 +62,7 @@ async def validate_plugin_info_from_issue(issue: Issue) -> ValidationDict:
         body,
     )
     # 更新作者信息
-    raw_data.update(extract_author_info(issue))
+    raw_data.update(AuthorInfo.from_issue(issue).model_dump())
 
     test_config: str = raw_data["test_config"]
     module_name: str = raw_data["module_name"]
@@ -152,7 +152,7 @@ async def validate_adapter_info_from_issue(issue: Issue) -> ValidationDict:
         },
         body,
     )
-    raw_data.update(extract_author_info(issue))
+    raw_data.update(AuthorInfo.from_issue(issue).model_dump())
 
     with plugin_config.input_config.adapter_path.open("r", encoding="utf-8") as f:
         previous_data: list[dict[str, str]] = json.load(f)
@@ -177,6 +177,6 @@ async def validate_bot_info_from_issue(issue: Issue) -> ValidationDict:
         body,
     )
 
-    raw_data.update(extract_author_info(issue))
+    raw_data.update(AuthorInfo.from_issue(issue).model_dump())
 
     return validate_info(PublishType.BOT, raw_data)

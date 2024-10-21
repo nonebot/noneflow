@@ -257,7 +257,7 @@ class PluginTest:
         metadata = {}
         metadata_path = self.path / "metadata.json"
         if metadata_path.exists():
-            with open(self.path / "metadata.json", "r", encoding="utf-8") as f:
+            with open(self.path / "metadata.json", encoding="utf-8") as f:
                 metadata = json.load(f)
 
         # 输出测试结果

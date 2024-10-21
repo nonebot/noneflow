@@ -53,6 +53,10 @@ def generate_issue_body_plugin_skip_test(
     return f"""### 插件名称\n\n{name}\n\n### 插件描述\n\n{desc}\n\n### PyPI 项目名\n\n{project_link}\n\n### 插件 import 包名\n\n{module_name}\n\n### 插件项目仓库/主页链接\n\n{homepage}\n\n### 标签\n\n{json.dumps(tags)}\n\n### 插件类型\n\n{type}\n\n### 插件支持的适配器\n\n{json.dumps(supported_adapters)}\n\n### 插件配置项\n\n```dotenv\n{config}\n```"""
 
 
+def generate_issue_body_plugin_test_button(body: str, selected: bool):
+    return f"""{body}\n\n### 插件测试\n\n- [{'x' if selected else ' '}] 单击左侧按钮重新测试，完成时勾选框将被选中"""
+
+
 def generate_issue_body_remove(
     homepage: str = "https://nonebot.dev",
 ):
@@ -156,3 +160,22 @@ def get_github_bot(ctx):
     )
     bot = cast(GitHubBot, bot)
     return adapter, bot
+
+
+def get_issue_labels(labels: list[str]):
+    from githubkit.rest import WebhookIssuesOpenedPropIssuePropLabelsItems as Label
+
+    return [
+        Label.model_construct(
+            **{
+                "color": "2AAAAA",
+                "default": False,
+                "description": "",
+                "id": 2798075966,
+                "name": label,
+                "node_id": "MDU6TGFiZWwyNzk4MDc1OTY2",
+                "url": f"https://api.github.com/repos/he0119/action-test/labels/{label}",
+            }
+        )
+        for label in labels
+    ]

@@ -18,9 +18,8 @@ def main(limit: int, offset: int, force: bool, key: str | None):
     config = os.environ.get("PLUGIN_CONFIG")
     data = os.environ.get("PLUGIN_DATA")
 
-    # asyncio.run(test.run(key, config, data))
     if key and (config or data):
-        asyncio.run(test.run_single_plugin(key, force, config, data))
+        asyncio.run(test.run_single_plugin(key, force, data, config))
     else:
         asyncio.run(test.run(limit, force))
 

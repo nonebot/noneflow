@@ -17,25 +17,12 @@ from tests.github.utils import (
     check_json_data,
     generate_issue_body_remove,
     get_github_bot,
+    get_issue_labels,
 )
 
 
 def get_remove_labels():
-    from githubkit.rest import WebhookIssuesOpenedPropIssuePropLabelsItems as Label
-
-    return [
-        Label.model_construct(
-            **{
-                "color": "2A2219",
-                "default": False,
-                "description": "",
-                "id": 2798075966,
-                "name": "Remove",
-                "node_id": "MDU6TGFiZWwyNzk4MDc1OTY2",
-                "url": "https://api.github.com/repos/he0119/action-test/labels/Remove",
-            }
-        )
-    ]
+    return get_issue_labels(["Remove"])
 
 
 async def test_process_remove_check(

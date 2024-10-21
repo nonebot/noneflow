@@ -38,7 +38,7 @@ from .utils import (
     ensure_issue_content,
     ensure_issue_test_button,
     resolve_conflict_pull_requests,
-    should_skip_plugin_publish,
+    is_plugin_test_button_check,
     should_skip_plugin_test,
     trigger_registry_update,
 )
@@ -164,7 +164,7 @@ async def handle_publish_plugin_check(
         if issue.state != "open":
             logger.info("议题未开启，已跳过")
             await publish_check_matcher.finish()
-        if await should_skip_plugin_publish(issue):
+        if is_plugin_test_button_check(issue):
             logger.info("测试按钮已勾选，跳过插件发布检查")
             await publish_check_matcher.finish()
 

@@ -4,13 +4,12 @@ from pydantic import ConfigDict
 
 
 from nonebot.adapters.github import Bot
-from githubkit.exception import RequestFailed
 from githubkit.utils import UNSET
 from githubkit.typing import Missing
 from githubkit.rest import PullRequestSimple
 
 from src.plugins.github.constants import NONEFLOW_MARKER
-from src.plugins.github.models import GitHandler, RepoInfo
+from src.plugins.github.models import RepoInfo, GitHandler
 
 
 class GithubHandler(GitHandler):
@@ -20,6 +19,21 @@ class GithubHandler(GitHandler):
 
     bot: Bot
     repo_info: RepoInfo
+
+    async def update_issue_title(self, issue_number: int, title: str):
+        """修改议题标题"""
+        await self.bot.rest.issues.async_update(
+            **self.repo_info.model_dump(),
+            issue_number=issue_number,
+            title=title,
+        )
+
+    async def update_issue_content(self, issue_number: int, body: str):
+        await self.bot.rest.issues.async_update(
+            **self.repo_info.model_dump(),
+            issue_number=issue_number,
+            body=body,
+        )
 
     async def create_dispatch_event(
         self, repo: RepoInfo | None, event_type: str, client_payload: dict
@@ -89,7 +103,15 @@ class GithubHandler(GitHandler):
             pull for pull in pulls if label in [label.name for label in pull.labels]
         ]
 
-    async def pull_request_to_draft(self, branch_name: str):
+    async def get_pull_request(self, pull_number: int):
+        """获取拉取请求"""
+        return (
+            await self.bot.rest.pulls.async_get(
+                **self.repo_info.model_dump(), pull_number=pull_number
+            )
+        ).parsed_data
+
+    async def draft_pull_request(self, branch_name: str):
         """
         将拉取请求转换为草稿
         """
@@ -108,9 +130,7 @@ class GithubHandler(GitHandler):
                 }""",
                 variables={"pullRequestId": pull.node_id},
             )
-            logger.info("删除没通过检查，已将之前的拉取请求转换为草稿")
-        else:
-            logger.info("没通过检查，暂不创建拉取请求")
+            logger.info("没通过检查，已将之前的拉取请求转换为草稿")
 
     async def merge_pull_request(
         self,
@@ -125,6 +145,30 @@ class GithubHandler(GitHandler):
         )
         logger.info(f"拉取请求 #{pull_number} 已合并")
 
+    async def update_pull_request_status(self, title: str, branch_name: str):
+        """拉取请求若为草稿状态则标记为可评审，若标题不符则修改标题"""
+        pull = (
+            await self.bot.rest.pulls.async_list(
+                **self.repo_info.model_dump(),
+                head=f"{self.repo_info.owner}:{branch_name}",
+            )
+        ).parsed_data[0]
+        if pull.title != title:
+            await self.bot.rest.pulls.async_update(
+                **self.repo_info.model_dump(), pull_number=pull.number, title=title
+            )
+            logger.info(f"拉取请求标题已修改为 {title}")
+        if pull.draft:
+            await self.bot.async_graphql(
+                query="""mutation markPullRequestReadyForReview($pullRequestId: ID!) {
+                        markPullRequestReadyForReview(input: {pullRequestId: $pullRequestId}) {
+                            clientMutationId
+                        }
+                    }""",
+                variables={"pullRequestId": pull.node_id},
+            )
+            logger.info("拉取请求已标记为可评审")
+
     async def create_pull_request(
         self,
         base_branch: str,
@@ -133,51 +177,37 @@ class GithubHandler(GitHandler):
         label: str | list[str],
         issue_number: int,
     ):
-        """创建拉取请求"""
+        """创建拉取请求并分配标签，已存在请求会导致 raise RequestFailed"""
         body = f"resolve #{issue_number}"
 
-        try:
-            # 创建拉取请求
-            resp = await self.bot.rest.pulls.async_create(
-                **self.repo_info.model_dump(),
-                title=title,
-                body=body,
-                base=base_branch,
-                head=branch_name,
-            )
-            pull = resp.parsed_data
+        resp = await self.bot.rest.pulls.async_create(
+            **self.repo_info.model_dump(),
+            title=title,
+            body=body,
+            base=base_branch,
+            head=branch_name,
+        )
+        pull = resp.parsed_data
 
-            # 自动给拉取请求添加标签
-            await self.bot.rest.issues.async_add_labels(
-                **self.repo_info.model_dump(),
-                issue_number=pull.number,
-                labels=[label] if isinstance(label, str) else label,
-            )
-            logger.info("拉取请求创建完毕")
-        except RequestFailed:
-            logger.info("该分支的拉取请求已创建，请前往查看")
+        # 自动给拉取请求添加标签
+        await self.bot.rest.issues.async_add_labels(
+            **self.repo_info.model_dump(),
+            issue_number=pull.number,
+            labels=[label] if isinstance(label, str) else label,
+        )
+        logger.info("拉取请求创建完毕")
 
-            pull = (
-                await self.bot.rest.pulls.async_list(
-                    **self.repo_info.model_dump(),
-                    head=f"{self.repo_info.owner}:{branch_name}",
-                )
-            ).parsed_data[0]
-            if pull.title != title:
-                await self.bot.rest.pulls.async_update(
-                    **self.repo_info.model_dump(), pull_number=pull.number, title=title
-                )
-                logger.info(f"拉取请求标题已修改为 {title}")
-            if pull.draft:
-                await self.bot.async_graphql(
-                    query="""mutation markPullRequestReadyForReview($pullRequestId: ID!) {
+    async def ready_pull_request(self, node_id: int):
+        """将拉取请求标记为可评审"""
+        await self.bot.async_graphql(
+            query="""mutation markPullRequestReadyForReview($pullRequestId: ID!) {
                         markPullRequestReadyForReview(input: {pullRequestId: $pullRequestId}) {
                             clientMutationId
                         }
                     }""",
-                    variables={"pullRequestId": pull.node_id},
-                )
-                logger.info("拉取请求已标记为可评审")
+            variables={"pullRequestId": node_id},
+        )
+        logger.info("拉取请求已标记为可评审")
 
     async def get_user_name(self, account_id: int):
         """根据用户 ID 获取用户名"""
@@ -198,3 +228,18 @@ class GithubHandler(GitHandler):
                 **self.repo_info.model_dump(), issue_number=issue_number
             )
         ).parsed_data
+
+    async def update_pull_request_title(self, title: str, branch_name: int):
+        """修改拉取请求标题"""
+        pull = (
+            await self.bot.rest.pulls.async_list(
+                **self.repo_info.model_dump(),
+                head=f"{self.repo_info.owner}:{branch_name}",
+            )
+        ).parsed_data[0]
+
+        if pull.title != title:
+            await self.bot.rest.pulls.async_update(
+                **self.repo_info.model_dump(), pull_number=pull.number, title=title
+            )
+            logger.info(f"拉取请求标题已修改为 {title}")
