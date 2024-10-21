@@ -1118,15 +1118,7 @@ async def test_skip_plugin_check(
             },
             True,
         )
-        ctx.should_call_api(
-            "rest.pulls.async_list",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "head": "he0119:publish/issue70",
-            },
-            mock_pulls_resp,
-        )
+
         ctx.should_call_api(
             "rest.issues.async_update",
             {
@@ -1170,6 +1162,15 @@ log_level=DEBUG
                 ),
             },
             True,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_list",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "head": "he0119:publish/issue70",
+            },
+            mock_pulls_resp,
         )
         ctx.should_call_api(
             "rest.issues.async_update",

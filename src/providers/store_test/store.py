@@ -192,14 +192,6 @@ class StoreTest:
                 plugins[key] = self._previous_plugins[key]
 
         return results, plugins
-        # def dump_data(self, results: dict[str, TestResult], plugins: list[Plugin]):
-        #     """储存数据到仓库中"""
-        # dump_json(ADAPTERS_PATH, self._store_adapters)
-        # dump_json(BOTS_PATH, self._store_bots)
-        # dump_json(DRIVERS_PATH, self._store_drivers)
-        # dump_json(PLUGINS_PATH, list(plugins.values()))
-        # dump_json(RESULTS_PATH, results)
-        # dump_json(PLUGIN_CONFIG_PATH, self._plugin_configs)
 
     def dump_data(self, results: dict[str, TestResult], plugins: list[Plugin]):
         """储存数据到仓库中"""
@@ -247,7 +239,6 @@ class StoreTest:
 
         if new_plugin:
             results, plugins = self.merge_data({key: new_result}, {key: new_plugin})
-            self.dump_data(results, list(plugins.values()))
         else:
             results, plugins = self.merge_data({}, {})
-            self.dump_data(results, list(plugins.values()))
+        self.dump_data(results, list(plugins.values()))

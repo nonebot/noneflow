@@ -22,7 +22,7 @@ class IssueHandler(GithubHandler):
 
     @model_validator(mode="before")
     @classmethod
-    def issuehandler_validator(cls, data: dict[str, Any]):
+    def issue_handler_validator(cls, data: dict[str, Any]):
         issue = data.get("issue")
         if data.get("issue_number") is None and issue:
             data["issue_number"] = issue.number
@@ -34,16 +34,16 @@ class IssueHandler(GithubHandler):
         self,
         title: str,
     ):
+        """修改议题标题"""
         if self.issue and self.issue.title != title:
             await super().update_issue_title(self.issue_number, title)
             logger.info(f"标题已修改为 {title}")
 
     async def update_issue_content(self, body: str):
         """编辑议题内容"""
-
         await super().update_issue_content(self.issue_number, body)
 
-        # 更新类属性，避免重复或错误操作
+        # 更新缓存属性，避免重复或错误操作
         self.issue.body = body
 
         logger.info("议题内容已修改")
@@ -61,9 +61,6 @@ class IssueHandler(GithubHandler):
                 state_reason=reason,
             )
 
-    async def comment_issue(self, comment: str):
-        return await super().comment_issue(comment, self.issue_number)
-
     async def create_pull_request(
         self,
         base_branch: str,
@@ -75,16 +72,12 @@ class IssueHandler(GithubHandler):
             base_branch, title, branch_name, label, self.issue_number
         )
 
-    async def list_comments(self):
-        return await super().list_comments(self.issue_number)
+    async def comment_issue(self, comment: str):
+        return await super().comment_issue(comment, self.issue_number)
 
     async def should_skip_plugin_test(self) -> bool:
         """判断评论是否包含跳过的标记"""
-        comments = (
-            await self.bot.rest.issues.async_list_comments(
-                **self.repo_info.model_dump(), issue_number=self.issue_number
-            )
-        ).parsed_data
+        comments = await self.list_comments(self.issue_number)
         for comment in comments:
             author_association = comment.author_association
             if comment.body == SKIP_COMMENT and author_association in [

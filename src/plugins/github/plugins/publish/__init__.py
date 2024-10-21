@@ -13,7 +13,6 @@ from nonebot.params import Depends
 
 from src.providers.validation.models import PublishType
 
-from src.plugins.github.plugins.publish.render import render_comment
 from src.plugins.github.depends import (
     bypass_git,
     get_github_handler,
@@ -27,16 +26,14 @@ from src.plugins.github.depends import (
 from src.plugins.github.models import GithubHandler, IssueHandler, RepoInfo
 from src.plugins.github import plugin_config
 
-from src.plugins.github.constants import TITLE_MAX_LENGTH
-from .constants import BRANCH_NAME_PREFIX
 from .depends import (
     get_type_by_labels,
 )
 
 from .utils import (
-    process_pull_request,
     ensure_issue_content,
     ensure_issue_test_button,
+    process_pull_request_and_update_issue,
     resolve_conflict_pull_requests,
     is_plugin_test_button_check,
     should_skip_plugin_test,
@@ -180,23 +177,10 @@ async def handle_publish_plugin_check(
         # 仅在通过检查的情况下创建拉取请求
         result = await validate_plugin_info_from_issue(issue)
 
-        # 设置拉取请求与议题的标题
-        # 限制标题长度，过长的标题不好看
-        title = f"{publish_type}: {result.name[:TITLE_MAX_LENGTH]}"
-
-        # 分支命名示例 publish/issue123
-        branch_name = f"{BRANCH_NAME_PREFIX}{issue_number}"
-
-        # 验证之后创建拉取请求和修改议题的标题
-        await process_pull_request(handler, result, branch_name, title)
         # 确保插件重测按钮存在
         await ensure_issue_test_button(handler)
-
-        comment = await render_comment(result, True)
-
-        # 修改议题标题
-        await handler.update_issue_title(title)
-        await handler.comment_issue(comment)
+        # 处理拉取请求，更新议题标题，评论
+        await process_pull_request_and_update_issue(handler, result)
 
 
 @publish_check_matcher.handle(
@@ -230,21 +214,8 @@ async def handle_adapter_publish_check(
         # 仅在通过检查的情况下创建拉取请求
         result = await validate_adapter_info_from_issue(issue)
 
-        # 设置拉取请求与议题的标题
-        # 限制标题长度，过长的标题不好看
-        title = f"{publish_type}: {result.name[:TITLE_MAX_LENGTH]}"
-
-        # 分支命名示例 publish/issue123
-        branch_name = f"{BRANCH_NAME_PREFIX}{issue_number}"
-
-        # 验证之后创建拉取请求和修改议题的标题
-        await process_pull_request(handler, result, branch_name, title)
-
-        comment = await render_comment(result, True)
-
-        # 修改议题标题
-        await handler.update_issue_title(title)
-        await handler.comment_issue(comment)
+        # 处理拉取请求，更新议题标题，评论
+        await process_pull_request_and_update_issue(handler, result)
 
 
 @publish_check_matcher.handle(
@@ -279,21 +250,8 @@ async def handle_bot_publish_check(
         # 仅在通过检查的情况下创建拉取请求
         result = await validate_bot_info_from_issue(issue)
 
-        # 设置拉取请求与议题的标题
-        # 限制标题长度，过长的标题不好看
-        title = f"{publish_type}: {result.name[:TITLE_MAX_LENGTH]}"
-
-        # 分支命名示例 publish/issue123
-        branch_name = f"{BRANCH_NAME_PREFIX}{issue_number}"
-
-        # 验证之后创建拉取请求和修改议题的标题
-        await process_pull_request(handler, result, branch_name, title)
-
-        comment = await render_comment(result, True)
-
-        # 修改议题标题
-        await handler.update_issue_title(title)
-        await handler.comment_issue(comment)
+        # 处理拉取请求，更新议题标题，评论
+        await process_pull_request_and_update_issue(handler, result)
 
 
 async def review_submiited_rule(
