@@ -168,7 +168,7 @@ class StoreTest:
 
         return new_results, new_plugins
 
-    async def merge_data(
+    def merge_data(
         self, new_results: dict[str, TestResult], new_plugins: dict[str, Plugin]
     ):
         """
@@ -191,10 +191,12 @@ class StoreTest:
             elif key in self._previous_plugins:
                 plugins[key] = self._previous_plugins[key]
 
+    def dump_data(self, results: dict[str, TestResult], plugins: list[Plugin]):
+        """储存数据到仓库中"""
         dump_json(ADAPTERS_PATH, self._store_adapters)
         dump_json(BOTS_PATH, self._store_bots)
         dump_json(DRIVERS_PATH, self._store_drivers)
-        dump_json(PLUGINS_PATH, list(plugins.values()))
+        dump_json(PLUGINS_PATH, plugins)
         dump_json(RESULTS_PATH, results)
         dump_json(PLUGIN_CONFIG_PATH, self._plugin_configs)
 
@@ -206,7 +208,8 @@ class StoreTest:
             force (bool): 是否强制测试，默认为 False
         """
         new_results, new_plugins = await self.test_plugins(limit, force)
-        await self.merge_data(new_results, new_plugins)
+        self.merge_data(new_results, new_plugins)
+        self.dump_data(new_results, list(new_plugins.values()))
 
     async def run_single_plugin(
         self,
@@ -233,6 +236,9 @@ class StoreTest:
             click.echo(err)
 
         if new_plugin:
-            await self.merge_data({key: new_result}, {key: new_plugin})
+            result = {key: new_result}
+            self.merge_data(result, {key: new_plugin})
+            self.dump_data(result, [new_plugin])
         else:
-            await self.merge_data({}, {})
+            self.merge_data({}, {})
+            self.dump_data({}, [])
