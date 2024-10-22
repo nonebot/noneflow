@@ -71,7 +71,7 @@ async def validate_plugin(
     else:
         test_result = await DockerPluginTest(
             DOCKER_IMAGES, project_link, module_name, config
-        ).run("3.10")
+        ).run("3.12")
         # 获取测试结果
         click.echo(f"测试结果：{test_result}")
 

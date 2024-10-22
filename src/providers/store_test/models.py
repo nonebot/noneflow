@@ -119,6 +119,8 @@ class TestResult(BaseModel):
     )
     config: str = ""
     version: str | None
+    # 键为测试环境 python==3.10 pytest==6.2.5 nonebot2==2.0.0a1 ...
+    # 值为在该环境下是否通过插件测试
     test_env: dict[str, bool] | None = None
     results: dict[Literal["validation", "load", "metadata"], bool]
     outputs: dict[Literal["validation", "load", "metadata"], Any]

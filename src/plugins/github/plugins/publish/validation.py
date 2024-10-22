@@ -93,7 +93,7 @@ async def validate_plugin_info_from_issue(issue: Issue) -> ValidationDict:
         # 插件不跳过则运行插件测试
         plugin_test_result: DockerTestResult = await DockerPluginTest(
             DOCKER_IMAGES, project_link, module_name, test_config
-        ).run("3.10")
+        ).run("3.12")
         plugin_metadata: Metadata | None = plugin_test_result.metadata
         # 去除颜色字符
         plugin_test_output = strip_ansi("\n".join(plugin_test_result.outputs))
