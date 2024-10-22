@@ -22,4 +22,5 @@ STORE_DRIVERS_URL = f"{STORE_BASE_URL}/drivers.json"
 STORE_PLUGINS_URL = f"{STORE_BASE_URL}/plugins.json"
 """plugin_test.py 中也有一个常量，需要同时修改"""
 
-DOCKER_IMAGES = "ghcr.io/nonebot/nonetest:{}-main"
+DOCKER_IMAGES_VERSION = os.environ.get("DOCKER_IMAGES_VERSION") or "latest"
+DOCKER_IMAGES = f"ghcr.io/nonebot/nonetest:{{}}-{DOCKER_IMAGES_VERSION}"
