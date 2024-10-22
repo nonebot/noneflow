@@ -2,18 +2,10 @@ import re
 
 from src.plugins.github.constants import ISSUE_PATTERN
 
-BOT_MARKER = "[bot]"
-"""机器人的名字结尾都会带有这个"""
-
-SKIP_PLUGIN_TEST_COMMENT = "/skip"
-
 COMMIT_MESSAGE_PREFIX = ":beers: publish"
 
 BRANCH_NAME_PREFIX = "publish/issue"
 
-
-# 匹配信息的正则表达式
-# 格式：### {标题}\n\n{内容}
 
 # 基本信息
 PROJECT_LINK_PATTERN = re.compile(ISSUE_PATTERN.format("PyPI 项目名"))

@@ -9,9 +9,12 @@ from nonebot.adapters.github import (
     PullRequestClosed,
     PullRequestReviewSubmitted,
 )
-from nonebot.params import Depends
+from nonebot.params import Depends, Arg
+from nonebot.typing import T_State
 
-from src.providers.validation.models import PublishType
+from src.plugins.github.constants import BRANCH_NAME_PREFIX, TITLE_MAX_LENGTH
+from src.plugins.github.plugins.publish.render import render_comment
+from src.providers.validation.models import PublishType, ValidationDict
 
 from src.plugins.github.depends import (
     bypass_git,
@@ -26,6 +29,7 @@ from src.plugins.github.depends import (
 from src.plugins.github.models import GithubHandler, IssueHandler, RepoInfo
 from src.plugins.github import plugin_config
 
+
 from .depends import (
     get_type_by_labels,
 )
@@ -33,7 +37,7 @@ from .depends import (
 from .utils import (
     ensure_issue_content,
     ensure_issue_test_button,
-    process_pull_request_and_update_issue,
+    process_pull_request,
     resolve_conflict_pull_requests,
     is_plugin_test_button_check,
     should_skip_plugin_test,
@@ -140,6 +144,7 @@ publish_check_matcher = on_type(
 )
 async def handle_publish_plugin_check(
     bot: GitHubBot,
+    state: T_State,
     installation_id: int = Depends(get_installation_id),
     repo_info: RepoInfo = Depends(get_repo_info),
     issue_number: int = Depends(get_issue_number),
@@ -179,8 +184,9 @@ async def handle_publish_plugin_check(
 
         # 确保插件重测按钮存在
         await ensure_issue_test_button(handler)
-        # 处理拉取请求，更新议题标题，评论
-        await process_pull_request_and_update_issue(handler, result)
+
+        state["handler"] = handler
+        state["validation"] = result
 
 
 @publish_check_matcher.handle(
@@ -188,6 +194,7 @@ async def handle_publish_plugin_check(
 )
 async def handle_adapter_publish_check(
     bot: GitHubBot,
+    state: T_State,
     installation_id: int = Depends(get_installation_id),
     repo_info: RepoInfo = Depends(get_repo_info),
     issue_number: int = Depends(get_issue_number),
@@ -214,8 +221,8 @@ async def handle_adapter_publish_check(
         # 仅在通过检查的情况下创建拉取请求
         result = await validate_adapter_info_from_issue(issue)
 
-        # 处理拉取请求，更新议题标题，评论
-        await process_pull_request_and_update_issue(handler, result)
+        state["handler"] = handler
+        state["validation"] = result
 
 
 @publish_check_matcher.handle(
@@ -223,6 +230,7 @@ async def handle_adapter_publish_check(
 )
 async def handle_bot_publish_check(
     bot: GitHubBot,
+    state: T_State,
     installation_id: int = Depends(get_installation_id),
     repo_info: RepoInfo = Depends(get_repo_info),
     issue_number: int = Depends(get_issue_number),
@@ -250,8 +258,37 @@ async def handle_bot_publish_check(
         # 仅在通过检查的情况下创建拉取请求
         result = await validate_bot_info_from_issue(issue)
 
-        # 处理拉取请求，更新议题标题，评论
-        await process_pull_request_and_update_issue(handler, result)
+        state["handler"] = handler
+        state["validation"] = result
+
+
+@publish_check_matcher.handle(
+    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hooks)]
+)
+async def handle_pull_request_and_update_issue(
+    bot: GitHubBot,
+    handler: IssueHandler = Arg(),
+    validation: ValidationDict = Arg(),
+    installation_id: int = Depends(get_installation_id),
+) -> None:
+    async with bot.as_installation(installation_id):
+        branch_name = f"{BRANCH_NAME_PREFIX}{handler.issue_number}"
+
+        # 设置拉取请求与议题的标题
+        # 限制标题长度，过长的标题不好看
+        title = f"{validation.type}: {validation.name[:TITLE_MAX_LENGTH]}"
+
+        # 渲染评论信息
+        comment = await render_comment(validation, True)
+
+        # 验证之后创建拉取请求和修改议题的标题
+        await process_pull_request(handler, validation, branch_name, title)
+
+        # 修改议题标题
+        await handler.update_issue_title(title)
+
+        # 对议题评论
+        await handler.comment_issue(comment)
 
 
 async def review_submiited_rule(

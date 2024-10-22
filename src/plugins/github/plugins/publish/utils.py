@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, Any
 from nonebot import logger
 from nonebot.adapters.github import Bot, GitHubBot
 
-from src.plugins.github.plugins.publish.render import render_comment
 from src.plugins.github.models import GithubHandler, IssueHandler, AuthorInfo
 from src.providers.validation import (
     PublishType,
@@ -23,7 +22,7 @@ from src.plugins.github import plugin_config
 from src.plugins.github.constants import (
     ISSUE_FIELD_PATTERN,
     ISSUE_FIELD_TEMPLATE,
-    TITLE_MAX_LENGTH,
+    SKIP_COMMENT,
 )
 from src.plugins.github.typing import LabelsItems
 
@@ -42,7 +41,6 @@ from .constants import (
     PLUGIN_TEST_BUTTON_PATTERN,
     PLUGIN_TEST_STRING,
     PROJECT_LINK_PATTERN,
-    SKIP_PLUGIN_TEST_COMMENT,
 )
 
 if TYPE_CHECKING:
@@ -252,7 +250,7 @@ async def should_skip_plugin_test(
     ).parsed_data
     for comment in comments:
         author_association = comment.author_association
-        if comment.body == SKIP_PLUGIN_TEST_COMMENT and author_association in [
+        if comment.body == SKIP_COMMENT and author_association in [
             "OWNER",
             "MEMBER",
         ]:
@@ -336,30 +334,6 @@ async def process_pull_request(
     else:
         # 如果之前已经创建了拉取请求，则将其转换为草稿
         await handler.draft_pull_request(branch_name)
-
-
-async def process_pull_request_and_update_issue(
-    handler: IssueHandler,
-    result: ValidationDict,
-):
-    """创建拉取请求，并且更新 Issue 标题与发布评论信息"""
-    # 分支命名示例 publish/issue123
-    branch_name = f"{BRANCH_NAME_PREFIX}{handler.issue_number}"
-
-    # 设置拉取请求与议题的标题
-    # 限制标题长度，过长的标题不好看
-    title = f"{result.type}: {result.name[:TITLE_MAX_LENGTH]}"
-
-    # 渲染评论信息
-    comment = await render_comment(result, True)
-
-    # 验证之后创建拉取请求和修改议题的标题
-    await process_pull_request(handler, result, branch_name, title)
-
-    # 修改议题标题
-    await handler.update_issue_title(title)
-    # 对议题评论
-    await handler.comment_issue(comment)
 
 
 async def trigger_registry_update(
