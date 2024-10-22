@@ -38,7 +38,3 @@ _✨ NoneBot 工作流管理机器人 ✨_
 
 - [自动处理商店发布议题和测试插件](examples/noneflow.yml)
 - [定时测试商店内插件](examples/store-test.yml)
-
-## 测试
-
-在 [action-test](https://github.com/BigOrangeQWQ/action-test) 仓库中测试。
