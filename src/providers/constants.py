@@ -1,7 +1,7 @@
-# NoneBot 插件商店测试结果
-# https://github.com/nonebot/registry/tree/results
 import os
 
+# NoneBot 插件商店测试结果
+# https://github.com/nonebot/registry/tree/results
 REGISTRY_BASE_URL = (
     os.environ.get("REGISTRY_BASE_URL")
     or "https://raw.githubusercontent.com/nonebot/registry/results"
@@ -22,5 +22,7 @@ STORE_DRIVERS_URL = f"{STORE_BASE_URL}/drivers.json"
 STORE_PLUGINS_URL = f"{STORE_BASE_URL}/plugins.json"
 """plugin_test.py 中也有一个常量，需要同时修改"""
 
+# 商店测试镜像
+# https://github.com/orgs/nonebot/packages/container/package/nonetest
 DOCKER_IMAGES_VERSION = os.environ.get("DOCKER_IMAGES_VERSION") or "latest"
 DOCKER_IMAGES = f"ghcr.io/nonebot/nonetest:{{}}-{DOCKER_IMAGES_VERSION}"
