@@ -2,7 +2,7 @@ import pytest
 from pytest_mock import MockerFixture
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_installation(mocker: MockerFixture):
     mock_installation = mocker.MagicMock()
     mock_installation.id = 123

@@ -8,12 +8,12 @@
 
 经测试可以直接在 Python 3.10+ 环境下运行，无需额外依赖。
 """
-# ruff: noqa: T201, ASYNC101
+# ruff: noqa: T201
 
 import asyncio
 import json
-import re
 import os
+import re
 from asyncio import create_subprocess_shell, subprocess
 from pathlib import Path
 from urllib.request import urlopen
@@ -276,7 +276,7 @@ class PluginTest:
 
         return self._run, self._lines_output
 
-    async def command(self, cmd: str, timeout: int = 300) -> tuple[bool, str, str]:
+    async def command(self, cmd: str, timeout: int = 300) -> tuple[bool, str, str]:  # noqa: ASYNC109
         """执行命令
 
         Args:

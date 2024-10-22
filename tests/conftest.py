@@ -42,7 +42,7 @@ def load_plugin(nonebug_init: None) -> set["Plugin"]:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 async def app(app: App, tmp_path: Path, mocker: MockerFixture):
     from src.plugins.github import plugin_config
 
@@ -117,7 +117,7 @@ def _clear_cache(app: App):
     check_url.cache_clear()
 
 
-@pytest.fixture()
+@pytest.fixture
 def mocked_api(respx_mock: MockRouter):
     respx_mock.get("exception", name="exception").mock(side_effect=httpx.ConnectError)
     respx_mock.get(
