@@ -23,7 +23,7 @@ def load_json(name: str) -> dict:
         return json.load(f)
 
 
-@pytest.fixture()
+@pytest.fixture
 def mocked_store_data(
     tmp_path: Path,
     mocker: MockerFixture,

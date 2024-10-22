@@ -447,7 +447,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[unreleased]: https://github.com/nonebot/noneflow/compare/v3.3.3...HEAD
+[Unreleased]: https://github.com/nonebot/noneflow/compare/v3.3.3...HEAD
 [3.3.3]: https://github.com/nonebot/noneflow/compare/v3.3.2...v3.3.3
 [3.3.2]: https://github.com/nonebot/noneflow/compare/v3.3.1...v3.3.2
 [3.3.1]: https://github.com/nonebot/noneflow/compare/v3.3.0...v3.3.1

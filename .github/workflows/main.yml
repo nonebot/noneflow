@@ -16,16 +16,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: he0119/setup-python@main
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v3
         with:
-          python-version: "3.12"
-
-      - name: Install prerequisites
-        run: poetry install
+          enable-cache: true
 
       - name: Run tests
-        run: poetry run pytest --cov=src --cov-report xml
+        run: uv run poe test
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -36,7 +39,6 @@ jobs:
     name: Docker
     runs-on: ubuntu-latest
     needs: test
-    if: ${{ github.event_name != 'pull_request' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -45,6 +47,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Login to Github Container Registry
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -64,24 +67,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./Dockerfile
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
-
-  github-relase:
-    name: GitHub release
-    runs-on: ubuntu-latest
-    needs: test
-    if: ${{ github.event_name == 'release' && github.event.action == 'published' }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set Tag Name
-        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-
-      - name: Upload Files
-        run: gh release upload --clobber ${{ env.TAG_NAME }} src/utils/plugin_test.py
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

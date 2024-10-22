@@ -1,12 +1,10 @@
-# ruff: noqa: ASYNC101
 import json
 from pathlib import Path
 from typing import Any
 
-
+import pytest
 from inline_snapshot import snapshot
 from nonebug import App
-import pytest
 from pytest_mock import MockerFixture
 from respx import MockRouter
 
@@ -18,7 +16,7 @@ def check_json_data(file: Path, data: Any) -> None:
         assert json.load(f) == data
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_pull(mocker: MockerFixture):
     mock_pull = mocker.MagicMock()
     mock_pull.head.ref = "publish/issue1"
@@ -31,8 +29,8 @@ async def test_resolve_conflict_pull_requests_adapter(
     app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path, mock_pull
 ) -> None:
     from src.plugins.github import plugin_config
+    from src.plugins.github.models import GithubHandler, RepoInfo
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
-    from src.plugins.github.models import RepoInfo, GithubHandler
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_result = mocker.MagicMock()
@@ -162,8 +160,8 @@ async def test_resolve_conflict_pull_requests_bot(
     app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path, mock_pull
 ) -> None:
     from src.plugins.github import plugin_config
+    from src.plugins.github.models import GithubHandler, RepoInfo
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
-    from src.plugins.github.models import RepoInfo, GithubHandler
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_result = mocker.MagicMock()
@@ -288,8 +286,8 @@ async def test_resolve_conflict_pull_requests_plugin(
     app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path, mock_pull
 ) -> None:
     from src.plugins.github import plugin_config
+    from src.plugins.github.models import GithubHandler, RepoInfo
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
-    from src.plugins.github.models import RepoInfo, GithubHandler
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_result = mocker.MagicMock()
@@ -413,8 +411,8 @@ async def test_resolve_conflict_pull_requests_draft(
     app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path
 ) -> None:
     from src.plugins.github import plugin_config
+    from src.plugins.github.models import GithubHandler, RepoInfo
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
-    from src.plugins.github.models import RepoInfo, GithubHandler
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_result = mocker.MagicMock()
@@ -476,8 +474,8 @@ async def test_resolve_conflict_pull_requests_ref(
     app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path
 ) -> None:
     from src.plugins.github import plugin_config
+    from src.plugins.github.models import GithubHandler, RepoInfo
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
-    from src.plugins.github.models import RepoInfo, GithubHandler
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_result = mocker.MagicMock()
