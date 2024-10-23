@@ -58,7 +58,7 @@ jobs:
         uses: docker/metadata-action@v5
         id: metadata
         with:
-          images: ghcr.io/nonebot/noneflow
+          images: ghcr.io/bigorangeqwq/noneflow
           tags: |
             type=semver,pattern={{version}}
             type=ref,event=branch
