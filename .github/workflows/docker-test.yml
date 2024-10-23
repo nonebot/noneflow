@@ -38,9 +38,11 @@ jobs:
         id: metadata
         with:
           images: ghcr.io/bigorangeqwq/nonetest
+          flavor: |
+            prefix=${{ matrix.python-version }}-,onlatest=true
           tags: |
-            type=semver,pattern={{version}},prefix=${{ matrix.python-version }}-
-            type=ref,event=branch,prefix=${{ matrix.python-version }}-
+            type=semver,pattern={{version}}
+            type=ref,event=branch
 
       - name: Build and Publish
         uses: docker/build-push-action@v6
