@@ -39,8 +39,8 @@ jobs:
         with:
           images: ghcr.io/bigorangeqwq/nonetest
           tags: |
-            type=semver,pattern=${{ matrix.python-version }}-{{version}}
-            type=raw,value=${{ matrix.python-version }}-{{branch}}
+            type=semver,pattern={{version}},prefix=${{ matrix.python-version }}-
+            type=ref,event=branch,prefix=${{ matrix.python-version }}-
 
       - name: Build and Publish
         uses: docker/build-push-action@v6
