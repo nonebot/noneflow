@@ -37,7 +37,7 @@ jobs:
         uses: docker/metadata-action@v5
         id: metadata
         with:
-          images: ghcr.io/bigorangeqwq/nonetest
+          images: ghcr.io/nonebot/nonetest
           flavor: |
             prefix=${{ matrix.python-version }}-,onlatest=true
           tags: |
