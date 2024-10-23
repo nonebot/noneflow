@@ -39,7 +39,7 @@ jobs:
         with:
           images: ghcr.io/bigorangeqwq/nonetest
           tags: |
-            type=semver,pattern={{version}}
+            type=semver,pattern=${{ matrix.python-version }}-{{version}}
             type=raw,value=${{ matrix.python-version }}-{{branch}}
 
       - name: Build and Publish
