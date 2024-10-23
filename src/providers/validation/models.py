@@ -41,7 +41,6 @@ class PublishType(Enum):
     BOT = "Bot"
     PLUGIN = "Plugin"
     ADAPTER = "Adapter"
-    UNKNOWN = "Unknown"
 
     def __str__(self) -> str:
         return self.value

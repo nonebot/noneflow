@@ -231,13 +231,13 @@ class StoreTest:
             return
 
         new_plugin: Plugin | None = None
-
+        new_result: TestResult | None = None
         try:
             new_result, new_plugin = await self.test_plugin(key, config, plugin_data)
         except Exception as err:
             click.echo(err)
 
-        if new_plugin:
+        if new_plugin and new_result:
             results, plugins = self.merge_data({key: new_result}, {key: new_plugin})
         else:
             results, plugins = self.merge_data({}, {})
