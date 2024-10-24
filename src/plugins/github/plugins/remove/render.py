@@ -5,7 +5,6 @@ from pydantic_core import PydanticCustomError
 
 from src.providers.validation import ValidationDict
 
-
 env = jinja2.Environment(
     loader=jinja2.FileSystemLoader(Path(__file__).parent / "templates"),
     enable_async=True,
@@ -22,9 +21,7 @@ async def render_comment(result: ValidationDict) -> str:
 
     template = env.get_template("comment.md.jinja")
     return await template.render_async(
-        title=title,
-        valid=result.valid,
-        error=result.errors,
+        title=title, valid=result.valid, error=result.errors
     )
 
 
@@ -32,8 +29,4 @@ async def render_error(exception: PydanticCustomError):
     """将错误转换成评论内容"""
     title = "Error"
     template = env.get_template("comment.md.jinja")
-    return await template.render_async(
-        title=title,
-        valid=False,
-        error=exception,
-    )
+    return await template.render_async(title=title, valid=False, error=exception)

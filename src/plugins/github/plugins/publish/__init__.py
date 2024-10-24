@@ -1,4 +1,5 @@
 from typing import Literal
+
 from nonebot import logger, on_type
 from nonebot.adapters.github import (
     GitHubBot,
@@ -9,37 +10,32 @@ from nonebot.adapters.github import (
     PullRequestClosed,
     PullRequestReviewSubmitted,
 )
-from nonebot.params import Depends, Arg
+from nonebot.params import Arg, Depends
 from nonebot.typing import T_State
 
+from src.plugins.github import plugin_config
 from src.plugins.github.constants import BRANCH_NAME_PREFIX, TITLE_MAX_LENGTH
-from src.plugins.github.plugins.publish.render import render_comment
-from src.providers.validation.models import PublishType, ValidationDict
-
 from src.plugins.github.depends import (
     bypass_git,
     get_github_handler,
     get_installation_id,
     get_issue_number,
-    get_repo_info,
     get_related_issue_number,
+    get_repo_info,
     install_pre_commit_hooks,
     is_bot_triggered_workflow,
 )
 from src.plugins.github.models import GithubHandler, IssueHandler, RepoInfo
-from src.plugins.github import plugin_config
+from src.plugins.github.plugins.publish.render import render_comment
+from src.providers.validation.models import PublishType, ValidationDict
 
-
-from .depends import (
-    get_type_by_labels,
-)
-
+from .depends import get_type_by_labels
 from .utils import (
     ensure_issue_content,
     ensure_issue_test_button,
+    is_plugin_test_button_check,
     process_pull_request,
     resolve_conflict_pull_requests,
-    is_plugin_test_button_check,
     should_skip_plugin_test,
     trigger_registry_update,
 )
@@ -134,8 +130,7 @@ async def check_rule(
 
 
 publish_check_matcher = on_type(
-    (IssuesOpened, IssuesReopened, IssuesEdited, IssueCommentCreated),
-    rule=check_rule,
+    (IssuesOpened, IssuesReopened, IssuesEdited, IssueCommentCreated), rule=check_rule
 )
 
 

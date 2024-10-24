@@ -33,11 +33,7 @@ def generate_adapter_data(
             "previous_data": previous_data,
             "author_id": author_id,
         }
-    ), exclude_none(
-        {
-            "previous_data": previous_data,
-        }
-    )
+    ), exclude_none({"previous_data": previous_data})
 
 
 def generate_bot_data(
@@ -101,9 +97,4 @@ def generate_plugin_data(
             "previous_data": previous_data,
             "author_id": author_id,
         }
-    ), exclude_none(
-        {
-            "skip_plugin_test": skip_test,
-            "previous_data": previous_data,
-        }
-    )
+    ), exclude_none({"skip_plugin_test": skip_test, "previous_data": previous_data})

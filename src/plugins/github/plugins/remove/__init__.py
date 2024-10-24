@@ -1,18 +1,18 @@
 from nonebot import logger, on_type
-from nonebot.params import Depends
 from nonebot.adapters.github import GitHubBot
 from nonebot.adapters.github.event import (
+    IssueCommentCreated,
     IssuesEdited,
     IssuesOpened,
     IssuesReopened,
-    IssueCommentCreated,
     PullRequestClosed,
 )
+from nonebot.params import Depends
 from pydantic_core import PydanticCustomError
 
 from src.plugins.github.constants import TITLE_MAX_LENGTH
-from src.plugins.github.models import IssueHandler
 from src.plugins.github.depends import (
+    RepoInfo,
     bypass_git,
     get_installation_id,
     get_issue_number,
@@ -21,16 +21,12 @@ from src.plugins.github.depends import (
     install_pre_commit_hooks,
     is_bot_triggered_workflow,
 )
-from src.plugins.github.depends import RepoInfo
+from src.plugins.github.models import IssueHandler
 
-
-from .render import render_comment, render_error
 from .constants import BRANCH_NAME_PREFIX, REMOVE_LABEL
 from .depends import check_labels, get_name_by_labels
-from .utils import (
-    resolve_conflict_pull_requests,
-    process_pull_reqeusts,
-)
+from .render import render_comment, render_error
+from .utils import process_pull_reqeusts, resolve_conflict_pull_requests
 from .validation import validate_author_info
 
 
@@ -110,8 +106,7 @@ async def check_rule(
 
 
 remove_check_matcher = on_type(
-    (IssuesOpened, IssuesReopened, IssuesEdited, IssueCommentCreated),
-    rule=check_rule,
+    (IssuesOpened, IssuesReopened, IssuesEdited, IssueCommentCreated), rule=check_rule
 )
 
 

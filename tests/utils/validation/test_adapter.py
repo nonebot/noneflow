@@ -36,7 +36,6 @@ async def test_adapter_info_validation_success(mocked_api: MockRouter) -> None:
 async def test_adapter_info_validation_failed(mocked_api: MockRouter) -> None:
     """测试验证失败的情况"""
     from src.providers.validation import PublishType, validate_info
-
     from src.providers.validation.models import ValidationDict
 
     data, context = generate_adapter_data(

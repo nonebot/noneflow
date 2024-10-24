@@ -5,7 +5,7 @@ from tests.github.utils import get_github_bot
 
 
 async def test_comment_issue(app: App, mocker: MockerFixture):
-    from src.plugins.github.models import RepoInfo, GithubHandler
+    from src.plugins.github.models import GithubHandler, RepoInfo
 
     render_comment = "test"
 
@@ -29,12 +29,7 @@ async def test_comment_issue(app: App, mocker: MockerFixture):
 
         ctx.should_call_api(
             "rest.issues.async_create_comment",
-            {
-                "owner": "owner",
-                "repo": "repo",
-                "issue_number": 1,
-                "body": "test",
-            },
+            {"owner": "owner", "repo": "repo", "issue_number": 1, "body": "test"},
             True,
         )
 
@@ -45,7 +40,7 @@ async def test_comment_issue(app: App, mocker: MockerFixture):
 
 async def test_comment_issue_reuse(app: App, mocker: MockerFixture):
     from src.plugins.github.constants import NONEFLOW_MARKER
-    from src.plugins.github.models import RepoInfo, GithubHandler
+    from src.plugins.github.models import GithubHandler, RepoInfo
 
     render_comment = "test"
 
@@ -70,12 +65,7 @@ async def test_comment_issue_reuse(app: App, mocker: MockerFixture):
 
         ctx.should_call_api(
             "rest.issues.async_update_comment",
-            {
-                "owner": "owner",
-                "repo": "repo",
-                "comment_id": 123,
-                "body": "test",
-            },
+            {"owner": "owner", "repo": "repo", "comment_id": 123, "body": "test"},
             True,
         )
 
@@ -86,7 +76,7 @@ async def test_comment_issue_reuse(app: App, mocker: MockerFixture):
 
 async def test_comment_issue_reuse_same(app: App, mocker: MockerFixture):
     """测试评论内容相同时不会更新评论"""
-    from src.plugins.github.models import RepoInfo, GithubHandler
+    from src.plugins.github.models import GithubHandler, RepoInfo
 
     render_comment = "test\n<!-- NONEFLOW -->\n"
 

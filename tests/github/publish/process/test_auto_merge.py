@@ -81,8 +81,8 @@ async def test_auto_merge_need_rebase(
 
     需要 rebase 的情况
     """
-    from src.plugins.github.plugins.publish import auto_merge_matcher
     from src.plugins.github.models import GithubHandler, RepoInfo
+    from src.plugins.github.plugins.publish import auto_merge_matcher
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_resolve_conflict_pull_requests = mocker.patch(
@@ -138,15 +138,12 @@ async def test_auto_merge_need_rebase(
                 ["git", "config", "--global", "safe.directory", "*"],
                 check=True,
                 capture_output=True,
-            ),  # type: ignore
+            )  # type: ignore
         ],
         any_order=True,
     )
     mock_resolve_conflict_pull_requests.assert_called_once_with(
-        GithubHandler(
-            bot=bot,
-            repo_info=RepoInfo(owner="he0119", repo="action-test"),
-        ),
+        GithubHandler(bot=bot, repo_info=RepoInfo(owner="he0119", repo="action-test")),
         [mock_pull],
     )
 

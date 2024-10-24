@@ -1,11 +1,11 @@
 import json
 from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from inline_snapshot import snapshot
 from pytest_mock import MockerFixture
 from respx import MockRouter
-from zoneinfo import ZoneInfo
 
 
 def mock_docker_result(path: Path, mocker: MockerFixture):
@@ -28,12 +28,8 @@ async def test_validate_plugin(
     tmp_path: Path, mocked_api: MockRouter, mocker: MockerFixture
 ) -> None:
     """验证插件信息"""
+    from src.providers.store_test.models import Metadata, Plugin, TestResult
     from src.providers.store_test.validation import StorePlugin, validate_plugin
-    from src.providers.store_test.models import (
-        TestResult,
-        Metadata,
-        Plugin,
-    )
 
     mock_datetime = mocker.patch("src.providers.store_test.models.datetime")
     mock_datetime.now.return_value = datetime(
@@ -192,19 +188,14 @@ async def test_validate_plugin(
 
 
 async def test_validate_plugin_with_data(
-    mocked_api: MockRouter,
-    mocker: MockerFixture,
+    mocked_api: MockRouter, mocker: MockerFixture
 ) -> None:
     """验证插件信息，提供数据的情况
 
     应该不会调用 API，直接使用传递进来的数据，并且 metadata 会缺少 usage（因为拉取请求关闭时无法获取，所以并没有传递过来）。
     """
+    from src.providers.store_test.models import Metadata, Plugin, TestResult
     from src.providers.store_test.validation import StorePlugin, validate_plugin
-    from src.providers.store_test.models import (
-        TestResult,
-        Metadata,
-        Plugin,
-    )
 
     mock_datetime = mocker.patch("src.providers.store_test.models.datetime")
     mock_datetime.now.return_value = datetime(
@@ -290,12 +281,8 @@ async def test_validate_plugin_skip_test(
 
     如果插件之前是跳过测试的，如果插件测试成功，应将 skip_test 设置为 False。
     """
+    from src.providers.store_test.models import Metadata, Plugin, TestResult
     from src.providers.store_test.validation import StorePlugin, validate_plugin
-    from src.providers.store_test.models import (
-        TestResult,
-        Metadata,
-        Plugin,
-    )
 
     mock_datetime = mocker.patch("src.providers.store_test.models.datetime")
     mock_datetime.now.return_value = datetime(
@@ -464,11 +451,8 @@ async def test_validate_plugin_skip_test_plugin_test_failed(
 
     如果插件之前是跳过测试的，如果插件测试失败，应不改变 skip_test 的值。
     """
+    from src.providers.store_test.models import Plugin, TestResult
     from src.providers.store_test.validation import StorePlugin, validate_plugin
-    from src.providers.store_test.models import (
-        TestResult,
-        Plugin,
-    )
 
     mock_datetime = mocker.patch("src.providers.store_test.models.datetime")
     mock_datetime.now.return_value = datetime(
@@ -637,11 +621,8 @@ async def test_validate_plugin_failed(
     tmp_path: Path, mocked_api: MockRouter, mocker: MockerFixture
 ) -> None:
     """插件验证失败的情况"""
+    from src.providers.store_test.models import Metadata, TestResult
     from src.providers.store_test.validation import StorePlugin, validate_plugin
-    from src.providers.store_test.models import (
-        TestResult,
-        Metadata,
-    )
 
     mock_datetime = mocker.patch("src.providers.store_test.models.datetime")
     mock_datetime.now.return_value = datetime(
@@ -820,12 +801,8 @@ async def test_validate_plugin_failed_with_previous(
     tmp_path: Path, mocked_api: MockRouter, mocker: MockerFixture
 ) -> None:
     """插件验证失败，但提供了之前插件信息的情况"""
+    from src.providers.store_test.models import Metadata, Plugin, TestResult
     from src.providers.store_test.validation import StorePlugin, validate_plugin
-    from src.providers.store_test.models import (
-        TestResult,
-        Metadata,
-        Plugin,
-    )
 
     mock_datetime = mocker.patch("src.providers.store_test.models.datetime")
     mock_datetime.now.return_value = datetime(

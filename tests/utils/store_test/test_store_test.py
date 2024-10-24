@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
 
-from inline_snapshot import snapshot
 import pytest
+from inline_snapshot import snapshot
 from pytest_mock import MockerFixture
 from respx import MockRouter
 
@@ -25,9 +25,7 @@ def load_json(name: str) -> dict:
 
 @pytest.fixture
 def mocked_store_data(
-    tmp_path: Path,
-    mocker: MockerFixture,
-    mocked_api: MockRouter,
+    tmp_path: Path, mocker: MockerFixture, mocked_api: MockRouter
 ) -> dict[str, Path]:
     plugin_test_path = tmp_path / "plugin_test"
     plugin_test_path.mkdir()
@@ -41,26 +39,13 @@ def mocked_store_data(
         "plugin_configs": plugin_test_path / "plugin_configs.json",
     }
 
-    mocker.patch(
-        "src.providers.store_test.store.RESULTS_PATH",
-        paths["results"],
-    )
-    mocker.patch(
-        "src.providers.store_test.store.ADAPTERS_PATH",
-        paths["adapters"],
-    )
+    mocker.patch("src.providers.store_test.store.RESULTS_PATH", paths["results"])
+    mocker.patch("src.providers.store_test.store.ADAPTERS_PATH", paths["adapters"])
     mocker.patch("src.providers.store_test.store.BOTS_PATH", paths["bots"])
+    mocker.patch("src.providers.store_test.store.DRIVERS_PATH", paths["drivers"])
+    mocker.patch("src.providers.store_test.store.PLUGINS_PATH", paths["plugins"])
     mocker.patch(
-        "src.providers.store_test.store.DRIVERS_PATH",
-        paths["drivers"],
-    )
-    mocker.patch(
-        "src.providers.store_test.store.PLUGINS_PATH",
-        paths["plugins"],
-    )
-    mocker.patch(
-        "src.providers.store_test.store.PLUGIN_CONFIG_PATH",
-        paths["plugin_configs"],
+        "src.providers.store_test.store.PLUGIN_CONFIG_PATH", paths["plugin_configs"]
     )
 
     mocked_api.get(REGISTRY_RESULTS_URL).respond(json=load_json("registry_results"))
@@ -85,9 +70,9 @@ async def test_store_test(
     """
     from src.providers.store_test.store import (
         Plugin,
+        StorePlugin,
         StoreTest,
         TestResult,
-        StorePlugin,
     )
 
     mocked_validate_plugin = mocker.patch(
@@ -98,11 +83,7 @@ async def test_store_test(
             time="2023-08-28T00:00:00.000000+08:00",
             version="1.0.0",
             config="",
-            results={
-                "load": True,
-                "metadata": True,
-                "validation": True,
-            },
+            results={"load": True, "metadata": True, "validation": True},
             outputs={
                 "load": "output",
                 "metadata": {
@@ -195,7 +176,7 @@ async def test_store_test_with_key(
     mocked_store_data: dict[str, Path], mocked_api: MockRouter, mocker: MockerFixture
 ) -> None:
     """测试指定插件，因为版本更新正常测试"""
-    from src.providers.store_test.store import StoreTest, StorePlugin, Plugin
+    from src.providers.store_test.store import Plugin, StorePlugin, StoreTest
 
     mocked_validate_plugin = mocker.patch(
         "src.providers.store_test.store.validate_plugin"
@@ -262,7 +243,7 @@ async def test_store_test_with_key_not_in_previous(
     mocked_store_data: dict[str, Path], mocked_api: MockRouter, mocker: MockerFixture
 ) -> None:
     """测试指定插件，因为从未测试过，正常测试"""
-    from src.providers.store_test.store import StoreTest, StorePlugin
+    from src.providers.store_test.store import StorePlugin, StoreTest
 
     mocked_validate_plugin = mocker.patch(
         "src.providers.store_test.store.validate_plugin"
@@ -305,7 +286,7 @@ async def test_store_test_raise(
 
     最后数据没有变化
     """
-    from src.providers.store_test.store import StoreTest, StorePlugin, Plugin
+    from src.providers.store_test.store import Plugin, StorePlugin, StoreTest
 
     mocked_validate_plugin = mocker.patch(
         "src.providers.store_test.store.validate_plugin"
@@ -359,7 +340,7 @@ async def test_store_test_raise(
                 plugin_data=None,
                 previous_plugin=None,
             ),  # type: ignore
-        ],
+        ]
     )
 
     # 数据没有更新，只是被压缩
@@ -384,7 +365,7 @@ async def test_store_test_with_key_raise(
     mocked_store_data: dict[str, Path], mocked_api: MockRouter, mocker: MockerFixture
 ):
     """测试指定插件，但是测试过程中报错"""
-    from src.providers.store_test.store import StoreTest, StorePlugin
+    from src.providers.store_test.store import StorePlugin, StoreTest
 
     mocked_validate_plugin = mocker.patch(
         "src.providers.store_test.store.validate_plugin"

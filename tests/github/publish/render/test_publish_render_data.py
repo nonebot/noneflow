@@ -212,7 +212,7 @@ async def test_render_data_plugin_supported_adapters(app: App, mocker: MockFixtu
             "supported_adapters": [
                 "nonebot.adapters.onebot.v11",
                 "nonebot.adapters.none",
-            ],
+            ]
         },
         errors=[],
         type=PublishType.PLUGIN,

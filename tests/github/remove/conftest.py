@@ -1,7 +1,8 @@
 from pathlib import Path
+
 import pytest
-from pytest_mock import MockerFixture
 from nonebug.app import App
+from pytest_mock import MockerFixture
 
 
 @pytest.fixture(autouse=True)

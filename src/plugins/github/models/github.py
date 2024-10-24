@@ -1,15 +1,14 @@
 from typing import Literal
+
+from githubkit.rest import PullRequestSimple
+from githubkit.typing import Missing
+from githubkit.utils import UNSET
 from nonebot import logger
+from nonebot.adapters.github import Bot
 from pydantic import ConfigDict
 
-
-from nonebot.adapters.github import Bot
-from githubkit.utils import UNSET
-from githubkit.typing import Missing
-from githubkit.rest import PullRequestSimple
-
 from src.plugins.github.constants import NONEFLOW_MARKER
-from src.plugins.github.models import RepoInfo, GitHandler
+from src.plugins.github.models import GitHandler, RepoInfo
 
 
 class GithubHandler(GitHandler):
@@ -23,17 +22,13 @@ class GithubHandler(GitHandler):
     async def update_issue_title(self, issue_number: int, title: str):
         """修改议题标题"""
         await self.bot.rest.issues.async_update(
-            **self.repo_info.model_dump(),
-            issue_number=issue_number,
-            title=title,
+            **self.repo_info.model_dump(), issue_number=issue_number, title=title
         )
 
     async def update_issue_content(self, issue_number: int, body: str):
         """更新议题内容"""
         await self.bot.rest.issues.async_update(
-            **self.repo_info.model_dump(),
-            issue_number=issue_number,
-            body=body,
+            **self.repo_info.model_dump(), issue_number=issue_number, body=body
         )
 
     async def create_dispatch_event(
@@ -59,17 +54,13 @@ class GithubHandler(GitHandler):
     async def create_comment(self, comment: str, issue_number: int):
         """发布评论"""
         await self.bot.rest.issues.async_create_comment(
-            **self.repo_info.model_dump(),
-            issue_number=issue_number,
-            body=comment,
+            **self.repo_info.model_dump(), issue_number=issue_number, body=comment
         )
 
     async def update_comment(self, comment_id: int, comment: str):
         """修改评论"""
         await self.bot.rest.issues.async_update_comment(
-            **self.repo_info.model_dump(),
-            comment_id=comment_id,
-            body=comment,
+            **self.repo_info.model_dump(), comment_id=comment_id, body=comment
         )
 
     async def comment_issue(self, comment: str, issue_number: int):
@@ -80,10 +71,7 @@ class GithubHandler(GitHandler):
         # 如果发现之前评论过，直接修改之前的评论
         comments = await self.list_comments(issue_number=issue_number)
         reusable_comment = next(
-            filter(
-                lambda x: NONEFLOW_MARKER in (x.body if x.body else ""),
-                comments,
-            ),
+            filter(lambda x: NONEFLOW_MARKER in (x.body if x.body else ""), comments),
             None,
         )
 

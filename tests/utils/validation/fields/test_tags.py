@@ -1,6 +1,5 @@
 import json
 
-
 from inline_snapshot import snapshot
 from respx import MockRouter
 

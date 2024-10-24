@@ -101,11 +101,7 @@ async def test_remove_process_pull_request(
                 check=True,
                 capture_output=True,
             ),
-            mocker.call(
-                ["git", "fetch", "origin"],
-                check=True,
-                capture_output=True,
-            ),
+            mocker.call(["git", "fetch", "origin"], check=True, capture_output=True),
         ],  # type: ignore
         any_order=True,
     )

@@ -3,13 +3,11 @@ from typing import LiteralString
 
 # PyPI 格式
 PYPI_PACKAGE_NAME_PATTERN = re.compile(
-    r"^([A-Z0-9]|[A-Z0-9][A-Z0-9._-]*[A-Z0-9])$",
-    re.IGNORECASE,
+    r"^([A-Z0-9]|[A-Z0-9][A-Z0-9._-]*[A-Z0-9])$", re.IGNORECASE
 )
 # import 包名格式
 PYTHON_MODULE_NAME_REGEX = re.compile(
-    r"^([A-Z]|[A-Z][A-Z0-9._-]*[A-Z0-9])$",
-    re.IGNORECASE,
+    r"^([A-Z]|[A-Z][A-Z0-9._-]*[A-Z0-9])$", re.IGNORECASE
 )
 
 NAME_MAX_LENGTH = 50

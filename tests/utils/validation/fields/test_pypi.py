@@ -114,9 +114,7 @@ async def test_name_duplication_previos_data_missing(mocked_api: MockRouter) -> 
     from src.providers.validation import PublishType, validate_info
 
     data, context = generate_adapter_data(
-        module_name="module_name1",
-        project_link="project_link1",
-        previous_data=None,
+        module_name="module_name1", project_link="project_link1", previous_data=None
     )
 
     result = validate_info(PublishType.ADAPTER, data, context)

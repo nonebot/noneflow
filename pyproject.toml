@@ -7,13 +7,13 @@ readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">= 3.12"
 dependencies = [
-    "docker>=7.1.0",
-    "githubkit>=0.11.14",
-    "jinja2>=3.1.4",
-    "nonebot-adapter-github>=0.4.1",
-    "nonebot2>=2.3.3",
-    "pre-commit>=4.0.1",
-    "pydantic-extra-types>=2.9.0",
+  "docker>=7.1.0",
+  "githubkit>=0.11.14",
+  "jinja2>=3.1.4",
+  "nonebot-adapter-github>=0.4.1",
+  "nonebot2>=2.3.3",
+  "pre-commit>=4.0.1",
+  "pydantic-extra-types>=2.9.0",
 ]
 
 [project.urls]
@@ -23,22 +23,19 @@ Issues = "https://github.com/nonebot/noneflow/issues"
 Changelog = "https://github.com/nonebot/noneflow/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
-plugin = [
-    "click>=8.1.7",
-    "tzdata>=2024.2",
-]
+plugin = ["click>=8.1.7", "tzdata>=2024.2"]
 
 [tool.uv]
 dev-dependencies = [
-    "bump-my-version>=0.28.0",
-    "inline-snapshot>=0.13.3",
-    "nonebug>=0.4.1",
-    "poethepoet>=0.29.0",
-    "pytest-asyncio>=0.24.0",
-    "pytest-cov>=5.0.0",
-    "pytest-mock>=3.14.0",
-    "pytest-xdist>=3.6.1",
-    "respx>=0.21.1",
+  "bump-my-version>=0.28.0",
+  "inline-snapshot>=0.13.3",
+  "nonebug>=0.4.1",
+  "poethepoet>=0.29.0",
+  "pytest-asyncio>=0.24.0",
+  "pytest-cov>=5.0.0",
+  "pytest-mock>=3.14.0",
+  "pytest-xdist>=3.6.1",
+  "respx>=0.21.1",
 ]
 
 [tool.uv.pip]
@@ -72,6 +69,7 @@ select = [
   "PT",    # flake8-pytest-style
   "Q",     # flake8-quotes
   "RUF",   # Ruff-specific rules
+  "I",     # isort
 ]
 ignore = [
   "E402",     # module-import-not-at-top-of-file

@@ -1,5 +1,5 @@
-from pydantic import BaseModel
 from githubkit.rest import Issue
+from pydantic import BaseModel
 
 
 class RepoInfo(BaseModel):
@@ -26,6 +26,5 @@ class AuthorInfo(BaseModel):
 from .git import GitHandler as GitHandler
 from .github import GithubHandler as GithubHandler
 from .issue import IssueHandler as IssueHandler
-
 
 __all__ = ["GitHandler", "GithubHandler", "IssueHandler", "RepoInfo", "AuthorInfo"]

@@ -328,11 +328,7 @@ async def test_render_error_plugin_metadata(app: App, mocker: MockFixture):
 
     result = ValidationDict(
         valid=False,
-        data={
-            "author": "he0119",
-            "tags": [],
-            "is_official": False,
-        },
+        data={"author": "he0119", "tags": [], "is_official": False},
         errors=[
             {
                 "loc": ("metadata",),
@@ -340,7 +336,7 @@ async def test_render_error_plugin_metadata(app: App, mocker: MockFixture):
                 "type": "metadata",
                 "ctx": {"load": True},
                 "input": None,
-            },
+            }
         ],
         type=PublishType.PLUGIN,
         name="帮助",
@@ -383,11 +379,7 @@ async def test_render_error_tags_invalid(app: App, mocker: MockFixture):
 
     result = ValidationDict(
         valid=False,
-        data={
-            "author": "he0119",
-            "tags": [],
-            "is_official": False,
-        },
+        data={"author": "he0119", "tags": [], "is_official": False},
         errors=[
             {
                 "loc": ("tags", 2),
@@ -449,11 +441,7 @@ async def test_render_type_error(app: App, mocker: MockFixture):
 
     result = ValidationDict(
         valid=False,
-        data={
-            "author": "he0119",
-            "tags": [],
-            "is_official": False,
-        },
+        data={"author": "he0119", "tags": [], "is_official": False},
         errors=[
             {
                 "loc": ("type",),
@@ -516,18 +504,14 @@ async def test_render_unknown_error(app: App, mocker: MockFixture):
 
     result = ValidationDict(
         valid=False,
-        data={
-            "author": "he0119",
-            "tags": [],
-            "is_official": False,
-        },
+        data={"author": "he0119", "tags": [], "is_official": False},
         errors=[
             {
                 "loc": ("tests", 2, "test"),
                 "msg": "unknown error",
                 "type": "type_error.unknown",
                 "input": 1,
-            },
+            }
         ],
         type=PublishType.PLUGIN,
         name="帮助",
@@ -570,11 +554,7 @@ async def test_render_http_error(app: App, mocker: MockFixture):
 
     result = ValidationDict(
         valid=False,
-        data={
-            "author": "he0119",
-            "tags": [],
-            "is_official": False,
-        },
+        data={"author": "he0119", "tags": [], "is_official": False},
         errors=[
             {
                 "loc": ("homepage",),

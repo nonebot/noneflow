@@ -1,5 +1,4 @@
 from inline_snapshot import snapshot
-
 from nonebug import App
 from pytest_mock import MockerFixture
 from respx import MockRouter
@@ -57,10 +56,7 @@ async def test_trigger_registry_update(app: App, mocker: MockerFixture):
         )
 
         await trigger_registry_update(
-            bot,
-            RepoInfo(owner="owner", repo="repo"),
-            PublishType.PLUGIN,
-            mock_issue,
+            bot, RepoInfo(owner="owner", repo="repo"), PublishType.PLUGIN, mock_issue
         )
 
     mock_sleep.assert_awaited_once_with(300)
@@ -117,10 +113,7 @@ async def test_trigger_registry_update_skip_test(
         )
 
         await trigger_registry_update(
-            bot,
-            RepoInfo(owner="owner", repo="repo"),
-            PublishType.PLUGIN,
-            mock_issue,
+            bot, RepoInfo(owner="owner", repo="repo"), PublishType.PLUGIN, mock_issue
         )
 
     mock_sleep.assert_awaited_once_with(300)
@@ -155,10 +148,7 @@ async def test_trigger_registry_update_bot(app: App, mocker: MockerFixture):
         )
 
         await trigger_registry_update(
-            bot,
-            RepoInfo(owner="owner", repo="repo"),
-            PublishType.BOT,
-            mock_issue,
+            bot, RepoInfo(owner="owner", repo="repo"), PublishType.BOT, mock_issue
         )
 
     mock_sleep.assert_awaited_once_with(300)
@@ -193,10 +183,7 @@ async def test_trigger_registry_update_plugins_issue_body_info_missing(
         )
 
         await trigger_registry_update(
-            bot,
-            RepoInfo(owner="owner", repo="repo"),
-            PublishType.PLUGIN,
-            mock_issue,
+            bot, RepoInfo(owner="owner", repo="repo"), PublishType.PLUGIN, mock_issue
         )
 
 
@@ -229,10 +216,7 @@ async def test_trigger_registry_update_validation_failed(
         )
 
         await trigger_registry_update(
-            bot,
-            RepoInfo(owner="owner", repo="repo"),
-            PublishType.PLUGIN,
-            mock_issue,
+            bot, RepoInfo(owner="owner", repo="repo"), PublishType.PLUGIN, mock_issue
         )
 
     assert mocked_api["homepage_failed"].called
