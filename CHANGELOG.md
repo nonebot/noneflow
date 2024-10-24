@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Added
+
+- 通过名称加主页避免机器人重复
+
 ## [3.3.3] - 2024-07-18
 
 ### Fixed
