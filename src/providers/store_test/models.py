@@ -46,12 +46,89 @@ class TagModel(BaseModel):
         ]
 
 
+# region 仓库数据模型
+class StoreAdapter(TagModel):
+    """NoneBot 仓库中的适配器数据"""
+
+    module_name: str
+    project_link: str
+    name: str
+    desc: str
+    author_id: int
+    tags: list[Tag]
+    is_official: bool
+
+
+class StoreBot(TagModel):
+    """NoneBot 仓库中的机器人数据"""
+
+    name: str
+    desc: str
+    author_id: int
+    homepage: str
+    tags: list[Tag]
+    is_official: bool
+
+
+class StoreDriver(TagModel):
+    """NoneBot 仓库中的驱动数据"""
+
+    module_name: str
+    project_link: str
+    name: str
+    desc: str
+    author_id: int
+    homepage: str
+    tags: list[Tag]
+    is_official: bool
+
+
 class StorePlugin(TagModel):
     """NoneBot 仓库中的插件数据"""
 
     module_name: str
     project_link: str
     author_id: int
+    tags: list[Tag]
+    is_official: bool
+
+
+# endregion
+
+
+# region 商店数据模型
+class Adapter(TagModel):
+    """NoneBot 商店适配器数据"""
+
+    module_name: str
+    project_link: str
+    name: str
+    desc: str
+    author: str
+    tags: list[Tag]
+    is_official: bool
+
+
+class Bot(TagModel):
+    """NoneBot 商店机器人数据"""
+
+    name: str
+    desc: str
+    author: str
+    homepage: str
+    tags: list[Tag]
+    is_official: bool
+
+
+class Driver(TagModel):
+    """NoneBot 商店驱动数据"""
+
+    module_name: str
+    project_link: str
+    name: str
+    desc: str
+    author: str
+    homepage: str
     tags: list[Tag]
     is_official: bool
 
@@ -92,7 +169,6 @@ class Plugin(TagModel):
     name: str
     desc: str
     author: str
-    author_id: int
     homepage: str
     tags: list[Tag]
     is_official: bool
@@ -113,15 +189,20 @@ class Plugin(TagModel):
         )
 
 
+# endregion
+
+
 class TestResult(BaseModel):
     time: str = Field(
         default_factory=lambda: datetime.now(ZoneInfo("Asia/Shanghai")).isoformat()
     )
     config: str = ""
     version: str | None
-    # 键为测试环境 python==3.10 pytest==6.2.5 nonebot2==2.0.0a1 ...
-    # 值为在该环境下是否通过插件测试
     test_env: dict[str, bool] | None = None
+    """
+    键为测试环境 python==3.10 pytest==6.2.5 nonebot2==2.0.0a1 ...
+    值为在该环境下是否通过插件测试
+    """
     results: dict[Literal["validation", "load", "metadata"], bool]
     outputs: dict[Literal["validation", "load", "metadata"], Any]
 
