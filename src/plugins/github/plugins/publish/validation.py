@@ -171,4 +171,9 @@ async def validate_bot_info_from_issue(issue: Issue) -> ValidationDict:
 
     raw_data.update(AuthorInfo.from_issue(issue).model_dump())
 
-    return validate_info(PublishType.BOT, raw_data)
+    with plugin_config.input_config.bot_path.open("r", encoding="utf-8") as f:
+        previous_data: list[dict[str, str]] = json.load(f)
+
+    validation_context = {"previous_data": previous_data}
+
+    return validate_info(PublishType.BOT, raw_data, validation_context)
