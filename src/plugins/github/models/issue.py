@@ -1,13 +1,11 @@
 from typing import Any, Literal
+
 from githubkit.rest import Issue
 from nonebot import logger
-from pydantic import (
-    ConfigDict,
-    model_validator,
-)
+from pydantic import ConfigDict, model_validator
 
-from src.plugins.github.models import AuthorInfo, GithubHandler
 from src.plugins.github.constants import SKIP_COMMENT
+from src.plugins.github.models import AuthorInfo, GithubHandler
 
 
 class IssueHandler(GithubHandler):
@@ -30,10 +28,7 @@ class IssueHandler(GithubHandler):
             data.update(AuthorInfo.from_issue(issue).model_dump())
         return data
 
-    async def update_issue_title(
-        self,
-        title: str,
-    ):
+    async def update_issue_title(self, title: str):
         """修改议题标题"""
         if self.issue and self.issue.title != title:
             await super().update_issue_title(self.issue_number, title)
@@ -62,11 +57,7 @@ class IssueHandler(GithubHandler):
             )
 
     async def create_pull_request(
-        self,
-        base_branch: str,
-        title: str,
-        branch_name: str,
-        label: str | list[str],
+        self, base_branch: str, title: str, branch_name: str, label: str | list[str]
     ):
         return await super().create_pull_request(
             base_branch, title, branch_name, label, self.issue_number

@@ -1,11 +1,11 @@
-from nonebot import logger
 from githubkit.rest import Issue
+from nonebot import logger
 from pydantic_core import PydanticCustomError
 
 from src.plugins.github.utils import extract_publish_info_from_issue
 from src.providers.validation.models import ValidationDict
 
-from .constants import REMOVE_HOMEPAGE_PATTERN, PUBLISH_PATH
+from .constants import PUBLISH_PATH, REMOVE_HOMEPAGE_PATTERN
 from .utils import load_json
 
 
@@ -15,10 +15,7 @@ async def validate_author_info(issue: Issue) -> ValidationDict:
     """
 
     homepage = extract_publish_info_from_issue(
-        {
-            "homepage": REMOVE_HOMEPAGE_PATTERN,
-        },
-        issue.body or "",
+        {"homepage": REMOVE_HOMEPAGE_PATTERN}, issue.body or ""
     ).get("homepage")
     author = issue.user.login if issue.user else ""
     author_id = issue.user.id if issue.user else 0

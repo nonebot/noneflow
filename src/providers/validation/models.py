@@ -1,7 +1,7 @@
 import abc
 import json
 from enum import Enum
-from typing import Any, Annotated
+from typing import Annotated, Any
 
 from pydantic import (
     BaseModel,
@@ -13,7 +13,8 @@ from pydantic import (
     field_validator,
     model_validator,
 )
-from pydantic_core import PydanticCustomError, to_jsonable_python
+from pydantic_core import ErrorDetails, PydanticCustomError, to_jsonable_python
+
 from src.providers.store_test.models import Metadata, Tag
 
 from .constants import (
@@ -22,14 +23,7 @@ from .constants import (
     PYPI_PACKAGE_NAME_PATTERN,
     PYTHON_MODULE_NAME_REGEX,
 )
-from .utils import (
-    check_pypi,
-    check_url,
-    get_adapters,
-    resolve_adapter_name,
-)
-
-from pydantic_core import ErrorDetails
+from .utils import check_pypi, check_url, get_adapters, resolve_adapter_name
 
 
 class PublishType(Enum):
@@ -124,8 +118,7 @@ class PublishInfo(abc.ABC, BaseModel):
     author: str
     author_id: int
     homepage: Annotated[
-        str,
-        StringConstraints(strip_whitespace=True, pattern=r"^https?://.*$"),
+        str, StringConstraints(strip_whitespace=True, pattern=r"^https?://.*$")
     ]
     tags: list[Tag] = Field(max_length=3)
     is_official: bool = Field(default=False)
@@ -195,9 +188,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     @field_validator("supported_adapters", mode="before")
     @classmethod
     def supported_adapters_validator(
-        cls,
-        v: str | list[str] | None,
-        info: ValidationInfo,
+        cls, v: str | list[str] | None, info: ValidationInfo
     ) -> list[str] | None:
         context = info.context
         if context is None:  # pragma: no cover
@@ -266,9 +257,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
                 raise PydanticCustomError(
                     "plugin.metadata",
                     "插件无法获取到元数据",
-                    {
-                        "load": context.get("load", False),
-                    },
+                    {"load": context.get("load", False)},
                 )
         return v
 

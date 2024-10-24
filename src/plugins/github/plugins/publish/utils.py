@@ -3,33 +3,22 @@ import json
 import re
 from typing import TYPE_CHECKING, Any
 
+from githubkit.exception import RequestFailed
 from nonebot import logger
 from nonebot.adapters.github import Bot, GitHubBot
 
-from src.plugins.github.models import GithubHandler, IssueHandler, AuthorInfo
-from src.providers.validation import (
-    PublishType,
-    ValidationDict,
-)
-from src.plugins.github.depends import RepoInfo
-from src.plugins.github.utils import (
-    dump_json,
-    load_json,
-    run_shell_command,
-)
-from src.plugins.github.utils import commit_message as _commit_message
 from src.plugins.github import plugin_config
 from src.plugins.github.constants import (
     ISSUE_FIELD_PATTERN,
     ISSUE_FIELD_TEMPLATE,
     SKIP_COMMENT,
 )
+from src.plugins.github.depends import RepoInfo
+from src.plugins.github.models import AuthorInfo, GithubHandler, IssueHandler
 from src.plugins.github.typing import LabelsItems
-
-from githubkit.exception import RequestFailed
-
-from .validation import validate_plugin_info_from_issue
-
+from src.plugins.github.utils import commit_message as _commit_message
+from src.plugins.github.utils import dump_json, load_json, run_shell_command
+from src.providers.validation import PublishType, ValidationDict
 
 from .constants import (
     BRANCH_NAME_PREFIX,
@@ -37,11 +26,12 @@ from .constants import (
     PLUGIN_CONFIG_PATTERN,
     PLUGIN_MODULE_NAME_PATTERN,
     PLUGIN_STRING_LIST,
-    PLUGIN_TEST_BUTTON_STRING,
     PLUGIN_TEST_BUTTON_PATTERN,
+    PLUGIN_TEST_BUTTON_STRING,
     PLUGIN_TEST_STRING,
     PROJECT_LINK_PATTERN,
 )
+from .validation import validate_plugin_info_from_issue
 
 if TYPE_CHECKING:
     from githubkit.rest import (
@@ -116,8 +106,7 @@ def extract_name_from_title(title: str, publish_type: PublishType) -> str | None
 
 
 async def resolve_conflict_pull_requests(
-    handler: GithubHandler,
-    pulls: list["PullRequestSimple"] | list["PullRequest"],
+    handler: GithubHandler, pulls: list["PullRequestSimple"] | list["PullRequest"]
 ):
     """根据关联的议题提交来解决冲突
 
@@ -171,9 +160,7 @@ async def resolve_conflict_pull_requests(
 
 
 async def generate_validation_dict_from_file(
-    publish_type: PublishType,
-    author_info: AuthorInfo,
-    name: str | None = None,
+    publish_type: PublishType, author_info: AuthorInfo, name: str | None = None
 ) -> ValidationDict:
     """从文件中获取发布所需数据"""
     data: list[dict[str, Any]]
@@ -238,9 +225,7 @@ def update_file(result: ValidationDict) -> None:
 
 
 async def should_skip_plugin_test(
-    bot: Bot,
-    repo_info: RepoInfo,
-    issue_number: int,
+    bot: Bot, repo_info: RepoInfo, issue_number: int
 ) -> bool:
     """判断评论是否包含跳过的标记"""
     comments = (
@@ -250,17 +235,12 @@ async def should_skip_plugin_test(
     ).parsed_data
     for comment in comments:
         author_association = comment.author_association
-        if comment.body == SKIP_COMMENT and author_association in [
-            "OWNER",
-            "MEMBER",
-        ]:
+        if comment.body == SKIP_COMMENT and author_association in ["OWNER", "MEMBER"]:
             return True
     return False
 
 
-def is_plugin_test_button_check(
-    issue: "Issue",
-) -> bool:
+def is_plugin_test_button_check(issue: "Issue") -> bool:
     """判断是否跳过插件测试"""
     body = issue.body if issue.body else ""
     search_result = PLUGIN_TEST_BUTTON_PATTERN.search(body)
@@ -281,9 +261,7 @@ async def ensure_issue_content(handler: IssueHandler):
 
     if new_content:
         new_content.append(issue_body)
-        await handler.update_issue_content(
-            "\n\n".join(new_content),
-        )
+        await handler.update_issue_content("\n\n".join(new_content))
         logger.info("检测到议题内容缺失，已更新")
 
 
@@ -306,10 +284,7 @@ async def ensure_issue_test_button(handler: IssueHandler):
 
 
 async def process_pull_request(
-    handler: IssueHandler,
-    result: ValidationDict,
-    branch_name: str,
-    title: str,
+    handler: IssueHandler, result: ValidationDict, branch_name: str, title: str
 ):
     """
     根据发布信息合法性创建拉取请求或将请求改为草稿

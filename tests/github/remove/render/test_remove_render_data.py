@@ -1,5 +1,5 @@
-from nonebug import App
 from inline_snapshot import snapshot
+from nonebug import App
 
 
 async def test_render(app: App):
@@ -36,8 +36,9 @@ async def test_render(app: App):
 
 
 async def test_exception_author_info_no_eq(app: App):
-    from src.plugins.github.plugins.remove.render import render_error
     from pydantic_core import PydanticCustomError
+
+    from src.plugins.github.plugins.remove.render import render_error
 
     exception = PydanticCustomError("author_info", "作者信息不匹配")
 
@@ -62,8 +63,9 @@ async def test_exception_author_info_no_eq(app: App):
 
 
 async def test_exception_package_not_found(app: App):
-    from src.plugins.github.plugins.remove.render import render_error
     from pydantic_core import PydanticCustomError
+
+    from src.plugins.github.plugins.remove.render import render_error
 
     exception = PydanticCustomError("not_found", "没有包含对应主页链接的包")
 

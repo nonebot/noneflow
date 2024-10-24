@@ -2,15 +2,12 @@
 
 import json
 from pathlib import Path
+
 import httpx
 from githubkit import Response
 from githubkit.exception import RequestFailed
 from inline_snapshot import snapshot
-from nonebot.adapters.github import (
-    Adapter,
-    IssueCommentCreated,
-    IssuesOpened,
-)
+from nonebot.adapters.github import Adapter, IssueCommentCreated, IssuesOpened
 from nonebug import App
 from pytest_mock import MockerFixture
 from respx import MockRouter
@@ -34,8 +31,8 @@ async def test_bot_process_publish_check(
     mock_installation,
 ) -> None:
     """测试机器人的发布流程"""
-    from src.plugins.github.plugins.publish import publish_check_matcher
     from src.plugins.github import plugin_config
+    from src.plugins.github.plugins.publish import publish_check_matcher
 
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
@@ -227,8 +224,8 @@ async def test_adapter_process_publish_check(
     mock_installation,
 ) -> None:
     """测试适配器的发布流程"""
-    from src.plugins.github.plugins.publish import publish_check_matcher
     from src.plugins.github import plugin_config
+    from src.plugins.github.plugins.publish import publish_check_matcher
 
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
@@ -441,8 +438,8 @@ async def test_edit_title(
 
     名称被修改后，标题也应该被修改
     """
-    from src.plugins.github.plugins.publish import publish_check_matcher
     from src.plugins.github import plugin_config
+    from src.plugins.github.plugins.publish import publish_check_matcher
 
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
@@ -664,8 +661,8 @@ async def test_edit_title_too_long(
 
     标题过长的情况
     """
-    from src.plugins.github.plugins.publish import publish_check_matcher
     from src.plugins.github import plugin_config
+    from src.plugins.github.plugins.publish import publish_check_matcher
 
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
@@ -801,8 +798,8 @@ async def test_process_publish_check_not_pass(
     mock_installation,
 ) -> None:
     """测试发布检查不通过"""
-    from src.plugins.github.plugins.publish import publish_check_matcher
     from src.plugins.github import plugin_config
+    from src.plugins.github.plugins.publish import publish_check_matcher
 
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
@@ -1054,8 +1051,8 @@ async def test_skip_plugin_check(
     mock_installation,
 ) -> None:
     """测试手动跳过插件测试的流程"""
-    from src.plugins.github.plugins.publish import publish_check_matcher
     from src.plugins.github import plugin_config
+    from src.plugins.github.plugins.publish import publish_check_matcher
 
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
@@ -1257,8 +1254,8 @@ async def test_button_skip_publish_check(
     mock_installation,
 ) -> None:
     """重测按钮被选中，跳过发布流程"""
-    from src.plugins.github.plugins.publish import publish_check_matcher
     from src.plugins.github import plugin_config
+    from src.plugins.github.plugins.publish import publish_check_matcher
 
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
@@ -1339,8 +1336,8 @@ async def test_convert_pull_request_to_draft(
     mock_installation,
 ) -> None:
     """未通过时将拉取请求转换为草稿"""
-    from src.plugins.github.plugins.publish import publish_check_matcher
     from src.plugins.github import plugin_config
+    from src.plugins.github.plugins.publish import publish_check_matcher
 
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
@@ -1481,8 +1478,8 @@ async def test_process_publish_check_ready_for_review(
     mock_installation,
 ) -> None:
     """当之前失败后再次通过测试时，应该将拉取请求标记为 ready for review"""
-    from src.plugins.github.plugins.publish import publish_check_matcher
     from src.plugins.github import plugin_config
+    from src.plugins.github.plugins.publish import publish_check_matcher
 
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()

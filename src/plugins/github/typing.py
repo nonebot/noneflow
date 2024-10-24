@@ -1,13 +1,5 @@
 # ruff: noqa: UP040
 from typing import TypeAlias
-from nonebot.adapters.github import (
-    IssueCommentCreated,
-    IssuesEdited,
-    IssuesOpened,
-    IssuesReopened,
-    PullRequestClosed,
-    PullRequestReviewSubmitted,
-)
 
 from githubkit.rest import (
     PullRequestPropLabelsItems,
@@ -18,6 +10,14 @@ from githubkit.rest import (
     WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems,
 )
 from githubkit.typing import Missing
+from nonebot.adapters.github import (
+    IssueCommentCreated,
+    IssuesEdited,
+    IssuesOpened,
+    IssuesReopened,
+    PullRequestClosed,
+    PullRequestReviewSubmitted,
+)
 
 IssuesEvent: TypeAlias = (
     IssuesOpened | IssuesReopened | IssuesEdited | IssueCommentCreated

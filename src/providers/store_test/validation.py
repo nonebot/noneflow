@@ -5,11 +5,11 @@ from typing import Any
 
 import click
 
-from src.providers.validation.utils import get_author_name
-from src.providers.validation import PublishType, validate_info
-from src.providers.docker_test import DockerPluginTest
 from src.providers.constants import DOCKER_IMAGES
+from src.providers.docker_test import DockerPluginTest
+from src.providers.validation import PublishType, validate_info
 from src.providers.validation.models import ValidationDict
+from src.providers.validation.utils import get_author_name
 
 from .models import Metadata, Plugin, StorePlugin, TestResult
 from .utils import get_latest_version, get_upload_time
@@ -101,10 +101,7 @@ async def validate_plugin(
             "plugin_test_output": "",
             "metadata": metadata,
         }
-        context = {
-            "previous_data": [],
-            "skip_plugin_test": should_skip,
-        }
+        context = {"previous_data": [], "skip_plugin_test": should_skip}
 
         if metadata:
             raw_data.update(metadata.model_dump())
@@ -147,10 +144,7 @@ async def validate_plugin(
         validation_output = (
             None
             if validation_data.valid
-            else {
-                "data": validation_data.data,
-                "errors": validation_data.errors,
-            }
+            else {"data": validation_data.data, "errors": validation_data.errors}
         )
 
     result = TestResult(

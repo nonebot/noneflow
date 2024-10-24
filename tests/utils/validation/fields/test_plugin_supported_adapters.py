@@ -74,8 +74,7 @@ async def test_plugin_supported_adapters_missing_adapters(
     from src.providers.validation import PublishType, validate_info
 
     data, context = generate_plugin_data(
-        supported_adapters={"nonebot.adapters.qq"},
-        skip_test=True,
+        supported_adapters={"nonebot.adapters.qq"}, skip_test=True
     )
 
     result = validate_info(PublishType.PLUGIN, data, context)

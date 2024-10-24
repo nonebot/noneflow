@@ -35,8 +35,7 @@ class StoreTest:
         self._store_drivers = load_json(STORE_DRIVERS_URL)
         self._store_plugins: dict[str, StorePlugin] = {
             PLUGIN_KEY_TEMPLATE.format(
-                project_link=plugin["project_link"],
-                module_name=plugin["module_name"],
+                project_link=plugin["project_link"], module_name=plugin["module_name"]
             ): StorePlugin(**plugin)
             for plugin in load_json(STORE_PLUGINS_URL)
         }
@@ -49,8 +48,7 @@ class StoreTest:
         }
         self._previous_plugins: dict[str, Plugin] = {
             PLUGIN_KEY_TEMPLATE.format(
-                project_link=plugin["project_link"],
-                module_name=plugin["module_name"],
+                project_link=plugin["project_link"], module_name=plugin["module_name"]
             ): Plugin(**plugin)
             for plugin in load_json(REGISTRY_PLUGINS_URL)
         }

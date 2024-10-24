@@ -59,7 +59,7 @@ async def app(app: App, tmp_path: Path, mocker: MockerFixture):
                     "homepage": "https://v2.nonebot.dev",
                     "tags": [],
                     "is_official": False,
-                },
+                }
             ],
             f,
         )
@@ -74,7 +74,7 @@ async def app(app: App, tmp_path: Path, mocker: MockerFixture):
                     "homepage": "https://v2.nonebot.dev",
                     "tags": [],
                     "is_official": False,
-                },
+                }
             ],
             f,
         )
@@ -92,7 +92,7 @@ async def app(app: App, tmp_path: Path, mocker: MockerFixture):
                     "homepage": "https://v2.nonebot.dev",
                     "tags": [],
                     "is_official": False,
-                },
+                }
             ],
             f,
         )
@@ -124,14 +124,8 @@ def mocked_api(respx_mock: MockRouter):
         "https://pypi.org/pypi/project_link/json", name="project_link"
     ).respond(
         json={
-            "info": {
-                "version": "0.0.1",
-            },
-            "urls": [
-                {
-                    "upload_time_iso_8601": "2023-09-01T00:00:00+00:00Z",
-                }
-            ],
+            "info": {"version": "0.0.1"},
+            "urls": [{"upload_time_iso_8601": "2023-09-01T00:00:00+00:00Z"}],
         }
     )
     respx_mock.get(
@@ -139,36 +133,18 @@ def mocked_api(respx_mock: MockRouter):
         name="project_link_treehelp",
     ).respond(
         json={
-            "info": {
-                "version": "0.3.1",
-            },
-            "urls": [
-                {
-                    "upload_time_iso_8601": "2021-08-01T00:00:00+00:00",
-                }
-            ],
+            "info": {"version": "0.3.1"},
+            "urls": [{"upload_time_iso_8601": "2021-08-01T00:00:00+00:00"}],
         }
     )
     respx_mock.get(
         "https://pypi.org/pypi/nonebot-plugin-datastore/json",
         name="project_link_datastore",
-    ).respond(
-        json={
-            "info": {
-                "version": "1.0.0",
-            }
-        }
-    )
+    ).respond(json={"info": {"version": "1.0.0"}})
     respx_mock.get(
         "https://pypi.org/pypi/nonebot-plugin-wordcloud/json",
         name="project_link_wordcloud",
-    ).respond(
-        json={
-            "info": {
-                "version": "0.5.0",
-            }
-        }
-    )
+    ).respond(json={"info": {"version": "0.5.0"}})
     respx_mock.get(
         "https://pypi.org/pypi/project_link1/json", name="project_link1"
     ).respond()
@@ -177,10 +153,7 @@ def mocked_api(respx_mock: MockRouter):
     ).respond(404)
     respx_mock.get("https://www.baidu.com", name="homepage_failed").respond(404)
     respx_mock.get("https://nonebot.dev/", name="homepage").respond()
-    respx_mock.get(
-        STORE_ADAPTERS_URL,
-        name="store_adapters",
-    ).respond(
+    respx_mock.get(STORE_ADAPTERS_URL, name="store_adapters").respond(
         json=[
             {
                 "module_name": "nonebot.adapters.onebot.v11",
@@ -202,10 +175,9 @@ def mocked_api(respx_mock: MockRouter):
                 "tags": [],
                 "is_official": True,
             },
-        ],
+        ]
     )
     respx_mock.get(
-        "https://api.github.com/user/1",
-        name="project_link_wordcloud",
+        "https://api.github.com/user/1", name="project_link_wordcloud"
     ).respond(json={"login": "he0119"})
     return respx_mock

@@ -1,5 +1,5 @@
-from dataclasses import dataclass, field
 import json
+from dataclasses import dataclass, field
 from typing import Any, Literal
 
 from pytest_mock import MockFixture

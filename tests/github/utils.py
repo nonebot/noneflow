@@ -1,11 +1,10 @@
-from dataclasses import dataclass, field
 import json
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal
 
-from pytest_mock import MockFixture
-
 from githubkit.rest import Issue
+from pytest_mock import MockFixture
 
 
 def generate_issue_body_adapter(
@@ -57,9 +56,7 @@ def generate_issue_body_plugin_test_button(body: str, selected: bool):
     return f"""{body}\n\n### 插件测试\n\n- [{'x' if selected else ' '}] 单击左侧按钮重新测试，完成时勾选框将被选中"""
 
 
-def generate_issue_body_remove(
-    homepage: str = "https://nonebot.dev",
-):
+def generate_issue_body_remove(homepage: str = "https://nonebot.dev"):
     return f"""### 项目主页\n\n{homepage}"""
 
 

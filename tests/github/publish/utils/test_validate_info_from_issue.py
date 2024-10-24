@@ -46,10 +46,10 @@ async def test_validate_info_from_issue_bot(
 async def test_validate_info_from_issue_plugin(
     app: App, mocker: MockerFixture, mocked_api: MockRouter
 ):
+    from src.plugins.github import plugin_config
     from src.plugins.github.plugins.publish.validation import (
         validate_plugin_info_from_issue,
     )
-    from src.plugins.github import plugin_config
 
     mocker.patch.object(plugin_config, "skip_plugin_test", True)
 

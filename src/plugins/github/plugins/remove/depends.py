@@ -4,9 +4,7 @@ from src.plugins.github.depends import get_labels
 from src.plugins.github.typing import LabelsItems
 
 
-def get_name_by_labels(
-    labels: LabelsItems = Depends(get_labels),
-) -> list[str]:
+def get_name_by_labels(labels: LabelsItems = Depends(get_labels)) -> list[str]:
     """通过标签获取名称"""
     label_names: list[str] = []
     if not labels:

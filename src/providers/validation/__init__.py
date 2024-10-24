@@ -1,15 +1,11 @@
 """验证数据是否符合规范"""
 
 from typing import Any
+
 from pydantic import ValidationError
 from pydantic_core import ErrorDetails
 
-from .models import (
-    AdapterPublishInfo,
-    BotPublishInfo,
-    PluginPublishInfo,
-    PublishInfo,
-)
+from .models import AdapterPublishInfo, BotPublishInfo, PluginPublishInfo, PublishInfo
 from .models import PublishType as PublishType
 from .models import ValidationDict as ValidationDict
 from .utils import translate_errors
@@ -34,9 +30,7 @@ def validate_info(
         context (dict[str, Any] | None, optional): 验证上下文. 默认为拥有 `valid_data` 字段的字典
     """
 
-    validation_context = {
-        "valid_data": {},
-    }
+    validation_context = {"valid_data": {}}
     if context:
         validation_context.update(context)
 

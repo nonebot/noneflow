@@ -2,31 +2,21 @@ from typing import TYPE_CHECKING, Any
 
 from nonebot import logger
 
-from src.plugins.github.models import AuthorInfo
+from src.plugins.github import plugin_config
 from src.plugins.github.depends.utils import extract_issue_number_from_ref
+from src.plugins.github.models import AuthorInfo, GithubHandler, IssueHandler
 from src.plugins.github.utils import (
     commit_message,
-    run_shell_command,
-    load_json,
     dump_json,
+    load_json,
+    run_shell_command,
 )
-from src.plugins.github import plugin_config
-
-from src.plugins.github.models import GithubHandler, IssueHandler
 from src.providers.validation.models import ValidationDict
 
-
-from .constants import (
-    COMMIT_MESSAGE_PREFIX,
-    PUBLISH_PATH,
-    REMOVE_LABEL,
-)
+from .constants import COMMIT_MESSAGE_PREFIX, PUBLISH_PATH, REMOVE_LABEL
 
 if TYPE_CHECKING:
-    from githubkit.rest import (
-        PullRequest,
-        PullRequestSimple,
-    )
+    from githubkit.rest import PullRequest, PullRequestSimple
 
 
 def update_file(remove_data: dict[str, Any]):
@@ -48,10 +38,7 @@ def update_file(remove_data: dict[str, Any]):
 
 
 async def process_pull_reqeusts(
-    handler: IssueHandler,
-    result: ValidationDict,
-    branch_name: str,
-    title: str,
+    handler: IssueHandler, result: ValidationDict, branch_name: str, title: str
 ):
     """
     根据发布信息合法性创建拉取请求
@@ -65,16 +52,12 @@ async def process_pull_reqeusts(
     handler.commit_and_push(message, branch_name)
     # 创建拉取请求
     await handler.create_pull_request(
-        plugin_config.input_config.base,
-        title,
-        branch_name,
-        [REMOVE_LABEL],
+        plugin_config.input_config.base, title, branch_name, [REMOVE_LABEL]
     )
 
 
 async def resolve_conflict_pull_requests(
-    handler: GithubHandler,
-    pulls: list["PullRequestSimple"] | list["PullRequest"],
+    handler: GithubHandler, pulls: list["PullRequestSimple"] | list["PullRequest"]
 ):
     """根据关联的议题提交来解决冲突
 

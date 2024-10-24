@@ -190,8 +190,7 @@ async def test_process_pull_request_skip_plugin_test(
     mock_sleep.return_value = None
 
     mock_issue = MockIssue(
-        body=generate_issue_body_plugin_skip_test(),
-        user=MockUser(login="user", id=1),
+        body=generate_issue_body_plugin_skip_test(), user=MockUser(login="user", id=1)
     ).as_mock(mocker)
 
     mock_issues_resp = mocker.MagicMock()

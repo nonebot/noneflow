@@ -1,15 +1,11 @@
 import json
 from pathlib import Path
+
 from inline_snapshot import snapshot
+from nonebot.adapters.github import Adapter, IssuesOpened
 from nonebug import App
 from pytest_mock import MockerFixture
 from respx import MockRouter
-
-from nonebot.adapters.github import (
-    Adapter,
-    IssuesOpened,
-)
-
 
 from tests.github.utils import (
     MockIssue,
@@ -33,8 +29,8 @@ async def test_process_remove_check(
     mock_installation,
 ):
     """测试正常的删除流程"""
-    from src.plugins.github.plugins.remove import remove_check_matcher
     from src.plugins.github import plugin_config
+    from src.plugins.github.plugins.remove import remove_check_matcher
 
     bot_data = [
         {
@@ -45,7 +41,7 @@ async def test_process_remove_check(
             "homepage": "https://vv.nonebot.dev",
             "tags": [],
             "is_official": False,
-        },
+        }
     ]
 
     mock_subprocess_run = mocker.patch(
@@ -199,21 +195,13 @@ async def test_process_remove_check(
                 check=True,
                 capture_output=True,
             ),
-            mocker.call(
-                ["git", "add", "-A"],
-                check=True,
-                capture_output=True,
-            ),
+            mocker.call(["git", "add", "-A"], check=True, capture_output=True),
             mocker.call(
                 ["git", "commit", "-m", snapshot(":hammer: remove TESTBOT (#80)")],
                 check=True,
                 capture_output=True,
             ),
-            mocker.call(
-                ["git", "fetch", "origin"],
-                check=True,
-                capture_output=True,
-            ),
+            mocker.call(["git", "fetch", "origin"], check=True, capture_output=True),
             mocker.call(
                 ["git", "diff", "origin/remove/issue80", "remove/issue80"],
                 check=True,
@@ -236,8 +224,8 @@ async def test_process_remove_not_found_check(
     mock_installation,
 ):
     """要删除的包不在数据文件中的情况"""
-    from src.plugins.github.plugins.remove import remove_check_matcher
     from src.plugins.github import plugin_config
+    from src.plugins.github.plugins.remove import remove_check_matcher
 
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
@@ -345,8 +333,8 @@ async def test_process_remove_author_eq_check(
     mock_installation,
 ):
     """删除包时作者信息不相等的问题"""
-    from src.plugins.github.plugins.remove import remove_check_matcher
     from src.plugins.github import plugin_config
+    from src.plugins.github.plugins.remove import remove_check_matcher
 
     bot_data = [
         {
@@ -357,7 +345,7 @@ async def test_process_remove_author_eq_check(
             "homepage": "https://vv.nonebot.dev",
             "tags": [],
             "is_official": False,
-        },
+        }
     ]
 
     mock_subprocess_run = mocker.patch(

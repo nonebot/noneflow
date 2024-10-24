@@ -4,20 +4,14 @@ from typing import Any
 
 from githubkit.rest import Issue
 from nonebot import logger
+
+from src.plugins.github import plugin_config
 from src.plugins.github.models import AuthorInfo
-from src.providers.validation import (
-    PublishType,
-    ValidationDict,
-    validate_info,
-)
-from src.plugins.github.utils import (
-    extract_publish_info_from_issue,
-)
+from src.plugins.github.utils import extract_publish_info_from_issue
 from src.providers.constants import DOCKER_IMAGES
 from src.providers.docker_test import DockerPluginTest
 from src.providers.store_test.models import DockerTestResult, Metadata
-
-from src.plugins.github import plugin_config
+from src.providers.validation import PublishType, ValidationDict, validate_info
 
 from .constants import (
     ADAPTER_DESC_PATTERN,
@@ -157,9 +151,7 @@ async def validate_adapter_info_from_issue(issue: Issue) -> ValidationDict:
     with plugin_config.input_config.adapter_path.open("r", encoding="utf-8") as f:
         previous_data: list[dict[str, str]] = json.load(f)
 
-    validation_context = {
-        "previous_data": previous_data,
-    }
+    validation_context = {"previous_data": previous_data}
 
     return validate_info(PublishType.ADAPTER, raw_data, validation_context)
 

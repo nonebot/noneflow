@@ -1,4 +1,5 @@
 import json
+
 import docker
 from src.providers.constants import DOCKER_IMAGES
 from src.providers.store_test.models import DockerTestResult
@@ -6,11 +7,7 @@ from src.providers.store_test.models import DockerTestResult
 
 class DockerPluginTest:
     def __init__(
-        self,
-        docker_images: str,
-        project_link: str,
-        module_name: str,
-        config: str = "",
+        self, docker_images: str, project_link: str, module_name: str, config: str = ""
     ):
         self.docker_images = docker_images
         self.project_link = project_link
