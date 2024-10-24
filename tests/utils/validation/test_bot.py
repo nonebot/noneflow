@@ -105,7 +105,7 @@ async def test_bot_name_duplication(mocked_api: MockRouter) -> None:
     assert not result.valid
     assert result.type == PublishType.BOT
     assert result.name == "name"
-    assert result.data == snapshot({})
+    assert result.data == {}
     assert result.errors == snapshot(
         [
             {
@@ -121,6 +121,39 @@ async def test_bot_name_duplication(mocked_api: MockRouter) -> None:
                     "author_id": 1,
                 },
                 "ctx": {"name": "name", "homepage": "https://nonebot.dev"},
+            }
+        ]
+    )
+
+    assert not mocked_api["homepage"].called
+
+
+async def test_bot_previos_data_missing(mocked_api: MockRouter) -> None:
+    """测试机器人名称重复的情况"""
+    from src.providers.validation import PublishType, validate_info
+
+    data, _ = generate_bot_data()
+
+    result = validate_info(PublishType.BOT, data)
+
+    assert not result.valid
+    assert result.type == PublishType.BOT
+    assert result.name == "name"
+    assert result.data == {}
+    assert result.errors == snapshot(
+        [
+            {
+                "type": "previous_data",
+                "loc": (),
+                "msg": "未获取到数据列表",
+                "input": {
+                    "name": "name",
+                    "desc": "desc",
+                    "author": "author",
+                    "homepage": "https://nonebot.dev",
+                    "tags": '[{"label": "test", "color": "#ffffff"}]',
+                    "author_id": 1,
+                },
             }
         ]
     )
