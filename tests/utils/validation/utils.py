@@ -42,6 +42,7 @@ def generate_bot_data(
     author: str | None = "author",
     homepage: str | None = "https://nonebot.dev",
     tags: list | str | None = [{"label": "test", "color": "#ffffff"}],
+    previous_data: list[Any] | None = [],
     author_id: int | None = 1,
 ):
     if isinstance(tags, list):
@@ -55,7 +56,7 @@ def generate_bot_data(
             "tags": tags,
             "author_id": author_id,
         }
-    )
+    ), exclude_none({"previous_data": previous_data})
 
 
 def generate_plugin_data(

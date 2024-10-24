@@ -269,3 +269,30 @@ class AdapterPublishInfo(PublishInfo, PyPIMixin):
 
 class BotPublishInfo(PublishInfo):
     """发布机器人所需信息"""
+
+    @model_validator(mode="before")
+    @classmethod
+    def prevent_duplication(
+        cls, values: dict[str, Any], info: ValidationInfo
+    ) -> dict[str, Any]:
+        name = values.get("name")
+        homepage = values.get("homepage")
+
+        context = info.context
+        if context is None:  # pragma: no cover
+            raise PydanticCustomError("validation_context", "未获取到验证上下文")
+        data = context.get("previous_data")
+        if data is None:
+            raise PydanticCustomError("previous_data", "未获取到数据列表")
+
+        if (
+            name
+            and homepage
+            and any(x["name"] == name and x["homepage"] == homepage for x in data)
+        ):
+            raise PydanticCustomError(
+                "duplication",
+                "名称 {name} 加主页 {homepage} 的值与商店重复",
+                {"name": name, "homepage": homepage},
+            )
+        return values
