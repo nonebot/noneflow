@@ -8,9 +8,9 @@ async def test_homepage_failed_http_exception(mocked_api: MockRouter) -> None:
     """测试验证失败的情况，HTTP 请求报错"""
     from src.providers.validation import PublishType, validate_info
 
-    data = generate_bot_data(homepage="exception")
+    data, context = generate_bot_data(homepage="exception")
 
-    result = validate_info(PublishType.BOT, data)
+    result = validate_info(PublishType.BOT, data, context)
 
     assert not result.valid
     assert "homepage" not in result.data
@@ -33,9 +33,9 @@ async def test_homepage_failed_empty_homepage(mocked_api: MockRouter) -> None:
     """主页为空字符串的情况"""
     from src.providers.validation import PublishType, validate_info
 
-    data = generate_bot_data(homepage="")
+    data, context = generate_bot_data(homepage="")
 
-    result = validate_info(PublishType.BOT, data)
+    result = validate_info(PublishType.BOT, data, context)
 
     assert not result.valid
     assert "homepage" not in result.data

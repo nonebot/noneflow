@@ -45,6 +45,8 @@ universal = true
 test = "pytest --cov=src --cov-report xml --junitxml=./junit.xml -n auto"
 bump = "bump-my-version bump"
 show-bump = "bump-my-version show-bump"
+snapshot-create = "pytest --inline-snapshot=create"
+snapshot-fix = "pytest --inline-snapshot=fix"
 
 [tool.pyright]
 pythonVersion = "3.12"
