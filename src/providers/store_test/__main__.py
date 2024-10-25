@@ -16,10 +16,10 @@ def main(limit: int, offset: int, force: bool, key: str | None):
 
     # 通过环境变量传递插件配置
     config = os.environ.get("PLUGIN_CONFIG")
-    data = os.environ.get("PLUGIN_DATA")
+    plugin_data = os.environ.get("PLUGIN_DATA")
 
     if key:
-        asyncio.run(test.run_single_plugin(key, force, data, config))
+        asyncio.run(test.run_single_plugin(key, force, plugin_data, config))
     else:
         asyncio.run(test.run(limit, force))
 

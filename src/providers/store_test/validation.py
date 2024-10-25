@@ -24,7 +24,7 @@ async def validate_plugin(
 ) -> tuple[TestResult, Plugin | None]:
     """验证插件
 
-    如果传入了 data 参数，则直接使用 data 作为插件数据，不进行测试
+    如果传入了 plugin_data 参数，则直接使用 plugin_data 作为插件数据，不进行测试
 
     返回测试结果与验证后的插件数据
 

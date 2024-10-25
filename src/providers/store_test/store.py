@@ -1,6 +1,9 @@
 import click
 
 from src.providers.constants import (
+    REGISTRY_ADAPTERS_URL,
+    REGISTRY_BOTS_URL,
+    REGISTRY_DRIVERS_URL,
     REGISTRY_PLUGIN_CONFIG_URL,
     REGISTRY_PLUGINS_URL,
     REGISTRY_RESULTS_URL,
@@ -12,14 +15,25 @@ from src.providers.constants import (
 
 from .constants import (
     ADAPTERS_PATH,
+    BOT_KEY_TEMPLATE,
     BOTS_PATH,
     DRIVERS_PATH,
     PLUGIN_CONFIG_PATH,
-    PLUGIN_KEY_TEMPLATE,
     PLUGINS_PATH,
+    PYPI_KEY_TEMPLATE,
     RESULTS_PATH,
 )
-from .models import Plugin, StorePlugin, TestResult
+from .models import (
+    Adapter,
+    Bot,
+    Driver,
+    Plugin,
+    StoreAdapter,
+    StoreBot,
+    StoreDriver,
+    StorePlugin,
+    TestResult,
+)
 from .utils import dump_json, get_latest_version, load_json
 from .validation import validate_plugin
 
@@ -30,28 +44,69 @@ class StoreTest:
     """商店测试"""
 
     def __init__(self) -> None:
-        self._store_adapters = load_json(STORE_ADAPTERS_URL)
-        self._store_bots = load_json(STORE_BOTS_URL)
-        self._store_drivers = load_json(STORE_DRIVERS_URL)
+        # 商店数据
+        self._store_adapters: dict[str, StoreAdapter] = {
+            PYPI_KEY_TEMPLATE.format(
+                project_link=adapter["project_link"],
+                module_name=adapter["module_name"],
+            ): StoreAdapter(**adapter)
+            for adapter in load_json(STORE_ADAPTERS_URL)
+        }
+        self._store_bots: dict[str, StoreBot] = {
+            BOT_KEY_TEMPLATE.format(
+                name=bot["name"],
+                homepage=bot["homepage"],
+            ): StoreBot(**bot)
+            for bot in load_json(STORE_BOTS_URL)
+        }
+        self._store_drivers: dict[str, StoreDriver] = {
+            PYPI_KEY_TEMPLATE.format(
+                project_link=driver["project_link"],
+                module_name=driver["module_name"],
+            ): StoreDriver(**driver)
+            for driver in load_json(STORE_DRIVERS_URL)
+        }
         self._store_plugins: dict[str, StorePlugin] = {
-            PLUGIN_KEY_TEMPLATE.format(
-                project_link=plugin["project_link"], module_name=plugin["module_name"]
+            PYPI_KEY_TEMPLATE.format(
+                project_link=plugin["project_link"],
+                module_name=plugin["module_name"],
             ): StorePlugin(**plugin)
             for plugin in load_json(STORE_PLUGINS_URL)
         }
-        # 插件配置文件
-        self._plugin_configs: dict[str, str] = load_json(REGISTRY_PLUGIN_CONFIG_URL)
         # 上次测试的结果
         self._previous_results: dict[str, TestResult] = {
             key: TestResult(**value)
             for key, value in load_json(REGISTRY_RESULTS_URL).items()
         }
+        self._previous_adapters: dict[str, Adapter] = {
+            PYPI_KEY_TEMPLATE.format(
+                project_link=adapter["project_link"],
+                module_name=adapter["module_name"],
+            ): Adapter(**adapter)
+            for adapter in load_json(REGISTRY_ADAPTERS_URL)
+        }
+        self._previous_bots: dict[str, Bot] = {
+            BOT_KEY_TEMPLATE.format(
+                name=bot["name"],
+                homepage=bot["homepage"],
+            ): Bot(**bot)
+            for bot in load_json(url=REGISTRY_BOTS_URL)
+        }
+        self._previous_drivers: dict[str, Driver] = {
+            PYPI_KEY_TEMPLATE.format(
+                project_link=driver["project_link"],
+                module_name=driver["module_name"],
+            ): Driver(**driver)
+            for driver in load_json(REGISTRY_DRIVERS_URL)
+        }
         self._previous_plugins: dict[str, Plugin] = {
-            PLUGIN_KEY_TEMPLATE.format(
+            PYPI_KEY_TEMPLATE.format(
                 project_link=plugin["project_link"], module_name=plugin["module_name"]
             ): Plugin(**plugin)
             for plugin in load_json(REGISTRY_PLUGINS_URL)
         }
+        # 插件配置文件
+        self._plugin_configs: dict[str, str] = load_json(REGISTRY_PLUGIN_CONFIG_URL)
 
     def should_skip(self, key: str, force: bool = False) -> bool:
         """是否跳过测试"""
@@ -219,7 +274,7 @@ class StoreTest:
         config: str | None = None,
     ):
         """
-        运行单次插件测试，来自 trigger_registry_update
+        运行单次插件测试，来自 trigger_registry_update 或手动指定 key 运行
 
         Args:
             key (str): 插件标识符

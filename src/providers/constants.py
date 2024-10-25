@@ -7,6 +7,9 @@ REGISTRY_BASE_URL = (
     or "https://raw.githubusercontent.com/nonebot/registry/results"
 )
 REGISTRY_RESULTS_URL = f"{REGISTRY_BASE_URL}/results.json"
+REGISTRY_ADAPTERS_URL = f"{REGISTRY_BASE_URL}/adapters.json"
+REGISTRY_BOTS_URL = f"{REGISTRY_BASE_URL}/bots.json"
+REGISTRY_DRIVERS_URL = f"{REGISTRY_BASE_URL}/drivers.json"
 REGISTRY_PLUGINS_URL = f"{REGISTRY_BASE_URL}/plugins.json"
 REGISTRY_PLUGIN_CONFIG_URL = f"{REGISTRY_BASE_URL}/plugin_configs.json"
 
