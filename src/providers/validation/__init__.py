@@ -29,35 +29,28 @@ def validate_info(
         raw_data (dict[str, Any]): 原始数据
         context (dict[str, Any] | None, optional): 验证上下文. 默认为拥有 `valid_data` 字段的字典
     """
+    if context is None:
+        context = {}
+    # 用来存放验证通过的数据
+    context["valid_data"] = {}
 
-    validation_context = {"valid_data": {}}
-    if context:
-        validation_context.update(context)
-
+    info: PublishInfo | None = None
     errors: list[ErrorDetails] = []
-    # 如果升级至 pydantic 2 后，可以使用 validation-context
-    # https://docs.pydantic.dev/latest/usage/validators/#validation-context
+
     try:
-        data = (
-            validation_model_map[publish_type]
-            .model_validate(raw_data, context=validation_context)
-            .model_dump()
+        info = validation_model_map[publish_type].model_validate(
+            raw_data, context=context
         )
     except ValidationError as exc:
         errors = exc.errors()
-        data: dict[str, Any] = validation_context["valid_data"]
+
     # 翻译错误
     errors = translate_errors(errors)
 
     return ValidationDict(
-        valid=not errors,
-        data=data,
-        errors=errors,  # 方便插件使用的数据
         type=publish_type,
-        name=data.get("name")
-        or raw_data.get("name")
-        or raw_data.get("project_link")
-        or "",
-        author=data.get("author", ""),
-        author_id=data.get("author_id", 0),
+        raw_data=raw_data,
+        context=context,
+        info=info,
+        errors=errors,
     )

@@ -7,6 +7,7 @@ from nonebot import logger
 
 from src.plugins.github import plugin_config
 from src.plugins.github.models import AuthorInfo
+from src.plugins.github.models.issue import IssueHandler
 from src.plugins.github.utils import extract_publish_info_from_issue
 from src.providers.constants import DOCKER_IMAGES
 from src.providers.docker_test import DockerPluginTest
@@ -41,7 +42,9 @@ def strip_ansi(text: str | None) -> str:
     return ansi_escape.sub("", text)
 
 
-async def validate_plugin_info_from_issue(issue: Issue) -> ValidationDict:
+async def validate_plugin_info_from_issue(
+    issue: Issue, handler: IssueHandler
+) -> ValidationDict:
     """从议题中获取插件信息，并且运行插件测试加载且获取插件元信息后进行验证"""
     body = issue.body if issue.body else ""
 
@@ -66,9 +69,11 @@ async def validate_plugin_info_from_issue(issue: Issue) -> ValidationDict:
     with plugin_config.input_config.plugin_path.open("r", encoding="utf-8") as f:
         previous_data: list[dict[str, str]] = json.load(f)
 
+    skip_plugin_test = await handler.should_skip_plugin_test()
+
     # 如果插件被跳过，则从议题获取插件信息
-    plugin_test_output: str = "插件未进行测试"
-    if plugin_config.skip_plugin_test:
+    if skip_plugin_test:
+        plugin_test_output: str = "插件未进行测试"
         metadata = extract_publish_info_from_issue(
             {
                 "name": PLUGIN_NAME_PATTERN,
@@ -106,20 +111,17 @@ async def validate_plugin_info_from_issue(issue: Issue) -> ValidationDict:
     # 传入的验证插件信息的上下文
     validation_context = {
         "previous_data": previous_data,
-        "skip_plugin_test": plugin_config.skip_plugin_test,
+        "skip_plugin_test": skip_plugin_test,
         "plugin_test_output": plugin_test_output,
     }
 
     # 验证插件相关信息
     validate_data = validate_info(PublishType.PLUGIN, raw_data, validation_context)
 
-    if (
-        validate_data.data.get("metadata") is None
-        and not plugin_config.skip_plugin_test
-    ):
+    if validate_data.valid_data.get("metadata") is None and not skip_plugin_test:
         # 如果没有跳过测试且缺少插件元数据，则跳过元数据相关的错误
         # 因为这个时候这些项都会报错，错误在此时没有意义
-        metadata_keys = ["name", "desc", "homepage", "type", "supported_adapters"]
+        metadata_keys = Metadata.model_fields.keys()
         validate_data.errors = [
             error
             for error in validate_data.errors
@@ -127,7 +129,7 @@ async def validate_plugin_info_from_issue(issue: Issue) -> ValidationDict:
         ]
         # 元数据缺失时，需要删除元数据相关的字段
         for key in metadata_keys:
-            validate_data.data.pop(key, None)
+            validate_data.valid_data.pop(key, None)
 
     return validate_data
 

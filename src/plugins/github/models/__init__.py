@@ -8,6 +8,14 @@ class RepoInfo(BaseModel):
     owner: str
     repo: str
 
+    @classmethod
+    def from_issue(cls, issue: Issue) -> "RepoInfo":
+        assert issue.repository
+        return RepoInfo(
+            owner=issue.repository.owner.login,
+            repo=issue.repository.name,
+        )
+
 
 class AuthorInfo(BaseModel):
     """作者信息"""

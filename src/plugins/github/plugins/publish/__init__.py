@@ -13,7 +13,6 @@ from nonebot.adapters.github import (
 from nonebot.params import Arg, Depends
 from nonebot.typing import T_State
 
-from src.plugins.github import plugin_config
 from src.plugins.github.constants import BRANCH_NAME_PREFIX, TITLE_MAX_LENGTH
 from src.plugins.github.depends import (
     bypass_git,
@@ -36,7 +35,6 @@ from .utils import (
     is_plugin_test_button_check,
     process_pull_request,
     resolve_conflict_pull_requests,
-    should_skip_plugin_test,
     trigger_registry_update,
 )
 from .validation import (
@@ -82,9 +80,7 @@ async def handle_pr_close(
             )
         ).parsed_data
 
-        handler = IssueHandler(
-            bot=bot, repo_info=repo_info, issue_number=related_issue_number, issue=issue
-        )
+        handler = IssueHandler(bot=bot, repo_info=repo_info, issue=issue)
 
         if issue.state == "open":
             reason = "completed" if event.payload.pull_request.merged else "not_planned"
@@ -106,7 +102,7 @@ async def handle_pr_close(
 
         # 如果商店更新则触发 registry 更新
         if event.payload.pull_request.merged:
-            await trigger_registry_update(bot, repo_info, publish_type, issue)
+            await trigger_registry_update(handler, publish_type)
         else:
             logger.info("拉取请求未合并，跳过触发商店列表更新")
 
@@ -154,9 +150,7 @@ async def handle_publish_plugin_check(
             )
         ).parsed_data
 
-        handler = IssueHandler(
-            issue=issue, bot=bot, repo_info=repo_info, issue_number=issue_number
-        )
+        handler = IssueHandler(bot=bot, repo_info=repo_info, issue=issue)
 
         if issue.state != "open":
             logger.info("议题未开启，已跳过")
@@ -166,16 +160,14 @@ async def handle_publish_plugin_check(
             await publish_check_matcher.finish()
 
         # 是否需要跳过插件测试
-        plugin_config.skip_plugin_test = await should_skip_plugin_test(
-            bot, repo_info, issue_number
-        )
+        skip_plugin_test = await handler.should_skip_plugin_test()
         # 如果需要跳过插件测试，则修改议题内容，确保其包含插件所需信息
-        if plugin_config.skip_plugin_test:
+        if skip_plugin_test:
             await ensure_issue_content(handler)
 
         # 检查是否满足发布要求
         # 仅在通过检查的情况下创建拉取请求
-        result = await validate_plugin_info_from_issue(issue)
+        result = await validate_plugin_info_from_issue(issue, handler)
 
         # 确保插件重测按钮存在
         await ensure_issue_test_button(handler)
@@ -204,9 +196,7 @@ async def handle_adapter_publish_check(
             )
         ).parsed_data
 
-        handler = IssueHandler(
-            issue=issue, bot=bot, repo_info=repo_info, issue_number=issue_number
-        )
+        handler = IssueHandler(bot=bot, repo_info=repo_info, issue=issue)
 
         if issue.state != "open":
             logger.info("议题未开启，已跳过")
@@ -241,9 +231,7 @@ async def handle_bot_publish_check(
             )
         ).parsed_data
 
-        handler = IssueHandler(
-            issue=issue, bot=bot, repo_info=repo_info, issue_number=issue_number
-        )
+        handler = IssueHandler(bot=bot, repo_info=repo_info, issue=issue)
 
         if issue.state != "open":
             logger.info("议题未开启，已跳过")

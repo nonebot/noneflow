@@ -129,7 +129,7 @@ async def validate_plugin(
         }
         # 如果验证失败，则使用上次的插件数据
         if validation_data.valid:
-            data = validation_data.data
+            data = validation_data.valid_data
             data.update(new_data)
             new_plugin = Plugin(**data)
         elif previous_plugin:
@@ -144,7 +144,7 @@ async def validate_plugin(
         validation_output = (
             None
             if validation_data.valid
-            else {"data": validation_data.data, "errors": validation_data.errors}
+            else {"data": validation_data.valid_data, "errors": validation_data.errors}
         )
 
     result = TestResult(

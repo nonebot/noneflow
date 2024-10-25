@@ -1,8 +1,8 @@
-from typing import Any, Literal
+from typing import Literal
 
 from githubkit.rest import Issue
 from nonebot import logger
-from pydantic import ConfigDict, model_validator
+from pydantic import ConfigDict
 
 from src.plugins.github.constants import SKIP_COMMENT
 from src.plugins.github.models import AuthorInfo, GithubHandler
@@ -14,34 +14,39 @@ class IssueHandler(GithubHandler):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     issue: Issue
-    issue_number: int
-    author_id: int = 0
-    author: str = ""
 
-    @model_validator(mode="before")
-    @classmethod
-    def issue_handler_validator(cls, data: dict[str, Any]):
-        issue = data.get("issue")
-        if data.get("issue_number") is None and issue:
-            data["issue_number"] = issue.number
-        if issue:
-            data.update(AuthorInfo.from_issue(issue).model_dump())
-        return data
+    @property
+    def issue_number(self) -> int:
+        return self.issue.number
 
-    async def update_issue_title(self, title: str):
+    @property
+    def author_info(self) -> AuthorInfo:
+        return AuthorInfo.from_issue(self.issue)
+
+    @property
+    def author(self) -> str:
+        return self.author_info.author
+
+    @property
+    def author_id(self) -> int:
+        return self.author_info.author_id
+
+    async def update_issue_title(self, title: str, issue_number: int | None = None):
         """修改议题标题"""
-        if self.issue and self.issue.title != title:
-            await super().update_issue_title(self.issue_number, title)
-            logger.info(f"标题已修改为 {title}")
+        if issue_number is None:
+            issue_number = self.issue_number
 
-    async def update_issue_content(self, body: str):
-        """编辑议题内容"""
-        await super().update_issue_content(self.issue_number, body)
+        await super().update_issue_title(title, issue_number)
+
+    async def update_issue_content(self, body: str, issue_number: int | None = None):
+        """更新议题内容"""
+        if issue_number is None:
+            issue_number = self.issue_number
+
+        await super().update_issue_content(body, issue_number)
 
         # 更新缓存属性，避免重复或错误操作
         self.issue.body = body
-
-        logger.info("议题内容已修改")
 
     async def close_issue(
         self, reason: Literal["completed", "not_planned", "reopened"]
@@ -57,14 +62,19 @@ class IssueHandler(GithubHandler):
             )
 
     async def create_pull_request(
-        self, base_branch: str, title: str, branch_name: str, label: str | list[str]
+        self,
+        base_branch: str,
+        title: str,
+        branch_name: str,
+        label: str | list[str],
+        issue_number: int | None = None,
     ):
+        if issue_number is None:
+            issue_number = self.issue_number
+
         return await super().create_pull_request(
             base_branch, title, branch_name, label, self.issue_number
         )
-
-    async def comment_issue(self, comment: str):
-        return await super().comment_issue(comment, self.issue_number)
 
     async def should_skip_plugin_test(self) -> bool:
         """判断评论是否包含跳过的标记"""
@@ -78,5 +88,26 @@ class IssueHandler(GithubHandler):
                 return True
         return False
 
-    def commit_and_push(self, message: str, branch_name: str):
-        return super().commit_and_push(message, branch_name, self.author)
+    async def list_comments(self, issue_number: int | None = None):
+        """拉取所有评论"""
+        if issue_number is None:
+            issue_number = self.issue_number
+
+        return await super().list_comments(issue_number)
+
+    async def comment_issue(self, comment: str, issue_number: int | None = None):
+        """发布评论，若之前已评论过，则会进行复用"""
+        if issue_number is None:
+            issue_number = self.issue_number
+
+        await super().comment_issue(comment, issue_number)
+
+    def commit_and_push(
+        self,
+        message: str,
+        branch_name: str,
+        author: str | None = None,
+    ):
+        if author is None:
+            author = self.author
+        return super().commit_and_push(message, branch_name, author)

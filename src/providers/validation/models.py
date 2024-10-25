@@ -13,7 +13,7 @@ from pydantic import (
     field_validator,
     model_validator,
 )
-from pydantic_core import ErrorDetails, PydanticCustomError, to_jsonable_python
+from pydantic_core import ErrorDetails, PydanticCustomError
 
 from src.providers.store_test.models import Metadata, Tag
 
@@ -35,28 +35,42 @@ class PublishType(Enum):
     BOT = "Bot"
     PLUGIN = "Plugin"
     ADAPTER = "Adapter"
-    UNKNOWN = "Unknown"
 
     def __str__(self) -> str:
         return self.value
 
 
 class ValidationDict(BaseModel):
-    valid: bool
     type: PublishType
-    name: str
-    author_id: int
-    author: str
-    data: dict[str, Any] = {}
+    raw_data: dict[str, Any] = {}
+    """原始数据"""
+    context: dict[str, Any] = {}
+    """验证上下文"""
+    info: "PublishInfo | None" = None
+    """验证通过的信息"""
     errors: list[ErrorDetails] = []
 
-    @field_validator("data", mode="before")
-    @classmethod
-    def data_validator(cls, v: dict[str, Any] | BaseModel) -> dict[str, Any]:
-        """
-        序列化 data 字段
-        """
-        return to_jsonable_python(v)
+    @property
+    def valid(self) -> bool:
+        return not self.errors
+
+    @property
+    def valid_data(self):
+        """经过验证的数据"""
+        return self.context.get("valid_data", {})
+
+    @property
+    def name(self) -> str:
+        return (
+            self.valid_data.get("name")
+            or self.raw_data.get("name")
+            or self.raw_data.get("project_link")
+            or ""
+        )
+
+    @property
+    def skip_plugin_test(self) -> bool:
+        return self.context.get("skip_plugin_test", False)
 
 
 class PyPIMixin(BaseModel):
@@ -124,6 +138,11 @@ class PublishInfo(abc.ABC, BaseModel):
     tags: list[Tag] = Field(max_length=3)
     is_official: bool = Field(default=False)
 
+    @abc.abstractmethod
+    def to_store_data(self) -> dict[str, Any]:
+        """转换为商店数据"""
+        raise NotImplementedError
+
     @field_validator("*", mode="wrap")
     @classmethod
     def collect_valid_values(
@@ -178,6 +197,15 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     """"插件测试结果"""
     metadata: Metadata
     """插件测试元数据"""
+
+    def to_store_data(self) -> dict[str, Any]:
+        return {
+            "module_name": self.module_name,
+            "project_link": self.project_link,
+            "author_id": self.author_id,
+            "tags": self.tags,
+            "is_official": self.is_official,
+        }
 
     @field_validator("type", mode="before")
     @classmethod
@@ -266,9 +294,31 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
 class AdapterPublishInfo(PublishInfo, PyPIMixin):
     """发布适配器所需信息"""
 
+    def to_store_data(self) -> dict[str, Any]:
+        return {
+            "module_name": self.module_name,
+            "project_link": self.project_link,
+            "name": self.name,
+            "desc": self.desc,
+            "author_id": self.author_id,
+            "homepage": self.homepage,
+            "tags": self.tags,
+            "is_official": self.is_official,
+        }
+
 
 class BotPublishInfo(PublishInfo):
     """发布机器人所需信息"""
+
+    def to_store_data(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "desc": self.desc,
+            "author_id": self.author_id,
+            "homepage": self.homepage,
+            "tags": self.tags,
+            "is_official": self.is_official,
+        }
 
     @model_validator(mode="before")
     @classmethod
