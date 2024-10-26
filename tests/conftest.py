@@ -55,7 +55,7 @@ async def app(app: App, tmp_path: Path, mocker: MockerFixture):
                     "project_link": "project_link1",
                     "name": "name",
                     "desc": "desc",
-                    "author": "author",
+                    "author_id": 1,
                     "homepage": "https://v2.nonebot.dev",
                     "tags": [],
                     "is_official": False,
@@ -70,7 +70,7 @@ async def app(app: App, tmp_path: Path, mocker: MockerFixture):
                 {
                     "name": "name",
                     "desc": "desc",
-                    "author": "author",
+                    "author_id": 1,
                     "homepage": "https://v2.nonebot.dev",
                     "tags": [],
                     "is_official": False,
@@ -85,11 +85,7 @@ async def app(app: App, tmp_path: Path, mocker: MockerFixture):
                 {
                     "module_name": "module_name1",
                     "project_link": "project_link1",
-                    "name": "name",
-                    "desc": "desc",
-                    "author": "author",
                     "author_id": 1,
-                    "homepage": "https://v2.nonebot.dev",
                     "tags": [],
                     "is_official": False,
                 }
@@ -100,7 +96,6 @@ async def app(app: App, tmp_path: Path, mocker: MockerFixture):
     mocker.patch.object(plugin_config.input_config, "adapter_path", adapter_path)
     mocker.patch.object(plugin_config.input_config, "bot_path", bot_path)
     mocker.patch.object(plugin_config.input_config, "plugin_path", plugin_path)
-    mocker.patch.object(plugin_config, "skip_plugin_test", False)
 
     yield app
 
@@ -160,7 +155,7 @@ def mocked_api(respx_mock: MockRouter):
                 "project_link": "nonebot-adapter-onebot",
                 "name": "OneBot V11",
                 "desc": "OneBot V11 协议",
-                "author": "yanyongyu",
+                "author_id": 2,
                 "homepage": "https://onebot.adapters.nonebot.dev/",
                 "tags": [],
                 "is_official": True,
@@ -170,14 +165,14 @@ def mocked_api(respx_mock: MockRouter):
                 "project_link": "nonebot-adapter-onebot",
                 "name": "OneBot V12",
                 "desc": "OneBot V12 协议",
-                "author": "yanyongyu",
+                "author_id": 2,
                 "homepage": "https://onebot.adapters.nonebot.dev/",
                 "tags": [],
                 "is_official": True,
             },
         ]
     )
-    respx_mock.get(
-        "https://api.github.com/user/1", name="project_link_wordcloud"
-    ).respond(json={"login": "he0119"})
+    respx_mock.get("https://api.github.com/user/1", name="github_username").respond(
+        json={"login": "he0119"}
+    )
     return respx_mock

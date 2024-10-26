@@ -9,11 +9,14 @@ async def test_render_error_bot(app: App):
     from src.providers.validation import PublishType, ValidationDict
 
     result = ValidationDict(
-        valid=False,
-        data={
-            "desc": "基于 NoneBot2 的聊天机器人",
-            "author": "he0119",
-            "is_official": False,
+        type=PublishType.BOT,
+        raw_data={"name": "CoolQBot"},
+        context={
+            "valid_data": {
+                "desc": "基于 NoneBot2 的聊天机器人",
+                "author": "he0119",
+                "is_official": False,
+            }
         },
         errors=[
             {
@@ -44,10 +47,6 @@ async def test_render_error_bot(app: App):
                 "input": "#fffffff",
             },
         ],
-        type=PublishType.BOT,
-        name="CoolQBot",
-        author="he0119",
-        author_id=1,
     )
 
     comment = await render_comment(result)
@@ -80,13 +79,17 @@ async def test_render_error_adapter(app: App):
     from src.providers.validation import PublishType, ValidationDict
 
     result = ValidationDict(
-        valid=False,
-        data={
-            "module_name": "nonebot.adapters.villa",
-            "project_link": "nonebot-adapter-villa",
-            "desc": "米游社大别野官方Bot适配",
-            "author": "CMHopeSunshine",
-            "is_official": False,
+        type=PublishType.ADAPTER,
+        raw_data={"name": "大别野"},
+        context={
+            "valid_data": {
+                "module_name": "nonebot.adapters.villa",
+                "project_link": "nonebot-adapter-villa",
+                "desc": "米游社大别野官方Bot适配",
+                "author": "CMHopeSunshine",
+                "author_id": 1,
+                "is_official": False,
+            }
         },
         errors=[
             {
@@ -129,10 +132,6 @@ async def test_render_error_adapter(app: App):
                 "input": "#fffffff",
             },
         ],
-        type=PublishType.ADAPTER,
-        name="大别野",
-        author="CMHopeSunshine",
-        author_id=1,
     )
 
     comment = await render_comment(result)
@@ -169,16 +168,20 @@ async def test_render_error_plugin(app: App, mocker: MockFixture):
     from src.providers.validation import PublishType, ValidationDict
 
     result = ValidationDict(
-        valid=False,
-        data={
-            "name": "帮助",
-            "desc": "获取插件帮助信息",
-            "author": "he0119",
-            "homepage": "https://github.com/he0119/nonebot-plugin-treehelp",
-            "tags": [],
-            "is_official": False,
-            "metadata": None,
-            "load": True,
+        type=PublishType.PLUGIN,
+        raw_data={"name": "帮助"},
+        context={
+            "valid_data": {
+                "name": "帮助",
+                "desc": "获取插件帮助信息",
+                "author": "he0119",
+                "author_id": 1,
+                "homepage": "https://github.com/he0119/nonebot-plugin-treehelp",
+                "tags": [],
+                "is_official": False,
+                "metadata": None,
+                "load": True,
+            }
         },
         errors=[
             {
@@ -222,10 +225,6 @@ async def test_render_error_plugin(app: App, mocker: MockFixture):
                 "input": None,
             },
         ],
-        type=PublishType.PLUGIN,
-        name="帮助",
-        author="he0119",
-        author_id=1,
     )
 
     comment = await render_comment(result)
@@ -262,14 +261,17 @@ async def test_render_error_plugin_load_test(app: App):
     from src.providers.validation import PublishType, ValidationDict
 
     result = ValidationDict(
-        valid=False,
-        data={
-            "name": "帮助",
-            "desc": "获取插件帮助信息",
-            "author": "he0119",
-            "homepage": "https://github.com/he0119/nonebot-plugin-treehelp",
-            "tags": [],
-            "is_official": False,
+        type=PublishType.PLUGIN,
+        raw_data={"name": "帮助"},
+        context={
+            "valid_data": {
+                "name": "帮助",
+                "desc": "获取插件帮助信息",
+                "author": "he0119",
+                "homepage": "https://github.com/he0119/nonebot-plugin-treehelp",
+                "tags": [],
+                "is_official": False,
+            }
         },
         errors=[
             {
@@ -287,10 +289,6 @@ async def test_render_error_plugin_load_test(app: App):
                 "input": None,
             },
         ],
-        type=PublishType.PLUGIN,
-        name="帮助",
-        author="he0119",
-        author_id=1,
     )
 
     comment = await render_comment(result)
@@ -327,8 +325,9 @@ async def test_render_error_plugin_metadata(app: App, mocker: MockFixture):
     from src.providers.validation import PublishType, ValidationDict
 
     result = ValidationDict(
-        valid=False,
-        data={"author": "he0119", "tags": [], "is_official": False},
+        type=PublishType.PLUGIN,
+        raw_data={"name": "帮助"},
+        context={"valid_data": {"author": "he0119", "tags": [], "is_official": False}},
         errors=[
             {
                 "loc": ("metadata",),
@@ -338,10 +337,6 @@ async def test_render_error_plugin_metadata(app: App, mocker: MockFixture):
                 "input": None,
             }
         ],
-        type=PublishType.PLUGIN,
-        name="帮助",
-        author="he0119",
-        author_id=1,
     )
 
     comment = await render_comment(result)
@@ -378,8 +373,9 @@ async def test_render_error_tags_invalid(app: App, mocker: MockFixture):
     from src.providers.validation import PublishType, ValidationDict
 
     result = ValidationDict(
-        valid=False,
-        data={"author": "he0119", "tags": [], "is_official": False},
+        type=PublishType.PLUGIN,
+        raw_data={"name": "帮助"},
+        context={"valid_data": {"author": "he0119", "tags": [], "is_official": False}},
         errors=[
             {
                 "loc": ("tags", 2),
@@ -400,10 +396,6 @@ async def test_render_error_tags_invalid(app: App, mocker: MockFixture):
                 "input": "not json",
             },
         ],
-        type=PublishType.PLUGIN,
-        name="帮助",
-        author="he0119",
-        author_id=1,
     )
 
     comment = await render_comment(result)
@@ -440,8 +432,9 @@ async def test_render_type_error(app: App, mocker: MockFixture):
     from src.providers.validation import PublishType, ValidationDict
 
     result = ValidationDict(
-        valid=False,
-        data={"author": "he0119", "tags": [], "is_official": False},
+        type=PublishType.PLUGIN,
+        raw_data={"name": "帮助"},
+        context={"valid_data": {"author": "he0119", "tags": [], "is_official": False}},
         errors=[
             {
                 "loc": ("type",),
@@ -463,10 +456,6 @@ async def test_render_type_error(app: App, mocker: MockFixture):
                 "input": '"test"',
             },
         ],
-        type=PublishType.PLUGIN,
-        name="帮助",
-        author="he0119",
-        author_id=1,
     )
 
     comment = await render_comment(result)
@@ -503,8 +492,9 @@ async def test_render_unknown_error(app: App, mocker: MockFixture):
     from src.providers.validation import PublishType, ValidationDict
 
     result = ValidationDict(
-        valid=False,
-        data={"author": "he0119", "tags": [], "is_official": False},
+        type=PublishType.PLUGIN,
+        raw_data={"name": "帮助"},
+        context={"valid_data": {"author": "he0119", "tags": [], "is_official": False}},
         errors=[
             {
                 "loc": ("tests", 2, "test"),
@@ -513,10 +503,6 @@ async def test_render_unknown_error(app: App, mocker: MockFixture):
                 "input": 1,
             }
         ],
-        type=PublishType.PLUGIN,
-        name="帮助",
-        author="he0119",
-        author_id=1,
     )
 
     comment = await render_comment(result)
@@ -553,8 +539,9 @@ async def test_render_http_error(app: App, mocker: MockFixture):
     from src.providers.validation import PublishType, ValidationDict
 
     result = ValidationDict(
-        valid=False,
-        data={"author": "he0119", "tags": [], "is_official": False},
+        type=PublishType.PLUGIN,
+        raw_data={"name": "帮助"},
+        context={"valid_data": {"author": "he0119", "tags": [], "is_official": False}},
         errors=[
             {
                 "loc": ("homepage",),
@@ -574,10 +561,6 @@ async def test_render_http_error(app: App, mocker: MockFixture):
                 "input": "12312",
             },
         ],
-        type=PublishType.PLUGIN,
-        name="帮助",
-        author="he0119",
-        author_id=1,
     )
 
     comment = await render_comment(result)

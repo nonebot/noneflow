@@ -13,7 +13,7 @@ async def test_homepage_failed_http_exception(mocked_api: MockRouter) -> None:
     result = validate_info(PublishType.BOT, data, context)
 
     assert not result.valid
-    assert "homepage" not in result.data
+    assert "homepage" not in result.valid_data
     assert result.errors == [
         snapshot(
             {
@@ -38,7 +38,7 @@ async def test_homepage_failed_empty_homepage(mocked_api: MockRouter) -> None:
     result = validate_info(PublishType.BOT, data, context)
 
     assert not result.valid
-    assert "homepage" not in result.data
+    assert "homepage" not in result.valid_data
     assert result.errors == [
         snapshot(
             {

@@ -15,7 +15,7 @@ async def test_name_too_long(mocked_api: MockRouter) -> None:
     result = validate_info(PublishType.ADAPTER, data, context)
 
     assert not result.valid
-    assert "name" not in result.data
+    assert "name" not in result.valid_data
     assert result.errors == [
         snapshot(
             {

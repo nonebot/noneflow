@@ -13,7 +13,7 @@ async def test_project_link_invalid(mocked_api: MockRouter) -> None:
     result = validate_info(PublishType.ADAPTER, data, context)
 
     assert not result.valid
-    assert "project_link" not in result.data
+    assert "project_link" not in result.valid_data
     assert result.errors == [
         snapshot(
             {
@@ -37,7 +37,7 @@ async def test_module_name_invalid(mocked_api: MockRouter) -> None:
     result = validate_info(PublishType.ADAPTER, data, context)
 
     assert not result.valid
-    assert "module_name" not in result.data
+    assert "module_name" not in result.valid_data
     assert result.errors == [
         snapshot(
             {
@@ -74,7 +74,7 @@ async def test_name_duplication(mocked_api: MockRouter) -> None:
     result = validate_info(PublishType.ADAPTER, data, context)
 
     assert not result.valid
-    assert not result.data
+    assert not result.valid_data
     assert result.errors == [
         snapshot(
             {
@@ -120,7 +120,7 @@ async def test_name_duplication_previos_data_missing(mocked_api: MockRouter) -> 
     result = validate_info(PublishType.ADAPTER, data, context)
 
     assert not result.valid
-    assert not result.data
+    assert not result.valid_data
     assert result.errors == [
         snapshot(
             {

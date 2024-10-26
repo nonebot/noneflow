@@ -15,7 +15,7 @@ async def test_tags_color_missing(mocked_api: MockRouter) -> None:
     result = validate_info(PublishType.PLUGIN, data, context)
 
     assert not result.valid
-    assert "tags" not in result.data
+    assert "tags" not in result.valid_data
     assert result.errors == [
         snapshot(
             {
@@ -40,7 +40,7 @@ async def test_tags_color_invalid(mocked_api: MockRouter) -> None:
     result = validate_info(PublishType.PLUGIN, data, context)
 
     assert not result.valid
-    assert "tags" not in result.data
+    assert "tags" not in result.valid_data
     assert result.errors == [
         snapshot(
             {
@@ -67,7 +67,7 @@ async def test_tags_label_invalid(mocked_api: MockRouter) -> None:
     result = validate_info(PublishType.PLUGIN, data, context)
 
     assert not result.valid
-    assert "tags" not in result.data
+    assert "tags" not in result.valid_data
     assert result.errors == [
         snapshot(
             {
@@ -100,7 +100,7 @@ async def test_tags_number_invalid(mocked_api: MockRouter) -> None:
     result = validate_info(PublishType.PLUGIN, data, context)
 
     assert not result.valid
-    assert "tags" not in result.data
+    assert "tags" not in result.valid_data
     assert result.errors == [
         snapshot(
             {
@@ -132,7 +132,7 @@ async def test_tags_json_invalid(mocked_api: MockRouter) -> None:
     result = validate_info(PublishType.PLUGIN, data, context)
 
     assert not result.valid
-    assert "tags" not in result.data
+    assert "tags" not in result.valid_data
     assert result.errors == [
         snapshot(
             {
@@ -158,7 +158,7 @@ async def test_tags_json_not_list(mocked_api: MockRouter) -> None:
     result = validate_info(PublishType.PLUGIN, data, context)
 
     assert not result.valid
-    assert "tags" not in result.data
+    assert "tags" not in result.valid_data
     assert result.errors == [
         snapshot(
             {
@@ -183,7 +183,7 @@ async def test_tags_json_not_dict(mocked_api: MockRouter) -> None:
     result = validate_info(PublishType.PLUGIN, data, context)
 
     assert not result.valid
-    assert "tags" not in result.data
+    assert "tags" not in result.valid_data
     assert result.errors == [
         snapshot(
             {

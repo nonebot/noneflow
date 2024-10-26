@@ -6,23 +6,23 @@ from pytest_mock import MockFixture
 async def test_render_data_bot(app: App):
     """机器人验证数据"""
     from src.plugins.github.plugins.publish.render import render_comment
-    from src.providers.validation import PublishType, ValidationDict
+    from src.providers.validation import BotPublishInfo, PublishType, ValidationDict
 
+    raw_data = {
+        "name": "CoolQBot",
+        "desc": "基于 NoneBot2 的聊天机器人",
+        "author": "he0119",
+        "author_id": 1,
+        "homepage": "https://github.com/he0119/CoolQBot",
+        "tags": [],
+        "is_official": False,
+    }
     result = ValidationDict(
-        valid=True,
-        data={
-            "name": "CoolQBot",
-            "desc": "基于 NoneBot2 的聊天机器人",
-            "author": "he0119",
-            "homepage": "https://github.com/he0119/CoolQBot",
-            "tags": [],
-            "is_official": False,
-        },
-        errors=[],
         type=PublishType.BOT,
-        name="CoolQBot",
-        author="he0119",
-        author_id=1,
+        raw_data=raw_data,
+        context={"valid_data": raw_data},
+        info=BotPublishInfo.model_construct(**raw_data),
+        errors=[],
     )
 
     comment = await render_comment(result)
@@ -51,25 +51,26 @@ async def test_render_data_bot(app: App):
 """
     )
 
+    raw_data = {
+        "name": "March7th",
+        "desc": "三月七 - 崩坏：星穹铁道机器人",
+        "author": "mobyw",
+        "author_id": 1,
+        "homepage": "https://github.com/Mar-7th/March7th",
+        "tags": [
+            {"label": "StarRail", "color": "#5a8ccc"},
+            {"label": "星穹铁道", "color": "#6faec6"},
+        ],
+        "is_official": False,
+    }
     result = ValidationDict(
-        valid=True,
-        data={
-            "name": "March7th",
-            "desc": "三月七 - 崩坏：星穹铁道机器人",
-            "author": "mobyw",
-            "homepage": "https://github.com/Mar-7th/March7th",
-            "tags": [
-                {"label": "StarRail", "color": "#5a8ccc"},
-                {"label": "星穹铁道", "color": "#6faec6"},
-            ],
-            "is_official": False,
-        },
-        errors=[],
         type=PublishType.BOT,
-        name="March7th",
-        author="mobyw",
-        author_id=1,
+        raw_data=raw_data,
+        context={"valid_data": raw_data},
+        info=BotPublishInfo.model_construct(**raw_data),
+        errors=[],
     )
+
     comment = await render_comment(result)
     assert comment == snapshot(
         """\
@@ -100,25 +101,25 @@ async def test_render_data_bot(app: App):
 async def test_render_data_adapter(app: App):
     """适配器数据"""
     from src.plugins.github.plugins.publish.render import render_comment
-    from src.providers.validation import PublishType, ValidationDict
+    from src.providers.validation import AdapterPublishInfo, PublishType, ValidationDict
 
+    raw_data = {
+        "module_name": "nonebot.adapters.villa",
+        "project_link": "nonebot-adapter-villa",
+        "name": "大别野",
+        "desc": "米游社大别野官方Bot适配",
+        "author": "CMHopeSunshine",
+        "author_id": 1,
+        "homepage": "https://github.com/CMHopeSunshine/nonebot-adapter-villa",
+        "tags": [{"label": "米哈游", "color": "#e10909"}],
+        "is_official": False,
+    }
     result = ValidationDict(
-        valid=True,
-        data={
-            "module_name": "nonebot.adapters.villa",
-            "project_link": "nonebot-adapter-villa",
-            "name": "大别野",
-            "desc": "米游社大别野官方Bot适配",
-            "author": "CMHopeSunshine",
-            "homepage": "https://github.com/CMHopeSunshine/nonebot-adapter-villa",
-            "tags": [{"label": "米哈游", "color": "#e10909"}],
-            "is_official": False,
-        },
-        errors=[],
         type=PublishType.ADAPTER,
-        name="大别野",
-        author="CMHopeSunshine",
-        author_id=1,
+        raw_data=raw_data,
+        context={"valid_data": raw_data},
+        info=AdapterPublishInfo.model_construct(**raw_data),
+        errors=[],
     )
 
     comment = await render_comment(result)
@@ -151,27 +152,27 @@ async def test_render_data_adapter(app: App):
 async def test_render_data_plugin(app: App, mocker: MockFixture):
     """插件数据"""
     from src.plugins.github.plugins.publish.render import render_comment
-    from src.providers.validation import PublishType, ValidationDict
+    from src.providers.validation import PluginPublishInfo, PublishType, ValidationDict
 
+    raw_data = {
+        "module_name": "nonebot_plugin_treehelp",
+        "project_link": "nonebot-plugin-treehelp",
+        "name": "帮助",
+        "desc": "获取插件帮助信息",
+        "author": "he0119",
+        "author_id": 1,
+        "homepage": "https://github.com/he0119/nonebot-plugin-treehelp",
+        "tags": [],
+        "is_official": False,
+        "type": "application",
+        "supported_adapters": None,
+    }
     result = ValidationDict(
-        valid=True,
-        data={
-            "module_name": "nonebot_plugin_treehelp",
-            "project_link": "nonebot-plugin-treehelp",
-            "name": "帮助",
-            "desc": "获取插件帮助信息",
-            "author": "he0119",
-            "homepage": "https://github.com/he0119/nonebot-plugin-treehelp",
-            "tags": [],
-            "is_official": False,
-            "type": "application",
-            "supported_adapters": None,
-        },
-        errors=[],
         type=PublishType.PLUGIN,
-        name="帮助",
-        author="he0119",
-        author_id=1,
+        raw_data=raw_data,
+        context={"valid_data": raw_data},
+        info=PluginPublishInfo.model_construct(**raw_data),
+        errors=[],
     )
 
     comment = await render_comment(result)
@@ -207,18 +208,18 @@ async def test_render_data_plugin_supported_adapters(app: App, mocker: MockFixtu
     from src.providers.validation import PublishType, ValidationDict
 
     result = ValidationDict(
-        valid=True,
-        data={
-            "supported_adapters": [
-                "nonebot.adapters.onebot.v11",
-                "nonebot.adapters.none",
-            ]
-        },
-        errors=[],
         type=PublishType.PLUGIN,
-        name="帮助",
-        author="he0119",
-        author_id=1,
+        raw_data={"name": "帮助"},
+        context={
+            "valid_data": {
+                "supported_adapters": [
+                    "nonebot.adapters.onebot.v11",
+                    "nonebot.adapters.none",
+                ]
+            }
+        },
+        info=None,
+        errors=[],
     )
 
     comment = await render_comment(result)

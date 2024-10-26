@@ -10,12 +10,12 @@ from pydantic import (
     ValidationError,
     ValidationInfo,
     ValidatorFunctionWrapHandler,
+    field_serializer,
     field_validator,
     model_validator,
 )
-from pydantic_core import ErrorDetails, PydanticCustomError
-
-from src.providers.store_test.models import Metadata, Tag
+from pydantic_core import ErrorDetails, PydanticCustomError, to_jsonable_python
+from pydantic_extra_types.color import Color
 
 from .constants import (
     NAME_MAX_LENGTH,
@@ -38,6 +38,54 @@ class PublishType(Enum):
 
     def __str__(self) -> str:
         return self.value
+
+
+class Tag(BaseModel):
+    """标签"""
+
+    label: str = Field(max_length=10)
+    color: Color
+
+    @field_validator("label", mode="before")
+    @classmethod
+    def label_validator(cls, v: str):
+        return v.removeprefix("t:")
+
+    @field_serializer("color")
+    def color_serializer(self, color: Color):
+        return color.as_hex(format="long")
+
+    @property
+    def color_hex(self) -> str:
+        return self.color.as_hex(format="long")
+
+
+class Metadata(BaseModel):
+    """插件元数据"""
+
+    name: str
+    desc: str
+    homepage: str
+    type: str | None = None
+    supported_adapters: list[str] | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def model_validator(cls, data: dict[str, Any]):
+        if data.get("desc") is None:
+            data["desc"] = data.get("description")
+        return data
+
+    @field_validator("supported_adapters", mode="before")
+    @classmethod
+    def supported_adapters_validator(cls, v: list[str] | str | None):
+        if isinstance(v, str):
+            try:
+                v = json.loads(v)
+            except json.JSONDecodeError:
+                raise PydanticCustomError("json_type", "JSON 格式不合法")
+
+        return v
 
 
 class ValidationDict(BaseModel):
@@ -71,6 +119,13 @@ class ValidationDict(BaseModel):
     @property
     def skip_plugin_test(self) -> bool:
         return self.context.get("skip_plugin_test", False)
+
+    @property
+    def store_data(self) -> dict[str, Any]:
+        """转换为商店数据"""
+        if self.info is None:
+            raise ValueError("未获取到验证通过的数据")
+        return self.info.to_store_data()
 
 
 class PyPIMixin(BaseModel):
@@ -199,13 +254,15 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     """插件测试元数据"""
 
     def to_store_data(self) -> dict[str, Any]:
-        return {
-            "module_name": self.module_name,
-            "project_link": self.project_link,
-            "author_id": self.author_id,
-            "tags": self.tags,
-            "is_official": self.is_official,
-        }
+        return to_jsonable_python(
+            {
+                "module_name": self.module_name,
+                "project_link": self.project_link,
+                "author_id": self.author_id,
+                "tags": self.tags,
+                "is_official": self.is_official,
+            }
+        )
 
     @field_validator("type", mode="before")
     @classmethod
@@ -295,30 +352,34 @@ class AdapterPublishInfo(PublishInfo, PyPIMixin):
     """发布适配器所需信息"""
 
     def to_store_data(self) -> dict[str, Any]:
-        return {
-            "module_name": self.module_name,
-            "project_link": self.project_link,
-            "name": self.name,
-            "desc": self.desc,
-            "author_id": self.author_id,
-            "homepage": self.homepage,
-            "tags": self.tags,
-            "is_official": self.is_official,
-        }
+        return to_jsonable_python(
+            {
+                "module_name": self.module_name,
+                "project_link": self.project_link,
+                "name": self.name,
+                "desc": self.desc,
+                "author_id": self.author_id,
+                "homepage": self.homepage,
+                "tags": self.tags,
+                "is_official": self.is_official,
+            }
+        )
 
 
 class BotPublishInfo(PublishInfo):
     """发布机器人所需信息"""
 
     def to_store_data(self) -> dict[str, Any]:
-        return {
-            "name": self.name,
-            "desc": self.desc,
-            "author_id": self.author_id,
-            "homepage": self.homepage,
-            "tags": self.tags,
-            "is_official": self.is_official,
-        }
+        return to_jsonable_python(
+            {
+                "name": self.name,
+                "desc": self.desc,
+                "author_id": self.author_id,
+                "homepage": self.homepage,
+                "tags": self.tags,
+                "is_official": self.is_official,
+            }
+        )
 
     @model_validator(mode="before")
     @classmethod

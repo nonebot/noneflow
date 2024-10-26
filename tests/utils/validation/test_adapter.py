@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+from inline_snapshot import snapshot
 from respx import MockRouter
 
 from tests.utils.validation.utils import generate_adapter_data
@@ -14,21 +15,23 @@ async def test_adapter_info_validation_success(mocked_api: MockRouter) -> None:
     result = validate_info(PublishType.ADAPTER, data, context)
 
     assert result.valid
-    assert OrderedDict(result.data) == OrderedDict(
-        module_name="module_name",
-        project_link="project_link",
-        name="name",
-        desc="desc",
-        author="author",
-        author_id=1,
-        homepage="https://nonebot.dev",
-        tags=[{"label": "test", "color": "#ffffff"}],
-        is_official=False,
-    )
     assert not result.errors
     assert result.type == PublishType.ADAPTER
     assert result.name == "name"
-    assert result.author == "author"
+    assert OrderedDict(result.store_data) == snapshot(
+        OrderedDict(
+            {
+                "module_name": "module_name",
+                "project_link": "project_link",
+                "name": "name",
+                "desc": "desc",
+                "author_id": 1,
+                "homepage": "https://nonebot.dev",
+                "tags": [{"label": "test", "color": "#ffffff"}],
+                "is_official": False,
+            }
+        )
+    )
 
     assert mocked_api["homepage"].called
 
@@ -50,16 +53,31 @@ async def test_adapter_info_validation_failed(mocked_api: MockRouter) -> None:
 
     result = validate_info(PublishType.ADAPTER, data, context)
 
-    assert result == ValidationDict.model_construct(
-        **{
-            "valid": False,
-            "data": {
+    assert result == snapshot(
+        ValidationDict(
+            type=PublishType.ADAPTER,
+            raw_data={
                 "name": "name",
                 "desc": "desc",
                 "author": "author",
+                "module_name": "module_name/",
+                "project_link": "project_link_failed",
+                "homepage": "https://www.baidu.com",
+                "tags": '[{"label": "test", "color": "#ffffff"}, {"label": "testtoolong", "color": "#fffffff"}]',
+                "previous_data": [],
                 "author_id": 1,
             },
-            "errors": [
+            context={
+                "previous_data": [],
+                "valid_data": {
+                    "name": "name",
+                    "desc": "desc",
+                    "author": "author",
+                    "author_id": 1,
+                },
+            },
+            info=None,
+            errors=[
                 {
                     "type": "module_name",
                     "loc": ("module_name",),
@@ -93,11 +111,7 @@ async def test_adapter_info_validation_failed(mocked_api: MockRouter) -> None:
                     "input": "#fffffff",
                 },
             ],
-            "type": PublishType.ADAPTER,
-            "name": "name",
-            "author": "author",
-            "author_id": 1,
-        }
+        )
     )
 
     assert mocked_api["homepage_failed"].called

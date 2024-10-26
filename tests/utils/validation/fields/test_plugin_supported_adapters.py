@@ -13,7 +13,7 @@ async def test_plugin_supported_adapters_none(mocked_api: MockRouter) -> None:
     result = validate_info(PublishType.PLUGIN, data, context)
 
     assert result.valid
-    assert "supported_adapters" in result.data
+    assert "supported_adapters" in result.valid_data
     assert not result.errors
 
     assert mocked_api["homepage"].called
@@ -28,7 +28,7 @@ async def test_plugin_supported_adapters_set(mocked_api: MockRouter) -> None:
     result = validate_info(PublishType.PLUGIN, data, context)
 
     assert not result.valid
-    assert "supported_adapters" not in result.data
+    assert "supported_adapters" not in result.valid_data
     assert result.errors == [
         snapshot(
             {
@@ -52,7 +52,7 @@ async def test_plugin_supported_adapters_json(mocked_api: MockRouter) -> None:
     result = validate_info(PublishType.PLUGIN, data, context)
 
     assert not result.valid
-    assert "supported_adapters" not in result.data
+    assert "supported_adapters" not in result.valid_data
     assert result.errors == [
         snapshot(
             {
@@ -80,7 +80,7 @@ async def test_plugin_supported_adapters_missing_adapters(
     result = validate_info(PublishType.PLUGIN, data, context)
 
     assert not result.valid
-    assert "supported_adapters" not in result.data
+    assert "supported_adapters" not in result.valid_data
     assert result.errors == [
         snapshot(
             {

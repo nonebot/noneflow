@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 from typing import Any, Literal
 from zoneinfo import ZoneInfo
@@ -6,32 +5,11 @@ from zoneinfo import ZoneInfo
 from pydantic import (
     BaseModel,
     Field,
-    field_serializer,
     field_validator,
-    model_validator,
 )
-from pydantic_core import PydanticCustomError
 from pydantic_extra_types.color import Color
 
-
-class Tag(BaseModel):
-    """标签"""
-
-    label: str = Field(max_length=10)
-    color: Color
-
-    @field_validator("label", mode="before")
-    @classmethod
-    def label_validator(cls, v: str):
-        return v.removeprefix("t:")
-
-    @field_serializer("color")
-    def color_serializer(self, color: Color):
-        return color.as_hex(format="long")
-
-    @property
-    def color_hex(self) -> str:
-        return self.color.as_hex(format="long")
+from src.providers.validation.models import Metadata, Tag
 
 
 class TagModel(BaseModel):
@@ -131,34 +109,6 @@ class Driver(TagModel):
     homepage: str
     tags: list[Tag]
     is_official: bool
-
-
-class Metadata(BaseModel):
-    """插件元数据"""
-
-    name: str
-    desc: str
-    homepage: str
-    type: str | None = None
-    supported_adapters: list[str] | None = None
-
-    @model_validator(mode="before")
-    @classmethod
-    def model_validator(cls, data: dict[str, Any]):
-        if data.get("desc") is None:
-            data["desc"] = data.get("description")
-        return data
-
-    @field_validator("supported_adapters", mode="before")
-    @classmethod
-    def supported_adapters_validator(cls, v: list[str] | str | None):
-        if isinstance(v, str):
-            try:
-                v = json.loads(v)
-            except json.JSONDecodeError:
-                raise PydanticCustomError("json_type", "JSON 格式不合法")
-
-        return v
 
 
 class Plugin(TagModel):
