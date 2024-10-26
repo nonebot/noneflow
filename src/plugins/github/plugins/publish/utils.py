@@ -29,7 +29,11 @@ from .constants import (
     PLUGIN_TEST_STRING,
     PROJECT_LINK_PATTERN,
 )
-from .validation import validate_plugin_info_from_issue
+from .validation import (
+    validate_adapter_info_from_issue,
+    validate_bot_info_from_issue,
+    validate_plugin_info_from_issue,
+)
 
 if TYPE_CHECKING:
     from githubkit.rest import (
@@ -131,9 +135,15 @@ async def resolve_conflict_pull_requests(
             run_shell_command(["git", "checkout", pull.head.ref])
 
             # 重新测试
-            result = await validate_plugin_info_from_issue(
-                issue_handler.issue, issue_handler
-            )
+            match publish_type:
+                case PublishType.ADAPTER:
+                    result = await validate_adapter_info_from_issue(issue_handler.issue)
+                case PublishType.BOT:
+                    result = await validate_bot_info_from_issue(issue_handler.issue)
+                case PublishType.PLUGIN:
+                    result = await validate_plugin_info_from_issue(
+                        issue_handler.issue, issue_handler
+                    )
 
             # 回到主分支
             run_shell_command(["git", "checkout", plugin_config.input_config.base])
@@ -240,7 +250,6 @@ async def process_pull_request(
             # 如果之前已经创建了拉取请求，则将其转换为草稿
             logger.info("该分支的拉取请求已创建，请前往查看")
             await handler.update_pull_request_status(title, branch_name)
-
     else:
         # 如果之前已经创建了拉取请求，则将其转换为草稿
         await handler.draft_pull_request(branch_name)

@@ -1,5 +1,3 @@
-# ruff: noqa: ASYNC101
-
 import json
 from pathlib import Path
 
@@ -204,7 +202,6 @@ async def test_bot_process_publish_check(
             {
                 "name": "test",
                 "desc": "desc",
-                "author": "test",
                 "author_id": 1,
                 "homepage": "https://nonebot.dev",
                 "tags": [{"label": "test", "color": "#ffffff"}],
@@ -414,7 +411,6 @@ async def test_adapter_process_publish_check(
                     "project_link": "project_link",
                     "name": "test",
                     "desc": "desc",
-                    "author": "test",
                     "author_id": 1,
                     "homepage": "https://nonebot.dev",
                     "tags": [{"label": "test", "color": "#ffffff"}],
@@ -638,7 +634,6 @@ async def test_edit_title(
             {
                 "name": "test1",
                 "desc": "desc",
-                "author": "test",
                 "author_id": 1,
                 "homepage": "https://nonebot.dev",
                 "tags": [{"label": "test", "color": "#ffffff"}],
@@ -1344,7 +1339,7 @@ async def test_convert_pull_request_to_draft(
     )
 
     mock_issue = MockIssue(
-        number=1,
+        number=80,
         body=generate_issue_body_bot(name="test", homepage="https://www.baidu.com"),
     ).as_mock(mocker)
 
@@ -1676,7 +1671,6 @@ mutation markPullRequestReadyForReview($pullRequestId: ID!) {
             {
                 "name": "test",
                 "desc": "desc",
-                "author": "test",
                 "author_id": 1,
                 "homepage": "https://nonebot.dev",
                 "tags": [{"label": "test", "color": "#ffffff"}],

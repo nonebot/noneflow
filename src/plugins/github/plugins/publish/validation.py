@@ -43,7 +43,7 @@ def strip_ansi(text: str | None) -> str:
 
 
 async def validate_plugin_info_from_issue(
-    issue: Issue, handler: IssueHandler
+    issue: Issue, handler: IssueHandler, skip_plugin_test: bool | None = None
 ) -> ValidationDict:
     """从议题中获取插件信息，并且运行插件测试加载且获取插件元信息后进行验证"""
     body = issue.body if issue.body else ""
@@ -69,7 +69,11 @@ async def validate_plugin_info_from_issue(
     with plugin_config.input_config.plugin_path.open("r", encoding="utf-8") as f:
         previous_data: list[dict[str, str]] = json.load(f)
 
-    skip_plugin_test = await handler.should_skip_plugin_test()
+    # 决定是否跳过插件测试
+    # 因为在上一步可能已经知道了是否跳过插件测试，所以这里可以传入
+    # 如果没有传入，则从 handler 中获取
+    if skip_plugin_test is None:
+        skip_plugin_test = await handler.should_skip_plugin_test()
 
     # 如果插件被跳过，则从议题获取插件信息
     if skip_plugin_test:

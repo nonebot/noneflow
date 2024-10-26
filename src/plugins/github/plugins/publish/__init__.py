@@ -167,7 +167,7 @@ async def handle_publish_plugin_check(
 
         # 检查是否满足发布要求
         # 仅在通过检查的情况下创建拉取请求
-        result = await validate_plugin_info_from_issue(issue, handler)
+        result = await validate_plugin_info_from_issue(issue, handler, skip_plugin_test)
 
         # 确保插件重测按钮存在
         await ensure_issue_test_button(handler)

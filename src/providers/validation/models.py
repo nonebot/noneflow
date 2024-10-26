@@ -105,7 +105,7 @@ class ValidationDict(BaseModel):
     @property
     def valid_data(self):
         """经过验证的数据"""
-        return self.context.get("valid_data", {})
+        return to_jsonable_python(self.context.get("valid_data", {}))
 
     @property
     def name(self) -> str:

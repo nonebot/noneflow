@@ -36,7 +36,15 @@ class IssueHandler(GithubHandler):
         if issue_number is None:
             issue_number = self.issue_number
 
+        # 只有修改的议题标题和原标题不一致时才会进行修改
+        # 并且需要是同一个议题
+        if self.issue_number == issue_number and self.issue.title == title:
+            return
+
         await super().update_issue_title(title, issue_number)
+
+        # 更新缓存属性，避免重复或错误操作
+        self.issue.title = title
 
     async def update_issue_content(self, body: str, issue_number: int | None = None):
         """更新议题内容"""
