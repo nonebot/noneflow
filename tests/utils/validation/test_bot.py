@@ -1,5 +1,3 @@
-from collections import OrderedDict
-
 from inline_snapshot import snapshot
 from respx import MockRouter
 
@@ -8,28 +6,39 @@ from tests.utils.validation.utils import generate_bot_data
 
 async def test_bot_info_validation_success(mocked_api: MockRouter) -> None:
     """测试验证成功的情况"""
-    from src.providers.validation import PublishType, validate_info
+    from src.providers.validation import BotPublishInfo, PublishType, validate_info
 
     data, context = generate_bot_data()
 
     result = validate_info(PublishType.BOT, data, context)
 
     assert result.valid
-    assert not result.errors
     assert result.type == PublishType.BOT
-    assert result.name == "name"
-    assert OrderedDict(result.store_data) == snapshot(
-        OrderedDict(
-            {
+    assert result.raw_data == snapshot(
+        {
+            "name": "name",
+            "desc": "desc",
+            "author": "author",
+            "homepage": "https://nonebot.dev",
+            "tags": '[{"label": "test", "color": "#ffffff"}]',
+            "author_id": 1,
+        }
+    )
+    assert result.context == snapshot(
+        {
+            "previous_data": [],
+            "valid_data": {
                 "name": "name",
                 "desc": "desc",
+                "author": "author",
                 "author_id": 1,
                 "homepage": "https://nonebot.dev",
                 "tags": [{"label": "test", "color": "#ffffff"}],
-                "is_official": False,
-            }
-        )
+            },
+        }
     )
+    assert isinstance(result.info, BotPublishInfo)
+    assert result.errors == []
 
     assert mocked_api["homepage"].called
 

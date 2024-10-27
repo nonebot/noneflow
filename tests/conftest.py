@@ -107,9 +107,9 @@ async def app(app: App, tmp_path: Path, mocker: MockerFixture):
 @pytest.fixture(autouse=True)
 def _clear_cache(app: App):
     """每次运行前都清除 cache"""
-    from src.providers.validation.utils import check_url
+    from src.providers.validation.utils import get_url
 
-    check_url.cache_clear()
+    get_url.cache_clear()
 
 
 @pytest.fixture
@@ -121,6 +121,14 @@ def mocked_api(respx_mock: MockRouter):
         json={
             "info": {"version": "0.0.1"},
             "urls": [{"upload_time_iso_8601": "2023-09-01T00:00:00+00:00Z"}],
+        }
+    )
+    respx_mock.get(
+        "https://pypi.org/pypi/project_link//json", name="project_link/"
+    ).respond(
+        json={
+            "info": {"version": "0.0.1"},
+            "urls": [{"upload_time_iso_8601": "2023-10-01T00:00:00+00:00Z"}],
         }
     )
     respx_mock.get(
@@ -142,7 +150,7 @@ def mocked_api(respx_mock: MockRouter):
     ).respond(json={"info": {"version": "0.5.0"}})
     respx_mock.get(
         "https://pypi.org/pypi/project_link1/json", name="project_link1"
-    ).respond()
+    ).respond(json={"urls": [{"upload_time_iso_8601": "2023-10-01T00:00:00+00:00Z"}]})
     respx_mock.get(
         "https://pypi.org/pypi/project_link_failed/json", name="project_link_failed"
     ).respond(404)

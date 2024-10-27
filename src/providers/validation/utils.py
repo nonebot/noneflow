@@ -11,6 +11,25 @@ if TYPE_CHECKING:
     from pydantic_core import ErrorDetails
 
 
+@cache
+def get_url(url: str) -> httpx.Response:
+    """获取网址"""
+    return httpx.get(url, follow_redirects=True)
+
+
+def get_upload_time(project_link: str) -> str | None:
+    """获取插件的上传时间"""
+    url = f"https://pypi.org/pypi/{project_link}/json"
+    r = get_url(url)
+    if r.status_code != 200:
+        return None
+    try:
+        data = r.json()
+    except Exception:
+        return None
+    return data["urls"][0]["upload_time_iso_8601"]
+
+
 def check_pypi(project_link: str) -> bool:
     """检查项目是否存在"""
     url = f"https://pypi.org/pypi/{project_link}/json"
@@ -18,14 +37,13 @@ def check_pypi(project_link: str) -> bool:
     return status_code == 200
 
 
-@cache
 def check_url(url: str) -> tuple[int, str]:
     """检查网址是否可以访问
 
     返回状态码，如果报错则返回 -1
     """
     try:
-        r = httpx.get(url, follow_redirects=True)
+        r = get_url(url)
         return r.status_code, ""
     except Exception as e:
         return -1, str(e)

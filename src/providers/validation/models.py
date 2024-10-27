@@ -7,7 +7,6 @@ from pydantic import (
     BaseModel,
     Field,
     StringConstraints,
-    ValidationError,
     ValidationInfo,
     ValidatorFunctionWrapHandler,
     field_serializer,
@@ -23,7 +22,13 @@ from .constants import (
     PYPI_PACKAGE_NAME_PATTERN,
     PYTHON_MODULE_NAME_REGEX,
 )
-from .utils import check_pypi, check_url, get_adapters, resolve_adapter_name
+from .utils import (
+    check_pypi,
+    check_url,
+    get_adapters,
+    get_upload_time,
+    resolve_adapter_name,
+)
 
 
 class PublishType(Enum):
@@ -60,34 +65,6 @@ class Tag(BaseModel):
         return self.color.as_hex(format="long")
 
 
-class Metadata(BaseModel):
-    """插件元数据"""
-
-    name: str
-    desc: str
-    homepage: str
-    type: str | None = None
-    supported_adapters: list[str] | None = None
-
-    @model_validator(mode="before")
-    @classmethod
-    def model_validator(cls, data: dict[str, Any]):
-        if data.get("desc") is None:
-            data["desc"] = data.get("description")
-        return data
-
-    @field_validator("supported_adapters", mode="before")
-    @classmethod
-    def supported_adapters_validator(cls, v: list[str] | str | None):
-        if isinstance(v, str):
-            try:
-                v = json.loads(v)
-            except json.JSONDecodeError:
-                raise PydanticCustomError("json_type", "JSON 格式不合法")
-
-        return v
-
-
 class ValidationDict(BaseModel):
     type: PublishType
     raw_data: dict[str, Any] = {}
@@ -105,7 +82,7 @@ class ValidationDict(BaseModel):
     @property
     def valid_data(self):
         """经过验证的数据"""
-        return to_jsonable_python(self.context.get("valid_data", {}))
+        return self.context.get("valid_data", {})
 
     @property
     def name(self) -> str:
@@ -120,17 +97,16 @@ class ValidationDict(BaseModel):
     def skip_plugin_test(self) -> bool:
         return self.context.get("skip_plugin_test", False)
 
-    @property
-    def store_data(self) -> dict[str, Any]:
-        """转换为商店数据"""
-        if self.info is None:
-            raise ValueError("未获取到验证通过的数据")
-        return self.info.to_store_data()
-
 
 class PyPIMixin(BaseModel):
     module_name: str
     project_link: str
+
+    time: str | None = None
+    """上传时间
+
+    从 PyPI 获取最新版本的上传时间
+    """
 
     @field_validator("module_name", mode="before")
     @classmethod
@@ -177,6 +153,11 @@ class PyPIMixin(BaseModel):
                 "PyPI 项目名 {project_link} 加包名 {module_name} 的值与商店重复",
                 {"project_link": project_link, "module_name": module_name},
             )
+
+        # 如果一切正常才记录上传时间
+        if project_link:
+            values["time"] = get_upload_time(project_link)
+
         return values
 
 
@@ -193,11 +174,6 @@ class PublishInfo(abc.ABC, BaseModel):
     tags: list[Tag] = Field(max_length=3)
     is_official: bool = Field(default=False)
 
-    @abc.abstractmethod
-    def to_store_data(self) -> dict[str, Any]:
-        """转换为商店数据"""
-        raise NotImplementedError
-
     @field_validator("*", mode="wrap")
     @classmethod
     def collect_valid_values(
@@ -213,7 +189,9 @@ class PublishInfo(abc.ABC, BaseModel):
             raise PydanticCustomError("validation_context", "未获取到验证上下文")
 
         result = handler(v)
-        context["valid_data"][info.field_name] = result
+        # 保存成 jsonable 的数据
+        # 方便后续使用
+        context["valid_data"][info.field_name] = to_jsonable_python(result)
         return result
 
     @field_validator("homepage", mode="before")
@@ -248,10 +226,17 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     """插件类型"""
     supported_adapters: list[str] | None
     """插件支持的适配器"""
-    load: bool = False
+    load: bool
     """"插件测试结果"""
-    metadata: Metadata
+    metadata: bool
     """插件测试元数据"""
+    skip_test: bool
+    """跳过插件测试"""
+    version: str
+    """版本号
+
+    从 PyPI 获取或者测试中获取
+    """
 
     def to_store_data(self) -> dict[str, Any]:
         return to_jsonable_python(
@@ -317,7 +302,6 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
         if context is None:
             raise PydanticCustomError("validation_context", "未获取到验证上下文")
 
-        context["load"] = v  # 提供给元数据验证器使用
         if v or context.get("skip_plugin_test"):
             return True
         raise PydanticCustomError(
@@ -329,57 +313,27 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     @field_validator("metadata", mode="before")
     @classmethod
     def plugin_test_metadata_validator(
-        cls, v: Metadata | None, info: ValidationInfo
-    ) -> Metadata:
+        cls, v: bool | None, info: ValidationInfo
+    ) -> bool:
         context = info.context
         if context is None:
             raise PydanticCustomError("validation_context", "未获取到验证上下文")
 
         if v is None:
-            # 如果没有传入插件元数据，尝试从上下文中获取
-            try:
-                return Metadata(**context["valid_data"])
-            except ValidationError:
-                raise PydanticCustomError(
-                    "plugin.metadata",
-                    "插件无法获取到元数据",
-                    {"load": context.get("load", False)},
-                )
+            raise PydanticCustomError(
+                "plugin.metadata",
+                "插件无法获取到元数据",
+                {"load": context.get("load")},
+            )
         return v
 
 
 class AdapterPublishInfo(PublishInfo, PyPIMixin):
     """发布适配器所需信息"""
 
-    def to_store_data(self) -> dict[str, Any]:
-        return to_jsonable_python(
-            {
-                "module_name": self.module_name,
-                "project_link": self.project_link,
-                "name": self.name,
-                "desc": self.desc,
-                "author_id": self.author_id,
-                "homepage": self.homepage,
-                "tags": self.tags,
-                "is_official": self.is_official,
-            }
-        )
-
 
 class BotPublishInfo(PublishInfo):
     """发布机器人所需信息"""
-
-    def to_store_data(self) -> dict[str, Any]:
-        return to_jsonable_python(
-            {
-                "name": self.name,
-                "desc": self.desc,
-                "author_id": self.author_id,
-                "homepage": self.homepage,
-                "tags": self.tags,
-                "is_official": self.is_official,
-            }
-        )
 
     @model_validator(mode="before")
     @classmethod
@@ -407,3 +361,7 @@ class BotPublishInfo(PublishInfo):
                 {"name": name, "homepage": homepage},
             )
         return values
+
+
+class DriverPublishInfo(PublishInfo, PyPIMixin):
+    """发布驱动所需信息"""

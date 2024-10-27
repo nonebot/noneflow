@@ -6,15 +6,79 @@ from tests.utils.validation.utils import generate_plugin_data
 
 async def test_plugin_supported_adapters_none(mocked_api: MockRouter) -> None:
     """支持所有适配器"""
+
     from src.providers.validation import PublishType, validate_info
+    from src.providers.validation.models import PluginPublishInfo
 
     data, context = generate_plugin_data()
 
     result = validate_info(PublishType.PLUGIN, data, context)
 
     assert result.valid
-    assert "supported_adapters" in result.valid_data
-    assert not result.errors
+    assert result.type == PublishType.PLUGIN
+    assert isinstance(result.info, PluginPublishInfo)
+    assert result.raw_data == snapshot(
+        {
+            "author": "author",
+            "module_name": "module_name",
+            "project_link": "project_link",
+            "tags": '[{"label": "test", "color": "#ffffff"}]',
+            "name": "name",
+            "desc": "desc",
+            "homepage": "https://nonebot.dev",
+            "type": "application",
+            "supported_adapters": None,
+            "skip_test": False,
+            "metadata": True,
+            "previous_data": [],
+            "author_id": 1,
+            "load": True,
+            "version": "0.0.1",
+            "time": "2023-09-01T00:00:00+00:00Z",
+        }
+    )
+    assert result.context == snapshot(
+        {
+            "skip_test": False,
+            "previous_data": [],
+            "valid_data": {
+                "module_name": "module_name",
+                "project_link": "project_link",
+                "time": "2023-09-01T00:00:00+00:00Z",
+                "name": "name",
+                "desc": "desc",
+                "author": "author",
+                "author_id": 1,
+                "homepage": "https://nonebot.dev",
+                "tags": [{"label": "test", "color": "#ffffff"}],
+                "type": "application",
+                "supported_adapters": None,
+                "load": True,
+                "metadata": True,
+                "skip_test": False,
+                "version": "0.0.1",
+            },
+        }
+    )
+    assert result.valid_data == snapshot(
+        {
+            "module_name": "module_name",
+            "project_link": "project_link",
+            "time": "2023-09-01T00:00:00+00:00Z",
+            "name": "name",
+            "desc": "desc",
+            "author": "author",
+            "author_id": 1,
+            "homepage": "https://nonebot.dev",
+            "tags": [{"label": "test", "color": "#ffffff"}],
+            "type": "application",
+            "supported_adapters": None,
+            "load": True,
+            "metadata": True,
+            "skip_test": False,
+            "version": "0.0.1",
+        }
+    )
 
     assert mocked_api["homepage"].called
 
@@ -56,9 +120,9 @@ async def test_plugin_supported_adapters_json(mocked_api: MockRouter) -> None:
     assert result.errors == [
         snapshot(
             {
-                "type": "json_type",
+                "type": "set_type",
                 "loc": ("supported_adapters",),
-                "msg": "JSON 格式不合法",
+                "msg": "值不是合法的集合",
                 "input": "test",
             }
         )

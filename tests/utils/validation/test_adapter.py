@@ -1,5 +1,3 @@
-from collections import OrderedDict
-
 from inline_snapshot import snapshot
 from respx import MockRouter
 
@@ -8,30 +6,46 @@ from tests.utils.validation.utils import generate_adapter_data
 
 async def test_adapter_info_validation_success(mocked_api: MockRouter) -> None:
     """测试验证成功的情况"""
-    from src.providers.validation import PublishType, validate_info
+    from src.providers.validation import AdapterPublishInfo, PublishType, validate_info
 
     data, context = generate_adapter_data()
 
     result = validate_info(PublishType.ADAPTER, data, context)
 
     assert result.valid
-    assert not result.errors
     assert result.type == PublishType.ADAPTER
-    assert result.name == "name"
-    assert OrderedDict(result.store_data) == snapshot(
-        OrderedDict(
-            {
+    assert result.raw_data == snapshot(
+        {
+            "name": "name",
+            "desc": "desc",
+            "author": "author",
+            "module_name": "module_name",
+            "project_link": "project_link",
+            "homepage": "https://nonebot.dev",
+            "tags": '[{"label": "test", "color": "#ffffff"}]',
+            "previous_data": [],
+            "author_id": 1,
+            "time": "2023-09-01T00:00:00+00:00Z",
+        }
+    )
+    assert result.context == snapshot(
+        {
+            "previous_data": [],
+            "valid_data": {
                 "module_name": "module_name",
                 "project_link": "project_link",
+                "time": "2023-09-01T00:00:00+00:00Z",
                 "name": "name",
                 "desc": "desc",
+                "author": "author",
                 "author_id": 1,
                 "homepage": "https://nonebot.dev",
                 "tags": [{"label": "test", "color": "#ffffff"}],
-                "is_official": False,
-            }
-        )
+            },
+        }
     )
+    assert isinstance(result.info, AdapterPublishInfo)
+    assert result.errors == []
 
     assert mocked_api["homepage"].called
 
@@ -55,28 +69,16 @@ async def test_adapter_info_validation_failed(mocked_api: MockRouter) -> None:
 
     assert result == snapshot(
         ValidationDict(
-            type=PublishType.ADAPTER,
-            raw_data={
-                "name": "name",
-                "desc": "desc",
-                "author": "author",
-                "module_name": "module_name/",
-                "project_link": "project_link_failed",
-                "homepage": "https://www.baidu.com",
-                "tags": '[{"label": "test", "color": "#ffffff"}, {"label": "testtoolong", "color": "#fffffff"}]',
-                "previous_data": [],
-                "author_id": 1,
-            },
             context={
                 "previous_data": [],
                 "valid_data": {
+                    "time": None,
                     "name": "name",
                     "desc": "desc",
                     "author": "author",
                     "author_id": 1,
                 },
             },
-            info=None,
             errors=[
                 {
                     "type": "module_name",
@@ -111,6 +113,20 @@ async def test_adapter_info_validation_failed(mocked_api: MockRouter) -> None:
                     "input": "#fffffff",
                 },
             ],
+            info=None,
+            raw_data={
+                "name": "name",
+                "desc": "desc",
+                "author": "author",
+                "module_name": "module_name/",
+                "project_link": "project_link_failed",
+                "homepage": "https://www.baidu.com",
+                "tags": '[{"label": "test", "color": "#ffffff"}, {"label": "testtoolong", "color": "#fffffff"}]',
+                "previous_data": [],
+                "author_id": 1,
+                "time": None,
+            },
+            type=PublishType.ADAPTER,
         )
     )
 

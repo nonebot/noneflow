@@ -73,15 +73,6 @@ def generate_plugin_data(
     previous_data: list[Any] | None = [],
     author_id: int | None = 1,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    from src.providers.validation.models import Metadata
-
-    metadata = Metadata.model_construct(
-        name=name,
-        desc=desc,
-        homepage=homepage,
-        type=type,
-        supported_adapters=supported_adapters,
-    )
     return exclude_none(
         {
             "author": author,
@@ -93,9 +84,16 @@ def generate_plugin_data(
             "homepage": homepage,
             "type": type,
             "supported_adapters": supported_adapters,
-            "skip_plugin_test": skip_test,
-            "metadata": metadata,
+            "skip_test": skip_test,
+            "metadata": True,
             "previous_data": previous_data,
             "author_id": author_id,
+            "load": True,
+            "version": "0.0.1",
         }
-    ), exclude_none({"skip_plugin_test": skip_test, "previous_data": previous_data})
+    ), exclude_none(
+        {
+            "skip_test": skip_test,
+            "previous_data": previous_data,
+        }
+    )

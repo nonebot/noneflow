@@ -64,9 +64,9 @@ async def test_name_duplication(mocked_api: MockRouter) -> None:
             {
                 "module_name": "module_name1",
                 "project_link": "project_link1",
+                "author_id": 1,
                 "name": "name",
                 "desc": "desc",
-                "author": "author",
             }
         ],
     )
@@ -74,9 +74,8 @@ async def test_name_duplication(mocked_api: MockRouter) -> None:
     result = validate_info(PublishType.ADAPTER, data, context)
 
     assert not result.valid
-    assert not result.valid_data
-    assert result.errors == [
-        snapshot(
+    assert result.errors == snapshot(
+        [
             {
                 "type": "duplication",
                 "loc": (),
@@ -93,17 +92,17 @@ async def test_name_duplication(mocked_api: MockRouter) -> None:
                         {
                             "module_name": "module_name1",
                             "project_link": "project_link1",
+                            "author_id": 1,
                             "name": "name",
                             "desc": "desc",
-                            "author": "author",
                         }
                     ],
                     "author_id": 1,
                 },
                 "ctx": {"project_link": "project_link1", "module_name": "module_name1"},
             }
-        )
-    ]
+        ]
+    )
 
     assert not mocked_api["project_link1"].called
     assert not mocked_api["homepage"].called
@@ -120,9 +119,8 @@ async def test_name_duplication_previos_data_missing(mocked_api: MockRouter) -> 
     result = validate_info(PublishType.ADAPTER, data, context)
 
     assert not result.valid
-    assert not result.valid_data
-    assert result.errors == [
-        snapshot(
+    assert result.errors == snapshot(
+        [
             {
                 "type": "previous_data",
                 "loc": (),
@@ -138,8 +136,8 @@ async def test_name_duplication_previos_data_missing(mocked_api: MockRouter) -> 
                     "author_id": 1,
                 },
             }
-        )
-    ]
+        ]
+    )
 
     assert not mocked_api["project_link1"].called
     assert not mocked_api["homepage"].called

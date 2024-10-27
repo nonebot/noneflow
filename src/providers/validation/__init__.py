@@ -6,7 +6,6 @@ from pydantic import ValidationError
 from pydantic_core import ErrorDetails
 
 from .models import AdapterPublishInfo, BotPublishInfo, PluginPublishInfo, PublishInfo
-from .models import Metadata as Metadata
 from .models import PublishType as PublishType
 from .models import ValidationDict as ValidationDict
 from .utils import translate_errors
