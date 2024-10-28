@@ -20,7 +20,7 @@ async def test_render_data_bot(app: App):
     result = ValidationDict(
         type=PublishType.BOT,
         raw_data=raw_data,
-        context={"valid_data": raw_data},
+        valid_data=raw_data,
         info=BotPublishInfo.model_construct(**raw_data),
         errors=[],
     )
@@ -66,7 +66,7 @@ async def test_render_data_bot(app: App):
     result = ValidationDict(
         type=PublishType.BOT,
         raw_data=raw_data,
-        context={"valid_data": raw_data},
+        valid_data=raw_data,
         info=BotPublishInfo.model_construct(**raw_data),
         errors=[],
     )
@@ -117,7 +117,7 @@ async def test_render_data_adapter(app: App):
     result = ValidationDict(
         type=PublishType.ADAPTER,
         raw_data=raw_data,
-        context={"valid_data": raw_data},
+        valid_data=raw_data,
         info=AdapterPublishInfo.model_construct(**raw_data),
         errors=[],
     )
@@ -170,7 +170,7 @@ async def test_render_data_plugin(app: App, mocker: MockFixture):
     result = ValidationDict(
         type=PublishType.PLUGIN,
         raw_data=raw_data,
-        context={"valid_data": raw_data},
+        valid_data=raw_data,
         info=PluginPublishInfo.model_construct(**raw_data),
         errors=[],
     )
@@ -210,13 +210,11 @@ async def test_render_data_plugin_supported_adapters(app: App, mocker: MockFixtu
     result = ValidationDict(
         type=PublishType.PLUGIN,
         raw_data={"name": "帮助"},
-        context={
-            "valid_data": {
-                "supported_adapters": [
-                    "nonebot.adapters.onebot.v11",
-                    "nonebot.adapters.none",
-                ]
-            }
+        valid_data={
+            "supported_adapters": [
+                "nonebot.adapters.onebot.v11",
+                "nonebot.adapters.none",
+            ]
         },
         info=None,
         errors=[],

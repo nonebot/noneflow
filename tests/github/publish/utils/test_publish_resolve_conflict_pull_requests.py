@@ -296,7 +296,7 @@ async def test_resolve_conflict_pull_requests_plugin(
     from src.plugins.github import plugin_config
     from src.plugins.github.models import GithubHandler, RepoInfo
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
-    from src.providers.validation import Metadata
+    from src.providers.docker_test import Metadata
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_result = mocker.MagicMock()

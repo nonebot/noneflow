@@ -12,7 +12,7 @@ from tests.github.utils import (
 
 
 async def test_trigger_registry_update(app: App, mocker: MockerFixture):
-    from src.plugins.github.models import RepoInfo
+    from src.plugins.github.models import IssueHandler, RepoInfo
     from src.plugins.github.plugins.publish.utils import trigger_registry_update
     from src.providers.validation import PublishType
 
@@ -55,9 +55,12 @@ async def test_trigger_registry_update(app: App, mocker: MockerFixture):
             True,
         )
 
-        await trigger_registry_update(
-            bot, RepoInfo(owner="owner", repo="repo"), PublishType.PLUGIN, mock_issue
+        handler = IssueHandler(
+            bot=bot,
+            repo_info=RepoInfo(owner="owner", repo="registry"),
+            issue=mock_issue,
         )
+        await trigger_registry_update(handler, PublishType.PLUGIN)
 
     mock_sleep.assert_awaited_once_with(300)
 

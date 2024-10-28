@@ -60,7 +60,7 @@ async def test_process_pull_request(
             {
                 "owner": "he0119",
                 "repo": "action-test",
-                "issue_number": 76,
+                "issue_number": 80,
                 "state": "closed",
                 "state_reason": "completed",
             },
@@ -78,16 +78,18 @@ async def test_process_pull_request(
         )
         ctx.should_call_api(
             "rest.repos.async_create_dispatch_event",
-            {
-                "repo": "registry",
-                "owner": "owner",
-                "event_type": "registry_update",
-                "client_payload": {
-                    "type": "Plugin",
-                    "key": "project_link1:module_name1",
-                    "config": "log_level=DEBUG\n",
-                },
-            },
+            snapshot(
+                {
+                    "repo": "action-test",
+                    "owner": "he0119",
+                    "event_type": "registry_update",
+                    "client_payload": {
+                        "type": "Plugin",
+                        "key": "project_link1:module_name1",
+                        "config": "log_level=DEBUG\n",
+                    },
+                }
+            ),
             True,
         )
 
@@ -150,7 +152,7 @@ async def test_process_pull_request_not_merged(
             {
                 "owner": "he0119",
                 "repo": "action-test",
-                "issue_number": 76,
+                "issue_number": 80,
                 "state": "closed",
                 "state_reason": "not_planned",
             },
@@ -226,7 +228,7 @@ async def test_process_pull_request_skip_plugin_test(
             {
                 "owner": "he0119",
                 "repo": "action-test",
-                "issue_number": 76,
+                "issue_number": 80,
                 "state": "closed",
                 "state_reason": "completed",
             },
@@ -243,20 +245,25 @@ async def test_process_pull_request_skip_plugin_test(
             mock_list_comments_resp,
         )
         ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
             "rest.repos.async_create_dispatch_event",
-            {
-                "repo": "registry",
-                "owner": "owner",
-                "event_type": "registry_update",
-                "client_payload": snapshot(
-                    {
+            snapshot(
+                {
+                    "repo": "action-test",
+                    "owner": "he0119",
+                    "event_type": "registry_update",
+                    "client_payload": {
                         "type": "Plugin",
                         "key": "project_link:module_name",
                         "config": "log_level=DEBUG\n",
-                        "data": '{"module_name": "module_name", "project_link": "project_link", "name": "name", "desc": "desc", "author": "user", "author_id": 1, "homepage": "https://nonebot.dev", "tags": [{"label": "test", "color": "#ffffff"}], "is_official": false, "type": "application", "supported_adapters": ["nonebot.adapters.onebot.v11"], "load": false, "metadata": {"name": "name", "desc": "desc", "homepage": "https://nonebot.dev", "type": "application", "supported_adapters": ["~onebot.v11"]}}',
-                    }
-                ),
-            },
+                        "data": '{"module_name": "module_name", "project_link": "project_link", "time": "2023-09-01T00:00:00+00:00Z", "name": "name", "desc": "desc", "author": "user", "author_id": 1, "homepage": "https://nonebot.dev", "tags": [{"label": "test", "color": "#ffffff"}], "type": "application", "supported_adapters": ["nonebot.adapters.onebot.v11"], "load": true, "metadata": true, "skip_test": true, "test_output": "\\u63d2\\u4ef6\\u672a\\u8fdb\\u884c\\u6d4b\\u8bd5"}',
+                    },
+                }
+            ),
             True,
         )
 

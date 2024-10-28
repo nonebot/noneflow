@@ -160,14 +160,14 @@ async def handle_publish_plugin_check(
             await publish_check_matcher.finish()
 
         # 是否需要跳过插件测试
-        skip_plugin_test = await handler.should_skip_plugin_test()
+        skip_test = await handler.should_skip_test()
         # 如果需要跳过插件测试，则修改议题内容，确保其包含插件所需信息
-        if skip_plugin_test:
+        if skip_test:
             await ensure_issue_content(handler)
 
         # 检查是否满足发布要求
         # 仅在通过检查的情况下创建拉取请求
-        result = await validate_plugin_info_from_issue(issue, handler, skip_plugin_test)
+        result = await validate_plugin_info_from_issue(issue, handler, skip_test)
 
         # 确保插件重测按钮存在
         await ensure_issue_test_button(handler)

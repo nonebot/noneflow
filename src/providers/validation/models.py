@@ -227,24 +227,13 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     """插件测试元数据"""
     skip_test: bool
     """是否跳过插件测试"""
-    version: str
+    version: str = "0.0.1"
     """插件版本号
 
     从 PyPI 获取或者测试中获取
     """
-    test_output: str
+    test_output: str = ""
     """插件测试输出"""
-
-    def to_store_data(self) -> dict[str, Any]:
-        return to_jsonable_python(
-            {
-                "module_name": self.module_name,
-                "project_link": self.project_link,
-                "author_id": self.author_id,
-                "tags": self.tags,
-                "is_official": self.is_official,
-            }
-        )
 
     @field_validator("type", mode="before")
     @classmethod
@@ -299,7 +288,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
         if context is None:
             raise PydanticCustomError("validation_context", "未获取到验证上下文")
 
-        if v or context.get("skip_plugin_test"):
+        if v or context.get("skip_test"):
             return True
         raise PydanticCustomError(
             "plugin.test",

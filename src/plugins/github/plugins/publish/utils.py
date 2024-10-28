@@ -7,15 +7,13 @@ from githubkit.exception import RequestFailed
 from nonebot import logger
 
 from src.plugins.github import plugin_config
-from src.plugins.github.constants import (
-    ISSUE_FIELD_PATTERN,
-    ISSUE_FIELD_TEMPLATE,
-)
+from src.plugins.github.constants import ISSUE_FIELD_PATTERN, ISSUE_FIELD_TEMPLATE
 from src.plugins.github.models import IssueHandler
 from src.plugins.github.models.github import GithubHandler
 from src.plugins.github.typing import LabelsItems
 from src.plugins.github.utils import commit_message as _commit_message
 from src.plugins.github.utils import dump_json, load_json, run_shell_command
+from src.providers.models import to_store
 from src.providers.validation import PublishType, ValidationDict
 
 from .constants import (
@@ -162,7 +160,7 @@ def update_file(result: ValidationDict) -> None:
     """更新文件"""
     assert result.valid
     assert result.info
-    new_data = result.info.to_store_data()
+    new_data = to_store(result.info)
 
     match result.type:
         case PublishType.ADAPTER:

@@ -84,7 +84,7 @@ class IssueHandler(GithubHandler):
             base_branch, title, branch_name, label, self.issue_number
         )
 
-    async def should_skip_plugin_test(self) -> bool:
+    async def should_skip_test(self) -> bool:
         """判断评论是否包含跳过的标记"""
         comments = await self.list_comments(self.issue_number)
         for comment in comments:
