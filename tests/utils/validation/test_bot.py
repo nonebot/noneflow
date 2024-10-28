@@ -8,9 +8,9 @@ async def test_bot_info_validation_success(mocked_api: MockRouter) -> None:
     """测试验证成功的情况"""
     from src.providers.validation import BotPublishInfo, PublishType, validate_info
 
-    data, context = generate_bot_data()
+    data = generate_bot_data()
 
-    result = validate_info(PublishType.BOT, data, context)
+    result = validate_info(PublishType.BOT, data, [])
 
     assert result.valid
     assert result.type == PublishType.BOT
@@ -24,19 +24,6 @@ async def test_bot_info_validation_success(mocked_api: MockRouter) -> None:
             "author_id": 1,
         }
     )
-    assert result.context == snapshot(
-        {
-            "previous_data": [],
-            "valid_data": {
-                "name": "name",
-                "desc": "desc",
-                "author": "author",
-                "author_id": 1,
-                "homepage": "https://nonebot.dev",
-                "tags": [{"label": "test", "color": "#ffffff"}],
-            },
-        }
-    )
     assert isinstance(result.info, BotPublishInfo)
     assert result.errors == []
 
@@ -47,7 +34,7 @@ async def test_bot_info_validation_failed(mocked_api: MockRouter) -> None:
     """测试验证失败的情况"""
     from src.providers.validation import PublishType, ValidationDict, validate_info
 
-    data, context = generate_bot_data(
+    data = generate_bot_data(
         name="tooooooooooooooooooooooooooooooooooooooooooooooooog",
         homepage="https://www.baidu.com",
         tags=[
@@ -56,14 +43,10 @@ async def test_bot_info_validation_failed(mocked_api: MockRouter) -> None:
         ],
     )
 
-    result = validate_info(PublishType.BOT, data, context)
+    result = validate_info(PublishType.BOT, data, [])
 
     assert result == snapshot(
         ValidationDict(
-            context={
-                "previous_data": [],
-                "valid_data": {"desc": "desc", "author": "author", "author_id": 1},
-            },
             errors=[
                 {
                     "type": "string_too_long",
@@ -103,6 +86,7 @@ async def test_bot_info_validation_failed(mocked_api: MockRouter) -> None:
                 "author_id": 1,
             },
             type=PublishType.BOT,
+            valid_data={"desc": "desc", "author": "author", "author_id": 1},
         )
     )
 
@@ -113,23 +97,18 @@ async def test_bot_name_duplication(mocked_api: MockRouter) -> None:
     """测试机器人名称重复的情况"""
     from src.providers.validation import PublishType, ValidationDict, validate_info
 
-    data, context = generate_bot_data(
-        previous_data=[
-            {
-                "name": "name",
-                "homepage": "https://nonebot.dev",
-            }
-        ]
-    )
+    data = generate_bot_data()
+    previous_data = [
+        {
+            "name": "name",
+            "homepage": "https://nonebot.dev",
+        }
+    ]
 
-    result = validate_info(PublishType.BOT, data, context)
+    result = validate_info(PublishType.BOT, data, previous_data)
 
     assert result == snapshot(
         ValidationDict(
-            context={
-                "previous_data": [{"name": "name", "homepage": "https://nonebot.dev"}],
-                "valid_data": {},
-            },
             errors=[
                 {
                     "type": "duplication",
@@ -156,6 +135,7 @@ async def test_bot_name_duplication(mocked_api: MockRouter) -> None:
                 "author_id": 1,
             },
             type=PublishType.BOT,
+            valid_data={},
         )
     )
 
@@ -166,13 +146,12 @@ async def test_bot_previos_data_missing(mocked_api: MockRouter) -> None:
     """测试机器人名称重复的情况"""
     from src.providers.validation import PublishType, ValidationDict, validate_info
 
-    data, _ = generate_bot_data()
+    data = generate_bot_data()
 
-    result = validate_info(PublishType.BOT, data)
+    result = validate_info(PublishType.BOT, data, None)
 
     assert result == snapshot(
         ValidationDict(
-            context={"valid_data": {}},
             errors=[
                 {
                     "type": "previous_data",

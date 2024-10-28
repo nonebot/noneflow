@@ -8,9 +8,9 @@ async def test_plugin_info_validation_success(mocked_api: MockRouter) -> None:
     """测试验证成功的情况"""
     from src.providers.validation import PluginPublishInfo, PublishType, validate_info
 
-    data, context = generate_plugin_data()
+    data = generate_plugin_data()
 
-    result = validate_info(PublishType.PLUGIN, data, context)
+    result = validate_info(PublishType.PLUGIN, data, [])
 
     assert result.valid
     assert result.type == PublishType.PLUGIN
@@ -27,34 +27,11 @@ async def test_plugin_info_validation_success(mocked_api: MockRouter) -> None:
             "supported_adapters": None,
             "skip_test": False,
             "metadata": True,
-            "previous_data": [],
             "author_id": 1,
             "load": True,
             "version": "0.0.1",
+            "test_output": "test_output",
             "time": "2023-09-01T00:00:00+00:00Z",
-        }
-    )
-    assert result.context == snapshot(
-        {
-            "skip_test": False,
-            "previous_data": [],
-            "valid_data": {
-                "module_name": "module_name",
-                "project_link": "project_link",
-                "time": "2023-09-01T00:00:00+00:00Z",
-                "name": "name",
-                "desc": "desc",
-                "author": "author",
-                "author_id": 1,
-                "homepage": "https://nonebot.dev",
-                "tags": [{"label": "test", "color": "#ffffff"}],
-                "type": "application",
-                "supported_adapters": None,
-                "load": True,
-                "metadata": True,
-                "skip_test": False,
-                "version": "0.0.1",
-            },
         }
     )
     assert isinstance(result.info, PluginPublishInfo)
@@ -67,38 +44,20 @@ async def test_plugin_info_validation_failed(mocked_api: MockRouter) -> None:
     """测试验证失败的情况"""
     from src.providers.validation import PublishType, ValidationDict, validate_info
 
-    data, context = generate_plugin_data(
+    data = generate_plugin_data(
         homepage="https://www.baidu.com",
         tags=[
             {"label": "test", "color": "#ffffff"},
             {"label": "testtoolong", "color": "#fffffff"},
         ],
-        previous_data=[],
         type="invalid",
         supported_adapters=["missing", "~onebot.v11"],
     )
 
-    result = validate_info(PublishType.PLUGIN, data, context)
+    result = validate_info(PublishType.PLUGIN, data, [])
 
     assert result == snapshot(
         ValidationDict(
-            context={
-                "skip_test": False,
-                "previous_data": [],
-                "valid_data": {
-                    "module_name": "module_name",
-                    "project_link": "project_link",
-                    "time": "2023-09-01T00:00:00+00:00Z",
-                    "name": "name",
-                    "desc": "desc",
-                    "author": "author",
-                    "author_id": 1,
-                    "load": True,
-                    "metadata": True,
-                    "skip_test": False,
-                    "version": "0.0.1",
-                },
-            },
             errors=[
                 {
                     "type": "homepage",
@@ -150,13 +109,27 @@ async def test_plugin_info_validation_failed(mocked_api: MockRouter) -> None:
                 "supported_adapters": ["missing", "~onebot.v11"],
                 "skip_test": False,
                 "metadata": True,
-                "previous_data": [],
                 "author_id": 1,
                 "load": True,
                 "version": "0.0.1",
+                "test_output": "test_output",
                 "time": "2023-09-01T00:00:00+00:00Z",
             },
             type=PublishType.PLUGIN,
+            valid_data={
+                "module_name": "module_name",
+                "project_link": "project_link",
+                "time": "2023-09-01T00:00:00+00:00Z",
+                "name": "name",
+                "desc": "desc",
+                "author": "author",
+                "author_id": 1,
+                "load": True,
+                "metadata": True,
+                "skip_test": False,
+                "version": "0.0.1",
+                "test_output": "test_output",
+            },
         )
     )
 

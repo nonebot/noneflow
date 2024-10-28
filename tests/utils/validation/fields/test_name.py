@@ -8,16 +8,29 @@ async def test_name_too_long(mocked_api: MockRouter) -> None:
     """测试名称过长的情况"""
     from src.providers.validation import PublishType, validate_info
 
-    data, context = generate_adapter_data(
+    data = generate_adapter_data(
         name="looooooooooooooooooooooooooooooooooooooooooooooooooooooooong"
     )
 
-    result = validate_info(PublishType.ADAPTER, data, context)
+    result = validate_info(PublishType.ADAPTER, data, [])
 
     assert not result.valid
-    assert "name" not in result.valid_data
-    assert result.errors == [
-        snapshot(
+    assert result.type == PublishType.ADAPTER
+    assert result.valid_data == snapshot(
+        {
+            "module_name": "module_name",
+            "project_link": "project_link",
+            "time": "2023-09-01T00:00:00+00:00Z",
+            "desc": "desc",
+            "author": "author",
+            "homepage": "https://nonebot.dev",
+            "author_id": 1,
+            "tags": [{"label": "test", "color": "#ffffff"}],
+        }
+    )
+    assert result.info is None
+    assert result.errors == snapshot(
+        [
             {
                 "type": "string_too_long",
                 "loc": ("name",),
@@ -25,8 +38,8 @@ async def test_name_too_long(mocked_api: MockRouter) -> None:
                 "input": "looooooooooooooooooooooooooooooooooooooooooooooooooooooooong",
                 "ctx": {"max_length": 50},
             }
-        )
-    ]
+        ]
+    )
 
     assert mocked_api["project_link"].called
     assert mocked_api["homepage"].called

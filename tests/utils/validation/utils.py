@@ -18,7 +18,6 @@ def generate_adapter_data(
     project_link: str | None = "project_link",
     homepage: str | None = "https://nonebot.dev",
     tags: list | None = [{"label": "test", "color": "#ffffff"}],
-    previous_data: list[Any] | None = [],
     author_id: int | None = 1,
 ):
     return exclude_none(
@@ -30,10 +29,9 @@ def generate_adapter_data(
             "project_link": project_link,
             "homepage": homepage,
             "tags": json.dumps(tags),
-            "previous_data": previous_data,
             "author_id": author_id,
         }
-    ), exclude_none({"previous_data": previous_data})
+    )
 
 
 def generate_bot_data(
@@ -42,7 +40,6 @@ def generate_bot_data(
     author: str | None = "author",
     homepage: str | None = "https://nonebot.dev",
     tags: list | str | None = [{"label": "test", "color": "#ffffff"}],
-    previous_data: list[Any] | None = [],
     author_id: int | None = 1,
 ):
     if isinstance(tags, list):
@@ -56,7 +53,7 @@ def generate_bot_data(
             "tags": tags,
             "author_id": author_id,
         }
-    ), exclude_none({"previous_data": previous_data})
+    )
 
 
 def generate_plugin_data(
@@ -70,9 +67,9 @@ def generate_plugin_data(
     type: str | None = "application",
     supported_adapters: Any = None,
     skip_test: bool | None = False,
-    previous_data: list[Any] | None = [],
     author_id: int | None = 1,
-) -> tuple[dict[str, Any], dict[str, Any]]:
+    test_output: str | None = "test_output",
+):
     return exclude_none(
         {
             "author": author,
@@ -86,14 +83,9 @@ def generate_plugin_data(
             "supported_adapters": supported_adapters,
             "skip_test": skip_test,
             "metadata": True,
-            "previous_data": previous_data,
             "author_id": author_id,
             "load": True,
             "version": "0.0.1",
-        }
-    ), exclude_none(
-        {
-            "skip_test": skip_test,
-            "previous_data": previous_data,
+            "test_output": test_output,
         }
     )

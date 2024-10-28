@@ -10,12 +10,32 @@ async def test_tags_color_missing(mocked_api: MockRouter) -> None:
     """测试标签缺少颜色的情况"""
     from src.providers.validation import PublishType, validate_info
 
-    data, context = generate_plugin_data(tags=[{"label": "test"}])
+    data = generate_plugin_data(tags=[{"label": "test"}])
 
-    result = validate_info(PublishType.PLUGIN, data, context)
+    result = validate_info(PublishType.PLUGIN, data, [])
 
     assert not result.valid
-    assert "tags" not in result.valid_data
+    assert result.type == PublishType.PLUGIN
+    assert result.valid_data == snapshot(
+        {
+            "module_name": "module_name",
+            "project_link": "project_link",
+            "time": "2023-09-01T00:00:00+00:00Z",
+            "name": "name",
+            "desc": "desc",
+            "author": "author",
+            "author_id": 1,
+            "homepage": "https://nonebot.dev",
+            "type": "application",
+            "supported_adapters": None,
+            "load": True,
+            "metadata": True,
+            "skip_test": False,
+            "version": "0.0.1",
+            "test_output": "test_output",
+        }
+    )
+    assert result.info is None
     assert result.errors == [
         snapshot(
             {
@@ -35,12 +55,32 @@ async def test_tags_color_invalid(mocked_api: MockRouter) -> None:
     """测试标签颜色不正确的情况"""
     from src.providers.validation import PublishType, validate_info
 
-    data, context = generate_plugin_data(tags=[{"label": "test", "color": "#adbcdef"}])
+    data = generate_plugin_data(tags=[{"label": "test", "color": "#adbcdef"}])
 
-    result = validate_info(PublishType.PLUGIN, data, context)
+    result = validate_info(PublishType.PLUGIN, data, [])
 
     assert not result.valid
-    assert "tags" not in result.valid_data
+    assert result.type == PublishType.PLUGIN
+    assert result.valid_data == snapshot(
+        {
+            "module_name": "module_name",
+            "project_link": "project_link",
+            "time": "2023-09-01T00:00:00+00:00Z",
+            "name": "name",
+            "desc": "desc",
+            "author": "author",
+            "author_id": 1,
+            "homepage": "https://nonebot.dev",
+            "type": "application",
+            "supported_adapters": None,
+            "load": True,
+            "metadata": True,
+            "skip_test": False,
+            "version": "0.0.1",
+            "test_output": "test_output",
+        }
+    )
+    assert result.info is None
     assert result.errors == [
         snapshot(
             {
@@ -60,14 +100,32 @@ async def test_tags_label_invalid(mocked_api: MockRouter) -> None:
     """测试标签名称不正确的情况"""
     from src.providers.validation import PublishType, validate_info
 
-    data, context = generate_plugin_data(
-        tags=[{"label": "12345678901", "color": "#adbcde"}]
-    )
+    data = generate_plugin_data(tags=[{"label": "12345678901", "color": "#adbcde"}])
 
-    result = validate_info(PublishType.PLUGIN, data, context)
+    result = validate_info(PublishType.PLUGIN, data, [])
 
     assert not result.valid
-    assert "tags" not in result.valid_data
+    assert result.type == PublishType.PLUGIN
+    assert result.valid_data == snapshot(
+        {
+            "module_name": "module_name",
+            "project_link": "project_link",
+            "time": "2023-09-01T00:00:00+00:00Z",
+            "name": "name",
+            "desc": "desc",
+            "author": "author",
+            "author_id": 1,
+            "homepage": "https://nonebot.dev",
+            "type": "application",
+            "supported_adapters": None,
+            "load": True,
+            "metadata": True,
+            "skip_test": False,
+            "version": "0.0.1",
+            "test_output": "test_output",
+        }
+    )
+    assert result.info is None
     assert result.errors == [
         snapshot(
             {
@@ -88,7 +146,7 @@ async def test_tags_number_invalid(mocked_api: MockRouter) -> None:
     """测试标签数量不正确的情况"""
     from src.providers.validation import PublishType, validate_info
 
-    data, context = generate_plugin_data(
+    data = generate_plugin_data(
         tags=[
             {"label": "1", "color": "#ffffff"},
             {"label": "2", "color": "#ffffff"},
@@ -97,10 +155,30 @@ async def test_tags_number_invalid(mocked_api: MockRouter) -> None:
         ]
     )
 
-    result = validate_info(PublishType.PLUGIN, data, context)
+    result = validate_info(PublishType.PLUGIN, data, [])
 
     assert not result.valid
-    assert "tags" not in result.valid_data
+    assert result.type == PublishType.PLUGIN
+    assert result.valid_data == snapshot(
+        {
+            "module_name": "module_name",
+            "project_link": "project_link",
+            "time": "2023-09-01T00:00:00+00:00Z",
+            "name": "name",
+            "desc": "desc",
+            "author": "author",
+            "author_id": 1,
+            "homepage": "https://nonebot.dev",
+            "type": "application",
+            "supported_adapters": None,
+            "load": True,
+            "metadata": True,
+            "skip_test": False,
+            "version": "0.0.1",
+            "test_output": "test_output",
+        }
+    )
+    assert result.info is None
     assert result.errors == [
         snapshot(
             {
@@ -126,13 +204,33 @@ async def test_tags_json_invalid(mocked_api: MockRouter) -> None:
     """测试标签 json 格式不正确的情况"""
     from src.providers.validation import PublishType, validate_info
 
-    data, context = generate_plugin_data()
+    data = generate_plugin_data()
     data["tags"] = json.dumps([{"label": "1", "color": "#ffffff"}]) + "1"
 
-    result = validate_info(PublishType.PLUGIN, data, context)
+    result = validate_info(PublishType.PLUGIN, data, [])
 
     assert not result.valid
-    assert "tags" not in result.valid_data
+    assert result.type == PublishType.PLUGIN
+    assert result.valid_data == snapshot(
+        {
+            "module_name": "module_name",
+            "project_link": "project_link",
+            "time": "2023-09-01T00:00:00+00:00Z",
+            "name": "name",
+            "desc": "desc",
+            "author": "author",
+            "author_id": 1,
+            "homepage": "https://nonebot.dev",
+            "type": "application",
+            "supported_adapters": None,
+            "load": True,
+            "metadata": True,
+            "skip_test": False,
+            "version": "0.0.1",
+            "test_output": "test_output",
+        }
+    )
+    assert result.info is None
     assert result.errors == [
         snapshot(
             {
@@ -152,13 +250,33 @@ async def test_tags_json_not_list(mocked_api: MockRouter) -> None:
     """测试标签 json 不是列表的情况"""
     from src.providers.validation import PublishType, validate_info
 
-    data, context = generate_plugin_data()
+    data = generate_plugin_data()
     data["tags"] = json.dumps({"test": "test"})
 
-    result = validate_info(PublishType.PLUGIN, data, context)
+    result = validate_info(PublishType.PLUGIN, data, [])
 
     assert not result.valid
-    assert "tags" not in result.valid_data
+    assert result.type == PublishType.PLUGIN
+    assert result.valid_data == snapshot(
+        {
+            "module_name": "module_name",
+            "project_link": "project_link",
+            "time": "2023-09-01T00:00:00+00:00Z",
+            "name": "name",
+            "desc": "desc",
+            "author": "author",
+            "author_id": 1,
+            "homepage": "https://nonebot.dev",
+            "type": "application",
+            "supported_adapters": None,
+            "load": True,
+            "metadata": True,
+            "skip_test": False,
+            "version": "0.0.1",
+            "test_output": "test_output",
+        }
+    )
+    assert result.info is None
     assert result.errors == [
         snapshot(
             {
@@ -178,12 +296,32 @@ async def test_tags_json_not_dict(mocked_api: MockRouter) -> None:
     """测试标签 json 是列表但列表里不全是字典的情况"""
     from src.providers.validation import PublishType, validate_info
 
-    data, context = generate_plugin_data(tags=[{"label": "1", "color": "#ffffff"}, "1"])
+    data = generate_plugin_data(tags=[{"label": "1", "color": "#ffffff"}, "1"])
 
-    result = validate_info(PublishType.PLUGIN, data, context)
+    result = validate_info(PublishType.PLUGIN, data, [])
 
     assert not result.valid
-    assert "tags" not in result.valid_data
+    assert result.type == PublishType.PLUGIN
+    assert result.valid_data == snapshot(
+        {
+            "module_name": "module_name",
+            "project_link": "project_link",
+            "time": "2023-09-01T00:00:00+00:00Z",
+            "name": "name",
+            "desc": "desc",
+            "author": "author",
+            "author_id": 1,
+            "homepage": "https://nonebot.dev",
+            "type": "application",
+            "supported_adapters": None,
+            "load": True,
+            "metadata": True,
+            "skip_test": False,
+            "version": "0.0.1",
+            "test_output": "test_output",
+        }
+    )
+    assert result.info is None
     assert result.errors == [
         snapshot(
             {

@@ -8,9 +8,9 @@ async def test_adapter_info_validation_success(mocked_api: MockRouter) -> None:
     """测试验证成功的情况"""
     from src.providers.validation import AdapterPublishInfo, PublishType, validate_info
 
-    data, context = generate_adapter_data()
+    data = generate_adapter_data()
 
-    result = validate_info(PublishType.ADAPTER, data, context)
+    result = validate_info(PublishType.ADAPTER, data, [])
 
     assert result.valid
     assert result.type == PublishType.ADAPTER
@@ -23,27 +23,11 @@ async def test_adapter_info_validation_success(mocked_api: MockRouter) -> None:
             "project_link": "project_link",
             "homepage": "https://nonebot.dev",
             "tags": '[{"label": "test", "color": "#ffffff"}]',
-            "previous_data": [],
             "author_id": 1,
             "time": "2023-09-01T00:00:00+00:00Z",
         }
     )
-    assert result.context == snapshot(
-        {
-            "previous_data": [],
-            "valid_data": {
-                "module_name": "module_name",
-                "project_link": "project_link",
-                "time": "2023-09-01T00:00:00+00:00Z",
-                "name": "name",
-                "desc": "desc",
-                "author": "author",
-                "author_id": 1,
-                "homepage": "https://nonebot.dev",
-                "tags": [{"label": "test", "color": "#ffffff"}],
-            },
-        }
-    )
+
     assert isinstance(result.info, AdapterPublishInfo)
     assert result.errors == []
 
@@ -55,7 +39,7 @@ async def test_adapter_info_validation_failed(mocked_api: MockRouter) -> None:
     from src.providers.validation import PublishType, validate_info
     from src.providers.validation.models import ValidationDict
 
-    data, context = generate_adapter_data(
+    data = generate_adapter_data(
         module_name="module_name/",
         project_link="project_link_failed",
         homepage="https://www.baidu.com",
@@ -65,20 +49,10 @@ async def test_adapter_info_validation_failed(mocked_api: MockRouter) -> None:
         ],
     )
 
-    result = validate_info(PublishType.ADAPTER, data, context)
+    result = validate_info(PublishType.ADAPTER, data, [])
 
     assert result == snapshot(
         ValidationDict(
-            context={
-                "previous_data": [],
-                "valid_data": {
-                    "time": None,
-                    "name": "name",
-                    "desc": "desc",
-                    "author": "author",
-                    "author_id": 1,
-                },
-            },
             errors=[
                 {
                     "type": "module_name",
@@ -122,11 +96,17 @@ async def test_adapter_info_validation_failed(mocked_api: MockRouter) -> None:
                 "project_link": "project_link_failed",
                 "homepage": "https://www.baidu.com",
                 "tags": '[{"label": "test", "color": "#ffffff"}, {"label": "testtoolong", "color": "#fffffff"}]',
-                "previous_data": [],
                 "author_id": 1,
                 "time": None,
             },
             type=PublishType.ADAPTER,
+            valid_data={
+                "time": None,
+                "name": "name",
+                "desc": "desc",
+                "author": "author",
+                "author_id": 1,
+            },
         )
     )
 

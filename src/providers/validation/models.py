@@ -69,7 +69,7 @@ class ValidationDict(BaseModel):
     type: PublishType
     raw_data: dict[str, Any] = {}
     """原始数据"""
-    context: dict[str, Any] = {}
+    valid_data: dict[str, Any] = {}
     """验证上下文"""
     info: "PublishInfo | None" = None
     """验证通过的信息"""
@@ -78,11 +78,6 @@ class ValidationDict(BaseModel):
     @property
     def valid(self) -> bool:
         return not self.errors
-
-    @property
-    def valid_data(self):
-        """经过验证的数据"""
-        return self.context.get("valid_data", {})
 
     @property
     def name(self) -> str:
@@ -94,8 +89,8 @@ class ValidationDict(BaseModel):
         )
 
     @property
-    def skip_plugin_test(self) -> bool:
-        return self.context.get("skip_plugin_test", False)
+    def skip_test(self) -> bool:
+        return self.raw_data.get("skip_test", False)
 
 
 class PyPIMixin(BaseModel):
@@ -227,16 +222,18 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     supported_adapters: list[str] | None
     """插件支持的适配器"""
     load: bool
-    """"插件测试结果"""
+    """插件测试结果"""
     metadata: bool
     """插件测试元数据"""
     skip_test: bool
-    """跳过插件测试"""
+    """是否跳过插件测试"""
     version: str
-    """版本号
+    """插件版本号
 
     从 PyPI 获取或者测试中获取
     """
+    test_output: str
+    """插件测试输出"""
 
     def to_store_data(self) -> dict[str, Any]:
         return to_jsonable_python(
@@ -265,9 +262,9 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
         if context is None:  # pragma: no cover
             raise PydanticCustomError("validation_context", "未获取到验证上下文")
 
-        skip_plugin_test = context.get("skip_plugin_test")
+        skip_test = context.get("skip_test")
         # 如果是从 issue 中获取的数据，需要先解码
-        if skip_plugin_test and isinstance(v, str):
+        if skip_test and isinstance(v, str):
             try:
                 v = json.loads(v)
             except json.JSONDecodeError:
