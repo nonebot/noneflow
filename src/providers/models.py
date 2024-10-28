@@ -140,6 +140,7 @@ class Adapter(BaseModel):
     name: str
     desc: str
     author: str
+    homepage: str
     tags: list[Tag]
     is_official: bool
 
@@ -151,6 +152,7 @@ class Adapter(BaseModel):
             name=publish_info.name,
             desc=publish_info.desc,
             author=publish_info.author,
+            homepage=publish_info.homepage,
             tags=publish_info.tags,
             is_official=publish_info.is_official,
         )

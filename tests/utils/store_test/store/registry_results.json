@@ -11,7 +11,7 @@
       "config": ""
     },
     "outputs": {
-      "validation": "通过",
+      "validation": null,
       "load": "datastore",
       "metadata": {
         "name": "数据存储",
@@ -35,7 +35,7 @@
       "config": "TEST_CONFIG=true"
     },
     "outputs": {
-      "validation": "通过",
+      "validation": null,
       "load": "treehelp",
       "metadata": {
         "name": "帮助",

@@ -12,6 +12,18 @@ from src.providers.constants import (
     STORE_DRIVERS_URL,
     STORE_PLUGINS_URL,
 )
+from src.providers.models import (
+    Adapter,
+    Bot,
+    Driver,
+    Plugin,
+    RegistryUpdatePayload,
+    StoreAdapter,
+    StoreBot,
+    StoreDriver,
+    StorePlugin,
+    StoreTestResult,
+)
 
 from .constants import (
     ADAPTERS_PATH,
@@ -22,17 +34,6 @@ from .constants import (
     PLUGINS_PATH,
     PYPI_KEY_TEMPLATE,
     RESULTS_PATH,
-)
-from .models import (
-    Adapter,
-    Bot,
-    Driver,
-    Plugin,
-    StoreAdapter,
-    StoreBot,
-    StoreDriver,
-    StorePlugin,
-    TestResult,
 )
 from .utils import dump_json, get_latest_version, load_json
 from .validation import validate_plugin
@@ -74,8 +75,8 @@ class StoreTest:
             for plugin in load_json(STORE_PLUGINS_URL)
         }
         # 上次测试的结果
-        self._previous_results: dict[str, TestResult] = {
-            key: TestResult(**value)
+        self._previous_results: dict[str, StoreTestResult] = {
+            key: StoreTestResult(**value)
             for key, value in load_json(REGISTRY_RESULTS_URL).items()
         }
         self._previous_adapters: dict[str, Adapter] = {
@@ -119,7 +120,7 @@ class StoreTest:
             return False
 
         # 如果插件不在上次测试的结果中，则不跳过
-        previous_result: TestResult | None = self._previous_results.get(key)
+        previous_result: StoreTestResult | None = self._previous_results.get(key)
         previous_plugin: Plugin | None = self._previous_plugins.get(key)
         if previous_result is None or previous_plugin is None:
             return False
@@ -135,16 +136,6 @@ class StoreTest:
             return True
         return False
 
-    def skip_plugin_test(self, key: str) -> bool:
-        """是否跳过插件测试
-
-        Args:
-            key (str): 插件标识符
-        """
-        if key in self._previous_plugins:
-            return self._previous_plugins[key].skip_test
-        return False
-
     def read_plugin_config(self, key: str) -> str:
         """获取插件配置
         优先从配置文件中获取，若不存在则从上次测试结果获取
@@ -158,43 +149,35 @@ class StoreTest:
             return self._previous_results[key].config
         return ""
 
-    async def test_plugin(
-        self, key: str, config: str | None = None, plugin_data: str | None = None
-    ) -> tuple[TestResult, Plugin | None]:
+    async def test_plugin(self, key: str) -> tuple[StoreTestResult, Plugin]:
         """测试插件
 
         Args:
             key (str): 插件标识符
             config (str | None): 插件配置，若为 None 则从上次测试结果中获取
-            plugin_data (str | None): 插件数据，不为 None 时，直接使用该数据且跳过测试
+            plugin_data (str): 插件数据，不为 None 时，直接使用该数据且跳过测试
         """
         plugin = self._store_plugins[key]
-
-        # 假设传入了 config， 则需要更新 plugin_config 文件
-        if config:
-            self._plugin_configs[key] = config
         config = self.read_plugin_config(key)
-
         new_result, new_plugin = await validate_plugin(
-            plugin=plugin,
+            store_plugin=plugin,
             config=config,
-            skip_test=self.skip_plugin_test(key),
-            plugin_data=plugin_data,
             previous_plugin=self._previous_plugins.get(key),
         )
         return new_result, new_plugin
 
-    async def test_plugins(self, limit: int, force: bool):
+    async def test_plugins(self, limit: int, offset: int, force: bool):
         """批量测试插件
 
         Args:
             limit (int): 至多有效测试插件数量
+            offset (int): 测试插件偏移量
             force (bool): 是否强制测试
         """
-        new_results: dict[str, TestResult] = {}
+        new_results: dict[str, StoreTestResult] = {}
         new_plugins: dict[str, Plugin] = {}
         i = 1
-        test_plugins = list(self._store_plugins.keys())
+        test_plugins = list(self._store_plugins.keys())[offset:]
 
         for key in test_plugins:
             if i > limit:
@@ -208,8 +191,7 @@ class StoreTest:
             async def worker():
                 new_result, new_plugin = await self.test_plugin(key)
                 new_results[key] = new_result
-                if new_plugin:
-                    new_plugins[key] = new_plugin
+                new_plugins[key] = new_plugin
 
             try:
                 click.echo(f"{i}/{limit} 正在测试插件 {key} ...")
@@ -221,8 +203,8 @@ class StoreTest:
 
         return new_results, new_plugins
 
-    def merge_data(
-        self, new_results: dict[str, TestResult], new_plugins: dict[str, Plugin]
+    def merge_plugin_data(
+        self, new_results: dict[str, StoreTestResult], new_plugins: dict[str, Plugin]
     ):
         """
         合并新的插件测试数据与结果并储存到仓库中
@@ -231,7 +213,7 @@ class StoreTest:
             new_results (dict[str, TestResult]): 新的插件测试结果
             new_plugins (dict[str, Plugin]): 新的插件数据
         """
-        results: dict[str, TestResult] = {}
+        results: dict[str, StoreTestResult] = {}
         plugins: dict[str, Plugin] = {}
         for key in self._store_plugins:
             if key in new_results:
@@ -244,37 +226,33 @@ class StoreTest:
             elif key in self._previous_plugins:
                 plugins[key] = self._previous_plugins[key]
 
-        return results, plugins
+        self._previous_results = results
+        self._previous_plugins = plugins
 
-    def dump_data(self, results: dict[str, TestResult], plugins: list[Plugin]):
+    def dump_data(self):
         """储存数据到仓库中"""
-        dump_json(ADAPTERS_PATH, self._store_adapters)
-        dump_json(BOTS_PATH, self._store_bots)
-        dump_json(DRIVERS_PATH, self._store_drivers)
-        dump_json(PLUGINS_PATH, plugins)
-        dump_json(RESULTS_PATH, results)
+        dump_json(ADAPTERS_PATH, list(self._previous_adapters.values()))
+        dump_json(BOTS_PATH, list(self._previous_bots.values()))
+        dump_json(DRIVERS_PATH, list(self._previous_drivers.values()))
+        dump_json(PLUGINS_PATH, list(self._previous_plugins.values()))
+        dump_json(RESULTS_PATH, self._previous_results)
         dump_json(PLUGIN_CONFIG_PATH, self._plugin_configs)
 
-    async def run(self, limit: int, force: bool = False):
+    async def run(self, limit: int, offset: int = 0, force: bool = False):
         """运行商店测试
 
         Args:
             limit (int): 至多有效测试插件数量
+            offset (int): 测试插件偏移量
             force (bool): 是否强制测试，默认为 False
         """
-        new_results, new_plugins = await self.test_plugins(limit, force)
-        results, plugins = self.merge_data(new_results, new_plugins)
-        self.dump_data(results, list(plugins.values()))
+        new_results, new_plugins = await self.test_plugins(limit, offset, force)
+        self.merge_plugin_data(new_results, new_plugins)
+        self.dump_data()
 
-    async def run_single_plugin(
-        self,
-        key: str,
-        force: bool = False,
-        plugin_data: str | None = None,
-        config: str | None = None,
-    ):
+    async def run_single_plugin(self, key: str, force: bool = False):
         """
-        运行单次插件测试，来自 trigger_registry_update 或手动指定 key 运行
+        运行单次插件测试，手动指定 key 运行
 
         Args:
             key (str): 插件标识符
@@ -284,14 +262,51 @@ class StoreTest:
             return
 
         new_plugin: Plugin | None = None
+        new_result: StoreTestResult | None = None
 
         try:
-            new_result, new_plugin = await self.test_plugin(key, config, plugin_data)
+            new_result, new_plugin = await self.test_plugin(key)
+            self.merge_plugin_data({key: new_result}, {key: new_plugin})
         except Exception as err:
             click.echo(err)
 
-        if new_plugin:
-            results, plugins = self.merge_data({key: new_result}, {key: new_plugin})
-        else:
-            results, plugins = self.merge_data({}, {})
-        self.dump_data(results, list(plugins.values()))
+        self.dump_data()
+
+    async def registry_update(self, payload: RegistryUpdatePayload):
+        """商店更新
+
+        直接利用 payload 中的数据更新商店数据
+        """
+        match payload.registry:
+            case Adapter():
+                key = PYPI_KEY_TEMPLATE.format(
+                    project_link=payload.registry.project_link,
+                    module_name=payload.registry.module_name,
+                )
+                if key not in self._previous_adapters:
+                    self._previous_adapters[key] = payload.registry
+            case Bot():
+                key = BOT_KEY_TEMPLATE.format(
+                    name=payload.registry.name,
+                    homepage=payload.registry.homepage,
+                )
+                if key not in self._previous_bots:
+                    self._previous_bots[key] = payload.registry
+            case Driver():
+                key = PYPI_KEY_TEMPLATE.format(
+                    project_link=payload.registry.project_link,
+                    module_name=payload.registry.module_name,
+                )
+                if key not in self._previous_drivers:
+                    self._previous_drivers[key] = payload.registry
+            case Plugin():
+                key = PYPI_KEY_TEMPLATE.format(
+                    project_link=payload.registry.project_link,
+                    module_name=payload.registry.module_name,
+                )
+                if key not in self._previous_plugins:
+                    self._previous_plugins[key] = payload.registry
+                if key not in self._previous_results and payload.result:
+                    self._previous_results[key] = payload.result
+
+        self.dump_data()
