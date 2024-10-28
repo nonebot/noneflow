@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Literal
+from typing import Any, Literal, Self
 from zoneinfo import ZoneInfo
 
 from pydantic import (
@@ -9,7 +9,13 @@ from pydantic import (
 )
 from pydantic_extra_types.color import Color
 
-from src.providers.validation.models import Metadata, Tag
+from src.providers.validation.models import (
+    AdapterPublishInfo,
+    BotPublishInfo,
+    DriverPublishInfo,
+    PluginPublishInfo,
+    Tag,
+)
 
 
 class TagModel(BaseModel):
@@ -36,6 +42,18 @@ class StoreAdapter(TagModel):
     tags: list[Tag]
     is_official: bool
 
+    @classmethod
+    def from_publish_info(cls, publish_info: AdapterPublishInfo) -> Self:
+        return cls(
+            module_name=publish_info.module_name,
+            project_link=publish_info.project_link,
+            name=publish_info.name,
+            desc=publish_info.desc,
+            author_id=publish_info.author_id,
+            tags=publish_info.tags,
+            is_official=publish_info.is_official,
+        )
+
 
 class StoreBot(TagModel):
     """NoneBot 仓库中的机器人数据"""
@@ -46,6 +64,17 @@ class StoreBot(TagModel):
     homepage: str
     tags: list[Tag]
     is_official: bool
+
+    @classmethod
+    def from_publish_info(cls, publish_info: BotPublishInfo) -> Self:
+        return cls(
+            name=publish_info.name,
+            desc=publish_info.desc,
+            author_id=publish_info.author_id,
+            homepage=publish_info.homepage,
+            tags=publish_info.tags,
+            is_official=publish_info.is_official,
+        )
 
 
 class StoreDriver(TagModel):
@@ -60,6 +89,19 @@ class StoreDriver(TagModel):
     tags: list[Tag]
     is_official: bool
 
+    @classmethod
+    def from_publish_info(cls, publish_info: DriverPublishInfo) -> Self:
+        return cls(
+            module_name=publish_info.module_name,
+            project_link=publish_info.project_link,
+            name=publish_info.name,
+            desc=publish_info.desc,
+            author_id=publish_info.author_id,
+            homepage=publish_info.homepage,
+            tags=publish_info.tags,
+            is_official=publish_info.is_official,
+        )
+
 
 class StorePlugin(TagModel):
     """NoneBot 仓库中的插件数据"""
@@ -69,6 +111,16 @@ class StorePlugin(TagModel):
     author_id: int
     tags: list[Tag]
     is_official: bool
+
+    @classmethod
+    def from_publish_inf(cls, publish_info: PluginPublishInfo) -> Self:
+        return cls(
+            module_name=publish_info.module_name,
+            project_link=publish_info.project_link,
+            author_id=publish_info.author_id,
+            tags=publish_info.tags,
+            is_official=publish_info.is_official,
+        )
 
 
 # endregion
@@ -86,6 +138,18 @@ class Adapter(TagModel):
     tags: list[Tag]
     is_official: bool
 
+    @classmethod
+    def from_publish_info(cls, publish_info: AdapterPublishInfo) -> Self:
+        return cls(
+            module_name=publish_info.module_name,
+            project_link=publish_info.project_link,
+            name=publish_info.name,
+            desc=publish_info.desc,
+            author=publish_info.author,
+            tags=publish_info.tags,
+            is_official=publish_info.is_official,
+        )
+
 
 class Bot(TagModel):
     """NoneBot 商店机器人数据"""
@@ -96,6 +160,17 @@ class Bot(TagModel):
     homepage: str
     tags: list[Tag]
     is_official: bool
+
+    @classmethod
+    def from_publish_info(cls, publish_info: BotPublishInfo) -> Self:
+        return cls(
+            name=publish_info.name,
+            desc=publish_info.desc,
+            author=publish_info.author,
+            homepage=publish_info.homepage,
+            tags=publish_info.tags,
+            is_official=publish_info.is_official,
+        )
 
 
 class Driver(TagModel):
@@ -109,6 +184,19 @@ class Driver(TagModel):
     homepage: str
     tags: list[Tag]
     is_official: bool
+
+    @classmethod
+    def from_publish_info(cls, publish_info: DriverPublishInfo) -> Self:
+        return cls(
+            module_name=publish_info.module_name,
+            project_link=publish_info.project_link,
+            name=publish_info.name,
+            desc=publish_info.desc,
+            author=publish_info.author,
+            homepage=publish_info.homepage,
+            tags=publish_info.tags,
+            is_official=publish_info.is_official,
+        )
 
 
 class Plugin(TagModel):
@@ -129,14 +217,37 @@ class Plugin(TagModel):
     version: str
     skip_test: bool
 
-    def metadata(self) -> Metadata:
-        return Metadata.model_construct(
-            name=self.name,
-            description=self.desc,
-            homepage=self.homepage,
-            type=self.type,
-            supported_adapters=self.supported_adapters,
+    @classmethod
+    def from_publish_info(cls, publish_info: PluginPublishInfo) -> Self:
+        if publish_info.time is None:
+            raise ValueError("上传时间不能为空")
+
+        return cls(
+            module_name=publish_info.module_name,
+            project_link=publish_info.project_link,
+            name=publish_info.name,
+            desc=publish_info.desc,
+            author=publish_info.author,
+            homepage=publish_info.homepage,
+            tags=publish_info.tags,
+            is_official=publish_info.is_official,
+            type=publish_info.type,
+            supported_adapters=publish_info.supported_adapters,
+            valid=True,
+            time=publish_info.time,
+            version=publish_info.version,
+            skip_test=publish_info.skip_test,
         )
+
+    @property
+    def metadata(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "desc": self.desc,
+            "homepage": self.homepage,
+            "type": self.type,
+            "supported_adapters": self.supported_adapters,
+        }
 
 
 # endregion
@@ -155,28 +266,3 @@ class TestResult(BaseModel):
     """
     results: dict[Literal["validation", "load", "metadata"], bool]
     outputs: dict[Literal["validation", "load", "metadata"], Any]
-
-
-class DockerTestResult(BaseModel):
-    """Docker 测试结果"""
-
-    run: bool  # 是否运行
-    load: bool  # 是否加载成功
-    version: str | None = None
-    config: str = ""
-    # 测试环境 python==3.10 pytest==6.2.5 nonebot2==2.0.0a1 ...
-    test_env: str = Field(default="unknown")
-    metadata: Metadata | None
-    outputs: list[str]
-
-    @field_validator("metadata", mode="before")
-    @classmethod
-    def metadata_validator(cls, v: Any):
-        if v:
-            return v
-        return None
-
-    @field_validator("config", mode="before")
-    @classmethod
-    def config_validator(cls, v: str | None):
-        return v or ""
