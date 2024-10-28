@@ -1,5 +1,3 @@
-import asyncio
-import json
 import re
 from typing import TYPE_CHECKING
 
@@ -8,24 +6,21 @@ from nonebot import logger
 
 from src.plugins.github import plugin_config
 from src.plugins.github.constants import ISSUE_FIELD_PATTERN, ISSUE_FIELD_TEMPLATE
-from src.plugins.github.models import IssueHandler
+from src.plugins.github.models import IssueHandler, RepoInfo
 from src.plugins.github.models.github import GithubHandler
 from src.plugins.github.typing import LabelsItems
 from src.plugins.github.utils import commit_message as _commit_message
 from src.plugins.github.utils import dump_json, load_json, run_shell_command
-from src.providers.models import to_store
+from src.providers.models import RegistryUpdatePayload, to_store
 from src.providers.validation import PublishType, ValidationDict
 
 from .constants import (
     BRANCH_NAME_PREFIX,
     COMMIT_MESSAGE_PREFIX,
-    PLUGIN_CONFIG_PATTERN,
-    PLUGIN_MODULE_NAME_PATTERN,
     PLUGIN_STRING_LIST,
     PLUGIN_TEST_BUTTON_PATTERN,
     PLUGIN_TEST_BUTTON_STRING,
     PLUGIN_TEST_STRING,
-    PROJECT_LINK_PATTERN,
 )
 from .validation import (
     validate_adapter_info_from_issue,
@@ -142,6 +137,8 @@ async def resolve_conflict_pull_requests(
                     result = await validate_plugin_info_from_issue(
                         issue_handler.issue, issue_handler
                     )
+                case _:
+                    raise ValueError("暂不支持的发布类型")
 
             # 回到主分支
             run_shell_command(["git", "checkout", plugin_config.input_config.base])
@@ -169,6 +166,8 @@ def update_file(result: ValidationDict) -> None:
             path = plugin_config.input_config.bot_path
         case PublishType.PLUGIN:
             path = plugin_config.input_config.plugin_path
+        case _:
+            raise ValueError("暂不支持的发布类型")
 
     logger.info(f"正在更新文件: {path}")
 
@@ -257,60 +256,26 @@ async def trigger_registry_update(handler: IssueHandler, publish_type: PublishTy
     """通过 repository_dispatch 触发商店列表更新"""
     issue = handler.issue
 
-    if publish_type == PublishType.PLUGIN:
-        config = PLUGIN_CONFIG_PATTERN.search(issue.body) if issue.body else ""
-        # 插件测试是否被跳过
-        skip_plugin_test = await handler.should_skip_plugin_test()
-        if skip_plugin_test:
-            # 重新从议题中获取数据，并验证，防止中间有人修改了插件信息
-            # 因为此时已经将新插件的信息添加到插件列表中
-            # 直接将插件列表变成空列表，避免重新验证时出现重复报错
-            with plugin_config.input_config.plugin_path.open(
-                "w", encoding="utf-8"
-            ) as f:
-                json.dump([], f)
+    # 重新验证信息
+    match publish_type:
+        case PublishType.ADAPTER:
+            result = await validate_adapter_info_from_issue(issue)
+        case PublishType.BOT:
+            result = await validate_bot_info_from_issue(issue)
+        case PublishType.PLUGIN:
             result = await validate_plugin_info_from_issue(issue, handler)
-            logger.debug(f"插件信息验证结果: {result}")
-            if not result.valid:
-                logger.error("插件信息验证失败，跳过触发商店列表更新")
-                return
+        case _:
+            raise ValueError("暂不支持的发布类型")
 
-            client_payload = {
-                "type": publish_type.value,
-                "key": f"{result.valid_data["project_link"]}:{result.valid_data["module_name"]}",
-                "config": config.group(1) if config else "",
-                "data": json.dumps(result.valid_data),
-            }
-        else:
-            # 从议题中获取的插件信息
-            # 这样如果在 json 更新后再次运行也不会获取到不属于该插件的信息
-            body = issue.body if issue.body else ""
-            module_name = PLUGIN_MODULE_NAME_PATTERN.search(body)
-            project_link = PROJECT_LINK_PATTERN.search(body)
-            config = PLUGIN_CONFIG_PATTERN.search(body)
-
-            if not module_name or not project_link:
-                logger.error("无法从议题中获取插件信息，跳过触发商店列表更新")
-                return
-
-            module_name = module_name.group(1)
-            project_link = project_link.group(1)
-            config = config.group(1) if config else ""
-
-            client_payload = {
-                "type": publish_type.value,
-                "key": f"{project_link}:{module_name}",
-                "config": config,
-            }
-    else:
-        client_payload = {"type": publish_type.value}
+    if not result.valid or not result.info:
+        logger.error("信息验证失败，跳过触发商店列表更新")
+        return
 
     owner, repo = plugin_config.input_config.registry_repository.split("/")
-    # GitHub 的缓存一般 2 分钟左右会刷新
-    logger.info("准备触发商店列表更新，等待 5 分钟")
-    await asyncio.sleep(300)
     # 触发商店列表更新
     await handler.create_dispatch_event(
-        event_type="registry_update", client_payload=client_payload
+        event_type="registry_update",
+        client_payload=RegistryUpdatePayload.from_info(result.info).model_dump(),
+        repo=RepoInfo(owner=owner, repo=repo),
     )
     logger.info("已触发商店列表更新")

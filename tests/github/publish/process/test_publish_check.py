@@ -1195,11 +1195,11 @@ log_level=DEBUG
 
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
-<pre><code><li>⚠️ 名称: 无法匹配到数据或值并不合法。<dt>请确保填写该数据项。</dt></li><li>⚠️ 描述: 无法匹配到数据或值并不合法。<dt>请确保填写该数据项。</dt></li><li>⚠️ 项目仓库/主页链接: 无法匹配到数据或值并不合法。<dt>请确保填写该数据项。</dt></li><li>⚠️ 插件类型 None 不符合规范。<dt>请确保插件类型正确，当前仅支持 application 与 library。</dt></li></code></pre>
+<pre><code><li>⚠️ 名称: 无法匹配到数据。<dt>请确保填写该数据项。</dt></li><li>⚠️ 描述: 无法匹配到数据。<dt>请确保填写该数据项。</dt></li><li>⚠️ 项目仓库/主页链接: 无法匹配到数据。<dt>请确保填写该数据项。</dt></li><li>⚠️ 插件类型: 无法匹配到数据。<dt>请确保填写该数据项。</dt></li><li>⚠️ 插件支持的适配器: 无法匹配到数据。<dt>请确保填写该数据项。</dt></li></code></pre>
 
 <details>
 <summary>详情</summary>
-<pre><code><li>✅ 项目 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li><li>✅ 标签: test-#ffffff。</li><li>✅ 插件支持的适配器: 所有。</li><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 已跳过。</li></code></pre>
+<pre><code><li>✅ 项目 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li><li>✅ 标签: test-#ffffff。</li><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 已跳过。</li></code></pre>
 </details>
 
 ---

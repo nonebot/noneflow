@@ -4,23 +4,28 @@ from pytest_mock import MockerFixture
 from respx import MockRouter
 
 from tests.github.utils import (
+    MockBody,
     MockIssue,
-    generate_issue_body_bot,
     generate_issue_body_plugin_skip_test,
     get_github_bot,
 )
 
 
-async def test_trigger_registry_update(app: App, mocker: MockerFixture):
+async def test_trigger_registry_update(
+    app: App, mocker: MockerFixture, mocked_api: MockRouter
+):
     from src.plugins.github.models import IssueHandler, RepoInfo
     from src.plugins.github.plugins.publish.utils import trigger_registry_update
+    from src.providers.docker_test import Metadata
     from src.providers.validation import PublishType
 
-    mock_sleep = mocker.patch("asyncio.sleep")
-    mock_sleep.return_value = None
+    mock_time = mocker.patch("src.providers.models.datetime")
+    mock_now = mocker.MagicMock()
+    mock_now.isoformat.return_value = "2023-09-01T00:00:00+00:00Z"
+    mock_time.now.return_value = mock_now
 
     mock_issue = MockIssue(
-        body="### PyPI 项目名\n\nproject_link1\n\n### 插件 import 包名\n\nmodule_name1\n\n### 插件配置项\n\n```dotenv\nlog_level=DEBUG\n```",
+        body=MockBody(type="plugin").generate(),
         number=1,
     ).as_mock(mocker)
 
@@ -30,28 +35,78 @@ async def test_trigger_registry_update(app: App, mocker: MockerFixture):
     mock_list_comments_resp = mocker.MagicMock()
     mock_list_comments_resp.parsed_data = [mock_comment]
 
+    mock_test_result = mocker.MagicMock()
+    mock_test_result.metadata = Metadata(
+        name="name",
+        desc="desc",
+        homepage="https://nonebot.dev",
+        type="application",
+        supported_adapters=["~onebot.v11"],
+    )
+    mock_test_result.load = True
+    mock_docker = mocker.patch("src.providers.docker_test.DockerPluginTest.run")
+    mock_docker.return_value = mock_test_result
+
     async with app.test_api() as ctx:
         adapter, bot = get_github_bot(ctx)
 
         ctx.should_call_api(
             "rest.issues.async_list_comments",
-            {"owner": "owner", "repo": "repo", "issue_number": 1},
+            {"owner": "owner", "repo": "registry", "issue_number": 1},
             mock_list_comments_resp,
         )
         ctx.should_call_api(
             "rest.repos.async_create_dispatch_event",
-            {
-                "repo": "registry",
-                "owner": "owner",
-                "event_type": "registry_update",
-                "client_payload": snapshot(
-                    {
-                        "type": "Plugin",
-                        "key": "project_link1:module_name1",
-                        "config": "log_level=DEBUG\n",
-                    }
-                ),
-            },
+            snapshot(
+                {
+                    "repo": "registry",
+                    "owner": "owner",
+                    "event_type": "registry_update",
+                    "client_payload": {
+                        "type": PublishType.PLUGIN,
+                        "registry": {
+                            "module_name": "module_name",
+                            "project_link": "project_link",
+                            "name": "name",
+                            "desc": "desc",
+                            "author": "test",
+                            "homepage": "https://nonebot.dev",
+                            "tags": [{"label": "test", "color": "#ffffff"}],
+                            "is_official": False,
+                            "type": "application",
+                            "supported_adapters": ["nonebot.adapters.onebot.v11"],
+                            "valid": True,
+                            "time": "2023-09-01T00:00:00+00:00Z",
+                            "version": "0.0.1",
+                            "skip_test": False,
+                        },
+                        "result": {
+                            "time": "2023-09-01T00:00:00+00:00Z",
+                            "config": "log_level=DEBUG",
+                            "version": "0.0.1",
+                            "test_env": {"python==3.12": True},
+                            "results": {
+                                "validation": True,
+                                "load": True,
+                                "metadata": True,
+                            },
+                            "outputs": {
+                                "validation": None,
+                                "load": "",
+                                "metadata": {
+                                    "name": "name",
+                                    "desc": "desc",
+                                    "homepage": "https://nonebot.dev",
+                                    "type": "application",
+                                    "supported_adapters": [
+                                        "nonebot.adapters.onebot.v11"
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                }
+            ),
             True,
         )
 
@@ -62,25 +117,26 @@ async def test_trigger_registry_update(app: App, mocker: MockerFixture):
         )
         await trigger_registry_update(handler, PublishType.PLUGIN)
 
-    mock_sleep.assert_awaited_once_with(300)
+    assert mocked_api["homepage"].called
 
 
 async def test_trigger_registry_update_skip_test(
     app: App, mocker: MockerFixture, mocked_api: MockRouter
 ):
     """跳过插件加载测试的情况"""
-    from src.plugins.github.models import RepoInfo
+    from src.plugins.github.models import IssueHandler, RepoInfo
     from src.plugins.github.plugins.publish.utils import trigger_registry_update
     from src.providers.validation import PublishType
 
-    mock_sleep = mocker.patch("asyncio.sleep")
-    mock_sleep.return_value = None
+    mock_time = mocker.patch("src.providers.models.datetime")
+    mock_now = mocker.MagicMock()
+    mock_now.isoformat.return_value = "2023-09-01T00:00:00+00:00Z"
+    mock_time.now.return_value = mock_now
 
-    mock_issue = mocker.MagicMock()
-    mock_issue.state = "open"
-    mock_issue.body = generate_issue_body_plugin_skip_test()
-    mock_issue.number = 1
-    mock_issue.user.login = "user"
+    mock_issue = MockIssue(
+        body=MockBody(type="plugin", skip=True).generate(),
+        number=1,
+    ).as_mock(mocker)
 
     mock_comment = mocker.MagicMock()
     mock_comment.body = "/skip"
@@ -94,7 +150,7 @@ async def test_trigger_registry_update_skip_test(
 
         ctx.should_call_api(
             "rest.issues.async_list_comments",
-            {"owner": "owner", "repo": "repo", "issue_number": 1},
+            {"owner": "owner", "repo": "registry", "issue_number": 1},
             mock_list_comments_resp,
         )
         ctx.should_call_api(
@@ -105,70 +161,128 @@ async def test_trigger_registry_update_skip_test(
                     "owner": "owner",
                     "event_type": "registry_update",
                     "client_payload": {
-                        "type": "Plugin",
-                        "key": "project_link:module_name",
-                        "config": "log_level=DEBUG\n",
-                        "data": '{"module_name": "module_name", "project_link": "project_link", "name": "name", "desc": "desc", "author": "user", "author_id": 1, "homepage": "https://nonebot.dev", "tags": [{"label": "test", "color": "#ffffff"}], "is_official": false, "type": "application", "supported_adapters": ["nonebot.adapters.onebot.v11"], "load": false, "metadata": {"name": "name", "desc": "desc", "homepage": "https://nonebot.dev", "type": "application", "supported_adapters": ["~onebot.v11"]}}',
+                        "type": PublishType.PLUGIN,
+                        "registry": {
+                            "module_name": "module_name",
+                            "project_link": "project_link",
+                            "name": "name",
+                            "desc": "desc",
+                            "author": "test",
+                            "homepage": "https://nonebot.dev",
+                            "tags": [{"label": "test", "color": "#ffffff"}],
+                            "is_official": False,
+                            "type": "application",
+                            "supported_adapters": ["nonebot.adapters.onebot.v11"],
+                            "valid": True,
+                            "time": "2023-09-01T00:00:00+00:00Z",
+                            "version": "0.0.1",
+                            "skip_test": True,
+                        },
+                        "result": {
+                            "time": "2023-09-01T00:00:00+00:00Z",
+                            "config": "log_level=DEBUG",
+                            "version": "0.0.1",
+                            "test_env": {"python==3.12": True},
+                            "results": {
+                                "validation": True,
+                                "load": True,
+                                "metadata": True,
+                            },
+                            "outputs": {
+                                "validation": None,
+                                "load": "插件未进行测试",
+                                "metadata": {
+                                    "name": "name",
+                                    "desc": "desc",
+                                    "homepage": "https://nonebot.dev",
+                                    "type": "application",
+                                    "supported_adapters": [
+                                        "nonebot.adapters.onebot.v11"
+                                    ],
+                                },
+                            },
+                        },
                     },
                 }
             ),
             True,
         )
 
-        await trigger_registry_update(
-            bot, RepoInfo(owner="owner", repo="repo"), PublishType.PLUGIN, mock_issue
+        handler = IssueHandler(
+            bot=bot,
+            repo_info=RepoInfo(owner="owner", repo="registry"),
+            issue=mock_issue,
         )
-
-    mock_sleep.assert_awaited_once_with(300)
+        await trigger_registry_update(handler, PublishType.PLUGIN)
 
 
 async def test_trigger_registry_update_bot(app: App, mocker: MockerFixture):
     """机器人发布的情况"""
-    from src.plugins.github.models import RepoInfo
+    from src.plugins.github.models import IssueHandler, RepoInfo
     from src.plugins.github.plugins.publish.utils import trigger_registry_update
     from src.providers.validation import PublishType
 
-    mock_sleep = mocker.patch("asyncio.sleep")
-    mock_sleep.return_value = None
-
-    mock_issue = mocker.MagicMock()
-    mock_issue.state = "open"
-    mock_issue.body = generate_issue_body_bot()
-    mock_issue.number = 1
+    mock_issue = MockIssue(
+        body=MockBody(type="bot").generate(),
+        number=1,
+    ).as_mock(mocker)
 
     async with app.test_api() as ctx:
         adapter, bot = get_github_bot(ctx)
 
         ctx.should_call_api(
             "rest.repos.async_create_dispatch_event",
-            {
-                "repo": "registry",
-                "owner": "owner",
-                "event_type": "registry_update",
-                "client_payload": {"type": "Bot"},
-            },
+            snapshot(
+                {
+                    "repo": "registry",
+                    "owner": "owner",
+                    "event_type": "registry_update",
+                    "client_payload": {
+                        "type": PublishType.BOT,
+                        "registry": {
+                            "name": "name",
+                            "desc": "desc",
+                            "author": "test",
+                            "homepage": "https://nonebot.dev",
+                            "tags": [{"label": "test", "color": "#ffffff"}],
+                            "is_official": False,
+                        },
+                        "result": None,
+                    },
+                }
+            ),
             True,
         )
 
-        await trigger_registry_update(
-            bot, RepoInfo(owner="owner", repo="repo"), PublishType.BOT, mock_issue
+        handler = IssueHandler(
+            bot=bot,
+            repo_info=RepoInfo(owner="owner", repo="registry"),
+            issue=mock_issue,
         )
 
-    mock_sleep.assert_awaited_once_with(300)
+        await trigger_registry_update(handler, PublishType.BOT)
 
 
 async def test_trigger_registry_update_plugins_issue_body_info_missing(
     app: App, mocker: MockerFixture
 ):
     """如果议题信息不全，应该不会触发更新"""
-    from src.plugins.github.models import RepoInfo
+    from githubkit.rest import Issue
+
+    from src.plugins.github.models import IssueHandler, RepoInfo
     from src.plugins.github.plugins.publish.utils import trigger_registry_update
+    from src.providers.docker_test import Metadata
     from src.providers.validation import PublishType
 
-    mock_issue = mocker.MagicMock()
+    mock_issue = mocker.MagicMock(spec=Issue)
     mock_issue.state = "open"
     mock_issue.body = "### 插件配置项\n\n```dotenv\nlog_level=DEBUG\n```"
     mock_issue.number = 1
+
+    mock_user = mocker.MagicMock()
+    mock_user.login = "test"
+    mock_user.id = 1
+    mock_issue.user = mock_user
 
     mock_comment = mocker.MagicMock()
     mock_comment.body = "Bot: test"
@@ -176,25 +290,41 @@ async def test_trigger_registry_update_plugins_issue_body_info_missing(
     mock_list_comments_resp = mocker.MagicMock()
     mock_list_comments_resp.parsed_data = [mock_comment]
 
+    mock_test_result = mocker.MagicMock()
+    mock_test_result.metadata = Metadata(
+        name="name",
+        desc="desc",
+        homepage="https://nonebot.dev",
+        type="application",
+        supported_adapters=["~onebot.v11"],
+    )
+    mock_test_result.load = True
+    mock_docker = mocker.patch("src.providers.docker_test.DockerPluginTest.run")
+    mock_docker.return_value = mock_test_result
+
     async with app.test_api() as ctx:
         adapter, bot = get_github_bot(ctx)
 
         ctx.should_call_api(
             "rest.issues.async_list_comments",
-            {"owner": "owner", "repo": "repo", "issue_number": 1},
+            {"owner": "owner", "repo": "registry", "issue_number": 1},
             mock_list_comments_resp,
         )
 
-        await trigger_registry_update(
-            bot, RepoInfo(owner="owner", repo="repo"), PublishType.PLUGIN, mock_issue
+        handler = IssueHandler(
+            bot=bot,
+            repo_info=RepoInfo(owner="owner", repo="registry"),
+            issue=mock_issue,
         )
+
+        await trigger_registry_update(handler, PublishType.PLUGIN)
 
 
 async def test_trigger_registry_update_validation_failed(
     app: App, mocker: MockerFixture, mocked_api: MockRouter
 ):
     """验证失败时也不会触发更新"""
-    from src.plugins.github.models import RepoInfo
+    from src.plugins.github.models import IssueHandler, RepoInfo
     from src.plugins.github.plugins.publish.utils import trigger_registry_update
     from src.providers.validation import PublishType
 
@@ -214,12 +344,14 @@ async def test_trigger_registry_update_validation_failed(
 
         ctx.should_call_api(
             "rest.issues.async_list_comments",
-            {"owner": "owner", "repo": "repo", "issue_number": 1},
+            {"owner": "owner", "repo": "registry", "issue_number": 1},
             mock_list_comments_resp,
         )
-
-        await trigger_registry_update(
-            bot, RepoInfo(owner="owner", repo="repo"), PublishType.PLUGIN, mock_issue
+        handler = IssueHandler(
+            bot=bot,
+            repo_info=RepoInfo(owner="owner", repo="registry"),
+            issue=mock_issue,
         )
+        await trigger_registry_update(handler, PublishType.PLUGIN)
 
     assert mocked_api["homepage_failed"].called

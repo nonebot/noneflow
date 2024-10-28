@@ -46,8 +46,6 @@ PyPI 项目名 {{ input }} 不符合规范。<dt>请确保项目名正确。</dt
 适配器 {{ ', '.join(ctx.missing_adapters) }} 不存在。<dt>请确保适配器模块名称正确。</dt>
 {%- elif type == "missing" %}
 {{ name }}: 无法匹配到数据。<dt>请确保填写该数据项。</dt>
-{%- elif type == "string_type" %}
-{{ name }}: 无法匹配到数据或值并不合法。<dt>请确保填写该数据项。</dt>
 {%- elif type == "model_type" %}
 {{ name }}: 格式错误。<dt>请确保其为字典。</dt>
 {%- elif type == "list_type" %}

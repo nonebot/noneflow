@@ -7,6 +7,7 @@ from pytest_mock import MockerFixture
 from respx import MockRouter
 
 from tests.github.utils import (
+    MockBody,
     MockIssue,
     MockUser,
     generate_issue_body_plugin_skip_test,
@@ -15,17 +16,23 @@ from tests.github.utils import (
 
 
 async def test_process_pull_request(
-    app: App, mocker: MockerFixture, mock_installation
+    app: App,
+    mocker: MockerFixture,
+    mock_installation,
+    mocked_api: MockRouter,
 ) -> None:
     from src.plugins.github.plugins.publish import pr_close_matcher
+    from src.providers.docker_test import Metadata
+    from src.providers.validation import PublishType
+
+    mock_time = mocker.patch("src.providers.models.datetime")
+    mock_now = mocker.MagicMock()
+    mock_now.isoformat.return_value = "2023-09-01T00:00:00+00:00Z"
+    mock_time.now.return_value = mock_now
 
     mock_subprocess_run = mocker.patch("subprocess.run")
-    mock_sleep = mocker.patch("asyncio.sleep")
-    mock_sleep.return_value = None
 
-    mock_issue = MockIssue(
-        body="### PyPI 项目名\n\nproject_link1\n\n### 插件 import 包名\n\nmodule_name1\n\n### 插件配置项\n\n```dotenv\nlog_level=DEBUG\n```"
-    ).as_mock(mocker)
+    mock_issue = MockIssue(body=MockBody("plugin").generate()).as_mock(mocker)
 
     mock_issues_resp = mocker.MagicMock()
     mock_issues_resp.parsed_data = mock_issue
@@ -37,6 +44,18 @@ async def test_process_pull_request(
     mock_comment.body = "Bot: test"
     mock_list_comments_resp = mocker.MagicMock()
     mock_list_comments_resp.parsed_data = [mock_comment]
+
+    mock_test_result = mocker.MagicMock()
+    mock_test_result.metadata = Metadata(
+        name="name",
+        desc="desc",
+        homepage="https://nonebot.dev",
+        type="application",
+        supported_adapters=["~onebot.v11"],
+    )
+    mock_test_result.load = True
+    mock_docker = mocker.patch("src.providers.docker_test.DockerPluginTest.run")
+    mock_docker.return_value = mock_test_result
 
     async with app.test_matcher(pr_close_matcher) as ctx:
         adapter, bot = get_github_bot(ctx)
@@ -80,13 +99,51 @@ async def test_process_pull_request(
             "rest.repos.async_create_dispatch_event",
             snapshot(
                 {
-                    "repo": "action-test",
-                    "owner": "he0119",
+                    "repo": "registry",
+                    "owner": "owner",
                     "event_type": "registry_update",
                     "client_payload": {
-                        "type": "Plugin",
-                        "key": "project_link1:module_name1",
-                        "config": "log_level=DEBUG\n",
+                        "type": PublishType.PLUGIN,
+                        "registry": {
+                            "module_name": "module_name",
+                            "project_link": "project_link",
+                            "name": "name",
+                            "desc": "desc",
+                            "author": "test",
+                            "homepage": "https://nonebot.dev",
+                            "tags": [{"label": "test", "color": "#ffffff"}],
+                            "is_official": False,
+                            "type": "application",
+                            "supported_adapters": ["nonebot.adapters.onebot.v11"],
+                            "valid": True,
+                            "time": "2023-09-01T00:00:00+00:00Z",
+                            "version": "0.0.1",
+                            "skip_test": False,
+                        },
+                        "result": {
+                            "time": "2023-09-01T00:00:00+00:00Z",
+                            "config": "log_level=DEBUG",
+                            "version": "0.0.1",
+                            "test_env": {"python==3.12": True},
+                            "results": {
+                                "validation": True,
+                                "load": True,
+                                "metadata": True,
+                            },
+                            "outputs": {
+                                "validation": None,
+                                "load": "",
+                                "metadata": {
+                                    "name": "name",
+                                    "desc": "desc",
+                                    "homepage": "https://nonebot.dev",
+                                    "type": "application",
+                                    "supported_adapters": [
+                                        "nonebot.adapters.onebot.v11"
+                                    ],
+                                },
+                            },
+                        },
                     },
                 }
             ),
@@ -111,11 +168,6 @@ async def test_process_pull_request(
         ],  # type: ignore
         any_order=True,
     )
-
-    # NOTE: 不知道为什么会调用两次
-    # 那个 0 不知道哪里来的。
-    # 在 GitHub Actions 上又只有一个了，看来是本地的环境问题。
-    mock_sleep.assert_awaited_once_with(300)
 
 
 async def test_process_pull_request_not_merged(
@@ -184,12 +236,16 @@ async def test_process_pull_request_skip_plugin_test(
 ) -> None:
     """跳过测试的插件合并时的情况"""
     from src.plugins.github.plugins.publish import pr_close_matcher
+    from src.providers.validation import PublishType
 
     event_path = Path(__file__).parent.parent.parent / "events" / "pr-close.json"
 
+    mock_time = mocker.patch("src.providers.models.datetime")
+    mock_now = mocker.MagicMock()
+    mock_now.isoformat.return_value = "2023-09-01T00:00:00+00:00Z"
+    mock_time.now.return_value = mock_now
+
     mock_subprocess_run = mocker.patch("subprocess.run")
-    mock_sleep = mocker.patch("asyncio.sleep")
-    mock_sleep.return_value = None
 
     mock_issue = MockIssue(
         body=generate_issue_body_plugin_skip_test(), user=MockUser(login="user", id=1)
@@ -245,22 +301,54 @@ async def test_process_pull_request_skip_plugin_test(
             mock_list_comments_resp,
         )
         ctx.should_call_api(
-            "rest.issues.async_list_comments",
-            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-            mock_list_comments_resp,
-        )
-        ctx.should_call_api(
             "rest.repos.async_create_dispatch_event",
             snapshot(
                 {
-                    "repo": "action-test",
-                    "owner": "he0119",
+                    "repo": "registry",
+                    "owner": "owner",
                     "event_type": "registry_update",
                     "client_payload": {
-                        "type": "Plugin",
-                        "key": "project_link:module_name",
-                        "config": "log_level=DEBUG\n",
-                        "data": '{"module_name": "module_name", "project_link": "project_link", "time": "2023-09-01T00:00:00+00:00Z", "name": "name", "desc": "desc", "author": "user", "author_id": 1, "homepage": "https://nonebot.dev", "tags": [{"label": "test", "color": "#ffffff"}], "type": "application", "supported_adapters": ["nonebot.adapters.onebot.v11"], "load": true, "metadata": true, "skip_test": true, "test_output": "\\u63d2\\u4ef6\\u672a\\u8fdb\\u884c\\u6d4b\\u8bd5"}',
+                        "type": PublishType.PLUGIN,
+                        "registry": {
+                            "module_name": "module_name",
+                            "project_link": "project_link",
+                            "name": "name",
+                            "desc": "desc",
+                            "author": "user",
+                            "homepage": "https://nonebot.dev",
+                            "tags": [{"label": "test", "color": "#ffffff"}],
+                            "is_official": False,
+                            "type": "application",
+                            "supported_adapters": ["nonebot.adapters.onebot.v11"],
+                            "valid": True,
+                            "time": "2023-09-01T00:00:00+00:00Z",
+                            "version": "0.0.1",
+                            "skip_test": True,
+                        },
+                        "result": {
+                            "time": "2023-09-01T00:00:00+00:00Z",
+                            "config": "log_level=DEBUG",
+                            "version": "0.0.1",
+                            "test_env": {"python==3.12": True},
+                            "results": {
+                                "validation": True,
+                                "load": True,
+                                "metadata": True,
+                            },
+                            "outputs": {
+                                "validation": None,
+                                "load": "插件未进行测试",
+                                "metadata": {
+                                    "name": "name",
+                                    "desc": "desc",
+                                    "homepage": "https://nonebot.dev",
+                                    "type": "application",
+                                    "supported_adapters": [
+                                        "nonebot.adapters.onebot.v11"
+                                    ],
+                                },
+                            },
+                        },
                     },
                 }
             ),
@@ -285,8 +373,6 @@ async def test_process_pull_request_skip_plugin_test(
         ],  # type: ignore
         any_order=True,
     )
-
-    mock_sleep.assert_awaited_once_with(300)
 
 
 async def test_not_publish(app: App, mocker: MockerFixture) -> None:

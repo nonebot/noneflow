@@ -40,6 +40,7 @@ class PublishType(Enum):
     BOT = "Bot"
     PLUGIN = "Plugin"
     ADAPTER = "Adapter"
+    DRIVER = "Driver"
 
     def __str__(self) -> str:
         return self.value
@@ -232,6 +233,8 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
 
     从 PyPI 获取或者测试中获取
     """
+    test_config: str = ""
+    """插件测试配置"""
     test_output: str = ""
     """插件测试输出"""
 

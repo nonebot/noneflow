@@ -60,9 +60,9 @@ async def validate_plugin_info_from_issue(
     # 更新作者信息
     raw_data.update(AuthorInfo.from_issue(issue).model_dump())
 
-    module_name: str = raw_data["module_name"]
-    project_link: str = raw_data["project_link"]
-    test_config: str = raw_data["test_config"]
+    module_name: str = raw_data.get("module_name", None)
+    project_link: str = raw_data.get("project_link", None)
+    test_config: str = raw_data.get("test_config", "")
 
     # 获取插件上次的数据
     with plugin_config.input_config.plugin_path.open("r", encoding="utf-8") as f:
@@ -115,12 +115,15 @@ async def validate_plugin_info_from_issue(
     # 验证插件相关信息
     result = validate_info(PublishType.PLUGIN, raw_data, previous_data)
 
-    if result.valid_data.get("metadata") is None and not skip_test:
+    if not result.valid_data.get("metadata") and not skip_test:
         # 如果没有跳过测试且缺少插件元数据，则跳过元数据相关的错误
         # 因为这个时候这些项都会报错，错误在此时没有意义
         metadata_keys = Metadata.model_fields.keys()
+        # 如果是重复报错，error["loc"] 是 ()
         result.errors = [
-            error for error in result.errors if error["loc"][0] not in metadata_keys
+            error
+            for error in result.errors
+            if error["loc"] == () or error["loc"][0] not in metadata_keys
         ]
         # 元数据缺失时，需要删除元数据相关的字段
         for key in metadata_keys:

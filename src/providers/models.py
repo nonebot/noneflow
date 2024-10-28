@@ -1,13 +1,17 @@
-from typing import Any, Self
+from datetime import datetime
+from typing import Any, Literal, Self
+from zoneinfo import ZoneInfo
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
+from src.providers.docker_test import Metadata
 from src.providers.validation.models import (
     AdapterPublishInfo,
     BotPublishInfo,
     DriverPublishInfo,
     PluginPublishInfo,
     PublishInfo,
+    PublishType,
     Tag,
 )
 
@@ -252,3 +256,68 @@ class Plugin(BaseModel):
 
 
 # endregion
+
+
+class StoreTestResult(BaseModel):
+    time: str = Field(
+        default_factory=lambda: datetime.now(ZoneInfo("Asia/Shanghai")).isoformat()
+    )
+    config: str = ""
+    version: str | None
+    test_env: dict[str, bool] | None = None
+    """
+    键为测试环境 python==3.10 pytest==6.2.5 nonebot2==2.0.0a1 ...
+    值为在该环境下是否通过插件测试
+    """
+    results: dict[Literal["validation", "load", "metadata"], bool]
+    outputs: dict[Literal["validation", "load", "metadata"], Any]
+
+    @classmethod
+    def from_info(cls, info: PluginPublishInfo) -> Self:
+        return cls(
+            config=info.test_config,
+            version=info.version,
+            test_env={"python==3.12": True},
+            results={"validation": True, "load": True, "metadata": True},
+            outputs={
+                "validation": None,
+                "load": info.test_output,
+                "metadata": Metadata(
+                    name=info.name,
+                    desc=info.desc,
+                    homepage=info.homepage,
+                    type=info.type,
+                    supported_adapters=info.supported_adapters,
+                ).model_dump(),
+            },
+        )
+
+
+class RegistryUpdatePayload(BaseModel):
+    type: PublishType
+    registry: Adapter | Bot | Driver | Plugin
+    result: StoreTestResult | None = None
+
+    @classmethod
+    def from_info(cls, info: PublishInfo) -> Self:
+        match info:
+            case AdapterPublishInfo():
+                type = PublishType.ADAPTER
+                registry = Adapter.from_publish_info(info)
+                result = None
+            case BotPublishInfo():
+                type = PublishType.BOT
+                registry = Bot.from_publish_info(info)
+                result = None
+            case DriverPublishInfo():
+                type = PublishType.DRIVER
+                registry = Driver.from_publish_info(info)
+                result = None
+            case PluginPublishInfo():
+                type = PublishType.PLUGIN
+                registry = Plugin.from_publish_info(info)
+                result = StoreTestResult.from_info(info)
+            case _:
+                raise ValueError("未知的发布信息类型")
+
+        return cls(type=type, registry=registry, result=result)
