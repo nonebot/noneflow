@@ -34,7 +34,7 @@ async def test_remove_process_pull_request(
 
     mock_subprocess_run = mocker.patch("subprocess.run")
 
-    mock_issue = MockIssue(body=generate_issue_body_remove()).as_mock(mocker)
+    mock_issue = MockIssue(body=generate_issue_body_remove(), number=76).as_mock(mocker)
 
     mock_issues_resp = mocker.MagicMock()
     mock_issues_resp.parsed_data = mock_issue
@@ -137,7 +137,7 @@ async def test_process_remove_pull_request_not_merged(
 
     mock_subprocess_run = mocker.patch("subprocess.run")
 
-    mock_issue = MockIssue(body=generate_issue_body_remove()).as_mock(mocker)
+    mock_issue = MockIssue(body=generate_issue_body_remove(), number=76).as_mock(mocker)
     mock_issues_resp = mocker.MagicMock()
     mock_issues_resp.parsed_data = mock_issue
 
