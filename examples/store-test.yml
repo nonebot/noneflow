@@ -35,6 +35,9 @@ jobs:
           repository: nonebot/noneflow
           fetch-depth: 0
 
+      - name: Checkout latest noneflow version
+        run: git checkout `git describe --abbrev=0 --tags`
+
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v3
         with:
