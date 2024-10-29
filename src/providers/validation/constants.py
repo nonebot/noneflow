@@ -22,7 +22,6 @@ MESSAGE_TRANSLATIONS = {
     "list_type": "值不是合法的列表",
     "set_type": "值不是合法的集合",
     "json_type": "JSON 格式不合法",
-    "string_type": "无法匹配到数据",
     "missing": "字段不存在",
     "color_error": "颜色格式不正确",
     "string_too_long": "字符串长度不能超过 {max_length} 个字符",

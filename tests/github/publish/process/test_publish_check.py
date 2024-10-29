@@ -1,5 +1,3 @@
-# ruff: noqa: ASYNC101
-
 import json
 from pathlib import Path
 
@@ -204,7 +202,6 @@ async def test_bot_process_publish_check(
             {
                 "name": "test",
                 "desc": "desc",
-                "author": "test",
                 "author_id": 1,
                 "homepage": "https://nonebot.dev",
                 "tags": [{"label": "test", "color": "#ffffff"}],
@@ -414,7 +411,6 @@ async def test_adapter_process_publish_check(
                     "project_link": "project_link",
                     "name": "test",
                     "desc": "desc",
-                    "author": "test",
                     "author_id": 1,
                     "homepage": "https://nonebot.dev",
                     "tags": [{"label": "test", "color": "#ffffff"}],
@@ -638,7 +634,6 @@ async def test_edit_title(
             {
                 "name": "test1",
                 "desc": "desc",
-                "author": "test",
                 "author_id": 1,
                 "homepage": "https://nonebot.dev",
                 "tags": [{"label": "test", "color": "#ffffff"}],
@@ -1200,11 +1195,11 @@ log_level=DEBUG
 
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
-<pre><code><li>⚠️ 名称: 无法匹配到数据或值并不合法。<dt>请确保填写该数据项。</dt></li><li>⚠️ 描述: 无法匹配到数据或值并不合法。<dt>请确保填写该数据项。</dt></li><li>⚠️ 项目仓库/主页链接: 无法匹配到数据或值并不合法。<dt>请确保填写该数据项。</dt></li><li>⚠️ 插件类型 None 不符合规范。<dt>请确保插件类型正确，当前仅支持 application 与 library。</dt></li><li>⚠️ 插件测试元数据 &gt; 名称: 无法匹配到数据或值并不合法。<dt>请确保填写该数据项。</dt></li><li>⚠️ 插件测试元数据 &gt; 描述: 无法匹配到数据或值并不合法。<dt>请确保填写该数据项。</dt></li><li>⚠️ 插件测试元数据 &gt; 项目仓库/主页链接: 无法匹配到数据或值并不合法。<dt>请确保填写该数据项。</dt></li></code></pre>
+<pre><code><li>⚠️ 名称: 无法匹配到数据。<dt>请确保填写该数据项。</dt></li><li>⚠️ 描述: 无法匹配到数据。<dt>请确保填写该数据项。</dt></li><li>⚠️ 项目仓库/主页链接: 无法匹配到数据。<dt>请确保填写该数据项。</dt></li><li>⚠️ 插件类型: 无法匹配到数据。<dt>请确保填写该数据项。</dt></li><li>⚠️ 插件支持的适配器: 无法匹配到数据。<dt>请确保填写该数据项。</dt></li></code></pre>
 
 <details>
 <summary>详情</summary>
-<pre><code><li>✅ 项目 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li><li>✅ 标签: test-#ffffff。</li><li>✅ 插件支持的适配器: 所有。</li><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 已跳过。</li></code></pre>
+<pre><code><li>✅ 项目 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li><li>✅ 标签: test-#ffffff。</li><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 已跳过。</li></code></pre>
 </details>
 
 ---
@@ -1344,7 +1339,7 @@ async def test_convert_pull_request_to_draft(
     )
 
     mock_issue = MockIssue(
-        number=1,
+        number=80,
         body=generate_issue_body_bot(name="test", homepage="https://www.baidu.com"),
     ).as_mock(mocker)
 
@@ -1676,7 +1671,6 @@ mutation markPullRequestReadyForReview($pullRequestId: ID!) {
             {
                 "name": "test",
                 "desc": "desc",
-                "author": "test",
                 "author_id": 1,
                 "homepage": "https://nonebot.dev",
                 "tags": [{"label": "test", "color": "#ffffff"}],

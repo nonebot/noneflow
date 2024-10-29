@@ -3,7 +3,7 @@
 from typing import Any
 
 from pydantic import ValidationError
-from pydantic_core import ErrorDetails
+from pydantic_core import ErrorDetails, to_jsonable_python
 
 from .models import AdapterPublishInfo, BotPublishInfo, PluginPublishInfo, PublishInfo
 from .models import PublishType as PublishType
@@ -20,44 +20,41 @@ validation_model_map: dict[PublishType, type[PublishInfo]] = {
 def validate_info(
     publish_type: PublishType,
     raw_data: dict[str, Any],
-    context: dict[str, Any] | None = None,
+    previous_data: list[dict[str, Any]] | None,
 ) -> ValidationDict:
     """根据发布类型验证数据是否符合规范
 
     Args:
         publish_type (PublishType): 发布类型
         raw_data (dict[str, Any]): 原始数据
-        context (dict[str, Any] | None, optional): 验证上下文. 默认为拥有 `valid_data` 字段的字典
+        previous_data (list[dict[str, Any]] | None): 当前商店数据，用于验证数据是否重复
     """
+    context = {
+        "previous_data": previous_data,
+        "valid_data": {},  # 用来存放验证通过的数据
+        # 验证过程中可能需要用到的数据
+        # 存放在 context 中方便 FieldValidator 使用
+        "test_output": raw_data.get("test_output", ""),  # 测试输出
+        "skip_test": raw_data.get("skip_test", False),  # 是否跳过测试
+    }
 
-    validation_context = {"valid_data": {}}
-    if context:
-        validation_context.update(context)
-
+    info: PublishInfo | None = None
     errors: list[ErrorDetails] = []
-    # 如果升级至 pydantic 2 后，可以使用 validation-context
-    # https://docs.pydantic.dev/latest/usage/validators/#validation-context
+
     try:
-        data = (
-            validation_model_map[publish_type]
-            .model_validate(raw_data, context=validation_context)
-            .model_dump()
+        info = validation_model_map[publish_type].model_validate(
+            raw_data, context=context
         )
     except ValidationError as exc:
         errors = exc.errors()
-        data: dict[str, Any] = validation_context["valid_data"]
+
     # 翻译错误
     errors = translate_errors(errors)
 
     return ValidationDict(
-        valid=not errors,
-        data=data,
-        errors=errors,  # 方便插件使用的数据
         type=publish_type,
-        name=data.get("name")
-        or raw_data.get("name")
-        or raw_data.get("project_link")
-        or "",
-        author=data.get("author", ""),
-        author_id=data.get("author_id", 0),
+        raw_data=raw_data,
+        valid_data=to_jsonable_python(context.get("valid_data", {})),
+        info=info,
+        errors=errors,
     )

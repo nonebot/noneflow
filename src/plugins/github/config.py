@@ -17,4 +17,3 @@ class Config(BaseModel, extra="ignore"):
     input_config: PublishConfig
     github_repository: str
     github_run_id: str
-    skip_plugin_test: bool = False

@@ -51,8 +51,7 @@ def extract_publish_info_from_issue(
     根据提供的正则表达式和议题内容来提取所需的信息
     """
     matchers = {key: pattern.search(body) for key, pattern in patterns.items()}
-    data = {
-        key: match.group(1).strip() if match else None
-        for key, match in matchers.items()
-    }
+    # 如果未匹配到数据，则不添加进字典中
+    # 这样可以让 Pydantic 在校验时报错 missing
+    data = {key: match.group(1).strip() for key, match in matchers.items() if match}
     return data

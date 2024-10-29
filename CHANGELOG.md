@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 通过名称加主页避免机器人重复
 
+### Fixed
+
+- 修复商店数据不能及时同步的问题
+
 ## [3.3.3] - 2024-07-18
 
 ### Fixed

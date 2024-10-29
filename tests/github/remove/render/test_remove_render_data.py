@@ -7,13 +7,8 @@ async def test_render(app: App):
     from src.providers.validation.models import PublishType, ValidationDict
 
     result = ValidationDict(
-        valid=True,
-        data={},
         type=PublishType.BOT,
-        name="omg",
-        author="author",
-        errors=[],
-        author_id=1,
+        raw_data={"name": "omg"},
     )
     assert await render_comment(result) == snapshot(
         """\

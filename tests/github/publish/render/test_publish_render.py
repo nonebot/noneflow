@@ -9,12 +9,7 @@ async def test_render_empty(app: App):
 
     result = ValidationDict(
         type=PublishType.BOT,
-        name="name",
-        valid=True,
-        data={},
-        errors=[],
-        author="author",
-        author_id=1,
+        raw_data={"name": "name"},
     )
 
     comment = await render_comment(result)
@@ -47,12 +42,7 @@ async def test_render_reuse(app: App):
 
     result = ValidationDict(
         type=PublishType.BOT,
-        name="name",
-        valid=True,
-        data={},
-        errors=[],
-        author="author",
-        author_id=1,
+        raw_data={"name": "name"},
     )
 
     comment = await render_comment(result, True)

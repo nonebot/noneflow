@@ -53,21 +53,23 @@ async def render_comment(result: ValidationDict, reuse: bool = False) -> str:
     title = f"{result.type}: {result.name}"
 
     # 将 data 字段拷贝一份，避免修改原数据
-    data: dict[str, Any] = result.data.copy()
+    data: dict[str, Any] = result.valid_data.copy()
 
-    # 有些数据不需要显示
-    remove_keys = [
-        "author_id",
-        "is_official",
-        "module_name",
-        "name",
-        "desc",
-        "author",
-        "metadata",
-        "load",
+    # 仅显示必要字段
+    display_keys = [
+        "homepage",
+        "tags",
+        "project_link",
+        "type",
+        "supported_adapters",
+        "action_url",
     ]
-    [data.pop(key, None) for key in remove_keys]
-    if not data.get("tags", []):
+
+    for key in data.copy():
+        if key not in display_keys:
+            data.pop(key)
+
+    if not data.get("tags"):
         data.pop("tags", None)
 
     if result.type == PublishType.PLUGIN:
@@ -84,5 +86,5 @@ async def render_comment(result: ValidationDict, reuse: bool = False) -> str:
         valid=result.valid,
         data=data,
         errors=result.errors,
-        skip_plugin_test=plugin_config.skip_plugin_test,
+        skip_test=result.skip_test,
     )

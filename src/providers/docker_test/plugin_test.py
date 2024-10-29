@@ -8,7 +8,7 @@
 
 经测试可以直接在 Python 3.10+ 环境下运行，无需额外依赖。
 """
-# ruff: noqa: T201
+# ruff: noqa: T201, ASYNC109
 
 import asyncio
 import json
@@ -276,7 +276,7 @@ class PluginTest:
 
         return self._run, self._lines_output
 
-    async def command(self, cmd: str, timeout: int = 300) -> tuple[bool, str, str]:  # noqa: ASYNC109
+    async def command(self, cmd: str, timeout: int = 300) -> tuple[bool, str, str]:
         """执行命令
 
         Args:
@@ -286,14 +286,14 @@ class PluginTest:
         Returns:
             tuple[bool, str, str]: 命令执行返回值，标准输出，标准错误
         """
+        proc = await create_subprocess_shell(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            cwd=self.path,
+            env=self.env,
+        )
         try:
-            proc = await create_subprocess_shell(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                cwd=self.path,
-                env=self.env,
-            )
             stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout)
             code = proc.returncode
         except TimeoutError:

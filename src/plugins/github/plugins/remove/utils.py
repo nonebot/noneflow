@@ -48,7 +48,7 @@ async def process_pull_reqeusts(
     # 切换分支
     run_shell_command(["git", "switch", "-C", branch_name])
     # 更新文件并提交更改
-    update_file(result.data)
+    update_file(result.store_data)
     handler.commit_and_push(message, branch_name)
     # 创建拉取请求
     await handler.create_pull_request(

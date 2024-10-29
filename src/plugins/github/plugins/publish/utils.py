@@ -1,37 +1,32 @@
-import asyncio
-import json
 import re
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from githubkit.exception import RequestFailed
 from nonebot import logger
-from nonebot.adapters.github import Bot, GitHubBot
 
 from src.plugins.github import plugin_config
-from src.plugins.github.constants import (
-    ISSUE_FIELD_PATTERN,
-    ISSUE_FIELD_TEMPLATE,
-    SKIP_COMMENT,
-)
-from src.plugins.github.depends import RepoInfo
-from src.plugins.github.models import AuthorInfo, GithubHandler, IssueHandler
+from src.plugins.github.constants import ISSUE_FIELD_PATTERN, ISSUE_FIELD_TEMPLATE
+from src.plugins.github.models import IssueHandler, RepoInfo
+from src.plugins.github.models.github import GithubHandler
 from src.plugins.github.typing import LabelsItems
 from src.plugins.github.utils import commit_message as _commit_message
 from src.plugins.github.utils import dump_json, load_json, run_shell_command
+from src.providers.models import RegistryUpdatePayload, to_store
 from src.providers.validation import PublishType, ValidationDict
 
 from .constants import (
     BRANCH_NAME_PREFIX,
     COMMIT_MESSAGE_PREFIX,
-    PLUGIN_CONFIG_PATTERN,
-    PLUGIN_MODULE_NAME_PATTERN,
     PLUGIN_STRING_LIST,
     PLUGIN_TEST_BUTTON_PATTERN,
     PLUGIN_TEST_BUTTON_STRING,
     PLUGIN_TEST_STRING,
-    PROJECT_LINK_PATTERN,
 )
-from .validation import validate_plugin_info_from_issue
+from .validation import (
+    validate_adapter_info_from_issue,
+    validate_bot_info_from_issue,
+    validate_plugin_info_from_issue,
+)
 
 if TYPE_CHECKING:
     from githubkit.rest import (
@@ -124,7 +119,7 @@ async def resolve_conflict_pull_requests(
             continue
 
         publish_type = get_type_by_labels(pull.labels)
-        author = AuthorInfo.from_issue(await handler.get_issue(issue_number))
+        issue_handler = await handler.to_issue_handler(issue_number)
 
         if publish_type:
             # 需要先获取远程分支，否则无法切换到对应分支
@@ -132,16 +127,18 @@ async def resolve_conflict_pull_requests(
             # 因为当前分支为触发处理冲突的分支，所以需要切换到每个拉取请求对应的分支
             run_shell_command(["git", "checkout", pull.head.ref])
 
-            # 获取数据
-            result = await generate_validation_dict_from_file(
-                publish_type=publish_type,
-                # 提交时的 commit message 中包含插件名称
-                # 但因为仓库内的 plugins.json 中没有插件名称，所以需要从标题中提取
-                author_info=author,
-                name=extract_name_from_title(pull.title, publish_type)
-                if publish_type == PublishType.PLUGIN
-                else None,
-            )
+            # 重新测试
+            match publish_type:
+                case PublishType.ADAPTER:
+                    result = await validate_adapter_info_from_issue(issue_handler.issue)
+                case PublishType.BOT:
+                    result = await validate_bot_info_from_issue(issue_handler.issue)
+                case PublishType.PLUGIN:
+                    result = await validate_plugin_info_from_issue(
+                        issue_handler.issue, issue_handler
+                    )
+                case _:
+                    raise ValueError("暂不支持的发布类型")
 
             # 回到主分支
             run_shell_command(["git", "checkout", plugin_config.input_config.base])
@@ -151,53 +148,16 @@ async def resolve_conflict_pull_requests(
             update_file(result)
             message = commit_message(result.type, result.name, issue_number)
 
-            if isinstance(handler, IssueHandler):
-                handler.commit_and_push(message, pull.head.ref)
-            else:
-                handler.commit_and_push(message, pull.head.ref, result.author)
+            issue_handler.commit_and_push(message, pull.head.ref)
 
             logger.info("拉取请求更新完毕")
 
 
-async def generate_validation_dict_from_file(
-    publish_type: PublishType, author_info: AuthorInfo, name: str | None = None
-) -> ValidationDict:
-    """从文件中获取发布所需数据"""
-    data: list[dict[str, Any]]
-    match publish_type:
-        case PublishType.ADAPTER:
-            with plugin_config.input_config.adapter_path.open(
-                "r", encoding="utf-8"
-            ) as f:
-                data = json.load(f)
-            raw_data = data[-1]
-        case PublishType.BOT:
-            with plugin_config.input_config.bot_path.open("r", encoding="utf-8") as f:
-                data = json.load(f)
-            raw_data = data[-1]
-        case PublishType.PLUGIN:
-            with plugin_config.input_config.plugin_path.open(
-                "r", encoding="utf-8"
-            ) as f:
-                data = json.load(f)
-            raw_data = data[-1]
-            assert name, "插件名称不能为空"
-            raw_data["name"] = name
-
-    return ValidationDict(
-        valid=True,
-        type=publish_type,
-        name=raw_data["name"],
-        author_id=author_info.author_id,
-        author=author_info.author,
-        data=raw_data,
-        errors=[],
-    )
-
-
 def update_file(result: ValidationDict) -> None:
     """更新文件"""
-    new_data = result.data
+    assert result.valid
+    assert result.info
+    new_data = to_store(result.info)
 
     match result.type:
         case PublishType.ADAPTER:
@@ -206,14 +166,8 @@ def update_file(result: ValidationDict) -> None:
             path = plugin_config.input_config.bot_path
         case PublishType.PLUGIN:
             path = plugin_config.input_config.plugin_path
-            # nonebot2 仓库内只需要这部分数据
-            new_data = {
-                "module_name": new_data["module_name"],
-                "project_link": new_data["project_link"],
-                "author_id": new_data["author_id"],
-                "tags": new_data["tags"],
-                "is_official": new_data["is_official"],
-            }
+        case _:
+            raise ValueError("暂不支持的发布类型")
 
     logger.info(f"正在更新文件: {path}")
 
@@ -222,22 +176,6 @@ def update_file(result: ValidationDict) -> None:
     dump_json(path, data, 2)
 
     logger.info("文件更新完成")
-
-
-async def should_skip_plugin_test(
-    bot: Bot, repo_info: RepoInfo, issue_number: int
-) -> bool:
-    """判断评论是否包含跳过的标记"""
-    comments = (
-        await bot.rest.issues.async_list_comments(
-            **repo_info.model_dump(), issue_number=issue_number
-        )
-    ).parsed_data
-    for comment in comments:
-        author_association = comment.author_association
-        if comment.body == SKIP_COMMENT and author_association in ["OWNER", "MEMBER"]:
-            return True
-    return False
 
 
 def is_plugin_test_button_check(issue: "Issue") -> bool:
@@ -295,85 +233,49 @@ async def process_pull_request(
         run_shell_command(["git", "switch", "-C", branch_name])
         # 更新文件
         update_file(result)
-        handler.commit_and_push(commit_message, branch_name)
+        handler.commit_and_push(commit_message, branch_name, handler.author)
         # 创建拉取请求
         try:
             await handler.create_pull_request(
-                plugin_config.input_config.base, title, branch_name, result.type.value
+                plugin_config.input_config.base,
+                title,
+                branch_name,
+                result.type.value,
+                handler.issue_number,
             )
         except RequestFailed:
             # 如果之前已经创建了拉取请求，则将其转换为草稿
             logger.info("该分支的拉取请求已创建，请前往查看")
             await handler.update_pull_request_status(title, branch_name)
-
     else:
         # 如果之前已经创建了拉取请求，则将其转换为草稿
         await handler.draft_pull_request(branch_name)
 
 
-async def trigger_registry_update(
-    bot: GitHubBot, repo_info: RepoInfo, publish_type: PublishType, issue: "Issue"
-):
+async def trigger_registry_update(handler: IssueHandler, publish_type: PublishType):
     """通过 repository_dispatch 触发商店列表更新"""
-    if publish_type == PublishType.PLUGIN:
-        config = PLUGIN_CONFIG_PATTERN.search(issue.body) if issue.body else ""
-        # 插件测试是否被跳过
-        plugin_config.skip_plugin_test = await should_skip_plugin_test(
-            bot, repo_info, issue.number
-        )
-        if plugin_config.skip_plugin_test:
-            # 重新从议题中获取数据，并验证，防止中间有人修改了插件信息
-            # 因为此时已经将新插件的信息添加到插件列表中
-            # 直接将插件列表变成空列表，避免重新验证时出现重复报错
-            with plugin_config.input_config.plugin_path.open(
-                "w", encoding="utf-8"
-            ) as f:
-                json.dump([], f)
-            result = await validate_plugin_info_from_issue(issue)
-            logger.debug(f"插件信息验证结果: {result}")
-            if not result.valid:
-                logger.error("插件信息验证失败，跳过触发商店列表更新")
-                return
+    issue = handler.issue
 
-            client_payload = {
-                "type": publish_type.value,
-                "key": f"{result.data["project_link"]}:{result.data["module_name"]}",
-                "config": config.group(1) if config else "",
-                "data": json.dumps(result.data),
-            }
-        else:
-            # 从议题中获取的插件信息
-            # 这样如果在 json 更新后再次运行也不会获取到不属于该插件的信息
-            body = issue.body if issue.body else ""
-            module_name = PLUGIN_MODULE_NAME_PATTERN.search(body)
-            project_link = PROJECT_LINK_PATTERN.search(body)
-            config = PLUGIN_CONFIG_PATTERN.search(body)
+    # 重新验证信息
+    match publish_type:
+        case PublishType.ADAPTER:
+            result = await validate_adapter_info_from_issue(issue)
+        case PublishType.BOT:
+            result = await validate_bot_info_from_issue(issue)
+        case PublishType.PLUGIN:
+            result = await validate_plugin_info_from_issue(issue, handler)
+        case _:
+            raise ValueError("暂不支持的发布类型")
 
-            if not module_name or not project_link:
-                logger.error("无法从议题中获取插件信息，跳过触发商店列表更新")
-                return
-
-            module_name = module_name.group(1)
-            project_link = project_link.group(1)
-            config = config.group(1) if config else ""
-
-            client_payload = {
-                "type": publish_type.value,
-                "key": f"{project_link}:{module_name}",
-                "config": config,
-            }
-    else:
-        client_payload = {"type": publish_type.value}
+    if not result.valid or not result.info:
+        logger.error("信息验证失败，跳过触发商店列表更新")
+        return
 
     owner, repo = plugin_config.input_config.registry_repository.split("/")
-    # GitHub 的缓存一般 2 分钟左右会刷新
-    logger.info("准备触发商店列表更新，等待 5 分钟")
-    await asyncio.sleep(300)
     # 触发商店列表更新
-    await bot.rest.repos.async_create_dispatch_event(
-        repo=repo,
-        owner=owner,
+    await handler.create_dispatch_event(
         event_type="registry_update",
-        client_payload=client_payload,  # type: ignore
+        client_payload=RegistryUpdatePayload.from_info(result.info).model_dump(),
+        repo=RepoInfo(owner=owner, repo=repo),
     )
     logger.info("已触发商店列表更新")

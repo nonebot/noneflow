@@ -7,15 +7,14 @@ from pydantic import (
     BaseModel,
     Field,
     StringConstraints,
-    ValidationError,
     ValidationInfo,
     ValidatorFunctionWrapHandler,
+    field_serializer,
     field_validator,
     model_validator,
 )
 from pydantic_core import ErrorDetails, PydanticCustomError, to_jsonable_python
-
-from src.providers.store_test.models import Metadata, Tag
+from pydantic_extra_types.color import Color
 
 from .constants import (
     NAME_MAX_LENGTH,
@@ -23,7 +22,13 @@ from .constants import (
     PYPI_PACKAGE_NAME_PATTERN,
     PYTHON_MODULE_NAME_REGEX,
 )
-from .utils import check_pypi, check_url, get_adapters, resolve_adapter_name
+from .utils import (
+    check_pypi,
+    check_url,
+    get_adapters,
+    get_upload_time,
+    resolve_adapter_name,
+)
 
 
 class PublishType(Enum):
@@ -35,33 +40,69 @@ class PublishType(Enum):
     BOT = "Bot"
     PLUGIN = "Plugin"
     ADAPTER = "Adapter"
-    UNKNOWN = "Unknown"
+    DRIVER = "Driver"
 
     def __str__(self) -> str:
         return self.value
 
 
+class Tag(BaseModel):
+    """标签"""
+
+    label: str = Field(max_length=10)
+    color: Color
+
+    @field_validator("label", mode="before")
+    @classmethod
+    def label_validator(cls, v: str):
+        return v.removeprefix("t:")
+
+    @field_serializer("color")
+    def color_serializer(self, color: Color):
+        return color.as_hex(format="long")
+
+    @property
+    def color_hex(self) -> str:
+        return self.color.as_hex(format="long")
+
+
 class ValidationDict(BaseModel):
-    valid: bool
     type: PublishType
-    name: str
-    author_id: int
-    author: str
-    data: dict[str, Any] = {}
+    raw_data: dict[str, Any] = {}
+    """原始数据"""
+    valid_data: dict[str, Any] = {}
+    """验证上下文"""
+    info: "PublishInfo | None" = None
+    """验证通过的信息"""
     errors: list[ErrorDetails] = []
 
-    @field_validator("data", mode="before")
-    @classmethod
-    def data_validator(cls, v: dict[str, Any] | BaseModel) -> dict[str, Any]:
-        """
-        序列化 data 字段
-        """
-        return to_jsonable_python(v)
+    @property
+    def valid(self) -> bool:
+        return not self.errors
+
+    @property
+    def name(self) -> str:
+        return (
+            self.valid_data.get("name")
+            or self.raw_data.get("name")
+            or self.raw_data.get("project_link")
+            or ""
+        )
+
+    @property
+    def skip_test(self) -> bool:
+        return self.raw_data.get("skip_test", False)
 
 
 class PyPIMixin(BaseModel):
     module_name: str
     project_link: str
+
+    time: str | None = None
+    """上传时间
+
+    从 PyPI 获取最新版本的上传时间
+    """
 
     @field_validator("module_name", mode="before")
     @classmethod
@@ -108,6 +149,11 @@ class PyPIMixin(BaseModel):
                 "PyPI 项目名 {project_link} 加包名 {module_name} 的值与商店重复",
                 {"project_link": project_link, "module_name": module_name},
             )
+
+        # 如果一切正常才记录上传时间
+        if project_link:
+            values["time"] = get_upload_time(project_link)
+
         return values
 
 
@@ -139,7 +185,9 @@ class PublishInfo(abc.ABC, BaseModel):
             raise PydanticCustomError("validation_context", "未获取到验证上下文")
 
         result = handler(v)
-        context["valid_data"][info.field_name] = result
+        # 保存成 jsonable 的数据
+        # 方便后续使用
+        context["valid_data"][info.field_name] = to_jsonable_python(result)
         return result
 
     @field_validator("homepage", mode="before")
@@ -174,10 +222,21 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     """插件类型"""
     supported_adapters: list[str] | None
     """插件支持的适配器"""
-    load: bool = False
-    """"插件测试结果"""
-    metadata: Metadata
+    load: bool
+    """插件测试结果"""
+    metadata: bool
     """插件测试元数据"""
+    skip_test: bool
+    """是否跳过插件测试"""
+    version: str = "0.0.1"
+    """插件版本号
+
+    从 PyPI 获取或者测试中获取
+    """
+    test_config: str = ""
+    """插件测试配置"""
+    test_output: str = ""
+    """插件测试输出"""
 
     @field_validator("type", mode="before")
     @classmethod
@@ -195,9 +254,9 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
         if context is None:  # pragma: no cover
             raise PydanticCustomError("validation_context", "未获取到验证上下文")
 
-        skip_plugin_test = context.get("skip_plugin_test")
+        skip_test = context.get("skip_test")
         # 如果是从 issue 中获取的数据，需要先解码
-        if skip_plugin_test and isinstance(v, str):
+        if skip_test and isinstance(v, str):
             try:
                 v = json.loads(v)
             except json.JSONDecodeError:
@@ -232,8 +291,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
         if context is None:
             raise PydanticCustomError("validation_context", "未获取到验证上下文")
 
-        context["load"] = v  # 提供给元数据验证器使用
-        if v or context.get("skip_plugin_test"):
+        if v or context.get("skip_test"):
             return True
         raise PydanticCustomError(
             "plugin.test",
@@ -244,22 +302,18 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     @field_validator("metadata", mode="before")
     @classmethod
     def plugin_test_metadata_validator(
-        cls, v: Metadata | None, info: ValidationInfo
-    ) -> Metadata:
+        cls, v: bool | None, info: ValidationInfo
+    ) -> bool:
         context = info.context
         if context is None:
             raise PydanticCustomError("validation_context", "未获取到验证上下文")
 
         if v is None:
-            # 如果没有传入插件元数据，尝试从上下文中获取
-            try:
-                return Metadata(**context["valid_data"])
-            except ValidationError:
-                raise PydanticCustomError(
-                    "plugin.metadata",
-                    "插件无法获取到元数据",
-                    {"load": context.get("load", False)},
-                )
+            raise PydanticCustomError(
+                "plugin.metadata",
+                "插件无法获取到元数据",
+                {"load": context.get("load")},
+            )
         return v
 
 
@@ -296,3 +350,7 @@ class BotPublishInfo(PublishInfo):
                 {"name": name, "homepage": homepage},
             )
         return values
+
+
+class DriverPublishInfo(PublishInfo, PyPIMixin):
+    """发布驱动所需信息"""

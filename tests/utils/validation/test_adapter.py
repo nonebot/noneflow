@@ -1,5 +1,4 @@
-from collections import OrderedDict
-
+from inline_snapshot import snapshot
 from respx import MockRouter
 
 from tests.utils.validation.utils import generate_adapter_data
@@ -7,28 +6,30 @@ from tests.utils.validation.utils import generate_adapter_data
 
 async def test_adapter_info_validation_success(mocked_api: MockRouter) -> None:
     """测试验证成功的情况"""
-    from src.providers.validation import PublishType, validate_info
+    from src.providers.validation import AdapterPublishInfo, PublishType, validate_info
 
-    data, context = generate_adapter_data()
+    data = generate_adapter_data()
 
-    result = validate_info(PublishType.ADAPTER, data, context)
+    result = validate_info(PublishType.ADAPTER, data, [])
 
     assert result.valid
-    assert OrderedDict(result.data) == OrderedDict(
-        module_name="module_name",
-        project_link="project_link",
-        name="name",
-        desc="desc",
-        author="author",
-        author_id=1,
-        homepage="https://nonebot.dev",
-        tags=[{"label": "test", "color": "#ffffff"}],
-        is_official=False,
-    )
-    assert not result.errors
     assert result.type == PublishType.ADAPTER
-    assert result.name == "name"
-    assert result.author == "author"
+    assert result.raw_data == snapshot(
+        {
+            "name": "name",
+            "desc": "desc",
+            "author": "author",
+            "module_name": "module_name",
+            "project_link": "project_link",
+            "homepage": "https://nonebot.dev",
+            "tags": '[{"label": "test", "color": "#ffffff"}]',
+            "author_id": 1,
+            "time": "2023-09-01T00:00:00+00:00Z",
+        }
+    )
+
+    assert isinstance(result.info, AdapterPublishInfo)
+    assert result.errors == []
 
     assert mocked_api["homepage"].called
 
@@ -38,7 +39,7 @@ async def test_adapter_info_validation_failed(mocked_api: MockRouter) -> None:
     from src.providers.validation import PublishType, validate_info
     from src.providers.validation.models import ValidationDict
 
-    data, context = generate_adapter_data(
+    data = generate_adapter_data(
         module_name="module_name/",
         project_link="project_link_failed",
         homepage="https://www.baidu.com",
@@ -48,18 +49,11 @@ async def test_adapter_info_validation_failed(mocked_api: MockRouter) -> None:
         ],
     )
 
-    result = validate_info(PublishType.ADAPTER, data, context)
+    result = validate_info(PublishType.ADAPTER, data, [])
 
-    assert result == ValidationDict.model_construct(
-        **{
-            "valid": False,
-            "data": {
-                "name": "name",
-                "desc": "desc",
-                "author": "author",
-                "author_id": 1,
-            },
-            "errors": [
+    assert result == snapshot(
+        ValidationDict(
+            errors=[
                 {
                     "type": "module_name",
                     "loc": ("module_name",),
@@ -93,11 +87,27 @@ async def test_adapter_info_validation_failed(mocked_api: MockRouter) -> None:
                     "input": "#fffffff",
                 },
             ],
-            "type": PublishType.ADAPTER,
-            "name": "name",
-            "author": "author",
-            "author_id": 1,
-        }
+            info=None,
+            raw_data={
+                "name": "name",
+                "desc": "desc",
+                "author": "author",
+                "module_name": "module_name/",
+                "project_link": "project_link_failed",
+                "homepage": "https://www.baidu.com",
+                "tags": '[{"label": "test", "color": "#ffffff"}, {"label": "testtoolong", "color": "#fffffff"}]',
+                "author_id": 1,
+                "time": None,
+            },
+            type=PublishType.ADAPTER,
+            valid_data={
+                "time": None,
+                "name": "name",
+                "desc": "desc",
+                "author": "author",
+                "author_id": 1,
+            },
+        )
     )
 
     assert mocked_api["homepage_failed"].called

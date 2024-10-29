@@ -19,23 +19,26 @@ class GithubHandler(GitHandler):
     bot: Bot
     repo_info: RepoInfo
 
-    async def update_issue_title(self, issue_number: int, title: str):
+    async def update_issue_title(self, title: str, issue_number: int):
         """修改议题标题"""
         await self.bot.rest.issues.async_update(
             **self.repo_info.model_dump(), issue_number=issue_number, title=title
         )
+        logger.info(f"标题已修改为 {title}")
 
-    async def update_issue_content(self, issue_number: int, body: str):
+    async def update_issue_content(self, body: str, issue_number: int):
         """更新议题内容"""
         await self.bot.rest.issues.async_update(
             **self.repo_info.model_dump(), issue_number=issue_number, body=body
         )
+        logger.info("议题内容已修改")
 
     async def create_dispatch_event(
-        self, repo: RepoInfo | None, event_type: str, client_payload: dict
+        self, event_type: str, client_payload: dict, repo: RepoInfo | None = None
     ):
         if repo is None:
             repo = self.repo_info
+
         await self.bot.rest.repos.async_create_dispatch_event(
             repo=repo.repo,
             owner=repo.owner,
@@ -237,3 +240,11 @@ class GithubHandler(GitHandler):
                 **self.repo_info.model_dump(), issue_number=issue_number
             )
         ).parsed_data
+
+    async def to_issue_handler(self, issue_number: int):
+        """获取议题处理器"""
+        from src.plugins.github.models.issue import IssueHandler
+
+        issue = await self.get_issue(issue_number)
+
+        return IssueHandler(bot=self.bot, repo_info=self.repo_info, issue=issue)

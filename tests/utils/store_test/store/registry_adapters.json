@@ -4,7 +4,7 @@
     "project_link": "nonebot-adapter-onebot",
     "name": "OneBot V11",
     "desc": "OneBot V11 协议",
-    "author_id": 1,
+    "author": "yanyongyu",
     "homepage": "https://onebot.adapters.nonebot.dev/",
     "tags": [],
     "is_official": true
