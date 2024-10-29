@@ -308,5 +308,6 @@ class StoreTest:
                     self._previous_plugins[key] = payload.registry
                 if key not in self._previous_results and payload.result:
                     self._previous_results[key] = payload.result
+                    self._plugin_configs[key] = payload.result.config
 
         self.dump_data()
