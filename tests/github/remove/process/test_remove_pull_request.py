@@ -1,7 +1,6 @@
 from pathlib import Path
 from unittest.mock import MagicMock
 
-import pytest
 from nonebot.adapters.github import Adapter, PullRequestClosed
 from nonebug import App
 from pytest_mock import MockerFixture
@@ -27,7 +26,6 @@ def get_remove_labels():
     ]
 
 
-@pytest.mark.skip("需要修复")
 async def test_remove_process_pull_request(
     app: App, mocker: MockerFixture, mock_installation: MagicMock
 ) -> None:
@@ -36,7 +34,7 @@ async def test_remove_process_pull_request(
 
     mock_subprocess_run = mocker.patch("subprocess.run")
 
-    mock_issue = MockIssue(body=generate_issue_body_remove()).as_mock(mocker)
+    mock_issue = MockIssue(body=generate_issue_body_remove(), number=76).as_mock(mocker)
 
     mock_issues_resp = mocker.MagicMock()
     mock_issues_resp.parsed_data = mock_issue
@@ -129,7 +127,6 @@ async def test_not_remove(app: App, mocker: MockerFixture) -> None:
     mock_subprocess_run.assert_not_called()
 
 
-@pytest.mark.skip("需要修复")
 async def test_process_remove_pull_request_not_merged(
     app: App, mocker: MockerFixture, mock_installation
 ) -> None:
@@ -140,7 +137,7 @@ async def test_process_remove_pull_request_not_merged(
 
     mock_subprocess_run = mocker.patch("subprocess.run")
 
-    mock_issue = MockIssue(body=generate_issue_body_remove()).as_mock(mocker)
+    mock_issue = MockIssue(body=generate_issue_body_remove(), number=76).as_mock(mocker)
     mock_issues_resp = mocker.MagicMock()
     mock_issues_resp.parsed_data = mock_issue
 

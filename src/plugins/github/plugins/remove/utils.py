@@ -1,6 +1,7 @@
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from nonebot import logger
+from pydantic import BaseModel
 
 from src.plugins.github import plugin_config
 from src.plugins.github.depends.utils import extract_issue_number_from_ref
@@ -11,7 +12,7 @@ from src.plugins.github.utils import (
     load_json,
     run_shell_command,
 )
-from src.providers.validation.models import ValidationDict
+from src.providers.validation.models import PublishType
 
 from .constants import COMMIT_MESSAGE_PREFIX, PUBLISH_PATH, REMOVE_LABEL
 
@@ -19,7 +20,14 @@ if TYPE_CHECKING:
     from githubkit.rest import PullRequest, PullRequestSimple
 
 
-def update_file(remove_data: dict[str, Any]):
+class RemoveInfo(BaseModel):
+    type: PublishType
+    name: str
+    homepage: str
+    author_id: int
+
+
+def update_file(homepage: str):
     """删除对应的包储存在 registry 里的数据"""
     logger.info("开始更新文件")
 
@@ -27,18 +35,19 @@ def update_file(remove_data: dict[str, Any]):
         data = load_json(path)
 
         # 删除对应的数据
-        new_data = [item for item in data if item != remove_data]
+        new_data = [item for item in data if item.get("homepage") != homepage]
 
         if data == new_data:
             continue
 
         # 如果数据发生变化则更新文件
         dump_json(path, new_data)
+
         logger.info(f"已更新 {path.name} 文件")
 
 
 async def process_pull_reqeusts(
-    handler: IssueHandler, result: ValidationDict, branch_name: str, title: str
+    handler: IssueHandler, result: RemoveInfo, branch_name: str, title: str
 ):
     """
     根据发布信息合法性创建拉取请求
@@ -48,7 +57,7 @@ async def process_pull_reqeusts(
     # 切换分支
     run_shell_command(["git", "switch", "-C", branch_name])
     # 更新文件并提交更改
-    update_file(result.store_data)
+    update_file(result.homepage)
     handler.commit_and_push(message, branch_name)
     # 创建拉取请求
     await handler.create_pull_request(

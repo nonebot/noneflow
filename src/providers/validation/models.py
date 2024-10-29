@@ -1,7 +1,7 @@
 import abc
 import json
 from enum import Enum
-from typing import Annotated, Any
+from typing import Annotated, Any, Self
 
 from pydantic import (
     BaseModel,
@@ -44,6 +44,10 @@ class PublishType(Enum):
 
     def __str__(self) -> str:
         return self.value
+
+    @classmethod
+    def members(cls) -> list[Self]:
+        return list(cls.__members__.values())
 
 
 class Tag(BaseModel):

@@ -1,19 +1,6 @@
 from nonebot.params import Depends
 
-from src.plugins.github.depends import get_labels
-from src.plugins.github.typing import LabelsItems
-
-
-def get_name_by_labels(labels: LabelsItems = Depends(get_labels)) -> list[str]:
-    """通过标签获取名称"""
-    label_names: list[str] = []
-    if not labels:
-        return label_names
-
-    for label in labels:
-        if label.name:
-            label_names.append(label.name)
-    return label_names
+from src.plugins.github.depends import get_name_by_labels
 
 
 def check_labels(labels: list[str] | str):
