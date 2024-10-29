@@ -91,7 +91,7 @@ asyncio_mode = "auto"
 exclude_also = ["if TYPE_CHECKING:", "raise NotImplementedError"]
 
 [tool.coverage.run]
-omit = ["src/utils/plugin_test.py", "*.jinja"]
+omit = ["src/providers/docker_test/plugin_test.py", "*.jinja"]
 
 [tool.nonebot]
 adapters = [{ name = "GitHub", module_name = "nonebot.adapters.github" }]

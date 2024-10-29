@@ -8,7 +8,7 @@
 
 经测试可以直接在 Python 3.10+ 环境下运行，无需额外依赖。
 """
-# ruff: noqa: T201
+# ruff: noqa: T201, ASYNC109
 
 import asyncio
 import json
