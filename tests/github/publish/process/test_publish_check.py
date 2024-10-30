@@ -15,7 +15,6 @@ from tests.github.utils import (
     MockIssue,
     check_json_data,
     generate_issue_body_bot,
-    generate_issue_body_plugin_test_button,
     get_github_bot,
     get_issue_labels,
 )
@@ -127,7 +126,7 @@ async def test_bot_process_publish_check(
 ---
 
 💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
-💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
+💡 当插件加载测试失败时，请发布新版本后勾选插件测试勾选框重新运行插件测试。
 
 ♻️ 评论已更新至最新检查结果
 
@@ -333,7 +332,7 @@ async def test_adapter_process_publish_check(
 ---
 
 💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
-💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
+💡 当插件加载测试失败时，请发布新版本后勾选插件测试勾选框重新运行插件测试。
 
 ♻️ 评论已更新至最新检查结果
 
@@ -559,7 +558,7 @@ async def test_edit_title(
 ---
 
 💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
-💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
+💡 当插件加载测试失败时，请发布新版本后勾选插件测试勾选框重新运行插件测试。
 
 ♻️ 评论已更新至最新检查结果
 
@@ -754,7 +753,7 @@ async def test_edit_title_too_long(
 ---
 
 💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
-💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
+💡 当插件加载测试失败时，请发布新版本后勾选插件测试勾选框重新运行插件测试。
 
 ♻️ 评论已更新至最新检查结果
 
@@ -876,7 +875,7 @@ async def test_process_publish_check_not_pass(
 ---
 
 💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
-💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
+💡 当插件加载测试失败时，请发布新版本后勾选插件测试勾选框重新运行插件测试。
 
 ♻️ 评论已更新至最新检查结果
 
@@ -1149,7 +1148,7 @@ log_level=DEBUG
 
 ### 插件测试
 
-- [x] 单击左侧按钮重新测试，完成时勾选框将被选中\
+- [ ] 请勾选左侧勾选框重新运行插件测试\
 """
                 ),
             },
@@ -1205,7 +1204,7 @@ log_level=DEBUG
 ---
 
 💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
-💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
+💡 当插件加载测试失败时，请发布新版本后勾选插件测试勾选框重新运行插件测试。
 
 ♻️ 评论已更新至最新检查结果
 
@@ -1239,88 +1238,6 @@ log_level=DEBUG
     check_json_data(plugin_config.input_config.plugin_path, [])
 
     assert mocked_api["project_link"].called
-
-
-async def test_button_skip_publish_check(
-    app: App,
-    mocker: MockerFixture,
-    mocked_api: MockRouter,
-    tmp_path: Path,
-    mock_installation,
-) -> None:
-    """重测按钮被选中，跳过发布流程"""
-    from src.plugins.github import plugin_config
-    from src.plugins.github.plugins.publish import publish_check_matcher
-
-    mock_subprocess_run = mocker.patch(
-        "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
-    )
-
-    mock_issue = MockIssue(
-        body=generate_issue_body_plugin_test_button(
-            body=MockBody(type="plugin").generate(), selected=True
-        )
-    ).as_mock(mocker)
-
-    mock_event = mocker.MagicMock()
-    mock_event.issue = mock_issue
-
-    mock_issues_resp = mocker.MagicMock()
-    mock_issues_resp.parsed_data = mock_issue
-
-    mock_comment = mocker.MagicMock()
-    mock_comment.body = "OMG"
-    mock_comment.author_association = "OWNER"
-    mock_list_comments_resp = mocker.MagicMock()
-    mock_list_comments_resp.parsed_data = [mock_comment]
-
-    mock_pulls_resp = mocker.MagicMock()
-    mock_pulls_resp.parsed_data = []
-
-    with open(tmp_path / "plugins.json", "w") as f:
-        json.dump([], f)
-
-    check_json_data(plugin_config.input_config.plugin_path, [])
-
-    async with app.test_matcher(publish_check_matcher) as ctx:
-        adapter, bot = get_github_bot(ctx)
-        event_path = (
-            Path(__file__).parent.parent.parent / "events" / "issue-comment-skip.json"
-        )
-        event = Adapter.payload_to_event("1", "issue_comment", event_path.read_bytes())
-        assert isinstance(event, IssueCommentCreated)
-
-        ctx.should_call_api(
-            "rest.apps.async_get_repo_installation",
-            {"owner": "he0119", "repo": "action-test"},
-            mock_installation,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_get",
-            {"owner": "he0119", "repo": "action-test", "issue_number": 70},
-            mock_issues_resp,
-        )
-
-        ctx.receive_event(bot, event)
-
-    # 测试 git 命令
-    mock_subprocess_run.assert_has_calls(
-        [
-            mocker.call(
-                ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["pre-commit", "install", "--install-hooks"],
-                check=True,
-                capture_output=True,
-            ),
-        ]  # type: ignore
-    )
-
-    # 检查文件是否正确
-    check_json_data(plugin_config.input_config.plugin_path, [])
 
 
 async def test_convert_pull_request_to_draft(
@@ -1429,7 +1346,7 @@ async def test_convert_pull_request_to_draft(
 ---
 
 💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
-💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
+💡 当插件加载测试失败时，请发布新版本后勾选插件测试勾选框重新运行插件测试。
 
 ♻️ 评论已更新至最新检查结果
 
@@ -1596,7 +1513,7 @@ mutation markPullRequestReadyForReview($pullRequestId: ID!) {
 ---
 
 💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
-💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
+💡 当插件加载测试失败时，请发布新版本后勾选插件测试勾选框重新运行插件测试。
 
 ♻️ 评论已更新至最新检查结果
 
