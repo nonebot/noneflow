@@ -53,7 +53,9 @@ def generate_issue_body_plugin_skip_test(
 
 
 def generate_issue_body_plugin_test_button(body: str, selected: bool):
-    return f"""{body}\n\n### 插件测试\n\n- [{'x' if selected else ' '}] 单击左侧按钮重新测试，完成时勾选框将被选中"""
+    from src.plugins.github.plugins.publish.constants import PLUGIN_TEST_BUTTON_TIPS
+
+    return f"""{body}\n\n### 插件测试\n\n- [{'x' if selected else ' '}] {PLUGIN_TEST_BUTTON_TIPS}"""
 
 
 def generate_issue_body_remove(homepage: str = "https://nonebot.dev"):
@@ -68,6 +70,8 @@ def check_json_data(file: Path, data: Any) -> None:
 @dataclass
 class MockBody:
     type: Literal["bot", "adapter", "plugin"]
+    test_button: bool | None = None
+
     name: str = "name"
     desc: str = "desc"
     homepage: str = "https://nonebot.dev"
@@ -101,7 +105,7 @@ class MockBody:
                 )
             case "plugin":
                 if self.skip:
-                    return generate_issue_body_plugin_skip_test(
+                    body = generate_issue_body_plugin_skip_test(
                         name=self.name,
                         desc=self.desc,
                         module_name=self.module_name,
@@ -112,12 +116,18 @@ class MockBody:
                         supported_adapters=self.supported_adapters,
                         config=self.config,
                     )
-                return generate_issue_body_plugin(
-                    module_name=self.module_name,
-                    project_link=self.project_link,
-                    tags=self.tags,
-                    config=self.config,
-                )
+                else:
+                    body = generate_issue_body_plugin(
+                        module_name=self.module_name,
+                        project_link=self.project_link,
+                        tags=self.tags,
+                        config=self.config,
+                    )
+                if self.test_button is not None:
+                    body = generate_issue_body_plugin_test_button(
+                        body, self.test_button
+                    )
+                return body
 
 
 @dataclass

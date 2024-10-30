@@ -26,10 +26,9 @@ PLUGIN_TYPE_STRING = "插件类型"
 PLUGIN_TYPE_PATTERN = re.compile(ISSUE_PATTERN.format(PLUGIN_TYPE_STRING))
 PLUGIN_CONFIG_PATTERN = re.compile(r"### 插件配置项\s+```(?:\w+)?\s?([\s\S]*?)```")
 PLUGIN_TEST_STRING = "插件测试"
-PLUGIN_TEST_BUTTON_STRING = "- [ ] 如需重新运行插件测试，请勾选左侧勾选框"
-PLUGIN_TEST_BUTTON_PATTERN = re.compile(
-    r"- \[([ |x])\] 如需重新运行插件测试，请勾选左侧勾选框"
-)
+PLUGIN_TEST_BUTTON_TIPS = "如需重新运行插件测试，请勾选左侧勾选框"
+PLUGIN_TEST_BUTTON_STRING = f"- [ ] {PLUGIN_TEST_BUTTON_TIPS}"
+PLUGIN_TEST_BUTTON_PATTERN = re.compile(rf"- \[([ |x])\] {PLUGIN_TEST_BUTTON_TIPS}")
 PLUGIN_SUPPORTED_ADAPTERS_STRING = "插件支持的适配器"
 PLUGIN_SUPPORTED_ADAPTERS_PATTERN = re.compile(
     ISSUE_PATTERN.format(PLUGIN_SUPPORTED_ADAPTERS_STRING)
