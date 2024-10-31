@@ -31,8 +31,7 @@ from src.providers.validation.models import PublishType, ValidationDict
 from .depends import get_type_by_labels
 from .utils import (
     ensure_issue_content,
-    ensure_issue_test_button,
-    is_plugin_test_button_check,
+    ensure_issue_plugin_test_button,
     process_pull_request,
     resolve_conflict_pull_requests,
     trigger_registry_update,
@@ -155,9 +154,6 @@ async def handle_publish_plugin_check(
         if issue.state != "open":
             logger.info("议题未开启，已跳过")
             await publish_check_matcher.finish()
-        if is_plugin_test_button_check(issue):
-            logger.info("测试按钮已勾选，跳过插件发布检查")
-            await publish_check_matcher.finish()
 
         # 是否需要跳过插件测试
         skip_test = await handler.should_skip_test()
@@ -170,7 +166,7 @@ async def handle_publish_plugin_check(
         result = await validate_plugin_info_from_issue(issue, handler, skip_test)
 
         # 确保插件重测按钮存在
-        await ensure_issue_test_button(handler)
+        await ensure_issue_plugin_test_button(handler)
 
         state["handler"] = handler
         state["validation"] = result

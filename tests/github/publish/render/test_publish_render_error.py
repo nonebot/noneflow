@@ -62,7 +62,7 @@ async def test_render_error_bot(app: App):
 ---
 
 💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
-💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
+💡 当插件加载测试失败时，请发布新版本后勾选插件测试勾选框重新运行插件测试。
 
 
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
@@ -149,7 +149,7 @@ async def test_render_error_adapter(app: App):
 ---
 
 💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
-💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
+💡 当插件加载测试失败时，请发布新版本后勾选插件测试勾选框重新运行插件测试。
 
 
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
@@ -240,7 +240,7 @@ async def test_render_error_plugin(app: App, mocker: MockFixture):
 ---
 
 💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
-💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
+💡 当插件加载测试失败时，请发布新版本后勾选插件测试勾选框重新运行插件测试。
 
 
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
@@ -302,7 +302,7 @@ async def test_render_error_plugin_load_test(app: App):
 ---
 
 💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
-💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
+💡 当插件加载测试失败时，请发布新版本后勾选插件测试勾选框重新运行插件测试。
 
 
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
@@ -350,7 +350,7 @@ async def test_render_error_plugin_metadata(app: App, mocker: MockFixture):
 ---
 
 💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
-💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
+💡 当插件加载测试失败时，请发布新版本后勾选插件测试勾选框重新运行插件测试。
 
 
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
@@ -409,7 +409,7 @@ async def test_render_error_tags_invalid(app: App, mocker: MockFixture):
 ---
 
 💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
-💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
+💡 当插件加载测试失败时，请发布新版本后勾选插件测试勾选框重新运行插件测试。
 
 
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
@@ -469,7 +469,7 @@ async def test_render_type_error(app: App, mocker: MockFixture):
 ---
 
 💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
-💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
+💡 当插件加载测试失败时，请发布新版本后勾选插件测试勾选框重新运行插件测试。
 
 
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
@@ -516,7 +516,7 @@ async def test_render_unknown_error(app: App, mocker: MockFixture):
 ---
 
 💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
-💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
+💡 当插件加载测试失败时，请发布新版本后勾选插件测试勾选框重新运行插件测试。
 
 
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
@@ -574,7 +574,7 @@ async def test_render_http_error(app: App, mocker: MockFixture):
 ---
 
 💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
-💡 当插件加载测试失败时，请发布新版本后在当前页面下评论任意内容以触发测试。
+💡 当插件加载测试失败时，请发布新版本后勾选插件测试勾选框重新运行插件测试。
 
 
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
