@@ -26,6 +26,7 @@ from .utils import (
     check_pypi,
     check_url,
     get_adapters,
+    get_pypi_name,
     get_upload_time,
     resolve_adapter_name,
 )
@@ -119,6 +120,9 @@ class PyPIMixin(BaseModel):
 
         if v and not check_pypi(v):
             raise PydanticCustomError("project_link.not_found", "PyPI 项目名不存在")
+
+        # 使用 PyPI 提供的标准项目名
+        v = get_pypi_name(v)
         return v
 
     @model_validator(mode="before")

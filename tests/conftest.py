@@ -119,7 +119,7 @@ def mocked_api(respx_mock: MockRouter):
         "https://pypi.org/pypi/project_link/json", name="project_link"
     ).respond(
         json={
-            "info": {"version": "0.0.1"},
+            "info": {"name": "project_link", "version": "0.0.1"},
             "urls": [{"upload_time_iso_8601": "2023-09-01T00:00:00+00:00Z"}],
         }
     )
@@ -127,7 +127,7 @@ def mocked_api(respx_mock: MockRouter):
         "https://pypi.org/pypi/project_link//json", name="project_link/"
     ).respond(
         json={
-            "info": {"version": "0.0.1"},
+            "info": {"name": "project_link/", "version": "0.0.1"},
             "urls": [{"upload_time_iso_8601": "2023-10-01T00:00:00+00:00Z"}],
         }
     )
@@ -136,24 +136,44 @@ def mocked_api(respx_mock: MockRouter):
         name="project_link_treehelp",
     ).respond(
         json={
-            "info": {"version": "0.3.1"},
+            "info": {"name": "nonebot-plugin-treehelp", "version": "0.3.1"},
             "urls": [{"upload_time_iso_8601": "2021-08-01T00:00:00+00:00"}],
         }
     )
     respx_mock.get(
         "https://pypi.org/pypi/nonebot-plugin-datastore/json",
         name="project_link_datastore",
-    ).respond(json={"info": {"version": "1.0.0"}})
+    ).respond(
+        json={
+            "info": {"name": "nonebot-plugin-datastore", "version": "1.0.0"},
+        }
+    )
     respx_mock.get(
         "https://pypi.org/pypi/nonebot-plugin-wordcloud/json",
         name="project_link_wordcloud",
-    ).respond(json={"info": {"version": "0.5.0"}})
+    ).respond(
+        json={"info": {"name": "nonebot-plugin-wordcloud", "version": "0.5.0"}},
+    )
     respx_mock.get(
         "https://pypi.org/pypi/project_link1/json", name="project_link1"
-    ).respond(json={"urls": [{"upload_time_iso_8601": "2023-10-01T00:00:00+00:00Z"}]})
+    ).respond(
+        json={
+            "info": {"name": "project_link1", "version": "0.5.0"},
+            "urls": [{"upload_time_iso_8601": "2023-10-01T00:00:00+00:00Z"}],
+        }
+    )
     respx_mock.get(
         "https://pypi.org/pypi/project_link_failed/json", name="project_link_failed"
     ).respond(404)
+    respx_mock.get(
+        "https://pypi.org/pypi/project_link_normalization/json",
+        name="project_link_normalization",
+    ).respond(
+        json={
+            "info": {"name": "project-link-normalization", "version": "0.0.1"},
+            "urls": [{"upload_time_iso_8601": "2023-10-01T00:00:00+00:00Z"}],
+        }
+    )
     respx_mock.get("https://www.baidu.com", name="homepage_failed").respond(404)
     respx_mock.get("https://nonebot.dev/", name="homepage").respond()
     respx_mock.get(STORE_ADAPTERS_URL, name="store_adapters").respond(
