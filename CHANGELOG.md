@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 修复商店数据不能及时同步的问题
 - 使用 PyPI 提供的标准项目名
+- 修复未正常同步商店数据的问题
 
 ## [3.3.3] - 2024-07-18
 
