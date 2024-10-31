@@ -17,6 +17,15 @@ def get_url(url: str) -> httpx.Response:
     return httpx.get(url, follow_redirects=True)
 
 
+def get_pypi_name(project_link: str) -> str:
+    """获取 PyPI 项目名"""
+    url = f"https://pypi.org/pypi/{project_link}/json"
+    r = get_url(url)
+    r.raise_for_status()
+    data = r.json()
+    return data["info"]["name"]
+
+
 def get_upload_time(project_link: str) -> str | None:
     """获取插件的上传时间"""
     url = f"https://pypi.org/pypi/{project_link}/json"

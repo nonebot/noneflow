@@ -167,3 +167,33 @@ async def test_name_duplication_previos_data_missing(mocked_api: MockRouter) -> 
 
     assert not mocked_api["project_link1"].called
     assert not mocked_api["homepage"].called
+
+
+async def test_project_link_normalization(mocked_api: MockRouter) -> None:
+    """测试 PyPI 项目名的规范化"""
+    from src.providers.validation import PublishType, validate_info
+
+    data = generate_adapter_data(project_link="project_link_normalization")
+
+    result = validate_info(PublishType.ADAPTER, data, [])
+
+    assert result.valid
+    assert result.type == PublishType.ADAPTER
+    assert result.valid_data == snapshot(
+        {
+            "module_name": "module_name",
+            "project_link": "project-link-normalization",
+            "time": "2023-10-01T00:00:00+00:00Z",
+            "name": "name",
+            "desc": "desc",
+            "author": "author",
+            "author_id": 1,
+            "homepage": "https://nonebot.dev",
+            "tags": [{"label": "test", "color": "#ffffff"}],
+        }
+    )
+    assert result.info
+    assert result.errors == []
+
+    assert mocked_api["homepage"].called
+    assert mocked_api["project_link_normalization"].called

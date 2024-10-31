@@ -30,7 +30,6 @@ from .validation import (
 
 if TYPE_CHECKING:
     from githubkit.rest import (
-        Issue,
         PullRequest,
         PullRequestSimple,
     )
@@ -159,15 +158,6 @@ def update_file(result: ValidationDict) -> None:
     logger.info("文件更新完成")
 
 
-def is_plugin_test_button_check(issue: "Issue") -> bool:
-    """判断是否跳过插件测试"""
-    body = issue.body if issue.body else ""
-    search_result = PLUGIN_TEST_BUTTON_PATTERN.search(body)
-    if search_result:
-        return search_result.group(1) == "x"
-    return False
-
-
 async def ensure_issue_content(handler: IssueHandler):
     """确保议题内容中包含所需的插件信息"""
     new_content = []
@@ -184,7 +174,7 @@ async def ensure_issue_content(handler: IssueHandler):
         logger.info("检测到议题内容缺失，已更新")
 
 
-async def ensure_issue_test_button(handler: IssueHandler):
+async def ensure_issue_plugin_test_button(handler: IssueHandler):
     """确保议题内容中包含插件重测按钮"""
     issue_body = handler.issue.body or ""
 
@@ -194,12 +184,12 @@ async def ensure_issue_test_button(handler: IssueHandler):
 
         await handler.update_issue_content(f"{issue_body}\n\n{new_content}")
         logger.info("为议题添加插件重测按钮")
-    elif search_result.group(1) == " ":
+    elif search_result.group(1) == "x":
         new_content = issue_body.replace(
             search_result.group(0), PLUGIN_TEST_BUTTON_STRING
         )
         await handler.update_issue_content(f"{new_content}")
-        logger.info("选中议题的插件测试按钮")
+        logger.info("取消勾选议题的插件测试按钮")
 
 
 async def process_pull_request(
