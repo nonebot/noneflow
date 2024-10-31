@@ -34,27 +34,21 @@ async def validate_plugin(
     pypi_time = get_upload_time(project_link)
 
     # 测试插件
-    test_result = await DockerPluginTest(
+    plugin_test_result = await DockerPluginTest(
         DOCKER_IMAGES, project_link, module_name, config
     ).run("3.12")
 
     # 获取测试结果
-    click.echo(f"测试结果：{test_result}")
-    plugin_test_load = test_result.load
-    plugin_test_output = "\n".join(test_result.outputs)
-    test_version = test_result.version
-    test_env = test_result.test_env
-    metadata = test_result.metadata
+    click.echo(f"测试结果：{plugin_test_result}")
+    plugin_test_load = plugin_test_result.load
+    plugin_test_output = "\n".join(plugin_test_result.outputs)
+    plugin_test_version = plugin_test_result.version
+    plugin_test_env = plugin_test_result.test_env
+    plugin_metadata = plugin_test_result.metadata
 
     if previous_plugin is None:
         # 使用商店插件数据作为新的插件数据
-        raw_data = {
-            "module_name": module_name,
-            "project_link": project_link,
-            "author_id": store_plugin.author_id,
-            "tags": store_plugin.tags,
-            "is_official": store_plugin.is_official,
-        }
+        raw_data = store_plugin.model_dump()
     else:
         # 将上次的插件数据作为新的插件数据
         raw_data: dict[str, Any] = previous_plugin.model_dump()
@@ -65,10 +59,10 @@ async def validate_plugin(
     raw_data["load"] = plugin_test_load
     raw_data["test_output"] = plugin_test_output
 
-    # 更新插件信息
-    raw_data["metadata"] = bool(metadata)
-    if metadata:
-        raw_data.update(metadata.model_dump())
+    # 使用最新的插件元数据更新插件信息
+    raw_data["metadata"] = bool(plugin_metadata)
+    if plugin_metadata:
+        raw_data.update(plugin_metadata.model_dump())
 
     # 通过 Github API 获取插件作者名称
     try:
@@ -79,7 +73,7 @@ async def validate_plugin(
     raw_data["author"] = author_name
 
     # 更新插件信息
-    raw_data["version"] = test_version or pypi_version
+    raw_data["version"] = plugin_test_version or pypi_version
     raw_data["time"] = pypi_time
 
     # 验证插件信息
@@ -89,11 +83,14 @@ async def validate_plugin(
         assert isinstance(result.info, PluginPublishInfo)
         new_plugin = Plugin.from_publish_info(result.info)
     else:
-        # 同步商店的数据，比如 author_id, tags 和 is_official
-        data = raw_data
+        # 如果验证失败则使用以前的数据
+        # 仅同步商店中的数据，比如 author_id, tags 和 is_official
+        data = previous_plugin.model_dump() if previous_plugin else {}
+        data.update(result.valid_data)
         data.update(
             {
                 "author_id": store_plugin.author_id,
+                "author": author_name,
                 "tags": store_plugin.tags,
                 "is_official": store_plugin.is_official,
                 "valid": result.valid,
@@ -107,19 +104,19 @@ async def validate_plugin(
     )
 
     test_result = StoreTestResult(
-        version=test_version,
+        version=plugin_test_version,
         results={
             "validation": validation_result,
             "load": plugin_test_load,
-            "metadata": bool(metadata),
+            "metadata": bool(plugin_metadata),
         },
         config=config,
         outputs={
             "validation": validation_output,
             "load": plugin_test_output,
-            "metadata": metadata,
+            "metadata": plugin_metadata,
         },
-        test_env={test_env: True},
+        test_env={plugin_test_env: True},
     )
 
     return test_result, new_plugin
