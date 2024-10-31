@@ -165,6 +165,15 @@ def mocked_api(respx_mock: MockRouter):
     respx_mock.get(
         "https://pypi.org/pypi/project_link_failed/json", name="project_link_failed"
     ).respond(404)
+    respx_mock.get(
+        "https://pypi.org/pypi/project_link_normalization/json",
+        name="project_link_normalization",
+    ).respond(
+        json={
+            "info": {"name": "project-link-normalization", "version": "0.0.1"},
+            "urls": [{"upload_time_iso_8601": "2023-10-01T00:00:00+00:00Z"}],
+        }
+    )
     respx_mock.get("https://www.baidu.com", name="homepage_failed").respond(404)
     respx_mock.get("https://nonebot.dev/", name="homepage").respond()
     respx_mock.get(STORE_ADAPTERS_URL, name="store_adapters").respond(
