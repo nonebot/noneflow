@@ -48,11 +48,11 @@ async def test_process_remove_check(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
     )
 
+    remove_type = "Bot"
     mock_issue = MockIssue(
-        body=generate_issue_body_remove("https://vv.nonebot.dev"),
+        body=generate_issue_body_remove(remove_type, "TESTBOT:https://vv.nonebot.dev"),
         user=MockUser(login="test", id=20),
     ).as_mock(mocker)
-
     mock_event = mocker.MagicMock()
     mock_event.issue = mock_issue
 
@@ -79,7 +79,7 @@ async def test_process_remove_check(
         event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
         assert isinstance(event, IssuesOpened)
-        event.payload.issue.labels = get_remove_labels()
+        event.payload.issue.labels = get_issue_labels(["Remove", "Bot"])
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
@@ -231,8 +231,11 @@ async def test_process_remove_not_found_check(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
     )
 
+    remove_type = "Bot"
     mock_issue = MockIssue(
-        body=generate_issue_body_remove("https://notfound.nonebot.dev"),
+        body=generate_issue_body_remove(
+            type=remove_type, key="TESTBOT:https://notfound.nonebot.dev"
+        ),
         user=MockUser(login="test", id=20),
     ).as_mock(mocker)
 
@@ -262,7 +265,7 @@ async def test_process_remove_not_found_check(
         event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
         assert isinstance(event, IssuesOpened)
-        event.payload.issue.labels = get_remove_labels()
+        event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
@@ -293,7 +296,7 @@ async def test_process_remove_not_found_check(
 
 **⚠️ 在下架检查过程中，我们发现以下问题：**
 
-> ⚠️ not_found: 没有包含对应主页链接的包
+> ⚠️ not_found: 没有包含对应信息的包
 
 ---
 
@@ -352,8 +355,11 @@ async def test_process_remove_author_eq_check(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
     )
 
+    remove_type = "Bot"
     mock_issue = MockIssue(
-        body=generate_issue_body_remove("https://vv.nonebot.dev"),
+        body=generate_issue_body_remove(
+            type=remove_type, key="TESTBOT:https://vv.nonebot.dev"
+        ),
         user=MockUser(login="test", id=20),
     ).as_mock(mocker)
 
@@ -383,7 +389,7 @@ async def test_process_remove_author_eq_check(
         event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
         assert isinstance(event, IssuesOpened)
-        event.payload.issue.labels = get_remove_labels()
+        event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",

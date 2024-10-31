@@ -6,9 +6,9 @@ from nonebot import logger
 
 from src.plugins.github import plugin_config
 from src.plugins.github.constants import ISSUE_FIELD_PATTERN, ISSUE_FIELD_TEMPLATE
+from src.plugins.github.depends.utils import get_type_by_labels
 from src.plugins.github.models import IssueHandler, RepoInfo
 from src.plugins.github.models.github import GithubHandler
-from src.plugins.github.typing import PullRequestLabels
 from src.plugins.github.utils import commit_message as _commit_message
 from src.plugins.github.utils import dump_json, load_json, run_shell_command
 from src.providers.models import RegistryUpdatePayload, to_store
@@ -34,17 +34,6 @@ if TYPE_CHECKING:
         PullRequest,
         PullRequestSimple,
     )
-
-
-def get_type_by_labels(labels: PullRequestLabels) -> PublishType | None:
-    """通过拉取请求的标签获取发布类型"""
-    for label in labels:
-        if isinstance(label, str):
-            continue
-        for type in PublishType.members():
-            if label.name == type.value:
-                return type
-    return None
 
 
 def get_type_by_title(title: str) -> PublishType | None:

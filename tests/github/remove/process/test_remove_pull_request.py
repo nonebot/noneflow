@@ -34,7 +34,10 @@ async def test_remove_process_pull_request(
 
     mock_subprocess_run = mocker.patch("subprocess.run")
 
-    mock_issue = MockIssue(body=generate_issue_body_remove(), number=76).as_mock(mocker)
+    remove_type = "Bot"
+    mock_issue = MockIssue(
+        body=generate_issue_body_remove(type=remove_type), number=76
+    ).as_mock(mocker)
 
     mock_issues_resp = mocker.MagicMock()
     mock_issues_resp.parsed_data = mock_issue
@@ -101,7 +104,6 @@ async def test_remove_process_pull_request(
                 check=True,
                 capture_output=True,
             ),
-            mocker.call(["git", "fetch", "origin"], check=True, capture_output=True),
         ],  # type: ignore
         any_order=True,
     )
@@ -137,7 +139,10 @@ async def test_process_remove_pull_request_not_merged(
 
     mock_subprocess_run = mocker.patch("subprocess.run")
 
-    mock_issue = MockIssue(body=generate_issue_body_remove(), number=76).as_mock(mocker)
+    remove_type = "Bot"
+    mock_issue = MockIssue(
+        body=generate_issue_body_remove(type=remove_type, key="TEST:omg"), number=76
+    ).as_mock(mocker)
     mock_issues_resp = mocker.MagicMock()
     mock_issues_resp.parsed_data = mock_issue
 

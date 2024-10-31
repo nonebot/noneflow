@@ -4,12 +4,10 @@ from nonebug import App
 
 async def test_render(app: App):
     from src.plugins.github.plugins.remove.render import render_comment
-    from src.providers.validation.models import PublishType, ValidationDict
+    from src.plugins.github.plugins.remove.validation import RemoveInfo
+    from src.providers.validation.models import PublishType
 
-    result = ValidationDict(
-        type=PublishType.BOT,
-        raw_data={"name": "omg"},
-    )
+    result = RemoveInfo(publish_type=PublishType.BOT, item={"name": "omg"}, name="omg")
     assert await render_comment(result) == snapshot(
         """\
 # 📃 商店下架检查

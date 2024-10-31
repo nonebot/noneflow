@@ -8,7 +8,7 @@ from nonebot import logger
 from src.plugins.github import plugin_config
 from src.plugins.github.models import AuthorInfo
 from src.plugins.github.models.issue import IssueHandler
-from src.plugins.github.utils import extract_publish_info_from_issue
+from src.plugins.github.utils import extract_issue_info_from_issue
 from src.providers.constants import DOCKER_IMAGES
 from src.providers.docker_test import DockerPluginTest, Metadata
 from src.providers.validation import PublishType, ValidationDict, validate_info
@@ -48,7 +48,7 @@ async def validate_plugin_info_from_issue(
     body = issue.body if issue.body else ""
 
     # 从议题里提取插件所需信息
-    raw_data: dict[str, Any] = extract_publish_info_from_issue(
+    raw_data: dict[str, Any] = extract_issue_info_from_issue(
         {
             "module_name": PLUGIN_MODULE_NAME_PATTERN,
             "project_link": PROJECT_LINK_PATTERN,
@@ -77,7 +77,7 @@ async def validate_plugin_info_from_issue(
     raw_data["skip_test"] = skip_test
     if skip_test:
         # 如果插件被跳过，则从议题获取插件信息
-        metadata = extract_publish_info_from_issue(
+        metadata = extract_issue_info_from_issue(
             {
                 "name": PLUGIN_NAME_PATTERN,
                 "desc": PLUGIN_DESC_PATTERN,
@@ -135,7 +135,7 @@ async def validate_plugin_info_from_issue(
 async def validate_adapter_info_from_issue(issue: Issue) -> ValidationDict:
     """从议题中提取适配器信息"""
     body = issue.body if issue.body else ""
-    raw_data: dict[str, Any] = extract_publish_info_from_issue(
+    raw_data: dict[str, Any] = extract_issue_info_from_issue(
         {
             "module_name": ADAPTER_MODULE_NAME_PATTERN,
             "project_link": PROJECT_LINK_PATTERN,
@@ -157,7 +157,7 @@ async def validate_adapter_info_from_issue(issue: Issue) -> ValidationDict:
 async def validate_bot_info_from_issue(issue: Issue) -> ValidationDict:
     """从议题中提取机器人信息"""
     body = issue.body if issue.body else ""
-    raw_data: dict[str, Any] = extract_publish_info_from_issue(
+    raw_data: dict[str, Any] = extract_issue_info_from_issue(
         {
             "name": BOT_NAME_PATTERN,
             "desc": BOT_DESC_PATTERN,
