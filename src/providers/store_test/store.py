@@ -24,6 +24,7 @@ from src.providers.models import (
     StorePlugin,
     StoreTestResult,
 )
+from src.providers.validation.utils import get_author_name
 
 from .constants import (
     ADAPTERS_PATH,
@@ -248,6 +249,7 @@ class StoreTest:
         """
         new_results, new_plugins = await self.test_plugins(limit, offset, force)
         self.merge_plugin_data(new_results, new_plugins)
+        await self.sync_store()
         self.dump_data()
 
     async def run_single_plugin(self, key: str, force: bool = False):
@@ -311,3 +313,49 @@ class StoreTest:
                     self._plugin_configs[key] = payload.result.config
 
         self.dump_data()
+
+    async def sync_store(self):
+        """同步商店数据
+
+        以商店数据为准，更新商店数据到仓库中，如果仓库中不存在则获取用户名后存储
+        """
+        for key in self._store_adapters:
+            if key not in self._previous_adapters:
+                author = get_author_name(self._store_adapters[key].author_id)
+                self._previous_adapters[key] = Adapter(
+                    **self._store_adapters[key].model_dump(), author=author
+                )
+            else:
+                self._previous_adapters[key] = Adapter(
+                    **self._store_adapters[key].model_dump(),
+                    author=self._previous_adapters[key].author,
+                )
+        for key in self._store_bots:
+            if key not in self._previous_bots:
+                author = get_author_name(self._store_bots[key].author_id)
+                self._previous_bots[key] = Bot(
+                    **self._store_bots[key].model_dump(), author=author
+                )
+            else:
+                self._previous_bots[key] = Bot(
+                    **self._store_bots[key].model_dump(),
+                    author=self._previous_bots[key].author,
+                )
+        for key in self._store_drivers:
+            if key not in self._previous_drivers:
+                author = get_author_name(self._store_drivers[key].author_id)
+                self._previous_drivers[key] = Driver(
+                    **self._store_drivers[key].model_dump(), author=author
+                )
+            else:
+                self._previous_drivers[key] = Driver(
+                    **self._store_drivers[key].model_dump(),
+                    author=self._previous_drivers[key].author,
+                )
+        for key in self._store_plugins:
+            if key in self._previous_plugins:
+                plugin_data = self._previous_plugins[key].model_dump()
+                # 更新插件数据，假设商店数据的数据没有问题的
+                # TODO: 如果 author_id 变化，应该重新获取 author
+                plugin_data.update(self._store_plugins[key].model_dump())
+                self._previous_plugins[key] = Plugin(**plugin_data)

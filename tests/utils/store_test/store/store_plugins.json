@@ -4,7 +4,12 @@
     "project_link": "nonebot-plugin-datastore",
     "author": "he0119",
     "author_id": 1,
-    "tags": [],
+    "tags": [
+      {
+        "label": "sync",
+        "color": "#ffffff"
+      }
+    ],
     "is_official": false
   },
   {
