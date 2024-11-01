@@ -26,4 +26,6 @@ async def render_comment(result: RemoveInfo) -> str:
 async def render_error(exception: PydanticCustomError):
     """将错误转换成评论内容"""
     template = env.get_template("comment.md.jinja")
-    return await template.render_async(title="Error", valid=False, error=exception)
+    return await template.render_async(
+        title="Error", valid=False, error=exception.message()
+    )
