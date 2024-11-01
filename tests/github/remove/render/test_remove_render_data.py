@@ -7,7 +7,7 @@ async def test_render(app: App):
     from src.plugins.github.plugins.remove.validation import RemoveInfo
     from src.providers.validation.models import PublishType
 
-    result = RemoveInfo(publish_type=PublishType.BOT, item={"name": "omg"}, name="omg")
+    result = RemoveInfo(publish_type=PublishType.BOT, key="omg", name="omg")
     assert await render_comment(result) == snapshot(
         """\
 # 📃 商店下架检查
@@ -43,7 +43,7 @@ async def test_exception_author_info_no_eq(app: App):
 
 **⚠️ 在下架检查过程中，我们发现以下问题：**
 
-> ⚠️ author_info: 作者信息不匹配
+> ⚠️ 作者信息不匹配
 
 ---
 
@@ -70,7 +70,7 @@ async def test_exception_package_not_found(app: App):
 
 **⚠️ 在下架检查过程中，我们发现以下问题：**
 
-> ⚠️ not_found: 没有包含对应主页链接的包
+> ⚠️ 没有包含对应主页链接的包
 
 ---
 
