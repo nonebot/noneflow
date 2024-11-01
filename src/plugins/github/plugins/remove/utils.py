@@ -63,7 +63,10 @@ async def process_pull_reqeusts(
     logger.info("开始创建拉取请求")
     try:
         await handler.create_pull_request(
-            plugin_config.input_config.base, title, branch_name, [REMOVE_LABEL, result.publish_type.value]
+            plugin_config.input_config.base,
+            title,
+            branch_name,
+            [REMOVE_LABEL, result.publish_type.value],
         )
     except RequestFailed:
         # 如果之前已经创建了拉取请求，则将其转换为草稿
