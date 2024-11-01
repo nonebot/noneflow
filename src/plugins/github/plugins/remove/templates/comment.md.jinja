@@ -5,7 +5,7 @@
 **{{ "✅ 所有检查通过，一切准备就绪！" if valid else "⚠️ 在下架检查过程中，我们发现以下问题："}}**
 
 {% if not valid %}
-> ⚠️ {{ error.type }}: {{ error.message_template }}
+> ⚠️ {{ error }}
 {% else %}
 > 发起插件下架流程！
 {% endif %}

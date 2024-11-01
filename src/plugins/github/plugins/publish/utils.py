@@ -6,9 +6,9 @@ from nonebot import logger
 
 from src.plugins.github import plugin_config
 from src.plugins.github.constants import ISSUE_FIELD_PATTERN, ISSUE_FIELD_TEMPLATE
+from src.plugins.github.depends.utils import get_type_by_labels
 from src.plugins.github.models import IssueHandler, RepoInfo
 from src.plugins.github.models.github import GithubHandler
-from src.plugins.github.typing import LabelsItems
 from src.plugins.github.utils import commit_message as _commit_message
 from src.plugins.github.utils import dump_json, load_json, run_shell_command
 from src.providers.models import RegistryUpdatePayload, to_store
@@ -32,26 +32,7 @@ if TYPE_CHECKING:
     from githubkit.rest import (
         PullRequest,
         PullRequestSimple,
-        PullRequestSimplePropLabelsItems,
     )
-
-
-def get_type_by_labels(
-    labels: LabelsItems | list["PullRequestSimplePropLabelsItems"],
-) -> PublishType | None:
-    """通过标签获取类型"""
-    if not labels:
-        return None
-
-    for label in labels:
-        if isinstance(label, str):
-            continue
-        if label.name == PublishType.BOT.value:
-            return PublishType.BOT
-        if label.name == PublishType.PLUGIN.value:
-            return PublishType.PLUGIN
-        if label.name == PublishType.ADAPTER.value:
-            return PublishType.ADAPTER
 
 
 def get_type_by_title(title: str) -> PublishType | None:

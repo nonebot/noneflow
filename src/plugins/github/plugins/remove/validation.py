@@ -1,48 +1,116 @@
 from githubkit.rest import Issue
-from nonebot import logger
+from pydantic import BaseModel
 from pydantic_core import PydanticCustomError
 
-from src.plugins.github.utils import extract_publish_info_from_issue
-from src.providers.validation.models import ValidationDict
+from src.plugins.github import plugin_config
+from src.plugins.github.models import AuthorInfo
+from src.plugins.github.utils import extract_issue_info_from_issue, load_json
+from src.providers.store_test.constants import BOT_KEY_TEMPLATE, PYPI_KEY_TEMPLATE
+from src.providers.validation.models import PublishType
 
-from .constants import PUBLISH_PATH, REMOVE_HOMEPAGE_PATTERN
-from .utils import load_json
+from .constants import (
+    REMOVE_BOT_HOMEPAGE_PATTERN,
+    REMOVE_BOT_NAME_PATTERN,
+    REMOVE_PLUGIN_MODULE_NAME_PATTERN,
+    REMOVE_PLUGIN_PROJECT_LINK_PATTERN,
+)
 
 
-async def validate_author_info(issue: Issue) -> ValidationDict:
+def load_publish_data(publish_type: PublishType):
+    """加载对应类型的文件数据"""
+    match publish_type:
+        case PublishType.ADAPTER:
+            return {
+                PYPI_KEY_TEMPLATE.format(
+                    project_link=adapter["project_link"],
+                    module_name=adapter["module_name"],
+                ): adapter
+                for adapter in load_json(plugin_config.input_config.adapter_path)
+            }
+        case PublishType.BOT:
+            return {
+                BOT_KEY_TEMPLATE.format(
+                    name=bot["name"],
+                    homepage=bot["homepage"],
+                ): bot
+                for bot in load_json(plugin_config.input_config.bot_path)
+            }
+        case PublishType.PLUGIN:
+            return {
+                PYPI_KEY_TEMPLATE.format(
+                    project_link=plugin["project_link"],
+                    module_name=plugin["module_name"],
+                ): plugin
+                for plugin in load_json(plugin_config.input_config.plugin_path)
+            }
+        case PublishType.DRIVER:
+            raise ValueError("不支持的删除类型")
+
+
+class RemoveInfo(BaseModel):
+    publish_type: PublishType
+    key: str
+    name: str
+
+
+async def validate_author_info(issue: Issue, publish_type: PublishType) -> RemoveInfo:
     """
-    根据主页链接与作者信息找到对应的包的信息
+    通过议题获取作者 ID，然后验证待删除的数据项是否属于该作者
     """
 
-    homepage = extract_publish_info_from_issue(
-        {"homepage": REMOVE_HOMEPAGE_PATTERN}, issue.body or ""
-    ).get("homepage")
-    author = issue.user.login if issue.user else ""
-    author_id = issue.user.id if issue.user else 0
+    body = issue.body if issue.body else ""
+    author_id = AuthorInfo.from_issue(issue).author_id
 
-    for type, path in PUBLISH_PATH.items():
-        if not path.exists():
-            logger.info(f"{type} 数据文件不存在，跳过")
-            continue
+    match publish_type:
+        case PublishType.PLUGIN:
+            raw_data = extract_issue_info_from_issue(
+                {
+                    "module_name": REMOVE_PLUGIN_MODULE_NAME_PATTERN,
+                    "project_link": REMOVE_PLUGIN_PROJECT_LINK_PATTERN,
+                },
+                body,
+            )
+            module_name = raw_data.get("module_name")
+            project_link = raw_data.get("project_link")
+            if module_name is None or project_link is None:
+                raise PydanticCustomError(
+                    "info_not_found", "未填写数据项或填写格式有误"
+                )
 
-        data: list[dict[str, str]] = load_json(path)
-        for item in data:
-            if item.get("homepage") == homepage:
-                logger.info(f"找到匹配的 {type} 数据 {item}")
+            key = PYPI_KEY_TEMPLATE.format(
+                project_link=project_link, module_name=module_name
+            )
+        case PublishType.BOT | PublishType.ADAPTER:
+            raw_data = extract_issue_info_from_issue(
+                {
+                    "name": REMOVE_BOT_NAME_PATTERN,
+                    "homepage": REMOVE_BOT_HOMEPAGE_PATTERN,
+                },
+                body,
+            )
+            name = raw_data.get("name")
+            homepage = raw_data.get("homepage")
 
-                # author_id 暂时没有储存到数据里, 所以暂时不校验
-                if item.get("author") == author or (
-                    item.get("author_id") is not None
-                    and item.get("author_id") == author_id
-                ):
-                    return ValidationDict(
-                        valid=True,
-                        data=item,
-                        type=type,
-                        name=item.get("name") or item.get("module_name") or "",
-                        author=author,
-                        author_id=author_id,
-                        errors=[],
-                    )
-                raise PydanticCustomError("author_info", "作者信息不匹配")
-    raise PydanticCustomError("not_found", "没有包含对应主页链接的包")
+            if name is None or homepage is None:
+                raise PydanticCustomError(
+                    "info_not_found", "未填写数据项或填写格式有误"
+                )
+
+            key = BOT_KEY_TEMPLATE.format(name=name, homepage=homepage)
+        case _:
+            raise PydanticCustomError("not_support", "暂不支持的移除类型")
+
+    data = load_publish_data(publish_type)
+
+    if key not in data:
+        raise PydanticCustomError("not_found", "不存在对应信息的包")
+
+    remove_item = data[key]
+    if remove_item.get("author_id") != author_id:
+        raise PydanticCustomError("author_info", "作者信息验证不匹配")
+
+    return RemoveInfo(
+        publish_type=publish_type,
+        name=remove_item.get("name") or remove_item.get("module_name") or "",
+        key=key,
+    )

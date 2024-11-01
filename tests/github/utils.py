@@ -58,8 +58,25 @@ def generate_issue_body_plugin_test_button(body: str, selected: bool):
     return f"""{body}\n\n### 插件测试\n\n- [{'x' if selected else ' '}] {PLUGIN_TEST_BUTTON_TIPS}"""
 
 
-def generate_issue_body_remove(homepage: str = "https://nonebot.dev"):
-    return f"""### 项目主页\n\n{homepage}"""
+def generate_issue_body_remove(
+    type: Literal["Plugin", "Adapter", "Bot", "Driver"],
+    key: str = "https://nonebot.dev",
+):
+    match type:
+        case "Bot":
+            return (
+                """### 机器人名称\n\n{}\n\n### 机器人项目仓库/主页链接\n\n{}""".format(
+                    *key.split(":", 1)
+                )
+            )
+        case _:
+            return """### PyPI 项目名\n\n{}\n\n### import 包名\n\n{}""".format(
+                *key.split(":", 1)
+            )
+
+
+# def generate_issue_body_remove(homepage: str = "https://nonebot.dev"):
+#     return f"""### 项目主页\n\n{homepage}"""
 
 
 def check_json_data(file: Path, data: Any) -> None:
@@ -178,7 +195,7 @@ def get_issue_labels(labels: list[str]):
                 "color": "2AAAAA",
                 "default": False,
                 "description": "",
-                "id": 2798075966,
+                "id": 27980759601,
                 "name": label,
                 "node_id": "MDU6TGFiZWwyNzk4MDc1OTY2",
                 "url": f"https://api.github.com/repos/he0119/action-test/labels/{label}",

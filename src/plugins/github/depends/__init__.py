@@ -9,8 +9,9 @@ from nonebot.adapters.github import (
 from nonebot.params import Depends
 
 from src.plugins.github.models import GithubHandler, RepoInfo
-from src.plugins.github.typing import IssuesEvent, PullRequestEvent
+from src.plugins.github.typing import IssuesEvent, LabelsItems, PullRequestEvent
 from src.plugins.github.utils import run_shell_command
+from src.providers.validation.models import PublishType
 
 from .utils import extract_issue_number_from_ref
 
@@ -33,6 +34,18 @@ def get_labels(event: PullRequestEvent | IssuesEvent):
     else:
         labels = event.payload.issue.labels
     return labels
+
+
+def get_labels_name(labels: LabelsItems = Depends(get_labels)) -> list[str]:
+    """通过标签获取名称"""
+    label_names: list[str] = []
+    if not labels:
+        return label_names
+
+    for label in labels:
+        if label.name:
+            label_names.append(label.name)
+    return label_names
 
 
 def get_issue_title(event: IssuesEvent):
@@ -91,3 +104,13 @@ def is_bot_triggered_workflow(event: IssuesEvent):
 def get_github_handler(bot: GitHubBot, repo_info: RepoInfo = Depends(get_repo_info)):
     """获取 GitHub 处理器"""
     return GithubHandler(bot=bot, repo_info=repo_info)
+
+
+def get_type_by_labels_name(
+    labels: list[str] = Depends(get_labels_name),
+) -> PublishType | None:
+    """通过标签的名称获取类型"""
+    for type in PublishType:
+        if type.value in labels:
+            return type
+    return None

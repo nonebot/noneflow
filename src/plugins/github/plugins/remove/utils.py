@@ -1,44 +1,52 @@
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
+from githubkit.exception import RequestFailed
 from nonebot import logger
+from pydantic_core import PydanticCustomError
 
 from src.plugins.github import plugin_config
-from src.plugins.github.depends.utils import extract_issue_number_from_ref
-from src.plugins.github.models import AuthorInfo, GithubHandler, IssueHandler
+from src.plugins.github.depends.utils import (
+    extract_issue_number_from_ref,
+    get_type_by_labels,
+)
+from src.plugins.github.models import GithubHandler, IssueHandler
 from src.plugins.github.utils import (
     commit_message,
     dump_json,
-    load_json,
     run_shell_command,
 )
-from src.providers.validation.models import ValidationDict
+from src.providers.validation.models import PublishType
 
-from .constants import COMMIT_MESSAGE_PREFIX, PUBLISH_PATH, REMOVE_LABEL
+from .constants import COMMIT_MESSAGE_PREFIX, REMOVE_LABEL
+from .validation import RemoveInfo, load_publish_data, validate_author_info
 
 if TYPE_CHECKING:
     from githubkit.rest import PullRequest, PullRequestSimple
 
 
-def update_file(remove_data: dict[str, Any]):
+def update_file(type: PublishType, key: str):
     """删除对应的包储存在 registry 里的数据"""
     logger.info("开始更新文件")
 
-    for path in PUBLISH_PATH.values():
-        data = load_json(path)
+    match type:
+        case PublishType.PLUGIN:
+            path = plugin_config.input_config.plugin_path
+        case PublishType.BOT:
+            path = plugin_config.input_config.bot_path
+        case PublishType.ADAPTER:
+            path = plugin_config.input_config.adapter_path
+        case _:
+            raise ValueError("不支持的删除类型")
 
-        # 删除对应的数据
-        new_data = [item for item in data if item != remove_data]
-
-        if data == new_data:
-            continue
-
-        # 如果数据发生变化则更新文件
-        dump_json(path, new_data)
-        logger.info(f"已更新 {path.name} 文件")
+    data = load_publish_data(type)
+    # 删除对应的数据项
+    data.pop(key)
+    dump_json(path, data)
+    logger.info(f"已更新 {path.name} 文件")
 
 
 async def process_pull_reqeusts(
-    handler: IssueHandler, result: ValidationDict, branch_name: str, title: str
+    handler: IssueHandler, result: RemoveInfo, branch_name: str, title: str
 ):
     """
     根据发布信息合法性创建拉取请求
@@ -48,12 +56,21 @@ async def process_pull_reqeusts(
     # 切换分支
     run_shell_command(["git", "switch", "-C", branch_name])
     # 更新文件并提交更改
-    update_file(result.store_data)
+    update_file(result.publish_type, result.key)
     handler.commit_and_push(message, branch_name)
     # 创建拉取请求
-    await handler.create_pull_request(
-        plugin_config.input_config.base, title, branch_name, [REMOVE_LABEL]
-    )
+    logger.info("开始创建拉取请求")
+    try:
+        await handler.create_pull_request(
+            plugin_config.input_config.base,
+            title,
+            branch_name,
+            [REMOVE_LABEL, result.publish_type.value],
+        )
+    except RequestFailed:
+        # 如果之前已经创建了拉取请求，则将其转换为草稿
+        logger.info("该分支的拉取请求已创建，请前往查看")
+        await handler.update_pull_request_status(title, branch_name)
 
 
 async def resolve_conflict_pull_requests(
@@ -63,14 +80,6 @@ async def resolve_conflict_pull_requests(
 
     直接重新提交之前分支中的内容
     """
-    logger.info("开始解决冲突")
-    # 获取远程分支
-    run_shell_command(["git", "fetch", "origin"])
-
-    # 读取主分支的数据
-    main_data = {}
-    for type, path in PUBLISH_PATH.items():
-        main_data[type] = load_json(path)
 
     for pull in pulls:
         issue_number = extract_issue_number_from_ref(pull.head.ref)
@@ -83,36 +92,32 @@ async def resolve_conflict_pull_requests(
             logger.info("拉取请求为草稿，跳过处理")
             continue
 
-        run_shell_command(["git", "checkout", pull.head.ref])
-        # 读取拉取请求分支的数据
-        pull_data = {}
-        for type, path in PUBLISH_PATH.items():
-            pull_data[type] = load_json(path)
+        # 根据标签获取发布类型
+        publish_type = get_type_by_labels(pull.labels)
+        issue_handler = await handler.to_issue_handler(issue_number)
 
-        for type, data in pull_data.items():
-            if data != main_data[type]:
-                logger.info(f"{type} 数据发生变化，开始解决冲突")
+        if publish_type:
+            # 需要先获取远程分支，否则无法切换到对应分支
+            run_shell_command(["git", "fetch", "origin"])
+            # 因为当前分支为触发处理冲突的分支，所以需要切换到每个拉取请求对应的分支
+            run_shell_command(["git", "checkout", pull.head.ref])
 
-                # 筛选出拉取请求要删除的元素
-                remove_items = [item for item in main_data[type] if item not in data]
+            try:
+                result = await validate_author_info(issue_handler.issue, publish_type)
+            except PydanticCustomError:
+                # 报错代表在此分支找不到对应数据
+                # 则尝试处理其它分支
+                logger.info("拉取请求无冲突，无需处理")
+                continue
 
-                logger.info(f"找到冲突的 {type} 数据 {remove_items}")
+            # 回到主分支
+            run_shell_command(["git", "checkout", plugin_config.input_config.base])
+            # 切换到对应分支
+            run_shell_command(["git", "switch", "-C", pull.head.ref])
+            # 更新文件
+            update_file(publish_type, result.key)
+            message = commit_message(COMMIT_MESSAGE_PREFIX, result.name, issue_number)
 
-                # 切换到主分支
-                run_shell_command(["git", "checkout", plugin_config.input_config.base])
-                # 删除之前拉取的远程分支
-                run_shell_command(["git", "branch", "-D", pull.head.ref])
-                # 同步 main 分支到新的分支上
-                run_shell_command(["git", "switch", "-C", pull.head.ref])
-                # 更新文件并提交更改
-                for item in remove_items:
-                    update_file(item)
-                message = commit_message(
-                    COMMIT_MESSAGE_PREFIX, pull.title, issue_number
-                )
+            issue_handler.commit_and_push(message, pull.head.ref)
 
-                author = AuthorInfo.from_issue(await handler.get_issue(pull.number))
-
-                handler.commit_and_push(message, pull.head.ref, author.author)
-
-        logger.info(f"{pull.title} 处理完毕")
+            logger.info("拉取请求更新完毕")

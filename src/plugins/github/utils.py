@@ -44,7 +44,7 @@ def dump_json(path: Path, data: Any, indent: int = 4):
         f.write("\n")
 
 
-def extract_publish_info_from_issue(
+def extract_issue_info_from_issue(
     patterns: dict[str, Pattern[str]], body: str
 ) -> dict[str, str | None]:
     """

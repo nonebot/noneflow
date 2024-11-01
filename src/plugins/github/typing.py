@@ -3,6 +3,7 @@ from typing import TypeAlias
 
 from githubkit.rest import (
     PullRequestPropLabelsItems,
+    PullRequestSimplePropLabelsItems,
     WebhookIssueCommentCreatedPropIssueAllof0PropLabelsItems,
     WebhookIssuesEditedPropIssuePropLabelsItems,
     WebhookIssuesOpenedPropIssuePropLabelsItems,
@@ -25,11 +26,18 @@ IssuesEvent: TypeAlias = (
 
 PullRequestEvent: TypeAlias = PullRequestClosed | PullRequestReviewSubmitted
 
-LabelsItems: TypeAlias = (
-    list[PullRequestPropLabelsItems]
+
+PullRequestLabels: TypeAlias = (
+    list[PullRequestSimplePropLabelsItems]
+    | list[PullRequestPropLabelsItems]
     | list[WebhookPullRequestReviewSubmittedPropPullRequestPropLabelsItems]
-    | Missing[list[WebhookIssuesOpenedPropIssuePropLabelsItems]]
+)
+
+IssueLabels: TypeAlias = (
+    Missing[list[WebhookIssuesOpenedPropIssuePropLabelsItems]]
     | Missing[list[WebhookIssuesReopenedPropIssuePropLabelsItems]]
     | Missing[list[WebhookIssuesEditedPropIssuePropLabelsItems]]
     | list[WebhookIssueCommentCreatedPropIssueAllof0PropLabelsItems]
 )
+
+LabelsItems: TypeAlias = PullRequestLabels | IssueLabels
