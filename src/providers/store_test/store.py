@@ -352,3 +352,10 @@ class StoreTest:
                     **self._store_drivers[key].model_dump(),
                     author=self._previous_drivers[key].author,
                 )
+        for key in self._store_plugins:
+            if key in self._previous_plugins:
+                plugin_data = self._previous_plugins[key].model_dump()
+                # 更新插件数据，假设商店数据的数据没有问题的
+                # TODO: 如果 author_id 变化，应该重新获取 author
+                plugin_data.update(self._store_plugins[key].model_dump())
+                self._previous_plugins[key] = Plugin(**plugin_data)
