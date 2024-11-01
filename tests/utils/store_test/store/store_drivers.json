@@ -6,7 +6,12 @@
     "desc": "None 驱动器",
     "author_id": 1,
     "homepage": "/docs/advanced/driver",
-    "tags": [],
+    "tags": [
+      {
+        "label": "sync",
+        "color": "#ffffff"
+      }
+    ],
     "is_official": true
   },
   {

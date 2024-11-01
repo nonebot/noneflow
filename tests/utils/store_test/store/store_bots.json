@@ -4,7 +4,12 @@
     "desc": "基于 NoneBot2 的聊天机器人",
     "author_id": 1,
     "homepage": "https://github.com/he0119/CoolQBot",
-    "tags": [],
+    "tags": [
+      {
+        "label": "sync",
+        "color": "#ffffff"
+      }
+    ],
     "is_official": false
   }
 ]

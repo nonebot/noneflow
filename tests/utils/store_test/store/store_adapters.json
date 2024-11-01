@@ -6,7 +6,12 @@
     "desc": "OneBot V11 协议",
     "author_id": 1,
     "homepage": "https://onebot.adapters.nonebot.dev/",
-    "tags": [],
+    "tags": [
+      {
+        "label": "sync",
+        "color": "#ffffff"
+      }
+    ],
     "is_official": true
   }
 ]
