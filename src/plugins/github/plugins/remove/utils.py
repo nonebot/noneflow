@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from githubkit.exception import RequestFailed
 from nonebot import logger
@@ -13,19 +13,18 @@ from src.plugins.github.models import GithubHandler, IssueHandler
 from src.plugins.github.utils import (
     commit_message,
     dump_json,
-    load_json,
     run_shell_command,
 )
 from src.providers.validation.models import PublishType
 
 from .constants import COMMIT_MESSAGE_PREFIX, REMOVE_LABEL
-from .validation import RemoveInfo, validate_author_info
+from .validation import RemoveInfo, load_publish_data, validate_author_info
 
 if TYPE_CHECKING:
     from githubkit.rest import PullRequest, PullRequestSimple
 
 
-def update_file(type: PublishType, item: dict[str, Any]):
+def update_file(type: PublishType, key: str):
     """删除对应的包储存在 registry 里的数据"""
     logger.info("开始更新文件")
 
@@ -39,9 +38,9 @@ def update_file(type: PublishType, item: dict[str, Any]):
         case _:
             raise ValueError("不支持的删除类型")
 
-    data = load_json(path)
+    data = load_publish_data(type)
     # 删除对应的数据项
-    data.remove(item)
+    data.pop(key)
     dump_json(path, data)
     logger.info(f"已更新 {path.name} 文件")
 
@@ -57,7 +56,7 @@ async def process_pull_reqeusts(
     # 切换分支
     run_shell_command(["git", "switch", "-C", branch_name])
     # 更新文件并提交更改
-    update_file(result.publish_type, result.item)
+    update_file(result.publish_type, result.key)
     handler.commit_and_push(message, branch_name)
     # 创建拉取请求
     logger.info("开始创建拉取请求")
@@ -116,7 +115,7 @@ async def resolve_conflict_pull_requests(
             # 切换到对应分支
             run_shell_command(["git", "switch", "-C", pull.head.ref])
             # 更新文件
-            update_file(publish_type, result.item)
+            update_file(publish_type, result.key)
             message = commit_message(COMMIT_MESSAGE_PREFIX, result.name, issue_number)
 
             issue_handler.commit_and_push(message, pull.head.ref)

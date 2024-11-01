@@ -135,8 +135,6 @@ async def handle_remove_check(
 
         try:
             # 搜索包的信息和验证作者信息
-            logger.info(f"开始处理议题 #{publish_type}#")
-
             result = await validate_author_info(issue, publish_type)
         except PydanticCustomError as err:
             logger.error(f"信息验证失败: {err}")
@@ -150,7 +148,7 @@ async def handle_remove_check(
 
         # 处理拉取请求和议题标题
         await process_pull_reqeusts(handler, result, branch_name, title)
-        # 更新议题标题
+
         await handler.update_issue_title(title)
 
         await handler.comment_issue(await render_comment(result))

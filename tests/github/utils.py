@@ -59,21 +59,20 @@ def generate_issue_body_plugin_test_button(body: str, selected: bool):
 
 
 def generate_issue_body_remove(
-    type: Literal["Plugin", "Adapter", "Bot"], key: str = "https://nonebot.dev"
+    type: Literal["Plugin", "Adapter", "Bot", "Driver"],
+    key: str = "https://nonebot.dev",
 ):
     match type:
-        case "Plugin":
-            return """### PyPI 项目名\n\n{}\n\n### import 包名\n\n{}""".format(
-                *key.split(":", 1)
-            )
         case "Bot":
             return (
                 """### 机器人名称\n\n{}\n\n### 机器人项目仓库/主页链接\n\n{}""".format(
                     *key.split(":", 1)
                 )
             )
-        case "Adapter":
-            return f"""### 项目主页\n\n{key}"""
+        case _:
+            return """### PyPI 项目名\n\n{}\n\n### import 包名\n\n{}""".format(
+                *key.split(":", 1)
+            )
 
 
 # def generate_issue_body_remove(homepage: str = "https://nonebot.dev"):

@@ -36,7 +36,7 @@ def get_labels(event: PullRequestEvent | IssuesEvent):
     return labels
 
 
-def get_name_by_labels(labels: LabelsItems = Depends(get_labels)) -> list[str]:
+def get_labels_name(labels: LabelsItems = Depends(get_labels)) -> list[str]:
     """通过标签获取名称"""
     label_names: list[str] = []
     if not labels:
@@ -107,7 +107,7 @@ def get_github_handler(bot: GitHubBot, repo_info: RepoInfo = Depends(get_repo_in
 
 
 def get_type_by_labels_name(
-    labels: list[str] = Depends(get_name_by_labels),
+    labels: list[str] = Depends(get_labels_name),
 ) -> PublishType | None:
     """通过标签的名称获取类型"""
     for type in PublishType:
