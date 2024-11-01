@@ -5,7 +5,7 @@ from nonebot.params import Depends
 from src.plugins.github.depends import (
     get_issue_title,
     get_repo_info,
-    get_type_by_labels,
+    get_type_by_labels_name,
 )
 from src.plugins.github.models import RepoInfo
 from src.plugins.github.plugins.publish import utils
@@ -20,7 +20,7 @@ def get_type_by_title(title: str = Depends(get_issue_title)) -> PublishType | No
 async def get_pull_requests_by_label(
     bot: Bot,
     repo_info: RepoInfo = Depends(get_repo_info),
-    publish_type: PublishType = Depends(get_type_by_labels),
+    publish_type: PublishType = Depends(get_type_by_labels_name),
 ) -> list[PullRequestSimple]:
     pulls = (
         await bot.rest.pulls.async_list(**repo_info.model_dump(), state="open")

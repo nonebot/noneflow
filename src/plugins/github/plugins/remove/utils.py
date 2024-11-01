@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Any
 
+from githubkit.exception import RequestFailed
 from nonebot import logger
 from pydantic_core import PydanticCustomError
 
@@ -39,6 +40,7 @@ def update_file(type: PublishType, item: dict[str, Any]):
             raise ValueError("不支持的删除类型")
 
     data = load_json(path)
+    # 删除对应的数据项
     data.remove(item)
     dump_json(path, data)
     logger.info(f"已更新 {path.name} 文件")
@@ -58,9 +60,15 @@ async def process_pull_reqeusts(
     update_file(result.publish_type, result.item)
     handler.commit_and_push(message, branch_name)
     # 创建拉取请求
-    await handler.create_pull_request(
-        plugin_config.input_config.base, title, branch_name, [REMOVE_LABEL]
-    )
+    logger.info("开始创建拉取请求")
+    try:
+        await handler.create_pull_request(
+            plugin_config.input_config.base, title, branch_name, [REMOVE_LABEL, result.publish_type.value]
+        )
+    except RequestFailed:
+        # 如果之前已经创建了拉取请求，则将其转换为草稿
+        logger.info("该分支的拉取请求已创建，请前往查看")
+        await handler.update_pull_request_status(title, branch_name)
 
 
 async def resolve_conflict_pull_requests(
@@ -81,6 +89,8 @@ async def resolve_conflict_pull_requests(
         if pull.draft:
             logger.info("拉取请求为草稿，跳过处理")
             continue
+
+        # 根据标签获取发布类型
         publish_type = get_type_by_labels(pull.labels)
         issue_handler = await handler.to_issue_handler(issue_number)
 

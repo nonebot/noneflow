@@ -18,7 +18,7 @@ from src.plugins.github.depends import (
     get_issue_number,
     get_related_issue_number,
     get_repo_info,
-    get_type_by_labels,
+    get_type_by_labels_name,
     install_pre_commit_hooks,
     is_bot_triggered_workflow,
 )
@@ -119,7 +119,7 @@ async def handle_remove_check(
     installation_id: int = Depends(get_installation_id),
     repo_info: RepoInfo = Depends(get_repo_info),
     issue_number: int = Depends(get_issue_number),
-    publish_type: PublishType = Depends(get_type_by_labels),
+    publish_type: PublishType = Depends(get_type_by_labels_name),
 ):
     async with bot.as_installation(installation_id):
         issue = (

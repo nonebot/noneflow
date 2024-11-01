@@ -111,7 +111,7 @@ async def test_process_remove_check(
                 "owner": "he0119",
                 "repo": "action-test",
                 "issue_number": 2,
-                "labels": ["Remove"],
+                "labels": ["Remove", "Bot"],
             },
             True,
         )

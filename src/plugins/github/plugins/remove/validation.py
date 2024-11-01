@@ -26,15 +26,15 @@ class RemoveInfo(BaseModel):
     name: str
 
 
-async def validate_author_info(issue: Issue, type: PublishType) -> RemoveInfo:
+async def validate_author_info(issue: Issue, publish_type: PublishType) -> RemoveInfo:
     """
-    根据主页链接与作者信息找到对应的包的信息
+    通过议题获取作者 ID，然后验证待删除的数据项是否属于该作者
     """
 
     body = issue.body if issue.body else ""
     author_id = AuthorInfo.from_issue(issue).author_id
 
-    match type:
+    match publish_type:
         case PublishType.PLUGIN:
             raw_data = extract_issue_info_from_issue(
                 {
@@ -49,28 +49,17 @@ async def validate_author_info(issue: Issue, type: PublishType) -> RemoveInfo:
                 raise PydanticCustomError(
                     "info_not_found", "未填写数据项或填写信息有误"
                 )
-            plugin_data = {
+            data = {
                 PYPI_KEY_TEMPLATE.format(
                     project_link=plugin["project_link"],
                     module_name=plugin["module_name"],
                 ): plugin
                 for plugin in load_json(plugin_config.input_config.plugin_path)
             }
+
             key = PYPI_KEY_TEMPLATE.format(
                 project_link=project_link, module_name=module_name
             )
-            if key not in plugin_data:
-                raise PydanticCustomError("not_found", "没有包含对应信息的包")
-
-            plugin = plugin_data[key]
-            if plugin.get("author_id") == author_id:
-                return RemoveInfo(
-                    publish_type=PublishType.ADAPTER,
-                    name=plugin.get("name") or plugin.get("project_link") or "",
-                    item=plugin,
-                )
-            else:
-                raise PydanticCustomError("author_info", "作者信息不匹配")
         case PublishType.BOT:
             raw_data = extract_issue_info_from_issue(
                 {
@@ -87,49 +76,38 @@ async def validate_author_info(issue: Issue, type: PublishType) -> RemoveInfo:
                     "info_not_found", "未填写数据项或填写信息有误"
                 )
 
-            bot_data = {
+            data = {
                 BOT_KEY_TEMPLATE.format(name=bot["name"], homepage=bot["homepage"]): bot
                 for bot in load_json(plugin_config.input_config.bot_path)
             }
-            key = BOT_KEY_TEMPLATE.format(name=name, homepage=homepage)
-            if key not in bot_data:
-                raise PydanticCustomError("not_found", "没有包含对应信息的包")
 
-            bot = bot_data[key]
-            if bot.get("author_id") == author_id:
-                return RemoveInfo(
-                    publish_type=PublishType.BOT,
-                    name=bot.get("name") or "",
-                    item=bot,
-                )
-            else:
-                raise PydanticCustomError("author_info", "作者信息不匹配")
+            key = BOT_KEY_TEMPLATE.format(name=name, homepage=homepage)
         case PublishType.ADAPTER:
-            homepage = extract_issue_info_from_issue(
+            key = extract_issue_info_from_issue(
                 {"homepage": REMOVE_HOMEPAGE_PATTERN}, issue.body or ""
             ).get("homepage")
 
-            if homepage is None:
+            if key is None:
                 raise PydanticCustomError(
                     "info_not_found", "未填写数据项或填写信息有误"
                 )
 
-            adapter_data = {
+            data = {
                 adapter.get("homepage"): adapter
                 for adapter in load_json(plugin_config.input_config.plugin_path)
             }
-
-            if homepage not in adapter_data:
-                raise PydanticCustomError("not_found", "没有包含对应信息的包")
-
-            adapter = adapter_data[homepage]
-            if adapter.get("author_id") == author_id:
-                return RemoveInfo(
-                    publish_type=PublishType.ADAPTER,
-                    name=adapter.get("name") or "",
-                    item=adapter,
-                )
-            else:
-                raise PydanticCustomError("author_info", "作者信息不匹配")
         case _:
             raise PydanticCustomError("not_support", "暂不支持的移除类型")
+
+    if key not in data:
+        raise PydanticCustomError("not_found", "没有包含对应信息的包")
+
+    remove_item = data[key]
+    if remove_item.get("author_id") != author_id:
+        raise PydanticCustomError("author_info", "作者信息不匹配")
+
+    return RemoveInfo(
+        publish_type=publish_type,
+        name=remove_item.get("name") or "",
+        item=remove_item,
+    )

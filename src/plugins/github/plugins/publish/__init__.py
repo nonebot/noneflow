@@ -28,7 +28,7 @@ from src.plugins.github.models import GithubHandler, IssueHandler, RepoInfo
 from src.plugins.github.plugins.publish.render import render_comment
 from src.providers.validation.models import PublishType, ValidationDict
 
-from .depends import get_type_by_labels
+from .depends import get_type_by_labels_name
 from .utils import (
     ensure_issue_content,
     ensure_issue_plugin_test_button,
@@ -44,7 +44,7 @@ from .validation import (
 
 
 async def pr_close_rule(
-    publish_type: PublishType | None = Depends(get_type_by_labels),
+    publish_type: PublishType | None = Depends(get_type_by_labels_name),
     related_issue_number: int | None = Depends(get_related_issue_number),
 ) -> bool:
     if publish_type is None:
@@ -68,7 +68,7 @@ async def handle_pr_close(
     event: PullRequestClosed,
     bot: GitHubBot,
     installation_id: int = Depends(get_installation_id),
-    publish_type: PublishType = Depends(get_type_by_labels),
+    publish_type: PublishType = Depends(get_type_by_labels_name),
     repo_info: RepoInfo = Depends(get_repo_info),
     related_issue_number: int = Depends(get_related_issue_number),
 ) -> None:
@@ -108,7 +108,7 @@ async def handle_pr_close(
 
 async def check_rule(
     event: IssuesOpened | IssuesReopened | IssuesEdited | IssueCommentCreated,
-    publish_type: PublishType | None = Depends(get_type_by_labels),
+    publish_type: PublishType | None = Depends(get_type_by_labels_name),
     is_bot: bool = Depends(is_bot_triggered_workflow),
 ) -> bool:
     if is_bot:
@@ -138,7 +138,7 @@ async def handle_publish_plugin_check(
     installation_id: int = Depends(get_installation_id),
     repo_info: RepoInfo = Depends(get_repo_info),
     issue_number: int = Depends(get_issue_number),
-    publish_type: Literal[PublishType.PLUGIN] = Depends(get_type_by_labels),
+    publish_type: Literal[PublishType.PLUGIN] = Depends(get_type_by_labels_name),
 ) -> None:
     async with bot.as_installation(installation_id):
         # 因为 Actions 会排队，触发事件相关的议题在 Actions 执行时可能已经被关闭
@@ -181,7 +181,7 @@ async def handle_adapter_publish_check(
     installation_id: int = Depends(get_installation_id),
     repo_info: RepoInfo = Depends(get_repo_info),
     issue_number: int = Depends(get_issue_number),
-    publish_type: Literal[PublishType.ADAPTER] = Depends(get_type_by_labels),
+    publish_type: Literal[PublishType.ADAPTER] = Depends(get_type_by_labels_name),
 ) -> None:
     async with bot.as_installation(installation_id):
         # 因为 Actions 会排队，触发事件相关的议题在 Actions 执行时可能已经被关闭
@@ -215,7 +215,7 @@ async def handle_bot_publish_check(
     installation_id: int = Depends(get_installation_id),
     repo_info: RepoInfo = Depends(get_repo_info),
     issue_number: int = Depends(get_issue_number),
-    publish_type: Literal[PublishType.BOT] = Depends(get_type_by_labels),
+    publish_type: Literal[PublishType.BOT] = Depends(get_type_by_labels_name),
 ) -> None:
     async with bot.as_installation(installation_id):
         # 因为 Actions 会排队，触发事件相关的议题在 Actions 执行时可能已经被关闭
@@ -272,7 +272,7 @@ async def handle_pull_request_and_update_issue(
 
 async def review_submiited_rule(
     event: PullRequestReviewSubmitted,
-    publish_type: PublishType | None = Depends(get_type_by_labels),
+    publish_type: PublishType | None = Depends(get_type_by_labels_name),
 ) -> bool:
     if publish_type is None:
         logger.info("拉取请求与发布无关，已跳过")

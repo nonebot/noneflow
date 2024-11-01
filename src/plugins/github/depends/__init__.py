@@ -106,10 +106,10 @@ def get_github_handler(bot: GitHubBot, repo_info: RepoInfo = Depends(get_repo_in
     return GithubHandler(bot=bot, repo_info=repo_info)
 
 
-def get_type_by_labels(
+def get_type_by_labels_name(
     labels: list[str] = Depends(get_name_by_labels),
 ) -> PublishType | None:
-    """通过标签获取类型"""
+    """通过标签的名称获取类型"""
     for type in PublishType:
         if type.value in labels:
             return type
