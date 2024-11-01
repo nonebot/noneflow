@@ -23,5 +23,15 @@
     "homepage": "/docs/advanced/driver",
     "tags": [],
     "is_official": true
+  },
+  {
+    "module_name": "~quart",
+    "project_link": "nonebot2[quart]",
+    "name": "Quart",
+    "desc": "Quart 驱动器",
+    "author_id": 1,
+    "homepage": "/docs/advanced/driver",
+    "tags": [],
+    "is_official": true
   }
 ]

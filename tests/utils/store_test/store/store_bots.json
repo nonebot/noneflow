@@ -11,5 +11,13 @@
       }
     ],
     "is_official": false
+  },
+  {
+    "name": "Github Bot",
+    "desc": "在QQ获取/处理Github repo/pr/issue",
+    "author_id": 2,
+    "homepage": "https://github.com/cscs181/QQ-GitHub-Bot",
+    "tags": [],
+    "is_official": false
   }
 ]

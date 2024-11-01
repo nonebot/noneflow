@@ -3,6 +3,7 @@ from pathlib import Path
 
 from inline_snapshot import snapshot
 from pytest_mock import MockerFixture
+from respx import MockRouter
 
 
 def load_json(path: Path) -> dict:
@@ -11,7 +12,7 @@ def load_json(path: Path) -> dict:
 
 
 async def test_store_sync(
-    mocked_store_data: dict[str, Path], mocker: MockerFixture
+    mocked_store_data: dict[str, Path], mocked_api: MockRouter, mocker: MockerFixture
 ) -> None:
     """测试同步商店数据
 
@@ -33,7 +34,17 @@ async def test_store_sync(
                 "homepage": "https://onebot.adapters.nonebot.dev/",
                 "tags": [{"label": "sync", "color": "#ffffff"}],
                 "is_official": True,
-            }
+            },
+            {
+                "module_name": "nonebot.adapters.onebot.v12",
+                "project_link": "nonebot-adapter-onebot",
+                "name": "OneBot V12",
+                "desc": "OneBot V12 协议",
+                "author": "he0119",
+                "homepage": "https://onebot.adapters.nonebot.dev/",
+                "tags": [],
+                "is_official": True,
+            },
         ]
     )
     assert load_json(mocked_store_data["bots"]) == snapshot(
@@ -45,7 +56,15 @@ async def test_store_sync(
                 "homepage": "https://github.com/he0119/CoolQBot",
                 "tags": [{"label": "sync", "color": "#ffffff"}],
                 "is_official": False,
-            }
+            },
+            {
+                "name": "Github Bot",
+                "desc": "在QQ获取/处理Github repo/pr/issue",
+                "author": "BigOrangeQWQ",
+                "homepage": "https://github.com/cscs181/QQ-GitHub-Bot",
+                "tags": [],
+                "is_official": False,
+            },
         ]
     )
     assert load_json(mocked_store_data["drivers"]) == snapshot(
@@ -66,6 +85,16 @@ async def test_store_sync(
                 "name": "FastAPI",
                 "desc": "FastAPI 驱动器",
                 "author": "yanyongyu",
+                "homepage": "/docs/advanced/driver",
+                "tags": [],
+                "is_official": True,
+            },
+            {
+                "module_name": "~quart",
+                "project_link": "nonebot2[quart]",
+                "name": "Quart",
+                "desc": "Quart 驱动器",
+                "author": "he0119",
                 "homepage": "/docs/advanced/driver",
                 "tags": [],
                 "is_official": True,

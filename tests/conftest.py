@@ -200,7 +200,10 @@ def mocked_api(respx_mock: MockRouter):
             },
         ]
     )
-    respx_mock.get("https://api.github.com/user/1", name="github_username").respond(
+    respx_mock.get("https://api.github.com/user/1", name="github_username_1").respond(
         json={"login": "he0119"}
+    )
+    respx_mock.get("https://api.github.com/user/2", name="github_username_2").respond(
+        json={"login": "BigOrangeQWQ"}
     )
     return respx_mock

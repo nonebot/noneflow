@@ -13,5 +13,15 @@
       }
     ],
     "is_official": true
+  },
+  {
+    "module_name": "nonebot.adapters.onebot.v12",
+    "project_link": "nonebot-adapter-onebot",
+    "name": "OneBot V12",
+    "desc": "OneBot V12 协议",
+    "author_id": 1,
+    "homepage": "https://onebot.adapters.nonebot.dev/",
+    "tags": [],
+    "is_official": true
   }
 ]
