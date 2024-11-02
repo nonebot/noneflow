@@ -15,7 +15,7 @@ async def test_store_test(
     因为 limit=1 所以只测试了一个插件，第三个插件未测试
     """
     from src.providers.store_test.store import (
-        Plugin,
+        RegistryPlugin,
         StorePlugin,
         StoreTest,
         StoreTestResult,
@@ -43,7 +43,7 @@ async def test_store_test(
                 "validation": None,
             },
         ),
-        Plugin(
+        RegistryPlugin(
             name="帮助",
             module_name="module_name",
             author="author",
@@ -72,7 +72,7 @@ async def test_store_test(
             author_id=1,
             is_official=False,
         ),
-        previous_plugin=Plugin(
+        previous_plugin=RegistryPlugin(
             tags=[],
             module_name="nonebot_plugin_treehelp",
             project_link="nonebot-plugin-treehelp",
@@ -114,7 +114,7 @@ async def test_store_test_with_key(
     mocked_store_data: dict[str, Path], mocked_api: MockRouter, mocker: MockerFixture
 ) -> None:
     """测试指定插件，因为版本更新正常测试"""
-    from src.providers.store_test.store import Plugin, StorePlugin, StoreTest
+    from src.providers.store_test.store import RegistryPlugin, StorePlugin, StoreTest
 
     mocked_validate_plugin = mocker.patch(
         "src.providers.store_test.store.validate_plugin"
@@ -132,7 +132,7 @@ async def test_store_test_with_key(
             author_id=1,
             is_official=False,
         ),
-        previous_plugin=Plugin(
+        previous_plugin=RegistryPlugin(
             tags=[],
             module_name="nonebot_plugin_treehelp",
             project_link="nonebot-plugin-treehelp",
@@ -186,7 +186,7 @@ async def test_store_test_raise(
 
     最后数据没有变化
     """
-    from src.providers.store_test.store import Plugin, StorePlugin, StoreTest
+    from src.providers.store_test.store import RegistryPlugin, StorePlugin, StoreTest
 
     mocked_validate_plugin = mocker.patch(
         "src.providers.store_test.store.validate_plugin"
@@ -206,7 +206,7 @@ async def test_store_test_raise(
                     tags=[],
                     is_official=False,
                 ),
-                previous_plugin=Plugin(
+                previous_plugin=RegistryPlugin(
                     tags=[],
                     module_name="nonebot_plugin_treehelp",
                     project_link="nonebot-plugin-treehelp",

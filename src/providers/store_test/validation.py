@@ -6,16 +6,22 @@ import click
 
 from src.providers.constants import DOCKER_IMAGES
 from src.providers.docker_test import DockerPluginTest
-from src.providers.models import Plugin, StorePlugin, StoreTestResult
-from src.providers.validation import PublishType, validate_info
-from src.providers.validation.models import PluginPublishInfo, ValidationDict
+from src.providers.models import RegistryPlugin, StorePlugin, StoreTestResult
+from src.providers.validation import (
+    PluginPublishInfo,
+    PublishType,
+    ValidationDict,
+    validate_info,
+)
 from src.providers.validation.utils import get_author_name
 
 from .utils import get_latest_version, get_upload_time
 
 
 async def validate_plugin(
-    store_plugin: StorePlugin, config: str, previous_plugin: Plugin | None = None
+    store_plugin: StorePlugin,
+    config: str,
+    previous_plugin: RegistryPlugin | None = None,
 ):
     """验证插件
 
@@ -81,7 +87,7 @@ async def validate_plugin(
 
     if result.valid:
         assert isinstance(result.info, PluginPublishInfo)
-        new_plugin = Plugin.from_publish_info(result.info)
+        new_plugin = RegistryPlugin.from_publish_info(result.info)
     else:
         # 如果验证失败则使用以前的数据
         # 仅同步商店中的数据，比如 author_id, tags 和 is_official
@@ -96,7 +102,7 @@ async def validate_plugin(
                 "valid": result.valid,
             }
         )
-        new_plugin = Plugin(**data)
+        new_plugin = RegistryPlugin(**data)
 
     validation_result = result.valid
     validation_output = (

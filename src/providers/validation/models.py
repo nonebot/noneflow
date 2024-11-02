@@ -1,11 +1,13 @@
+# ruff: noqa: UP040
 import abc
 import json
 from enum import Enum
-from typing import Annotated, Any
+from typing import Annotated, Any, TypeAlias
 
 from pydantic import (
     BaseModel,
     Field,
+    SkipValidation,
     StringConstraints,
     ValidationInfo,
     ValidatorFunctionWrapHandler,
@@ -65,34 +67,6 @@ class Tag(BaseModel):
     @property
     def color_hex(self) -> str:
         return self.color.as_hex(format="long")
-
-
-class ValidationDict(BaseModel):
-    type: PublishType
-    raw_data: dict[str, Any] = {}
-    """原始数据"""
-    valid_data: dict[str, Any] = {}
-    """验证上下文"""
-    info: "PublishInfo | None" = None
-    """验证通过的信息"""
-    errors: list[ErrorDetails] = []
-
-    @property
-    def valid(self) -> bool:
-        return not self.errors
-
-    @property
-    def name(self) -> str:
-        return (
-            self.valid_data.get("name")
-            or self.raw_data.get("name")
-            or self.raw_data.get("project_link")
-            or ""
-        )
-
-    @property
-    def skip_test(self) -> bool:
-        return self.raw_data.get("skip_test", False)
 
 
 class PyPIMixin(BaseModel):
@@ -358,3 +332,37 @@ class BotPublishInfo(PublishInfo):
 
 class DriverPublishInfo(PublishInfo, PyPIMixin):
     """发布驱动所需信息"""
+
+
+PublishInfoModels: TypeAlias = (
+    AdapterPublishInfo | BotPublishInfo | DriverPublishInfo | PluginPublishInfo
+)
+
+
+class ValidationDict(BaseModel):
+    type: PublishType
+    raw_data: dict[str, Any] = {}
+    """原始数据"""
+    valid_data: dict[str, Any] = {}
+    """验证上下文"""
+    # 不需要重复验证，应直接传递对应的模型
+    info: SkipValidation[PublishInfoModels | None] = None
+    """验证通过的信息"""
+    errors: list[ErrorDetails] = []
+
+    @property
+    def valid(self) -> bool:
+        return not self.errors
+
+    @property
+    def name(self) -> str:
+        return (
+            self.valid_data.get("name")
+            or self.raw_data.get("name")
+            or self.raw_data.get("project_link")
+            or ""
+        )
+
+    @property
+    def skip_test(self) -> bool:
+        return self.raw_data.get("skip_test", False)

@@ -5,15 +5,22 @@ from typing import Any
 from pydantic import ValidationError
 from pydantic_core import ErrorDetails, to_jsonable_python
 
-from .models import AdapterPublishInfo, BotPublishInfo, PluginPublishInfo, PublishInfo
+from .models import (
+    AdapterPublishInfo,
+    BotPublishInfo,
+    DriverPublishInfo,
+    PluginPublishInfo,
+)
+from .models import PublishInfoModels as PublishInfoModels
 from .models import PublishType as PublishType
 from .models import ValidationDict as ValidationDict
 from .utils import translate_errors
 
-validation_model_map: dict[PublishType, type[PublishInfo]] = {
+validation_model_map: dict[PublishType, type[PublishInfoModels]] = {
     PublishType.BOT: BotPublishInfo,
     PublishType.ADAPTER: AdapterPublishInfo,
     PublishType.PLUGIN: PluginPublishInfo,
+    PublishType.DRIVER: DriverPublishInfo,
 }
 
 
@@ -38,7 +45,7 @@ def validate_info(
         "skip_test": raw_data.get("skip_test", False),  # 是否跳过测试
     }
 
-    info: PublishInfo | None = None
+    info: PublishInfoModels | None = None
     errors: list[ErrorDetails] = []
 
     try:
