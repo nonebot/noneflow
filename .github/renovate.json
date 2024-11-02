@@ -6,11 +6,7 @@
     "group:allNonMajor",
     ":semanticCommitTypeAll(chore)"
   ],
-  "labels": [
-    "dependencies"
-  ],
+  "labels": ["dependencies"],
   "rangeStrategy": "bump",
-  "ignoreDeps": [
-    "python"
-  ]
+  "ignoreDeps": ["python"]
 }
