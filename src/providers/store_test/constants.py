@@ -1,11 +1,5 @@
 from pathlib import Path
 
-BOT_KEY_TEMPLATE = "{name}:{homepage}"
-""" 机器人键名模板 """
-
-PYPI_KEY_TEMPLATE = "{project_link}:{module_name}"
-""" 插件键名模板 """
-
 TEST_DIR = Path("plugin_test")
 """ 测试文件夹 """
 

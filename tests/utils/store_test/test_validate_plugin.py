@@ -28,7 +28,12 @@ async def test_validate_plugin(
     tmp_path: Path, mocked_api: MockRouter, mocker: MockerFixture
 ) -> None:
     """验证插件信息"""
-    from src.providers.models import Metadata, Plugin, StorePlugin, StoreTestResult
+    from src.providers.models import (
+        Metadata,
+        RegistryPlugin,
+        StorePlugin,
+        StoreTestResult,
+    )
     from src.providers.store_test.validation import validate_plugin
 
     mock_datetime = mocker.patch("src.providers.models.datetime")
@@ -72,7 +77,7 @@ async def test_validate_plugin(
         )
     )
     assert new_plugin == snapshot(
-        Plugin(
+        RegistryPlugin(
             author="he0119",
             desc="订阅牛客/CF/AT平台的比赛信息",
             homepage="https://nonebot.dev/",
@@ -100,7 +105,7 @@ async def test_validate_plugin_skip_test(
 
     如果插件之前是跳过测试的，如果插件测试成功，应将 skip_test 设置为 False。
     """
-    from src.providers.models import Metadata, Plugin, StoreTestResult
+    from src.providers.models import Metadata, RegistryPlugin, StoreTestResult
     from src.providers.store_test.validation import StorePlugin, validate_plugin
 
     mock_datetime = mocker.patch("src.providers.models.datetime")
@@ -144,7 +149,7 @@ async def test_validate_plugin_skip_test(
         )
     )
     assert new_plugin == snapshot(
-        Plugin(
+        RegistryPlugin(
             author="he0119",
             desc="订阅牛客/CF/AT平台的比赛信息",
             homepage="https://nonebot.dev/",
@@ -172,7 +177,7 @@ async def test_validate_plugin_skip_test_plugin_test_failed(
 
     如果插件之前是跳过测试的，如果插件测试失败，应不改变 skip_test 的值。
     """
-    from src.providers.models import Plugin, StoreTestResult
+    from src.providers.models import RegistryPlugin, StoreTestResult
     from src.providers.store_test.validation import StorePlugin, validate_plugin
 
     mock_datetime = mocker.patch("src.providers.models.datetime")
@@ -194,7 +199,7 @@ async def test_validate_plugin_skip_test_plugin_test_failed(
     result, new_plugin = await validate_plugin(
         plugin,
         "",
-        previous_plugin=Plugin(
+        previous_plugin=RegistryPlugin(
             module_name="nonebot_plugin_treehelp",
             project_link="nonebot-plugin-treehelp",
             name="帮助",
@@ -280,7 +285,7 @@ async def test_validate_plugin_skip_test_plugin_test_failed(
         )
     )
     assert new_plugin == snapshot(
-        Plugin(
+        RegistryPlugin(
             author="he0119",
             desc="获取插件帮助信息",
             homepage="https://nonebot.dev/",
@@ -308,7 +313,7 @@ async def test_validate_plugin_failed_with_previous(
 
     需要能够正常更新 author_id, tags 和 is_official 等信息
     """
-    from src.providers.models import Plugin, StoreTestResult
+    from src.providers.models import RegistryPlugin, StoreTestResult
     from src.providers.store_test.validation import StorePlugin, validate_plugin
 
     mock_datetime = mocker.patch("src.providers.models.datetime")
@@ -330,7 +335,7 @@ async def test_validate_plugin_failed_with_previous(
     result, new_plugin = await validate_plugin(
         plugin,
         "",
-        Plugin(
+        RegistryPlugin(
             module_name="module_name",
             project_link="project_link",
             name="name",
@@ -423,7 +428,7 @@ async def test_validate_plugin_failed_with_previous(
     )
 
     assert new_plugin == snapshot(
-        Plugin(
+        RegistryPlugin(
             author="he0119",
             desc="desc",
             homepage="https://nonebot.dev/",

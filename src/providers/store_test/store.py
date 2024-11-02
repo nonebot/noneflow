@@ -1,6 +1,8 @@
 import click
 
 from src.providers.constants import (
+    BOT_KEY_TEMPLATE,
+    PYPI_KEY_TEMPLATE,
     REGISTRY_ADAPTERS_URL,
     REGISTRY_BOTS_URL,
     REGISTRY_DRIVERS_URL,
@@ -13,10 +15,10 @@ from src.providers.constants import (
     STORE_PLUGINS_URL,
 )
 from src.providers.models import (
-    Adapter,
-    Bot,
-    Driver,
-    Plugin,
+    RegistryAdapter,
+    RegistryBot,
+    RegistryDriver,
+    RegistryPlugin,
     RegistryUpdatePayload,
     StoreAdapter,
     StoreBot,
@@ -28,12 +30,10 @@ from src.providers.validation.utils import get_author_name
 
 from .constants import (
     ADAPTERS_PATH,
-    BOT_KEY_TEMPLATE,
     BOTS_PATH,
     DRIVERS_PATH,
     PLUGIN_CONFIG_PATH,
     PLUGINS_PATH,
-    PYPI_KEY_TEMPLATE,
     RESULTS_PATH,
 )
 from .utils import dump_json, get_latest_version, load_json
@@ -80,31 +80,31 @@ class StoreTest:
             key: StoreTestResult(**value)
             for key, value in load_json(REGISTRY_RESULTS_URL).items()
         }
-        self._previous_adapters: dict[str, Adapter] = {
+        self._previous_adapters: dict[str, RegistryAdapter] = {
             PYPI_KEY_TEMPLATE.format(
                 project_link=adapter["project_link"],
                 module_name=adapter["module_name"],
-            ): Adapter(**adapter)
+            ): RegistryAdapter(**adapter)
             for adapter in load_json(REGISTRY_ADAPTERS_URL)
         }
-        self._previous_bots: dict[str, Bot] = {
+        self._previous_bots: dict[str, RegistryBot] = {
             BOT_KEY_TEMPLATE.format(
                 name=bot["name"],
                 homepage=bot["homepage"],
-            ): Bot(**bot)
+            ): RegistryBot(**bot)
             for bot in load_json(url=REGISTRY_BOTS_URL)
         }
-        self._previous_drivers: dict[str, Driver] = {
+        self._previous_drivers: dict[str, RegistryDriver] = {
             PYPI_KEY_TEMPLATE.format(
                 project_link=driver["project_link"],
                 module_name=driver["module_name"],
-            ): Driver(**driver)
+            ): RegistryDriver(**driver)
             for driver in load_json(REGISTRY_DRIVERS_URL)
         }
-        self._previous_plugins: dict[str, Plugin] = {
+        self._previous_plugins: dict[str, RegistryPlugin] = {
             PYPI_KEY_TEMPLATE.format(
                 project_link=plugin["project_link"], module_name=plugin["module_name"]
-            ): Plugin(**plugin)
+            ): RegistryPlugin(**plugin)
             for plugin in load_json(REGISTRY_PLUGINS_URL)
         }
         # 插件配置文件
@@ -122,7 +122,7 @@ class StoreTest:
 
         # 如果插件不在上次测试的结果中，则不跳过
         previous_result: StoreTestResult | None = self._previous_results.get(key)
-        previous_plugin: Plugin | None = self._previous_plugins.get(key)
+        previous_plugin: RegistryPlugin | None = self._previous_plugins.get(key)
         if previous_result is None or previous_plugin is None:
             return False
 
@@ -150,7 +150,7 @@ class StoreTest:
             return self._previous_results[key].config
         return ""
 
-    async def test_plugin(self, key: str) -> tuple[StoreTestResult, Plugin]:
+    async def test_plugin(self, key: str) -> tuple[StoreTestResult, RegistryPlugin]:
         """测试插件
 
         Args:
@@ -176,7 +176,7 @@ class StoreTest:
             force (bool): 是否强制测试
         """
         new_results: dict[str, StoreTestResult] = {}
-        new_plugins: dict[str, Plugin] = {}
+        new_plugins: dict[str, RegistryPlugin] = {}
         i = 1
         test_plugins = list(self._store_plugins.keys())[offset:]
 
@@ -205,7 +205,9 @@ class StoreTest:
         return new_results, new_plugins
 
     def merge_plugin_data(
-        self, new_results: dict[str, StoreTestResult], new_plugins: dict[str, Plugin]
+        self,
+        new_results: dict[str, StoreTestResult],
+        new_plugins: dict[str, RegistryPlugin],
     ):
         """
         合并新的插件测试数据与结果并储存到仓库中
@@ -215,7 +217,7 @@ class StoreTest:
             new_plugins (dict[str, Plugin]): 新的插件数据
         """
         results: dict[str, StoreTestResult] = {}
-        plugins: dict[str, Plugin] = {}
+        plugins: dict[str, RegistryPlugin] = {}
         for key in self._store_plugins:
             if key in new_results:
                 results[key] = new_results[key]
@@ -263,7 +265,7 @@ class StoreTest:
         if self.should_skip(key, force):
             return
 
-        new_plugin: Plugin | None = None
+        new_plugin: RegistryPlugin | None = None
         new_result: StoreTestResult | None = None
 
         try:
@@ -279,33 +281,18 @@ class StoreTest:
 
         直接利用 payload 中的数据更新商店数据
         """
+        key = payload.registry.key
         match payload.registry:
-            case Adapter():
-                key = PYPI_KEY_TEMPLATE.format(
-                    project_link=payload.registry.project_link,
-                    module_name=payload.registry.module_name,
-                )
+            case RegistryAdapter():
                 if key not in self._previous_adapters:
                     self._previous_adapters[key] = payload.registry
-            case Bot():
-                key = BOT_KEY_TEMPLATE.format(
-                    name=payload.registry.name,
-                    homepage=payload.registry.homepage,
-                )
+            case RegistryBot():
                 if key not in self._previous_bots:
                     self._previous_bots[key] = payload.registry
-            case Driver():
-                key = PYPI_KEY_TEMPLATE.format(
-                    project_link=payload.registry.project_link,
-                    module_name=payload.registry.module_name,
-                )
+            case RegistryDriver():
                 if key not in self._previous_drivers:
                     self._previous_drivers[key] = payload.registry
-            case Plugin():
-                key = PYPI_KEY_TEMPLATE.format(
-                    project_link=payload.registry.project_link,
-                    module_name=payload.registry.module_name,
-                )
+            case RegistryPlugin():
                 if key not in self._previous_plugins:
                     self._previous_plugins[key] = payload.registry
                 if key not in self._previous_results and payload.result:
@@ -322,33 +309,33 @@ class StoreTest:
         for key in self._store_adapters:
             if key not in self._previous_adapters:
                 author = get_author_name(self._store_adapters[key].author_id)
-                self._previous_adapters[key] = Adapter(
+                self._previous_adapters[key] = RegistryAdapter(
                     **self._store_adapters[key].model_dump(), author=author
                 )
             else:
-                self._previous_adapters[key] = Adapter(
+                self._previous_adapters[key] = RegistryAdapter(
                     **self._store_adapters[key].model_dump(),
                     author=self._previous_adapters[key].author,
                 )
         for key in self._store_bots:
             if key not in self._previous_bots:
                 author = get_author_name(self._store_bots[key].author_id)
-                self._previous_bots[key] = Bot(
+                self._previous_bots[key] = RegistryBot(
                     **self._store_bots[key].model_dump(), author=author
                 )
             else:
-                self._previous_bots[key] = Bot(
+                self._previous_bots[key] = RegistryBot(
                     **self._store_bots[key].model_dump(),
                     author=self._previous_bots[key].author,
                 )
         for key in self._store_drivers:
             if key not in self._previous_drivers:
                 author = get_author_name(self._store_drivers[key].author_id)
-                self._previous_drivers[key] = Driver(
+                self._previous_drivers[key] = RegistryDriver(
                     **self._store_drivers[key].model_dump(), author=author
                 )
             else:
-                self._previous_drivers[key] = Driver(
+                self._previous_drivers[key] = RegistryDriver(
                     **self._store_drivers[key].model_dump(),
                     author=self._previous_drivers[key].author,
                 )
@@ -358,4 +345,4 @@ class StoreTest:
                 # 更新插件数据，假设商店数据的数据没有问题的
                 # TODO: 如果 author_id 变化，应该重新获取 author
                 plugin_data.update(self._store_plugins[key].model_dump())
-                self._previous_plugins[key] = Plugin(**plugin_data)
+                self._previous_plugins[key] = RegistryPlugin(**plugin_data)

@@ -5,7 +5,7 @@ from pydantic_core import PydanticCustomError
 from src.plugins.github import plugin_config
 from src.plugins.github.models import AuthorInfo
 from src.plugins.github.utils import extract_issue_info_from_issue, load_json
-from src.providers.store_test.constants import BOT_KEY_TEMPLATE, PYPI_KEY_TEMPLATE
+from src.providers.constants import BOT_KEY_TEMPLATE, PYPI_KEY_TEMPLATE
 from src.providers.validation.models import PublishType
 
 from .constants import (

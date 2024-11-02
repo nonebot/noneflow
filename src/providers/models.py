@@ -1,17 +1,18 @@
+# ruff: noqa: UP040
 from datetime import datetime
-from typing import Any, Literal, Self
+from typing import Any, Literal, Self, TypeAlias
 from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, Field
 
+from src.providers.constants import BOT_KEY_TEMPLATE, PYPI_KEY_TEMPLATE
 from src.providers.docker_test import Metadata
-from src.providers.store_test.constants import BOT_KEY_TEMPLATE, PYPI_KEY_TEMPLATE
 from src.providers.validation.models import (
     AdapterPublishInfo,
     BotPublishInfo,
     DriverPublishInfo,
     PluginPublishInfo,
-    PublishInfo,
+    PublishInfoModels,
     PublishType,
     Tag,
 )
@@ -134,7 +135,7 @@ class StorePlugin(BaseModel):
         )
 
 
-def to_store(info: PublishInfo) -> dict[str, Any]:
+def to_store(info: PublishInfoModels) -> dict[str, Any]:
     store = None
     match info:
         case AdapterPublishInfo():
@@ -145,17 +146,16 @@ def to_store(info: PublishInfo) -> dict[str, Any]:
             store = StoreDriver.from_publish_info(info)
         case PluginPublishInfo():
             store = StorePlugin.from_publish_info(info)
-        case _:
-            raise ValueError("未知的发布信息类型")
 
     return store.model_dump()
 
 
+StoreModels: TypeAlias = StoreAdapter | StoreBot | StoreDriver | StorePlugin
 # endregion
 
 
 # region 商店数据模型
-class Adapter(BaseModel):
+class RegistryAdapter(BaseModel):
     """NoneBot 商店适配器数据"""
 
     module_name: str
@@ -187,7 +187,7 @@ class Adapter(BaseModel):
         )
 
 
-class Bot(BaseModel):
+class RegistryBot(BaseModel):
     """NoneBot 商店机器人数据"""
 
     name: str
@@ -196,6 +196,10 @@ class Bot(BaseModel):
     homepage: str
     tags: list[Tag]
     is_official: bool
+
+    @property
+    def key(self):
+        return BOT_KEY_TEMPLATE.format(name=self.name, homepage=self.homepage)
 
     @classmethod
     def from_publish_info(cls, publish_info: BotPublishInfo) -> Self:
@@ -209,7 +213,7 @@ class Bot(BaseModel):
         )
 
 
-class Driver(BaseModel):
+class RegistryDriver(BaseModel):
     """NoneBot 商店驱动数据"""
 
     module_name: str
@@ -220,6 +224,12 @@ class Driver(BaseModel):
     homepage: str
     tags: list[Tag]
     is_official: bool
+
+    @property
+    def key(self):
+        return PYPI_KEY_TEMPLATE.format(
+            project_link=self.project_link, module_name=self.module_name
+        )
 
     @classmethod
     def from_publish_info(cls, publish_info: DriverPublishInfo) -> Self:
@@ -235,7 +245,7 @@ class Driver(BaseModel):
         )
 
 
-class Plugin(BaseModel):
+class RegistryPlugin(BaseModel):
     """NoneBot 商店插件数据"""
 
     module_name: str
@@ -252,6 +262,12 @@ class Plugin(BaseModel):
     time: str
     version: str
     skip_test: bool
+
+    @property
+    def key(self):
+        return PYPI_KEY_TEMPLATE.format(
+            project_link=self.project_link, module_name=self.module_name
+        )
 
     @classmethod
     def from_publish_info(cls, publish_info: PluginPublishInfo) -> Self:
@@ -286,6 +302,9 @@ class Plugin(BaseModel):
         }
 
 
+RegistryModels: TypeAlias = (
+    RegistryAdapter | RegistryBot | RegistryDriver | RegistryPlugin
+)
 # endregion
 
 
@@ -326,29 +345,27 @@ class StoreTestResult(BaseModel):
 
 class RegistryUpdatePayload(BaseModel):
     type: PublishType
-    registry: Adapter | Bot | Driver | Plugin
+    registry: RegistryModels
     result: StoreTestResult | None = None
 
     @classmethod
-    def from_info(cls, info: PublishInfo) -> Self:
+    def from_info(cls, info: PublishInfoModels) -> Self:
         match info:
             case AdapterPublishInfo():
                 type = PublishType.ADAPTER
-                registry = Adapter.from_publish_info(info)
+                registry = RegistryAdapter.from_publish_info(info)
                 result = None
             case BotPublishInfo():
                 type = PublishType.BOT
-                registry = Bot.from_publish_info(info)
+                registry = RegistryBot.from_publish_info(info)
                 result = None
             case DriverPublishInfo():
                 type = PublishType.DRIVER
-                registry = Driver.from_publish_info(info)
+                registry = RegistryDriver.from_publish_info(info)
                 result = None
             case PluginPublishInfo():
                 type = PublishType.PLUGIN
-                registry = Plugin.from_publish_info(info)
+                registry = RegistryPlugin.from_publish_info(info)
                 result = StoreTestResult.from_info(info)
-            case _:
-                raise ValueError("未知的发布信息类型")
 
         return cls(type=type, registry=registry, result=result)
