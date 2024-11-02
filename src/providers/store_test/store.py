@@ -139,15 +139,15 @@ class StoreTest:
 
     def read_plugin_config(self, key: str) -> str:
         """获取插件配置
-        优先从配置文件中获取，若不存在则从上次测试结果获取
+
+        从配置文件中获取，若不存在则返回空字符串，并设置默认值
 
         Args:
             key (str): 插件标识符
         """
-        if self._plugin_configs.get(key):
+        if self._plugin_configs.get(key) is not None:
             return self._plugin_configs[key]
-        elif self._previous_results.get(key):
-            return self._previous_results[key].config
+        self._plugin_configs[key] = ""
         return ""
 
     async def test_plugin(self, key: str) -> tuple[StoreTestResult, RegistryPlugin]:

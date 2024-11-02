@@ -323,10 +323,14 @@ class StoreTestResult(BaseModel):
     time: str = Field(
         default_factory=lambda: datetime.now(ZoneInfo("Asia/Shanghai")).isoformat()
     )
+    """测试时间"""
     config: str = ""
+    """测试插件的配置"""
     version: str | None
+    """测试插件的版本号"""
     test_env: dict[str, bool] | None = None
-    """
+    """测试环境
+
     键为测试环境 python==3.10 pytest==6.2.5 nonebot2==2.0.0a1 ...
     值为在该环境下是否通过插件测试
     """
