@@ -5,8 +5,8 @@ from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, Field
 
+from src.providers.constants import BOT_KEY_TEMPLATE, PYPI_KEY_TEMPLATE
 from src.providers.docker_test import Metadata
-from src.providers.store_test.constants import BOT_KEY_TEMPLATE, PYPI_KEY_TEMPLATE
 from src.providers.validation.models import (
     AdapterPublishInfo,
     BotPublishInfo,
@@ -197,6 +197,10 @@ class RegistryBot(BaseModel):
     tags: list[Tag]
     is_official: bool
 
+    @property
+    def key(self):
+        return BOT_KEY_TEMPLATE.format(name=self.name, homepage=self.homepage)
+
     @classmethod
     def from_publish_info(cls, publish_info: BotPublishInfo) -> Self:
         return cls(
@@ -220,6 +224,12 @@ class RegistryDriver(BaseModel):
     homepage: str
     tags: list[Tag]
     is_official: bool
+
+    @property
+    def key(self):
+        return PYPI_KEY_TEMPLATE.format(
+            project_link=self.project_link, module_name=self.module_name
+        )
 
     @classmethod
     def from_publish_info(cls, publish_info: DriverPublishInfo) -> Self:
@@ -252,6 +262,12 @@ class RegistryPlugin(BaseModel):
     time: str
     version: str
     skip_test: bool
+
+    @property
+    def key(self):
+        return PYPI_KEY_TEMPLATE.format(
+            project_link=self.project_link, module_name=self.module_name
+        )
 
     @classmethod
     def from_publish_info(cls, publish_info: PluginPublishInfo) -> Self:

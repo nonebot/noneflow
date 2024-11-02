@@ -1,6 +1,8 @@
 import click
 
 from src.providers.constants import (
+    BOT_KEY_TEMPLATE,
+    PYPI_KEY_TEMPLATE,
     REGISTRY_ADAPTERS_URL,
     REGISTRY_BOTS_URL,
     REGISTRY_DRIVERS_URL,
@@ -28,12 +30,10 @@ from src.providers.validation.utils import get_author_name
 
 from .constants import (
     ADAPTERS_PATH,
-    BOT_KEY_TEMPLATE,
     BOTS_PATH,
     DRIVERS_PATH,
     PLUGIN_CONFIG_PATH,
     PLUGINS_PATH,
-    PYPI_KEY_TEMPLATE,
     RESULTS_PATH,
 )
 from .utils import dump_json, get_latest_version, load_json
@@ -281,33 +281,18 @@ class StoreTest:
 
         直接利用 payload 中的数据更新商店数据
         """
+        key = payload.registry.key
         match payload.registry:
             case RegistryAdapter():
-                key = PYPI_KEY_TEMPLATE.format(
-                    project_link=payload.registry.project_link,
-                    module_name=payload.registry.module_name,
-                )
                 if key not in self._previous_adapters:
                     self._previous_adapters[key] = payload.registry
             case RegistryBot():
-                key = BOT_KEY_TEMPLATE.format(
-                    name=payload.registry.name,
-                    homepage=payload.registry.homepage,
-                )
                 if key not in self._previous_bots:
                     self._previous_bots[key] = payload.registry
             case RegistryDriver():
-                key = PYPI_KEY_TEMPLATE.format(
-                    project_link=payload.registry.project_link,
-                    module_name=payload.registry.module_name,
-                )
                 if key not in self._previous_drivers:
                     self._previous_drivers[key] = payload.registry
             case RegistryPlugin():
-                key = PYPI_KEY_TEMPLATE.format(
-                    project_link=payload.registry.project_link,
-                    module_name=payload.registry.module_name,
-                )
                 if key not in self._previous_plugins:
                     self._previous_plugins[key] = payload.registry
                 if key not in self._previous_results and payload.result:
