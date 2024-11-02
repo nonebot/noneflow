@@ -3,7 +3,8 @@ from datetime import datetime
 from typing import Any, Literal, Self, TypeAlias
 from zoneinfo import ZoneInfo
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_serializer
+from pydantic_extra_types.color import Color
 
 from src.providers.constants import BOT_KEY_TEMPLATE, PYPI_KEY_TEMPLATE
 from src.providers.docker_test import Metadata
@@ -14,8 +15,18 @@ from src.providers.validation.models import (
     PluginPublishInfo,
     PublishInfoModels,
     PublishType,
-    Tag,
 )
+
+
+class Tag(BaseModel):
+    """标签"""
+
+    label: str
+    color: Color
+
+    @field_serializer("color")
+    def color_serializer(self, color: Color):
+        return color.as_hex(format="long")
 
 
 # region 仓库数据模型
@@ -46,7 +57,7 @@ class StoreAdapter(BaseModel):
             desc=publish_info.desc,
             author_id=publish_info.author_id,
             homepage=publish_info.homepage,
-            tags=publish_info.tags,
+            tags=[Tag(label=tag.label, color=tag.color) for tag in publish_info.tags],
             is_official=publish_info.is_official,
         )
 
@@ -72,7 +83,7 @@ class StoreBot(BaseModel):
             desc=publish_info.desc,
             author_id=publish_info.author_id,
             homepage=publish_info.homepage,
-            tags=publish_info.tags,
+            tags=[Tag(label=tag.label, color=tag.color) for tag in publish_info.tags],
             is_official=publish_info.is_official,
         )
 
@@ -104,7 +115,7 @@ class StoreDriver(BaseModel):
             desc=publish_info.desc,
             author_id=publish_info.author_id,
             homepage=publish_info.homepage,
-            tags=publish_info.tags,
+            tags=[Tag(label=tag.label, color=tag.color) for tag in publish_info.tags],
             is_official=publish_info.is_official,
         )
 
@@ -130,7 +141,7 @@ class StorePlugin(BaseModel):
             module_name=publish_info.module_name,
             project_link=publish_info.project_link,
             author_id=publish_info.author_id,
-            tags=publish_info.tags,
+            tags=[Tag(label=tag.label, color=tag.color) for tag in publish_info.tags],
             is_official=publish_info.is_official,
         )
 
@@ -182,7 +193,7 @@ class RegistryAdapter(BaseModel):
             desc=publish_info.desc,
             author=publish_info.author,
             homepage=publish_info.homepage,
-            tags=publish_info.tags,
+            tags=[Tag(label=tag.label, color=tag.color) for tag in publish_info.tags],
             is_official=publish_info.is_official,
         )
 
@@ -208,7 +219,7 @@ class RegistryBot(BaseModel):
             desc=publish_info.desc,
             author=publish_info.author,
             homepage=publish_info.homepage,
-            tags=publish_info.tags,
+            tags=[Tag(label=tag.label, color=tag.color) for tag in publish_info.tags],
             is_official=publish_info.is_official,
         )
 
@@ -240,7 +251,7 @@ class RegistryDriver(BaseModel):
             desc=publish_info.desc,
             author=publish_info.author,
             homepage=publish_info.homepage,
-            tags=publish_info.tags,
+            tags=[Tag(label=tag.label, color=tag.color) for tag in publish_info.tags],
             is_official=publish_info.is_official,
         )
 
@@ -281,7 +292,7 @@ class RegistryPlugin(BaseModel):
             desc=publish_info.desc,
             author=publish_info.author,
             homepage=publish_info.homepage,
-            tags=publish_info.tags,
+            tags=[Tag(label=tag.label, color=tag.color) for tag in publish_info.tags],
             is_official=publish_info.is_official,
             type=publish_info.type,
             supported_adapters=publish_info.supported_adapters,

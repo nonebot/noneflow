@@ -110,7 +110,7 @@ async def test_store_sync(
                 "desc": "NoneBot 数据存储插件",
                 "author": "he0119",
                 "homepage": "https://github.com/he0119/nonebot-plugin-datastore",
-                "tags": [{"label": "sync", "color": "#ffffff"}],
+                "tags": [{"label": "good first plugin", "color": "#ffffff"}],
                 "is_official": False,
                 "type": "library",
                 "supported_adapters": None,
