@@ -239,7 +239,8 @@ class StoreTest:
         dump_json(DRIVERS_PATH, list(self._previous_drivers.values()))
         dump_json(PLUGINS_PATH, list(self._previous_plugins.values()))
         dump_json(RESULTS_PATH, self._previous_results)
-        dump_json(PLUGIN_CONFIG_PATH, self._plugin_configs)
+        # 插件配置不需要压缩
+        dump_json(PLUGIN_CONFIG_PATH, self._plugin_configs, False)
 
     async def run(self, limit: int, offset: int = 0, force: bool = False):
         """运行商店测试

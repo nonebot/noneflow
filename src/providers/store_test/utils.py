@@ -15,15 +15,17 @@ def load_json(url: str) -> Any:
     return r.json()
 
 
-def dump_json(path: Path, data: Any):
+def dump_json(path: Path, data: Any, minify: bool = True) -> None:
     """保存 JSON 文件
 
     为减少文件大小，还需手动设置 separators
     """
+    data = to_jsonable_python(data)
     with open(path, "w", encoding="utf-8") as f:
-        json.dump(
-            to_jsonable_python(data), f, ensure_ascii=False, separators=(",", ":")
-        )
+        if minify:
+            json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
+        else:
+            json.dump(data, f, ensure_ascii=False, indent=2)
 
 
 @cache

@@ -108,6 +108,14 @@ async def test_store_test(
     assert mocked_store_data["results"].read_text(encoding="utf-8") == snapshot(
         '{"nonebot-plugin-datastore:nonebot_plugin_datastore":{"time":"2023-06-26T22:08:18.945584+08:00","config":"","version":"1.0.0","test_env":null,"results":{"validation":true,"load":true,"metadata":true},"outputs":{"validation":null,"load":"datastore","metadata":{"name":"数据存储","description":"NoneBot 数据存储插件","usage":"请参考文档","type":"library","homepage":"https://github.com/he0119/nonebot-plugin-datastore","supported_adapters":null}}},"nonebot-plugin-treehelp:nonebot_plugin_treehelp":{"time":"2023-08-28T00:00:00.000000+08:00","config":"","version":"1.0.0","test_env":null,"results":{"load":true,"metadata":true,"validation":true},"outputs":{"load":"output","metadata":{"name":"帮助","description":"获取插件帮助信息","usage":"获取插件列表\\n/help\\n获取插件树\\n/help -t\\n/help --tree\\n获取某个插件的帮助\\n/help 插件名\\n获取某个插件的树\\n/help --tree 插件名\\n","type":"application","homepage":"https://nonebot.dev/","supported_adapters":null},"validation":null}}}'
     )
+    assert mocked_store_data["plugin_configs"].read_text(encoding="utf-8") == snapshot(
+        """\
+{
+  "nonebot-plugin-treehelp:nonebot_plugin_treehelp": "TEST_CONFIG=true",
+  "nonebot-plugin-datastore:nonebot_plugin_datastore": ""
+}\
+"""
+    )
 
 
 async def test_store_test_with_key(
