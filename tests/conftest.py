@@ -26,7 +26,7 @@ def pytest_configure(config: pytest.Config) -> None:
             "bot_path": "bot_path",
             "plugin_path": "plugin_path",
             "registry_repository": "owner/registry",
-            "store_repository": "hahaha/mainrepo",
+            "store_repository": "owner/store",
         },
         "github_repository": "owner/repo",
         "github_run_id": "123456",

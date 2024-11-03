@@ -97,8 +97,8 @@ async def test_process_remove_bot_check(
             "rest.pulls.async_create",
             snapshot(
                 {
-                    "owner": "hahaha",
-                    "repo": "mainrepo",
+                    "owner": "owner",
+                    "repo": "store",
                     "title": "Bot: Remove TESTBOT",
                     "body": "resolve he0119/action-test#80",
                     "base": "master",
@@ -110,8 +110,8 @@ async def test_process_remove_bot_check(
         ctx.should_call_api(
             "rest.issues.async_add_labels",
             {
-                "owner": "hahaha",
-                "repo": "mainrepo",
+                "owner": "owner",
+                "repo": "store",
                 "issue_number": 2,
                 "labels": ["Remove", "Bot"],
             },
@@ -131,7 +131,7 @@ async def test_process_remove_bot_check(
         )
         ctx.should_call_api(
             "rest.pulls.async_list",
-            {"owner": "hahaha", "repo": "mainrepo", "head": "hahaha:remove/issue80"},
+            {"owner": "owner", "repo": "store", "head": "owner:remove/issue80"},
             mock_pulls_resp_list,
         )
         ctx.should_call_api(
@@ -153,7 +153,7 @@ async def test_process_remove_bot_check(
 
 **✅ 所有检查通过，一切准备就绪！**
 
-> 成功发起插件下架流程，对应的拉取请求 hahaha/mainrepo#2 已经创建。
+> 成功发起插件下架流程，对应的拉取请求 owner/store#2 已经创建。
 
 ---
 
@@ -301,8 +301,8 @@ async def test_process_remove_plugin_check(
             "rest.pulls.async_create",
             snapshot(
                 {
-                    "owner": "hahaha",
-                    "repo": "mainrepo",
+                    "owner": "owner",
+                    "repo": "store",
                     "title": "Plugin: Remove test",
                     "body": "resolve he0119/action-test#80",
                     "base": "master",
@@ -315,8 +315,8 @@ async def test_process_remove_plugin_check(
             "rest.issues.async_add_labels",
             snapshot(
                 {
-                    "owner": "hahaha",
-                    "repo": "mainrepo",
+                    "owner": "owner",
+                    "repo": "store",
                     "issue_number": 2,
                     "labels": ["Remove", "Plugin"],
                 }
@@ -337,7 +337,7 @@ async def test_process_remove_plugin_check(
         )
         ctx.should_call_api(
             "rest.pulls.async_list",
-            {"owner": "hahaha", "repo": "mainrepo", "head": "hahaha:remove/issue80"},
+            {"owner": "owner", "repo": "store", "head": "owner:remove/issue80"},
             mock_pulls_resp_list,
         )
         ctx.should_call_api(
@@ -359,7 +359,7 @@ async def test_process_remove_plugin_check(
 
 **✅ 所有检查通过，一切准备就绪！**
 
-> 成功发起插件下架流程，对应的拉取请求 hahaha/mainrepo#2 已经创建。
+> 成功发起插件下架流程，对应的拉取请求 owner/store#2 已经创建。
 
 ---
 
