@@ -7,7 +7,7 @@ from nonebot import logger
 from src.plugins.github import plugin_config
 from src.plugins.github.constants import ISSUE_FIELD_PATTERN, ISSUE_FIELD_TEMPLATE
 from src.plugins.github.depends.utils import get_type_by_labels
-from src.plugins.github.models import IssueHandler, RepoInfo
+from src.plugins.github.models import IssueHandler
 from src.plugins.github.models.github import GithubHandler
 from src.plugins.github.utils import commit_message as _commit_message
 from src.plugins.github.utils import dump_json, load_json, run_shell_command
@@ -206,11 +206,7 @@ async def process_pull_request(
         # 创建拉取请求
         try:
             await handler.create_pull_request(
-                plugin_config.input_config.base,
-                title,
-                branch_name,
-                result.type.value,
-                handler.issue_number,
+                plugin_config.input_config.base, title, branch_name, result.type.value
             )
         except RequestFailed:
             # 如果之前已经创建了拉取请求，则将其转换为草稿
@@ -240,11 +236,10 @@ async def trigger_registry_update(handler: IssueHandler, publish_type: PublishTy
         logger.error("信息验证失败，跳过触发商店列表更新")
         return
 
-    owner, repo = plugin_config.input_config.registry_repository.split("/")
     # 触发商店列表更新
     await handler.create_dispatch_event(
         event_type="registry_update",
         client_payload=RegistryUpdatePayload.from_info(result.info).model_dump(),
-        repo=RepoInfo(owner=owner, repo=repo),
+        repo=plugin_config.input_config.registry_repository,
     )
     logger.info("已触发商店列表更新")

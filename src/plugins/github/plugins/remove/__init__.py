@@ -10,6 +10,7 @@ from nonebot.adapters.github.event import (
 from nonebot.params import Depends
 from pydantic_core import PydanticCustomError
 
+from src.plugins.github import plugin_config
 from src.plugins.github.constants import TITLE_MAX_LENGTH
 from src.plugins.github.depends import (
     RepoInfo,
@@ -23,6 +24,7 @@ from src.plugins.github.depends import (
     is_bot_triggered_workflow,
 )
 from src.plugins.github.models import IssueHandler
+from src.plugins.github.models.github import GithubHandler
 from src.plugins.github.typing import IssuesEvent
 from src.providers.validation.models import PublishType
 
@@ -146,9 +148,23 @@ async def handle_remove_check(
         ]
         branch_name = f"{BRANCH_NAME_PREFIX}{issue_number}"
 
+        # 根据 input_config 里的 remove 仓库来进行提交和 PR
+        store_handler = GithubHandler(
+            bot=handler.bot, repo_info=plugin_config.input_config.store_repository
+        )
         # 处理拉取请求和议题标题
-        await process_pull_reqeusts(handler, result, branch_name, title)
+        await process_pull_reqeusts(handler, store_handler, result, branch_name, title)
 
         await handler.update_issue_title(title)
 
-        await handler.comment_issue(await render_comment(result))
+        # 获取 pull request 编号
+        pull_number = (
+            await store_handler.get_pull_request_by_branch(branch_name)
+        ).number
+        # 评论议题
+        await handler.comment_issue(
+            await render_comment(
+                result,
+                pr_url=f"{plugin_config.input_config.store_repository}#{pull_number}",
+            )
+        )
