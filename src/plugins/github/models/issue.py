@@ -75,9 +75,9 @@ class IssueHandler(GithubHandler):
         title: str,
         branch_name: str,
         label: str | list[str],
-        body: str | None = None,
+        body: str = "",
     ):
-        if body is None:
+        if not body:
             body = f"resolve #{self.issue_number}"
 
         return await super().create_pull_request(

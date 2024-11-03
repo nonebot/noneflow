@@ -143,7 +143,7 @@ class GithubHandler(GitHandler):
         logger.info(f"拉取请求 #{pull_number} 已合并")
 
     async def get_pull_request_by_branch(self, branch_name: str) -> PullRequestSimple:
-        """根据分支的名称获取对应的拉取请求示例"""
+        """根据分支的名称获取对应的拉取请求实例"""
         return (
             await self.bot.rest.pulls.async_list(
                 **self.repo_info.model_dump(),
@@ -176,11 +176,9 @@ class GithubHandler(GitHandler):
         title: str,
         branch_name: str,
         label: str | list[str],
-        body: str | None,
+        body: str = "",
     ) -> int:
         """创建拉取请求并分配标签，若存在请求会导致 raise RequestFailed"""
-        if body is None:
-            body = ""
 
         resp = await self.bot.rest.pulls.async_create(
             **self.repo_info.model_dump(),
