@@ -41,7 +41,7 @@ def update_file(type: PublishType, key: str):
     data = load_publish_data(type)
     # 删除对应的数据项
     data.pop(key)
-    dump_json(path, data)
+    dump_json(path, list(data.values()))
     logger.info(f"已更新 {path.name} 文件")
 
 
