@@ -137,7 +137,7 @@ async def test_resolve_conflict_pull_requests_bot(
     # 检查文件是否正确
     check_json_data(
         plugin_config.input_config.bot_path,
-        snapshot({}),
+        snapshot([]),
     )
 
 
@@ -252,5 +252,5 @@ async def test_resolve_conflict_pull_requests_plugin(
 
     check_json_data(
         plugin_config.input_config.plugin_path,
-        snapshot({}),
+        snapshot([]),
     )

@@ -62,7 +62,7 @@ async def validate_author_info(issue: Issue, publish_type: PublishType) -> Remov
     author_id = AuthorInfo.from_issue(issue).author_id
 
     match publish_type:
-        case PublishType.PLUGIN:
+        case PublishType.PLUGIN | PublishType.ADAPTER:
             raw_data = extract_issue_info_from_issue(
                 {
                     "module_name": REMOVE_PLUGIN_MODULE_NAME_PATTERN,
@@ -80,7 +80,7 @@ async def validate_author_info(issue: Issue, publish_type: PublishType) -> Remov
             key = PYPI_KEY_TEMPLATE.format(
                 project_link=project_link, module_name=module_name
             )
-        case PublishType.BOT | PublishType.ADAPTER:
+        case PublishType.BOT:
             raw_data = extract_issue_info_from_issue(
                 {
                     "name": REMOVE_BOT_NAME_PATTERN,
