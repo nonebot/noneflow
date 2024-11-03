@@ -42,10 +42,10 @@ def strip_ansi(text: str | None) -> str:
 
 
 async def validate_plugin_info_from_issue(
-    issue: Issue, handler: IssueHandler, skip_test: bool | None = None
+    handler: IssueHandler, skip_test: bool | None = None
 ) -> ValidationDict:
     """从议题中获取插件信息，并且运行插件测试加载且获取插件元信息后进行验证"""
-    body = issue.body if issue.body else ""
+    body = handler.issue.body if handler.issue.body else ""
 
     # 从议题里提取插件所需信息
     raw_data: dict[str, Any] = extract_issue_info_from_issue(
@@ -58,7 +58,7 @@ async def validate_plugin_info_from_issue(
         body,
     )
     # 更新作者信息
-    raw_data.update(AuthorInfo.from_issue(issue).model_dump())
+    raw_data.update(AuthorInfo.from_issue(handler.issue).model_dump())
 
     module_name: str = raw_data.get("module_name", None)
     project_link: str = raw_data.get("project_link", None)

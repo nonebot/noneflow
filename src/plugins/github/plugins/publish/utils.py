@@ -114,9 +114,7 @@ async def resolve_conflict_pull_requests(
                 case PublishType.BOT:
                     result = await validate_bot_info_from_issue(issue_handler.issue)
                 case PublishType.PLUGIN:
-                    result = await validate_plugin_info_from_issue(
-                        issue_handler.issue, issue_handler
-                    )
+                    result = await validate_plugin_info_from_issue(issue_handler)
                 case _:
                     raise ValueError("暂不支持的发布类型")
 
@@ -234,7 +232,7 @@ async def trigger_registry_update(handler: IssueHandler, publish_type: PublishTy
         case PublishType.BOT:
             result = await validate_bot_info_from_issue(issue)
         case PublishType.PLUGIN:
-            result = await validate_plugin_info_from_issue(issue, handler)
+            result = await validate_plugin_info_from_issue(handler)
         case _:
             raise ValueError("暂不支持的发布类型")
 
