@@ -81,7 +81,7 @@ async def test_validate_info_from_issue_plugin(
             mock_list_comments_resp,
         )
 
-        result = await validate_plugin_info_from_issue(mock_issue, handler)
+        result = await validate_plugin_info_from_issue(handler)
 
     assert result.valid
     assert mocked_api["homepage"].called

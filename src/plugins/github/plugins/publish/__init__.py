@@ -18,7 +18,6 @@ from src.plugins.github.depends import (
     bypass_git,
     get_github_handler,
     get_installation_id,
-    get_issue_number,
     get_related_issue_number,
     get_repo_info,
     install_pre_commit_hooks,
@@ -28,7 +27,11 @@ from src.plugins.github.models import GithubHandler, IssueHandler, RepoInfo
 from src.plugins.github.plugins.publish.render import render_comment
 from src.providers.validation.models import PublishType, ValidationDict
 
-from .depends import get_type_by_labels_name
+from .depends import (
+    get_issue_handler,
+    get_related_issue_handler,
+    get_type_by_labels_name,
+)
 from .utils import (
     ensure_issue_content,
     ensure_issue_plugin_test_button,
@@ -69,22 +72,13 @@ async def handle_pr_close(
     bot: GitHubBot,
     installation_id: int = Depends(get_installation_id),
     publish_type: PublishType = Depends(get_type_by_labels_name),
-    repo_info: RepoInfo = Depends(get_repo_info),
-    related_issue_number: int = Depends(get_related_issue_number),
+    handler: IssueHandler = Depends(get_related_issue_handler),
 ) -> None:
     async with bot.as_installation(installation_id):
-        issue = (
-            await bot.rest.issues.async_get(
-                **repo_info.model_dump(), issue_number=related_issue_number
-            )
-        ).parsed_data
-
-        handler = IssueHandler(bot=bot, repo_info=repo_info, issue=issue)
-
-        if issue.state == "open":
+        if handler.issue.state == "open":
             reason = "completed" if event.payload.pull_request.merged else "not_planned"
             await handler.close_issue(reason)
-        logger.info(f"议题 #{related_issue_number} 已关闭")
+        logger.info(f"议题 #{handler.issue.number} 已关闭")
 
         try:
             handler.delete_origin_branch(event.payload.pull_request.head.ref)
@@ -136,22 +130,11 @@ async def handle_publish_plugin_check(
     bot: GitHubBot,
     state: T_State,
     installation_id: int = Depends(get_installation_id),
-    repo_info: RepoInfo = Depends(get_repo_info),
-    issue_number: int = Depends(get_issue_number),
+    handler: IssueHandler = Depends(get_issue_handler),
     publish_type: Literal[PublishType.PLUGIN] = Depends(get_type_by_labels_name),
 ) -> None:
     async with bot.as_installation(installation_id):
-        # 因为 Actions 会排队，触发事件相关的议题在 Actions 执行时可能已经被关闭
-        # 所以需要获取最新的议题状态
-        issue = (
-            await bot.rest.issues.async_get(
-                **repo_info.model_dump(), issue_number=issue_number
-            )
-        ).parsed_data
-
-        handler = IssueHandler(bot=bot, repo_info=repo_info, issue=issue)
-
-        if issue.state != "open":
+        if handler.issue.state != "open":
             logger.info("议题未开启，已跳过")
             await publish_check_matcher.finish()
 
@@ -163,7 +146,7 @@ async def handle_publish_plugin_check(
 
         # 检查是否满足发布要求
         # 仅在通过检查的情况下创建拉取请求
-        result = await validate_plugin_info_from_issue(issue, handler, skip_test)
+        result = await validate_plugin_info_from_issue(handler, skip_test)
 
         # 确保插件重测按钮存在
         await ensure_issue_plugin_test_button(handler)
@@ -179,28 +162,17 @@ async def handle_adapter_publish_check(
     bot: GitHubBot,
     state: T_State,
     installation_id: int = Depends(get_installation_id),
-    repo_info: RepoInfo = Depends(get_repo_info),
-    issue_number: int = Depends(get_issue_number),
+    handler: IssueHandler = Depends(get_issue_handler),
     publish_type: Literal[PublishType.ADAPTER] = Depends(get_type_by_labels_name),
 ) -> None:
     async with bot.as_installation(installation_id):
-        # 因为 Actions 会排队，触发事件相关的议题在 Actions 执行时可能已经被关闭
-        # 所以需要获取最新的议题状态
-        issue = (
-            await bot.rest.issues.async_get(
-                **repo_info.model_dump(), issue_number=issue_number
-            )
-        ).parsed_data
-
-        handler = IssueHandler(bot=bot, repo_info=repo_info, issue=issue)
-
-        if issue.state != "open":
+        if handler.issue.state != "open":
             logger.info("议题未开启，已跳过")
             await publish_check_matcher.finish()
 
         # 检查是否满足发布要求
         # 仅在通过检查的情况下创建拉取请求
-        result = await validate_adapter_info_from_issue(issue)
+        result = await validate_adapter_info_from_issue(handler.issue)
 
         state["handler"] = handler
         state["validation"] = result
@@ -213,31 +185,18 @@ async def handle_bot_publish_check(
     bot: GitHubBot,
     state: T_State,
     installation_id: int = Depends(get_installation_id),
-    repo_info: RepoInfo = Depends(get_repo_info),
-    issue_number: int = Depends(get_issue_number),
+    handler: IssueHandler = Depends(get_issue_handler),
     publish_type: Literal[PublishType.BOT] = Depends(get_type_by_labels_name),
 ) -> None:
     async with bot.as_installation(installation_id):
-        # 因为 Actions 会排队，触发事件相关的议题在 Actions 执行时可能已经被关闭
-        # 所以需要获取最新的议题状态
-
-        issue = (
-            await bot.rest.issues.async_get(
-                **repo_info.model_dump(), issue_number=issue_number
-            )
-        ).parsed_data
-
-        handler = IssueHandler(bot=bot, repo_info=repo_info, issue=issue)
-
-        if issue.state != "open":
+        if handler.issue.state != "open":
             logger.info("议题未开启，已跳过")
             await publish_check_matcher.finish()
 
         # 检查是否满足发布要求
         # 仅在通过检查的情况下创建拉取请求
-        result = await validate_bot_info_from_issue(issue)
+        result = await validate_bot_info_from_issue(handler.issue)
 
-        state["handler"] = handler
         state["validation"] = result
 
 
@@ -246,8 +205,8 @@ async def handle_bot_publish_check(
 )
 async def handle_pull_request_and_update_issue(
     bot: GitHubBot,
-    handler: IssueHandler = Arg(),
     validation: ValidationDict = Arg(),
+    handler: IssueHandler = Depends(get_issue_handler),
     installation_id: int = Depends(get_installation_id),
 ) -> None:
     async with bot.as_installation(installation_id):
