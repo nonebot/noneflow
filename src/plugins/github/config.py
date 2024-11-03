@@ -13,11 +13,11 @@ class PublishConfig(BaseModel):
     registry_repository: RepoInfo = Field(
         default=RepoInfo(owner="nonebot", repo="registry")
     )
-    remove_repository: RepoInfo = Field(
+    store_repository: RepoInfo = Field(
         default=RepoInfo(owner="nonebot", repo="nonebot2")
     )
 
-    @field_validator("registry_repository", "remove_repository", mode="before")
+    @field_validator("registry_repository", "store_repository", mode="before")
     @classmethod
     def check_repositorys(cls, v: str) -> RepoInfo | None:
         if not v:
