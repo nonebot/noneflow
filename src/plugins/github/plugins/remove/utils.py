@@ -46,7 +46,11 @@ def update_file(type: PublishType, key: str):
 
 
 async def process_pull_reqeusts(
-    handler: IssueHandler, result: RemoveInfo, branch_name: str, title: str
+    handler: IssueHandler,
+    rm_handler: GithubHandler,
+    result: RemoveInfo,
+    branch_name: str,
+    title: str,
 ):
     """
     根据发布信息合法性创建拉取请求
@@ -57,20 +61,22 @@ async def process_pull_reqeusts(
     run_shell_command(["git", "switch", "-C", branch_name])
     # 更新文件并提交更改
     update_file(result.publish_type, result.key)
-    handler.commit_and_push(message, branch_name)
+    rm_handler.commit_and_push(message, branch_name, author=handler.author)
     # 创建拉取请求
     logger.info("开始创建拉取请求")
+
     try:
-        await handler.create_pull_request(
+        await rm_handler.create_pull_request(
             plugin_config.input_config.base,
             title,
             branch_name,
             [REMOVE_LABEL, result.publish_type.value],
+            body=f"resolve {handler.repo_info}#{handler.issue_number}",
         )
     except RequestFailed:
         # 如果之前已经创建了拉取请求，则将其转换为草稿
         logger.info("该分支的拉取请求已创建，请前往查看")
-        await handler.update_pull_request_status(title, branch_name)
+        await rm_handler.update_pull_request_status(title, branch_name)
 
 
 async def resolve_conflict_pull_requests(

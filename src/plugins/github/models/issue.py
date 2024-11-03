@@ -75,13 +75,13 @@ class IssueHandler(GithubHandler):
         title: str,
         branch_name: str,
         label: str | list[str],
-        issue_number: int | None = None,
+        body: str | None = None,
     ):
-        if issue_number is None:
-            issue_number = self.issue_number
+        if body is None:
+            body = f"resolve #{self.issue_number}"
 
         return await super().create_pull_request(
-            base_branch, title, branch_name, label, self.issue_number
+            base_branch, title, branch_name, label, body
         )
 
     async def should_skip_test(self) -> bool:

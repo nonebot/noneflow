@@ -142,14 +142,18 @@ class GithubHandler(GitHandler):
         )
         logger.info(f"拉取请求 #{pull_number} 已合并")
 
-    async def update_pull_request_status(self, title: str, branch_name: str):
-        """拉取请求若为草稿状态则标记为可评审，若标题不符则修改标题"""
-        pull = (
+    async def get_pull_request_by_branch(self, branch_name: str) -> PullRequestSimple:
+        """根据分支的名称获取对应的拉取请求示例"""
+        return (
             await self.bot.rest.pulls.async_list(
                 **self.repo_info.model_dump(),
                 head=f"{self.repo_info.owner}:{branch_name}",
             )
         ).parsed_data[0]
+
+    async def update_pull_request_status(self, title: str, branch_name: str):
+        """拉取请求若为草稿状态则标记为可评审，若标题不符则修改标题"""
+        pull = await self.get_pull_request_by_branch(branch_name)
         if pull.title != title:
             await self.bot.rest.pulls.async_update(
                 **self.repo_info.model_dump(), pull_number=pull.number, title=title
@@ -172,10 +176,11 @@ class GithubHandler(GitHandler):
         title: str,
         branch_name: str,
         label: str | list[str],
-        issue_number: int,
-    ):
-        """创建拉取请求并分配标签，已存在请求会导致 raise RequestFailed"""
-        body = f"resolve #{issue_number}"
+        body: str | None,
+    ) -> int:
+        """创建拉取请求并分配标签，若存在请求会导致 raise RequestFailed"""
+        if body is None:
+            body = ""
 
         resp = await self.bot.rest.pulls.async_create(
             **self.repo_info.model_dump(),
@@ -193,6 +198,7 @@ class GithubHandler(GitHandler):
             labels=[label] if isinstance(label, str) else label,
         )
         logger.info("拉取请求创建完毕")
+        return pull.number
 
     async def ready_pull_request(self, node_id: int):
         """将拉取请求标记为可评审"""

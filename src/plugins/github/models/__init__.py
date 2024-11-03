@@ -16,6 +16,9 @@ class RepoInfo(BaseModel):
             repo=issue.repository.name,
         )
 
+    def __str__(self) -> str:
+        return f"{self.owner}/{self.repo}"
+
 
 class AuthorInfo(BaseModel):
     """作者信息"""

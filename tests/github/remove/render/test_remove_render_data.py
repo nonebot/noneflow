@@ -8,7 +8,7 @@ async def test_render(app: App):
     from src.providers.validation.models import PublishType
 
     result = RemoveInfo(publish_type=PublishType.BOT, key="omg", name="omg")
-    assert await render_comment(result) == snapshot(
+    assert await render_comment(result, "nonebot/nonebot2") == snapshot(
         """\
 # 📃 商店下架检查
 
@@ -16,7 +16,7 @@ async def test_render(app: App):
 
 **✅ 所有检查通过，一切准备就绪！**
 
-> 发起插件下架流程！
+> 成功发起插件下架流程，对应的拉取请求 nonebot/nonebot2 已经创建。
 
 ---
 

@@ -69,6 +69,8 @@ async def test_process_remove_bot_check(
     mock_pulls_resp = mocker.MagicMock()
     mock_pulls_resp.parsed_data = mock_pull
 
+    mock_pulls_resp_list = mocker.MagicMock()
+    mock_pulls_resp_list.parsed_data = [mock_pull]
     with open(tmp_path / "bots.json", "w") as f:
         json.dump(data, f)
 
@@ -95,10 +97,10 @@ async def test_process_remove_bot_check(
             "rest.pulls.async_create",
             snapshot(
                 {
-                    "owner": "he0119",
-                    "repo": "action-test",
+                    "owner": "hahaha",
+                    "repo": "mainrepo",
                     "title": "Bot: Remove TESTBOT",
-                    "body": "resolve #80",
+                    "body": "resolve he0119/action-test#80",
                     "base": "master",
                     "head": "remove/issue80",
                 }
@@ -108,8 +110,8 @@ async def test_process_remove_bot_check(
         ctx.should_call_api(
             "rest.issues.async_add_labels",
             {
-                "owner": "he0119",
-                "repo": "action-test",
+                "owner": "hahaha",
+                "repo": "mainrepo",
                 "issue_number": 2,
                 "labels": ["Remove", "Bot"],
             },
@@ -126,6 +128,11 @@ async def test_process_remove_bot_check(
                 }
             ),
             True,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_list",
+            {"owner": "hahaha", "repo": "mainrepo", "head": "hahaha:remove/issue80"},
+            mock_pulls_resp_list,
         )
         ctx.should_call_api(
             "rest.issues.async_list_comments",
@@ -146,7 +153,7 @@ async def test_process_remove_bot_check(
 
 **✅ 所有检查通过，一切准备就绪！**
 
-> 发起插件下架流程！
+> 成功发起插件下架流程，对应的拉取请求 hahaha/mainrepo#2 已经创建。
 
 ---
 
@@ -265,6 +272,9 @@ async def test_process_remove_plugin_check(
     mock_pulls_resp = mocker.MagicMock()
     mock_pulls_resp.parsed_data = mock_pull
 
+    mock_pulls_resp_list = mocker.MagicMock()
+    mock_pulls_resp_list.parsed_data = [mock_pull]
+
     with open(tmp_path / "plugins.json", "w") as f:
         json.dump(data, f)
 
@@ -291,10 +301,10 @@ async def test_process_remove_plugin_check(
             "rest.pulls.async_create",
             snapshot(
                 {
-                    "owner": "he0119",
-                    "repo": "action-test",
+                    "owner": "hahaha",
+                    "repo": "mainrepo",
                     "title": "Plugin: Remove test",
-                    "body": "resolve #80",
+                    "body": "resolve he0119/action-test#80",
                     "base": "master",
                     "head": "remove/issue80",
                 }
@@ -305,8 +315,8 @@ async def test_process_remove_plugin_check(
             "rest.issues.async_add_labels",
             snapshot(
                 {
-                    "owner": "he0119",
-                    "repo": "action-test",
+                    "owner": "hahaha",
+                    "repo": "mainrepo",
                     "issue_number": 2,
                     "labels": ["Remove", "Plugin"],
                 }
@@ -324,6 +334,11 @@ async def test_process_remove_plugin_check(
                 }
             ),
             True,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_list",
+            {"owner": "hahaha", "repo": "mainrepo", "head": "hahaha:remove/issue80"},
+            mock_pulls_resp_list,
         )
         ctx.should_call_api(
             "rest.issues.async_list_comments",
@@ -344,7 +359,7 @@ async def test_process_remove_plugin_check(
 
 **✅ 所有检查通过，一切准备就绪！**
 
-> 发起插件下架流程！
+> 成功发起插件下架流程，对应的拉取请求 hahaha/mainrepo#2 已经创建。
 
 ---
 
