@@ -6,6 +6,7 @@ from src.plugins.github.depends import (
     get_installation_id,
     get_issue_number,
     get_issue_title,
+    get_related_issue_number,
     get_repo_info,
     get_type_by_labels_name,
 )
@@ -50,3 +51,14 @@ async def get_issue_handler(
         ).parsed_data
 
         return IssueHandler(bot=bot, repo_info=repo_info, issue=issue)
+
+
+async def get_related_issue_handler(
+    bot: GitHubBot,
+    installation_id: int = Depends(get_installation_id),
+    repo_info: RepoInfo = Depends(get_repo_info),
+    related_issue_number: int = Depends(get_related_issue_number),
+):
+    return await get_issue_handler(
+        bot, installation_id, repo_info, related_issue_number
+    )

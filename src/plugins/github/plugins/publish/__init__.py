@@ -27,7 +27,11 @@ from src.plugins.github.models import GithubHandler, IssueHandler, RepoInfo
 from src.plugins.github.plugins.publish.render import render_comment
 from src.providers.validation.models import PublishType, ValidationDict
 
-from .depends import get_issue_handler, get_type_by_labels_name
+from .depends import (
+    get_issue_handler,
+    get_related_issue_handler,
+    get_type_by_labels_name,
+)
 from .utils import (
     ensure_issue_content,
     ensure_issue_plugin_test_button,
@@ -68,19 +72,13 @@ async def handle_pr_close(
     bot: GitHubBot,
     installation_id: int = Depends(get_installation_id),
     publish_type: PublishType = Depends(get_type_by_labels_name),
-    repo_info: RepoInfo = Depends(get_repo_info),
-    related_issue_number: int = Depends(get_related_issue_number),
+    handler: IssueHandler = Depends(get_related_issue_handler),
 ) -> None:
-    # get_issue_handler 已经有一个 as_installation 的 context，所以不应该放在 as_installation 里
-    # 否则会进入两次 context，报错
-    handler = await get_issue_handler(
-        bot, installation_id, repo_info, related_issue_number
-    )
     async with bot.as_installation(installation_id):
         if handler.issue.state == "open":
             reason = "completed" if event.payload.pull_request.merged else "not_planned"
             await handler.close_issue(reason)
-        logger.info(f"议题 #{related_issue_number} 已关闭")
+        logger.info(f"议题 #{handler.issue.number} 已关闭")
 
         try:
             handler.delete_origin_branch(event.payload.pull_request.head.ref)
