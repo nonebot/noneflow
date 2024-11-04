@@ -909,6 +909,7 @@ async def test_process_trigger_by_bot(app: App):
         )
         event = Adapter.payload_to_event("1", "issue_comment", event_path.read_bytes())
         assert isinstance(event, IssueCommentCreated)
-        event.payload.sender.type = "Bot"
+        assert event.payload.comment.user
+        event.payload.comment.user.type = "Bot"
 
         ctx.receive_event(bot, event)
