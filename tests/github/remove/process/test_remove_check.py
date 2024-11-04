@@ -30,7 +30,6 @@ async def test_process_remove_bot_check(
 ):
     """测试正常的删除流程"""
     from src.plugins.github import plugin_config
-    from src.plugins.github.plugins.remove import remove_check_matcher
 
     data = [
         {
@@ -76,7 +75,7 @@ async def test_process_remove_bot_check(
 
     check_json_data(plugin_config.input_config.bot_path, data)
 
-    async with app.test_matcher(remove_check_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
@@ -232,7 +231,6 @@ async def test_process_remove_plugin_check(
 ):
     """测试正常的删除流程"""
     from src.plugins.github import plugin_config
-    from src.plugins.github.plugins.remove import remove_check_matcher
 
     data = [
         {
@@ -280,7 +278,7 @@ async def test_process_remove_plugin_check(
 
     check_json_data(plugin_config.input_config.plugin_path, data)
 
-    async with app.test_matcher(remove_check_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
@@ -438,7 +436,6 @@ async def test_process_remove_not_found_check(
 ):
     """要删除的包不在数据文件中的情况"""
     from src.plugins.github import plugin_config
-    from src.plugins.github.plugins.remove import remove_check_matcher
 
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
@@ -473,7 +470,7 @@ async def test_process_remove_not_found_check(
 
     check_json_data(plugin_config.input_config.bot_path, [])
 
-    async with app.test_matcher(remove_check_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
@@ -550,7 +547,6 @@ async def test_process_remove_author_info_not_eq(
 ):
     """删除包时作者信息不相等的问题"""
     from src.plugins.github import plugin_config
-    from src.plugins.github.plugins.remove import remove_check_matcher
 
     bot_data = [
         {
@@ -597,7 +593,7 @@ async def test_process_remove_author_info_not_eq(
 
     check_json_data(plugin_config.input_config.bot_path, bot_data)
 
-    async with app.test_matcher(remove_check_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
@@ -674,7 +670,6 @@ async def test_process_remove_issue_info_not_found(
 ):
     """删除包时无法从议题获取信息的测试"""
     from src.plugins.github import plugin_config
-    from src.plugins.github.plugins.remove import remove_check_matcher
 
     bot_data = [
         {
@@ -719,7 +714,7 @@ async def test_process_remove_issue_info_not_found(
 
     check_json_data(plugin_config.input_config.bot_path, bot_data)
 
-    async with app.test_matcher(remove_check_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
@@ -795,8 +790,6 @@ async def test_process_remove_driver(
     mock_installation,
 ):
     """不支持驱动器类型的删除"""
-    from src.plugins.github.plugins.remove import remove_check_matcher
-
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
     )
@@ -823,7 +816,7 @@ async def test_process_remove_driver(
     mock_pulls_resp = mocker.MagicMock()
     mock_pulls_resp.parsed_data = mock_pull
 
-    async with app.test_matcher(remove_check_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
@@ -891,12 +884,7 @@ async def test_process_remove_driver(
     )
 
 
-async def test_process_not_remove_label(
-    app: App,
-    mocker: MockerFixture,
-    mocked_api: MockRouter,
-    tmp_path: Path,
-):
+async def test_process_not_remove_label(app: App):
     """测试没有删除标签的情况"""
     from src.plugins.github.plugins.remove import remove_check_matcher
 
@@ -912,16 +900,9 @@ async def test_process_not_remove_label(
         ctx.receive_event(bot, event)
 
 
-async def test_process_trigger_by_bot(
-    app: App,
-    mocker: MockerFixture,
-    mocked_api: MockRouter,
-    tmp_path: Path,
-):
+async def test_process_trigger_by_bot(app: App):
     """测试 Bot 触发工作流的情况"""
-    from src.plugins.github.plugins.remove import remove_check_matcher
-
-    async with app.test_matcher(remove_check_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = (
             Path(__file__).parent.parent.parent / "events" / "issue-comment.json"

@@ -29,7 +29,6 @@ async def test_bot_process_publish_check(
 ) -> None:
     """测试机器人的发布流程"""
     from src.plugins.github import plugin_config
-    from src.plugins.github.plugins.publish import publish_check_matcher
 
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
@@ -60,7 +59,7 @@ async def test_bot_process_publish_check(
 
     check_json_data(plugin_config.input_config.bot_path, [])
 
-    async with app.test_matcher(publish_check_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
@@ -221,7 +220,6 @@ async def test_adapter_process_publish_check(
 ) -> None:
     """测试适配器的发布流程"""
     from src.plugins.github import plugin_config
-    from src.plugins.github.plugins.publish import publish_check_matcher
 
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
@@ -252,7 +250,7 @@ async def test_adapter_process_publish_check(
 
     check_json_data(plugin_config.input_config.adapter_path, [])
 
-    async with app.test_matcher(publish_check_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
@@ -434,7 +432,6 @@ async def test_edit_title(
     名称被修改后，标题也应该被修改
     """
     from src.plugins.github import plugin_config
-    from src.plugins.github.plugins.publish import publish_check_matcher
 
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
@@ -466,7 +463,7 @@ async def test_edit_title(
 
     check_json_data(plugin_config.input_config.bot_path, [])
 
-    async with app.test_matcher(publish_check_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
@@ -656,7 +653,6 @@ async def test_edit_title_too_long(
     标题过长的情况
     """
     from src.plugins.github import plugin_config
-    from src.plugins.github.plugins.publish import publish_check_matcher
 
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
@@ -687,7 +683,7 @@ async def test_edit_title_too_long(
 
     check_json_data(plugin_config.input_config.bot_path, [])
 
-    async with app.test_matcher(publish_check_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
@@ -793,7 +789,6 @@ async def test_process_publish_check_not_pass(
 ) -> None:
     """测试发布检查不通过"""
     from src.plugins.github import plugin_config
-    from src.plugins.github.plugins.publish import publish_check_matcher
 
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
@@ -819,7 +814,7 @@ async def test_process_publish_check_not_pass(
 
     check_json_data(plugin_config.input_config.bot_path, [])
 
-    async with app.test_matcher(publish_check_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
@@ -918,13 +913,11 @@ async def test_comment_at_pull_request(
 
     event.issue.pull_request 不为空
     """
-    from src.plugins.github.plugins.publish import publish_check_matcher
-
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
     )
 
-    async with app.test_matcher(publish_check_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = Path(__file__).parent.parent.parent / "events" / "pr-comment.json"
         event = Adapter.payload_to_event("1", "issue_comment", event_path.read_bytes())
@@ -943,8 +936,6 @@ async def test_issue_state_closed(
 
     event.issue.state = "closed"
     """
-    from src.plugins.github.plugins.publish import publish_check_matcher
-
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
     )
@@ -953,7 +944,7 @@ async def test_issue_state_closed(
     mock_issues_resp = mocker.MagicMock()
     mock_issues_resp.parsed_data = mock_issue
 
-    async with app.test_matcher(publish_check_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
@@ -996,13 +987,11 @@ async def test_not_publish_issue(
 
     议题的标签不是 "Bot/Adapter/Plugin"
     """
-    from src.plugins.github.plugins.publish import publish_check_matcher
-
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
     )
 
-    async with app.test_matcher(publish_check_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
@@ -1018,13 +1007,11 @@ async def test_comment_by_self(
     app: App, mocker: MockerFixture, mocked_api: MockRouter
 ) -> None:
     """测试自己评论触发的情况"""
-    from src.plugins.github.plugins.publish import publish_check_matcher
-
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
     )
 
-    async with app.test_matcher(publish_check_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = (
             Path(__file__).parent.parent.parent / "events" / "issue-comment-bot.json"
@@ -1046,7 +1033,6 @@ async def test_skip_plugin_check(
 ) -> None:
     """测试手动跳过插件测试的流程"""
     from src.plugins.github import plugin_config
-    from src.plugins.github.plugins.publish import publish_check_matcher
 
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
@@ -1076,7 +1062,7 @@ async def test_skip_plugin_check(
 
     check_json_data(plugin_config.input_config.plugin_path, [])
 
-    async with app.test_matcher(publish_check_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = (
             Path(__file__).parent.parent.parent / "events" / "issue-comment-skip.json"
@@ -1249,7 +1235,6 @@ async def test_convert_pull_request_to_draft(
 ) -> None:
     """未通过时将拉取请求转换为草稿"""
     from src.plugins.github import plugin_config
-    from src.plugins.github.plugins.publish import publish_check_matcher
 
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
@@ -1281,7 +1266,7 @@ async def test_convert_pull_request_to_draft(
 
     check_json_data(plugin_config.input_config.bot_path, [])
 
-    async with app.test_matcher(publish_check_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
@@ -1391,7 +1376,6 @@ async def test_process_publish_check_ready_for_review(
 ) -> None:
     """当之前失败后再次通过测试时，应该将拉取请求标记为 ready for review"""
     from src.plugins.github import plugin_config
-    from src.plugins.github.plugins.publish import publish_check_matcher
 
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
@@ -1425,7 +1409,7 @@ async def test_process_publish_check_ready_for_review(
 
     check_json_data(plugin_config.input_config.bot_path, [])
 
-    async with app.test_matcher(publish_check_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
         event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())

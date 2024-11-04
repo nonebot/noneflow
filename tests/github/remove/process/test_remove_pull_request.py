@@ -30,8 +30,6 @@ async def test_remove_process_pull_request(
     app: App, mocker: MockerFixture, mock_installation: MagicMock
 ) -> None:
     """删除流程的拉取请求关闭流程"""
-    from src.plugins.github.plugins.remove import pr_close_matcher
-
     mock_subprocess_run = mocker.patch("subprocess.run")
 
     remove_type = "Bot"
@@ -50,7 +48,7 @@ async def test_remove_process_pull_request(
     mock_list_comments_resp = mocker.MagicMock()
     mock_list_comments_resp.parsed_data = [mock_comment]
 
-    async with app.test_matcher(pr_close_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = Path(__file__).parent.parent.parent / "events" / "pr-close.json"
         event = adapter.payload_to_event("1", "pull_request", event_path.read_bytes())
@@ -111,13 +109,11 @@ async def test_remove_process_pull_request(
 
 async def test_not_remove(app: App, mocker: MockerFixture) -> None:
     """测试与发布无关的拉取请求"""
-    from src.plugins.github.plugins.remove import pr_close_matcher
-
     event_path = Path(__file__).parent.parent.parent / "events" / "pr-close.json"
 
     mock_subprocess_run = mocker.patch("subprocess.run")
 
-    async with app.test_matcher(pr_close_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event = Adapter.payload_to_event("1", "pull_request", event_path.read_bytes())
         assert isinstance(event, PullRequestClosed)
@@ -133,8 +129,6 @@ async def test_process_remove_pull_request_not_merged(
     app: App, mocker: MockerFixture, mock_installation
 ) -> None:
     """删除掉不合并的分支"""
-    from src.plugins.github.plugins.remove import pr_close_matcher
-
     event_path = Path(__file__).parent.parent.parent / "events" / "pr-close.json"
 
     mock_subprocess_run = mocker.patch("subprocess.run")
@@ -146,7 +140,7 @@ async def test_process_remove_pull_request_not_merged(
     mock_issues_resp = mocker.MagicMock()
     mock_issues_resp.parsed_data = mock_issue
 
-    async with app.test_matcher(pr_close_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event = adapter.payload_to_event("1", "pull_request", event_path.read_bytes())
         assert isinstance(event, PullRequestClosed)

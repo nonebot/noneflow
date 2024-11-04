@@ -1,8 +1,6 @@
 from nonebot import logger
 from nonebot.adapters.github import (
     GitHubBot,
-    IssueCommentCreated,
-    IssuesEdited,
     PullRequestClosed,
     PullRequestReviewSubmitted,
 )
@@ -83,19 +81,7 @@ def get_related_issue_number(event: PullRequestClosed) -> int | None:
 
 def is_bot_triggered_workflow(event: IssuesEvent):
     """触发议题相关的工作流"""
-
-    if (
-        isinstance(event, IssueCommentCreated)
-        and event.payload.comment.user
-        and event.payload.comment.user.type == "Bot"
-    ):
-        logger.info("评论来自机器人，已跳过")
-        return True
-    if (
-        isinstance(event, IssuesEdited)
-        and event.payload.sender
-        and event.payload.sender.type == "Bot"
-    ):
+    if event.payload.sender.type == "Bot":
         logger.info("议题修改来自机器人，已跳过")
         return True
     return False
@@ -114,3 +100,18 @@ def get_type_by_labels_name(
         if type.value in labels:
             return type
     return None
+
+
+async def is_publish_related_workflow(
+    labels: list[str] = Depends(get_labels_name),
+    publish_type: PublishType = Depends(get_type_by_labels_name),
+) -> bool:
+    """是否是发布相关的工作流
+
+    通过标签判断
+    仅包含发布相关标签，不包含 remove 标签
+    """
+    for label in labels:
+        if label == "Remove":
+            return False
+    return True
