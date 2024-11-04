@@ -6,14 +6,12 @@ from src.plugins.github.depends import (
     get_installation_id,
     get_issue_number,
     get_issue_title,
-    get_labels_name,
     get_related_issue_number,
     get_repo_info,
     get_type_by_labels_name,
 )
 from src.plugins.github.models import IssueHandler, RepoInfo
 from src.plugins.github.plugins.publish import utils
-from src.plugins.github.plugins.remove.constants import REMOVE_LABEL
 from src.providers.validation.models import PublishType
 
 
@@ -64,18 +62,3 @@ async def get_related_issue_handler(
     return await get_issue_handler(
         bot, installation_id, repo_info, related_issue_number
     )
-
-
-async def is_publish_related_workflow(
-    labels: list[str] = Depends(get_labels_name),
-    publish_type: PublishType = Depends(get_type_by_labels_name),
-) -> bool:
-    """是否是发布相关的工作流
-
-    通过标签判断
-    仅包含发布相关标签，不包含 remove 标签
-    """
-    for label in labels:
-        if label == REMOVE_LABEL:
-            return False
-    return True
