@@ -11,7 +11,7 @@ dependencies = [
   "githubkit>=0.11.14",
   "jinja2>=3.1.4",
   "nonebot-adapter-github>=0.4.1",
-  "nonebot2>=2.3.3",
+  "nonebot2>=2.4.0",
   "pre-commit>=4.0.1",
   "pydantic-extra-types>=2.9.0",
 ]
@@ -27,9 +27,9 @@ plugin = ["click>=8.1.7", "tzdata>=2024.2"]
 
 [tool.uv]
 dev-dependencies = [
-  "bump-my-version>=0.28.0",
+  "bump-my-version>=0.28.1",
   "inline-snapshot>=0.13.3",
-  "nonebug>=0.4.1",
+  "nonebug>=0.4.2",
   "poethepoet>=0.29.0",
   "pytest-asyncio>=0.24.0",
   "pytest-cov>=6.0.0",
