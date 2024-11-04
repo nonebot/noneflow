@@ -100,18 +100,3 @@ def get_type_by_labels_name(
         if type.value in labels:
             return type
     return None
-
-
-async def is_publish_related_workflow(
-    labels: list[str] = Depends(get_labels_name),
-    publish_type: PublishType = Depends(get_type_by_labels_name),
-) -> bool:
-    """是否是发布相关的工作流
-
-    通过标签判断
-    仅包含发布相关标签，不包含 remove 标签
-    """
-    for label in labels:
-        if label == "Remove":
-            return False
-    return True

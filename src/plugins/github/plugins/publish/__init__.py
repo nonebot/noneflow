@@ -22,7 +22,6 @@ from src.plugins.github.depends import (
     get_repo_info,
     install_pre_commit_hooks,
     is_bot_triggered_workflow,
-    is_publish_related_workflow,
 )
 from src.plugins.github.models import GithubHandler, IssueHandler, RepoInfo
 from src.plugins.github.plugins.publish.render import render_comment
@@ -32,6 +31,7 @@ from .depends import (
     get_issue_handler,
     get_related_issue_handler,
     get_type_by_labels_name,
+    is_publish_related_workflow,
 )
 from .utils import (
     ensure_issue_content,
