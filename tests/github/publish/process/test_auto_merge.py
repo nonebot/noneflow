@@ -12,8 +12,6 @@ async def test_auto_merge(app: App, mocker: MockerFixture, mock_installation) ->
 
     可直接合并的情况
     """
-    from src.plugins.github.plugins.publish import auto_merge_matcher
-
     mock_subprocess_run = mocker.patch("subprocess.run")
 
     mock_pull = mocker.MagicMock()
@@ -21,7 +19,7 @@ async def test_auto_merge(app: App, mocker: MockerFixture, mock_installation) ->
     mock_pull_resp = mocker.MagicMock()
     mock_pull_resp.parsed_data = mock_pull
 
-    async with app.test_matcher(auto_merge_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = (
             Path(__file__).parent.parent.parent
@@ -82,7 +80,6 @@ async def test_auto_merge_need_rebase(
     需要 rebase 的情况
     """
     from src.plugins.github.models import GithubHandler, RepoInfo
-    from src.plugins.github.plugins.publish import auto_merge_matcher
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_resolve_conflict_pull_requests = mocker.patch(
@@ -95,7 +92,7 @@ async def test_auto_merge_need_rebase(
     mock_pull_resp = mocker.MagicMock()
     mock_pull_resp.parsed_data = mock_pull
 
-    async with app.test_matcher(auto_merge_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = (
             Path(__file__).parent.parent.parent
@@ -153,14 +150,12 @@ async def test_auto_merge_not_publish(app: App, mocker: MockerFixture) -> None:
 
     和发布无关
     """
-    from src.plugins.github.plugins.publish import auto_merge_matcher
-
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_resolve_conflict_pull_requests = mocker.patch(
         "src.plugins.github.plugins.publish.resolve_conflict_pull_requests"
     )
 
-    async with app.test_matcher(auto_merge_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = (
             Path(__file__).parent.parent.parent
@@ -185,14 +180,12 @@ async def test_auto_merge_not_member(app: App, mocker: MockerFixture) -> None:
 
     审核者不是仓库成员
     """
-    from src.plugins.github.plugins.publish import auto_merge_matcher
-
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_resolve_conflict_pull_requests = mocker.patch(
         "src.plugins.github.plugins.publish.resolve_conflict_pull_requests"
     )
 
-    async with app.test_matcher(auto_merge_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = (
             Path(__file__).parent.parent.parent
@@ -217,14 +210,12 @@ async def test_auto_merge_not_approve(app: App, mocker: MockerFixture) -> None:
 
     审核未通过
     """
-    from src.plugins.github.plugins.publish import auto_merge_matcher
-
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_resolve_conflict_pull_requests = mocker.patch(
         "src.plugins.github.plugins.publish.resolve_conflict_pull_requests"
     )
 
-    async with app.test_matcher(auto_merge_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = (
             Path(__file__).parent.parent.parent

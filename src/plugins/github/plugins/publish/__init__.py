@@ -11,6 +11,7 @@ from nonebot.adapters.github import (
     PullRequestReviewSubmitted,
 )
 from nonebot.params import Arg, Depends
+from nonebot.rule import Rule
 from nonebot.typing import T_State
 
 from src.plugins.github.constants import BRANCH_NAME_PREFIX, TITLE_MAX_LENGTH
@@ -18,6 +19,7 @@ from src.plugins.github.depends import (
     bypass_git,
     get_github_handler,
     get_installation_id,
+    get_labels_name,
     get_related_issue_number,
     get_repo_info,
     install_pre_commit_hooks,
@@ -25,6 +27,7 @@ from src.plugins.github.depends import (
 )
 from src.plugins.github.models import GithubHandler, IssueHandler, RepoInfo
 from src.plugins.github.plugins.publish.render import render_comment
+from src.plugins.github.plugins.remove.constants import REMOVE_LABEL
 from src.providers.validation.models import PublishType, ValidationDict
 
 from .depends import (
@@ -46,6 +49,21 @@ from .validation import (
 )
 
 
+async def publish_related_rule(
+    labels: list[str] = Depends(get_labels_name),
+    publish_type: PublishType = Depends(get_type_by_labels_name),
+) -> bool:
+    """确保与发布相关
+
+    通过标签判断
+    仅包含发布相关标签，不包含 remove 标签
+    """
+    for label in labels:
+        if label == REMOVE_LABEL:
+            return False
+    return True
+
+
 async def pr_close_rule(
     publish_type: PublishType | None = Depends(get_type_by_labels_name),
     related_issue_number: int | None = Depends(get_related_issue_number),
@@ -61,7 +79,9 @@ async def pr_close_rule(
     return True
 
 
-pr_close_matcher = on_type(PullRequestClosed, rule=pr_close_rule)
+pr_close_matcher = on_type(
+    PullRequestClosed, rule=Rule(pr_close_rule, publish_related_rule)
+)
 
 
 @pr_close_matcher.handle(
@@ -119,7 +139,8 @@ async def check_rule(
 
 
 publish_check_matcher = on_type(
-    (IssuesOpened, IssuesReopened, IssuesEdited, IssueCommentCreated), rule=check_rule
+    (IssuesOpened, IssuesReopened, IssuesEdited, IssueCommentCreated),
+    rule=Rule(check_rule, publish_related_rule),
 )
 
 
@@ -246,7 +267,9 @@ async def review_submiited_rule(
     return True
 
 
-auto_merge_matcher = on_type(PullRequestReviewSubmitted, rule=review_submiited_rule)
+auto_merge_matcher = on_type(
+    PullRequestReviewSubmitted, rule=Rule(review_submiited_rule, publish_related_rule)
+)
 
 
 @auto_merge_matcher.handle(

@@ -21,7 +21,6 @@ async def test_process_pull_request(
     mock_installation,
     mocked_api: MockRouter,
 ) -> None:
-    from src.plugins.github.plugins.publish import pr_close_matcher
     from src.providers.docker_test import Metadata
     from src.providers.validation import PublishType
 
@@ -57,7 +56,7 @@ async def test_process_pull_request(
     mock_docker = mocker.patch("src.providers.docker_test.DockerPluginTest.run")
     mock_docker.return_value = mock_test_result
 
-    async with app.test_matcher(pr_close_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event_path = Path(__file__).parent.parent.parent / "events" / "pr-close.json"
         event = Adapter.payload_to_event("1", "pull_request", event_path.read_bytes())
@@ -173,8 +172,6 @@ async def test_process_pull_request(
 async def test_process_pull_request_not_merged(
     app: App, mocker: MockerFixture, mock_installation
 ) -> None:
-    from src.plugins.github.plugins.publish import pr_close_matcher
-
     event_path = Path(__file__).parent.parent.parent / "events" / "pr-close.json"
 
     mock_subprocess_run = mocker.patch("subprocess.run")
@@ -184,7 +181,7 @@ async def test_process_pull_request_not_merged(
     mock_issues_resp = mocker.MagicMock()
     mock_issues_resp.parsed_data = mock_issue
 
-    async with app.test_matcher(pr_close_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event = adapter.payload_to_event("1", "pull_request", event_path.read_bytes())
         assert isinstance(event, PullRequestClosed)
@@ -235,7 +232,6 @@ async def test_process_pull_request_skip_plugin_test(
     app: App, mocker: MockerFixture, mocked_api: MockRouter, mock_installation
 ) -> None:
     """跳过测试的插件合并时的情况"""
-    from src.plugins.github.plugins.publish import pr_close_matcher
     from src.providers.validation import PublishType
 
     event_path = Path(__file__).parent.parent.parent / "events" / "pr-close.json"
@@ -263,7 +259,7 @@ async def test_process_pull_request_skip_plugin_test(
     mock_list_comments_resp = mocker.MagicMock()
     mock_list_comments_resp.parsed_data = [mock_comment]
 
-    async with app.test_matcher(pr_close_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event = Adapter.payload_to_event("1", "pull_request", event_path.read_bytes())
         assert isinstance(event, PullRequestClosed)
@@ -377,13 +373,11 @@ async def test_process_pull_request_skip_plugin_test(
 
 async def test_not_publish(app: App, mocker: MockerFixture) -> None:
     """测试与发布无关的拉取请求"""
-    from src.plugins.github.plugins.publish import pr_close_matcher
-
     event_path = Path(__file__).parent.parent.parent / "events" / "pr-close.json"
 
     mock_subprocess_run = mocker.patch("subprocess.run")
 
-    async with app.test_matcher(pr_close_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event = Adapter.payload_to_event("1", "pull_request", event_path.read_bytes())
         assert isinstance(event, PullRequestClosed)
@@ -399,13 +393,11 @@ async def test_extract_issue_number_from_ref_failed(
     app: App, mocker: MockerFixture
 ) -> None:
     """测试从分支名中提取议题号失败"""
-    from src.plugins.github.plugins.publish import pr_close_matcher
-
     event_path = Path(__file__).parent.parent.parent / "events" / "pr-close.json"
 
     mock_subprocess_run = mocker.patch("subprocess.run")
 
-    async with app.test_matcher(pr_close_matcher) as ctx:
+    async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event = Adapter.payload_to_event("1", "pull_request", event_path.read_bytes())
         assert isinstance(event, PullRequestClosed)

@@ -3,6 +3,8 @@ from nonebot.adapters.github import (
     GitHubBot,
     IssueCommentCreated,
     IssuesEdited,
+    IssuesOpened,
+    IssuesReopened,
     PullRequestClosed,
     PullRequestReviewSubmitted,
 )
@@ -82,21 +84,20 @@ def get_related_issue_number(event: PullRequestClosed) -> int | None:
 
 
 def is_bot_triggered_workflow(event: IssuesEvent):
-    """触发议题相关的工作流"""
-
+    """是否是机器人触发的工作流"""
     if (
         isinstance(event, IssueCommentCreated)
         and event.payload.comment.user
         and event.payload.comment.user.type == "Bot"
     ):
-        logger.info("评论来自机器人，已跳过")
+        logger.info("议题评论来自机器人，已跳过")
         return True
     if (
-        isinstance(event, IssuesEdited)
-        and event.payload.sender
-        and event.payload.sender.type == "Bot"
+        isinstance(event, IssuesOpened | IssuesReopened | IssuesEdited)
+        and event.payload.issue.user
+        and event.payload.issue.user.type == "Bot"
     ):
-        logger.info("议题修改来自机器人，已跳过")
+        logger.info("议题操作来自机器人，已跳过")
         return True
     return False
 
