@@ -154,7 +154,7 @@ async def test_plugin_info_validation_plugin_load_failed(
                     "loc": ("load",),
                     "msg": "插件无法正常加载",
                     "input": False,
-                    "ctx": {"output": None},
+                    "ctx": {"output": "test_output"},
                 }
             ],
             info=None,

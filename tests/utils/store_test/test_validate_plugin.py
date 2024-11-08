@@ -411,7 +411,12 @@ async def test_validate_plugin_failed_with_previous(
                             "loc": ("load",),
                             "msg": "插件无法正常加载",
                             "input": False,
-                            "ctx": {"output": None},
+                            "ctx": {
+                                "output": """\
+创建测试目录 plugin_test
+        For further information visit https://errors.pydantic.dev/2.9/v/model_type\x1b[0m\
+"""
+                            },
                         },
                     ],
                 },
