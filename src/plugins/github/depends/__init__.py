@@ -10,7 +10,7 @@ from nonebot.adapters.github import (
 )
 from nonebot.params import Depends
 
-from src.plugins.github.models import GithubHandler, RepoInfo
+from src.plugins.github.models import GithubHandler, IssueHandler, RepoInfo
 from src.plugins.github.typing import IssuesEvent, LabelsItems, PullRequestEvent
 from src.plugins.github.utils import run_shell_command
 from src.providers.validation.models import PublishType
@@ -105,6 +105,35 @@ def is_bot_triggered_workflow(event: IssuesEvent):
 def get_github_handler(bot: GitHubBot, repo_info: RepoInfo = Depends(get_repo_info)):
     """获取 GitHub 处理器"""
     return GithubHandler(bot=bot, repo_info=repo_info)
+
+
+async def get_issue_handler(
+    bot: GitHubBot,
+    installation_id: int = Depends(get_installation_id),
+    repo_info: RepoInfo = Depends(get_repo_info),
+    issue_number: int = Depends(get_issue_number),
+):
+    async with bot.as_installation(installation_id):
+        # 因为 Actions 会排队，触发事件相关的议题在 Actions 执行时可能已经被关闭
+        # 所以需要获取最新的议题状态
+        issue = (
+            await bot.rest.issues.async_get(
+                **repo_info.model_dump(), issue_number=issue_number
+            )
+        ).parsed_data
+
+        return IssueHandler(bot=bot, repo_info=repo_info, issue=issue)
+
+
+async def get_related_issue_handler(
+    bot: GitHubBot,
+    installation_id: int = Depends(get_installation_id),
+    repo_info: RepoInfo = Depends(get_repo_info),
+    related_issue_number: int = Depends(get_related_issue_number),
+):
+    return await get_issue_handler(
+        bot, installation_id, repo_info, related_issue_number
+    )
 
 
 def get_type_by_labels_name(
