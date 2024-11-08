@@ -165,7 +165,10 @@ async def test_render_error_plugin(app: App, mocker: MockFixture):
 
     result = ValidationDict(
         type=PublishType.PLUGIN,
-        raw_data={"name": "帮助"},
+        raw_data={
+            "name": "帮助",
+            "load": True,
+        },
         valid_data={
             "name": "帮助",
             "desc": "获取插件帮助信息",
@@ -256,7 +259,11 @@ async def test_render_error_plugin_load_test(app: App):
 
     result = ValidationDict(
         type=PublishType.PLUGIN,
-        raw_data={"name": "帮助"},
+        raw_data={
+            "name": "帮助",
+            "load": False,
+            "skip_test": False,
+        },
         valid_data={
             "name": "帮助",
             "desc": "获取插件帮助信息",
@@ -264,7 +271,6 @@ async def test_render_error_plugin_load_test(app: App):
             "homepage": "https://github.com/he0119/nonebot-plugin-treehelp",
             "tags": [],
             "is_official": False,
-            "load": False,
             "skip_test": False,
         },
         errors=[
@@ -322,6 +328,7 @@ async def test_render_error_plugin_metadata(app: App, mocker: MockFixture):
         type=PublishType.PLUGIN,
         raw_data={
             "name": "帮助",
+            "load": True,
         },
         valid_data={
             "author": "he0119",
@@ -376,7 +383,10 @@ async def test_render_error_tags_invalid(app: App, mocker: MockFixture):
 
     result = ValidationDict(
         type=PublishType.PLUGIN,
-        raw_data={"name": "帮助"},
+        raw_data={
+            "name": "帮助",
+            "load": True,
+        },
         valid_data={
             "author": "he0119",
             "tags": [],
@@ -441,7 +451,10 @@ async def test_render_type_error(app: App, mocker: MockFixture):
 
     result = ValidationDict(
         type=PublishType.PLUGIN,
-        raw_data={"name": "帮助"},
+        raw_data={
+            "name": "帮助",
+            "load": True,
+        },
         valid_data={
             "author": "he0119",
             "tags": [],
@@ -507,7 +520,10 @@ async def test_render_unknown_error(app: App, mocker: MockFixture):
 
     result = ValidationDict(
         type=PublishType.PLUGIN,
-        raw_data={"name": "帮助"},
+        raw_data={
+            "name": "帮助",
+            "load": True,
+        },
         valid_data={
             "author": "he0119",
             "tags": [],
@@ -560,7 +576,10 @@ async def test_render_http_error(app: App, mocker: MockFixture):
 
     result = ValidationDict(
         type=PublishType.PLUGIN,
-        raw_data={"name": "帮助"},
+        raw_data={
+            "name": "帮助",
+            "load": True,
+        },
         valid_data={
             "author": "he0119",
             "tags": [],

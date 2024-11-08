@@ -74,7 +74,8 @@ async def render_comment(result: ValidationDict, reuse: bool = False) -> str:
     if result.type == PublishType.PLUGIN:
         # https://github.com/he0119/action-test/actions/runs/4469672520
         # 仅在测试通过或跳过测试时显示
-        if result.valid_data["load"] or result.valid_data["skip_test"]:
+        # 如果 load 为 False 的时候 valid_data 里面没有 load 字段，所以直接用 raw_data
+        if result.raw_data["load"] or result.raw_data["skip_test"]:
             data["action_url"] = (
                 f"https://github.com/{plugin_config.github_repository}/actions/runs/{plugin_config.github_run_id}"
             )
