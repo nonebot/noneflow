@@ -166,6 +166,8 @@ async def test_render_data_plugin(app: App, mocker: MockFixture):
         "is_official": False,
         "type": "application",
         "supported_adapters": None,
+        "load": True,
+        "skip_test": False,
     }
     result = ValidationDict(
         type=PublishType.PLUGIN,
@@ -209,12 +211,18 @@ async def test_render_data_plugin_supported_adapters(app: App, mocker: MockFixtu
 
     result = ValidationDict(
         type=PublishType.PLUGIN,
-        raw_data={"name": "帮助"},
+        raw_data={
+            "name": "帮助",
+            "load": True,
+            "skip_test": False,
+        },
         valid_data={
             "supported_adapters": [
                 "nonebot.adapters.onebot.v11",
                 "nonebot.adapters.none",
-            ]
+            ],
+            "load": True,
+            "skip_test": False,
         },
         info=None,
         errors=[],

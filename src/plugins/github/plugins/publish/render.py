@@ -62,7 +62,6 @@ async def render_comment(result: ValidationDict, reuse: bool = False) -> str:
         "project_link",
         "type",
         "supported_adapters",
-        "action_url",
     ]
 
     for key in data.copy():
@@ -74,10 +73,12 @@ async def render_comment(result: ValidationDict, reuse: bool = False) -> str:
 
     if result.type == PublishType.PLUGIN:
         # https://github.com/he0119/action-test/actions/runs/4469672520
-        # if plugin_config.plugin_test_result or plugin_config.skip_plugin_test:
-        data["action_url"] = (
-            f"https://github.com/{plugin_config.github_repository}/actions/runs/{plugin_config.github_run_id}"
-        )
+        # 仅在测试通过或跳过测试时显示
+        # 如果 load 为 False 的时候 valid_data 里面没有 load 字段，所以直接用 raw_data
+        if result.raw_data["load"] or result.raw_data["skip_test"]:
+            data["action_url"] = (
+                f"https://github.com/{plugin_config.github_repository}/actions/runs/{plugin_config.github_run_id}"
+            )
 
     template = env.get_template("comment.md.jinja")
     return await template.render_async(

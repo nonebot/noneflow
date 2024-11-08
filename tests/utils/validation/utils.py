@@ -69,6 +69,8 @@ def generate_plugin_data(
     skip_test: bool | None = False,
     author_id: int | None = 1,
     test_output: str | None = "test_output",
+    load: bool | None = True,
+    metadata: bool | None = True,
 ):
     return exclude_none(
         {
@@ -82,9 +84,9 @@ def generate_plugin_data(
             "type": type,
             "supported_adapters": supported_adapters,
             "skip_test": skip_test,
-            "metadata": True,
+            "metadata": metadata,
             "author_id": author_id,
-            "load": True,
+            "load": load,
             "version": "0.0.1",
             "test_output": test_output,
         }

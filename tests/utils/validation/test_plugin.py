@@ -134,3 +134,67 @@ async def test_plugin_info_validation_failed(mocked_api: MockRouter) -> None:
     )
 
     assert mocked_api["homepage_failed"].called
+
+
+async def test_plugin_info_validation_plugin_load_failed(
+    mocked_api: MockRouter,
+) -> None:
+    """测试验证失败的情况"""
+    from src.providers.validation import PublishType, ValidationDict, validate_info
+
+    data = generate_plugin_data(load=False, metadata=False)
+
+    result = validate_info(PublishType.PLUGIN, data, [])
+
+    assert result == snapshot(
+        ValidationDict(
+            errors=[
+                {
+                    "type": "plugin.test",
+                    "loc": ("load",),
+                    "msg": "插件无法正常加载",
+                    "input": False,
+                    "ctx": {"output": None},
+                }
+            ],
+            info=None,
+            raw_data={
+                "author": "author",
+                "module_name": "module_name",
+                "project_link": "project_link",
+                "tags": '[{"label": "test", "color": "#ffffff"}]',
+                "name": "name",
+                "desc": "desc",
+                "homepage": "https://nonebot.dev",
+                "type": "application",
+                "supported_adapters": None,
+                "skip_test": False,
+                "metadata": False,
+                "author_id": 1,
+                "load": False,
+                "version": "0.0.1",
+                "test_output": "test_output",
+                "time": "2023-09-01T00:00:00+00:00Z",
+            },
+            type=PublishType.PLUGIN,
+            valid_data={
+                "module_name": "module_name",
+                "project_link": "project_link",
+                "time": "2023-09-01T00:00:00+00:00Z",
+                "name": "name",
+                "desc": "desc",
+                "author": "author",
+                "author_id": 1,
+                "homepage": "https://nonebot.dev",
+                "tags": [{"label": "test", "color": "#ffffff"}],
+                "type": "application",
+                "supported_adapters": None,
+                "metadata": False,
+                "skip_test": False,
+                "version": "0.0.1",
+                "test_output": "test_output",
+            },
+        )
+    )
+
+    assert mocked_api["homepage"].called
