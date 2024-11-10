@@ -135,7 +135,12 @@ async def test_auto_merge_need_rebase(
                 ["git", "config", "--global", "safe.directory", "*"],
                 check=True,
                 capture_output=True,
-            )  # type: ignore
+            ),  # type: ignore
+            mocker.call(
+                ["pre-commit", "install", "--install-hooks"],
+                check=True,
+                capture_output=True,
+            ),  # type: ignore
         ],
         any_order=True,
     )
