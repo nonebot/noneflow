@@ -19,7 +19,9 @@ from src.plugins.github.depends import (
     bypass_git,
     get_github_handler,
     get_installation_id,
+    get_issue_handler,
     get_labels_name,
+    get_related_issue_handler,
     get_related_issue_number,
     get_repo_info,
     install_pre_commit_hooks,
@@ -31,8 +33,6 @@ from src.plugins.github.plugins.remove.constants import REMOVE_LABEL
 from src.providers.validation.models import PublishType, ValidationDict
 
 from .depends import (
-    get_issue_handler,
-    get_related_issue_handler,
     get_type_by_labels_name,
 )
 from .utils import (
@@ -250,7 +250,7 @@ async def handle_pull_request_and_update_issue(
         await handler.comment_issue(comment)
 
 
-async def review_submiited_rule(
+async def review_submitted_rule(
     event: PullRequestReviewSubmitted,
     publish_type: PublishType | None = Depends(get_type_by_labels_name),
 ) -> bool:
@@ -268,7 +268,7 @@ async def review_submiited_rule(
 
 
 auto_merge_matcher = on_type(
-    PullRequestReviewSubmitted, rule=Rule(review_submiited_rule, publish_related_rule)
+    PullRequestReviewSubmitted, rule=Rule(review_submitted_rule, publish_related_rule)
 )
 
 

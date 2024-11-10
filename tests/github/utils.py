@@ -75,10 +75,6 @@ def generate_issue_body_remove(
             )
 
 
-# def generate_issue_body_remove(homepage: str = "https://nonebot.dev"):
-#     return f"""### 项目主页\n\n{homepage}"""
-
-
 def check_json_data(file: Path, data: Any) -> None:
     with open(file) as f:
         assert json.load(f) == data

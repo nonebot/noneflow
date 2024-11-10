@@ -2,7 +2,6 @@ from typing import TYPE_CHECKING
 
 from githubkit.exception import RequestFailed
 from nonebot import logger
-from pydantic_core import PydanticCustomError
 
 from src.plugins.github import plugin_config
 from src.plugins.github.depends.utils import (
@@ -105,23 +104,15 @@ async def resolve_conflict_pull_requests(
         if publish_type:
             # 需要先获取远程分支，否则无法切换到对应分支
             run_shell_command(["git", "fetch", "origin"])
-            # 因为当前分支为触发处理冲突的分支，所以需要切换到每个拉取请求对应的分支
-            run_shell_command(["git", "checkout", pull.head.ref])
-
-            try:
-                result = await validate_author_info(issue_handler.issue, publish_type)
-            except PydanticCustomError:
-                # 报错代表在此分支找不到对应数据
-                # 则尝试处理其它分支
-                logger.info("拉取请求无冲突，无需处理")
-                continue
-
-            # 回到主分支
+            # 当前分支未触发处理冲突的分支，切换到主分支后验证其它的删除请求
             run_shell_command(["git", "checkout", plugin_config.input_config.base])
+            # 再验证作者信息
+            result = await validate_author_info(issue_handler.issue, publish_type)
             # 切换到对应分支
             run_shell_command(["git", "switch", "-C", pull.head.ref])
             # 更新文件
             update_file(publish_type, result.key)
+            # 生成提交信息并推送
             message = commit_message(COMMIT_MESSAGE_PREFIX, result.name, issue_number)
 
             issue_handler.commit_and_push(message, pull.head.ref)
