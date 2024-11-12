@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal
 
-import json5
+import pyjson5
 from githubkit.rest import Issue
 from pytest_mock import MockFixture
 
@@ -78,7 +78,7 @@ def generate_issue_body_remove(
 
 def check_json_data(file: Path, data: Any) -> None:
     with open(file, encoding="utf-8") as f:
-        assert json5.load(f) == data
+        assert pyjson5.load(f) == data  # type: ignore
 
 
 @dataclass

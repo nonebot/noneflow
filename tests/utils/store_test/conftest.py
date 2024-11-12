@@ -1,6 +1,6 @@
 from pathlib import Path
 
-import json5
+import pyjson5
 import pytest
 from pytest_mock import MockerFixture
 from respx import MockRouter
@@ -28,7 +28,7 @@ def load_json(name: str) -> dict:
 
     path = Path(__file__).parent / "store" / name
     with path.open("r", encoding="utf-8") as f:
-        return json5.load(f)
+        return pyjson5.load(f)  # type: ignore
 
 
 @pytest.fixture
