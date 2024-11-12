@@ -78,7 +78,7 @@ def generate_issue_body_remove(
 
 def check_json_data(file: Path, data: Any) -> None:
     with open(file, encoding="utf-8") as f:
-        assert pyjson5.load(f) == data  # type: ignore
+        assert pyjson5.decode_io(f) == data  # type: ignore
 
 
 @dataclass

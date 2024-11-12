@@ -37,7 +37,7 @@ def dump_json(path: Path, data: Any, minify: bool = True) -> None:
 def load_json5_from_file(file_path: Path):
     """从文件加载 JSON5 文件"""
     with open(file_path, encoding="utf-8") as file:
-        return pyjson5.load(file)  # type: ignore
+        return pyjson5.decode_io(file)  # type: ignore
 
 
 def load_json5_from_web(url: str):
@@ -45,7 +45,7 @@ def load_json5_from_web(url: str):
     r = httpx.get(url)
     if r.status_code != 200:
         raise ValueError(f"下载文件失败：{r.text}")
-    return pyjson5.loads(r.text)
+    return pyjson5.decode(r.text)
 
 
 def dump_json5(path: Path, data: Any) -> None:

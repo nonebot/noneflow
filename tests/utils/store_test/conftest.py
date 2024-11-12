@@ -28,7 +28,7 @@ def load_json(name: str) -> dict:
 
     path = Path(__file__).parent / "store" / name
     with path.open("r", encoding="utf-8") as f:
-        return pyjson5.load(f)  # type: ignore
+        return pyjson5.decode_io(f)  # type: ignore
 
 
 @pytest.fixture
