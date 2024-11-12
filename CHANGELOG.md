@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ### Added
 
 - 通过名称加主页避免机器人重复
+- 商店存放 json5 格式的数据
 
 ### Fixed
 

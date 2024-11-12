@@ -26,6 +26,7 @@ from src.providers.models import (
     StorePlugin,
     StoreTestResult,
 )
+from src.providers.utils import dump_json, load_json5_from_web, load_json_from_web
 from src.providers.validation.utils import get_author_name
 
 from .constants import (
@@ -36,7 +37,7 @@ from .constants import (
     PLUGINS_PATH,
     RESULTS_PATH,
 )
-from .utils import dump_json, get_latest_version, load_json
+from .utils import get_latest_version
 from .validation import validate_plugin
 
 print = click.echo
@@ -52,63 +53,65 @@ class StoreTest:
                 project_link=adapter["project_link"],
                 module_name=adapter["module_name"],
             ): StoreAdapter(**adapter)
-            for adapter in load_json(STORE_ADAPTERS_URL)
+            for adapter in load_json5_from_web(STORE_ADAPTERS_URL)
         }
         self._store_bots: dict[str, StoreBot] = {
             BOT_KEY_TEMPLATE.format(
                 name=bot["name"],
                 homepage=bot["homepage"],
             ): StoreBot(**bot)
-            for bot in load_json(STORE_BOTS_URL)
+            for bot in load_json5_from_web(STORE_BOTS_URL)
         }
         self._store_drivers: dict[str, StoreDriver] = {
             PYPI_KEY_TEMPLATE.format(
                 project_link=driver["project_link"],
                 module_name=driver["module_name"],
             ): StoreDriver(**driver)
-            for driver in load_json(STORE_DRIVERS_URL)
+            for driver in load_json5_from_web(STORE_DRIVERS_URL)
         }
         self._store_plugins: dict[str, StorePlugin] = {
             PYPI_KEY_TEMPLATE.format(
                 project_link=plugin["project_link"],
                 module_name=plugin["module_name"],
             ): StorePlugin(**plugin)
-            for plugin in load_json(STORE_PLUGINS_URL)
+            for plugin in load_json5_from_web(STORE_PLUGINS_URL)
         }
         # 上次测试的结果
         self._previous_results: dict[str, StoreTestResult] = {
             key: StoreTestResult(**value)
-            for key, value in load_json(REGISTRY_RESULTS_URL).items()
+            for key, value in load_json_from_web(REGISTRY_RESULTS_URL).items()
         }
         self._previous_adapters: dict[str, RegistryAdapter] = {
             PYPI_KEY_TEMPLATE.format(
                 project_link=adapter["project_link"],
                 module_name=adapter["module_name"],
             ): RegistryAdapter(**adapter)
-            for adapter in load_json(REGISTRY_ADAPTERS_URL)
+            for adapter in load_json_from_web(REGISTRY_ADAPTERS_URL)
         }
         self._previous_bots: dict[str, RegistryBot] = {
             BOT_KEY_TEMPLATE.format(
                 name=bot["name"],
                 homepage=bot["homepage"],
             ): RegistryBot(**bot)
-            for bot in load_json(url=REGISTRY_BOTS_URL)
+            for bot in load_json_from_web(url=REGISTRY_BOTS_URL)
         }
         self._previous_drivers: dict[str, RegistryDriver] = {
             PYPI_KEY_TEMPLATE.format(
                 project_link=driver["project_link"],
                 module_name=driver["module_name"],
             ): RegistryDriver(**driver)
-            for driver in load_json(REGISTRY_DRIVERS_URL)
+            for driver in load_json_from_web(REGISTRY_DRIVERS_URL)
         }
         self._previous_plugins: dict[str, RegistryPlugin] = {
             PYPI_KEY_TEMPLATE.format(
                 project_link=plugin["project_link"], module_name=plugin["module_name"]
             ): RegistryPlugin(**plugin)
-            for plugin in load_json(REGISTRY_PLUGINS_URL)
+            for plugin in load_json_from_web(REGISTRY_PLUGINS_URL)
         }
         # 插件配置文件
-        self._plugin_configs: dict[str, str] = load_json(REGISTRY_PLUGIN_CONFIG_URL)
+        self._plugin_configs: dict[str, str] = load_json_from_web(
+            REGISTRY_PLUGIN_CONFIG_URL
+        )
 
     def should_skip(self, key: str, force: bool = False) -> bool:
         """是否跳过测试"""

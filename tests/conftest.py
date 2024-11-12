@@ -1,8 +1,8 @@
-import json
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import httpx
+import json5
 import nonebot
 import pytest
 from nonebot.adapters.github import Adapter
@@ -49,7 +49,7 @@ async def app(app: App, tmp_path: Path, mocker: MockerFixture):
 
     adapter_path = tmp_path / "adapters.json"
     with adapter_path.open("w") as f:
-        json.dump(
+        json5.dump(
             [
                 {
                     "module_name": "module_name1",
@@ -66,7 +66,7 @@ async def app(app: App, tmp_path: Path, mocker: MockerFixture):
         )
     bot_path = tmp_path / "bots.json"
     with bot_path.open("w") as f:
-        json.dump(
+        json5.dump(
             [
                 {
                     "name": "name",
@@ -81,7 +81,7 @@ async def app(app: App, tmp_path: Path, mocker: MockerFixture):
         )
     plugin_path = tmp_path / "plugins.json"
     with plugin_path.open("w") as f:
-        json.dump(
+        json5.dump(
             [
                 {
                     "module_name": "module_name1",

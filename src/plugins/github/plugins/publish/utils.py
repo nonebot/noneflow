@@ -10,8 +10,9 @@ from src.plugins.github.depends.utils import get_type_by_labels
 from src.plugins.github.models import IssueHandler
 from src.plugins.github.models.github import GithubHandler
 from src.plugins.github.utils import commit_message as _commit_message
-from src.plugins.github.utils import dump_json, load_json, run_shell_command
+from src.plugins.github.utils import run_shell_command
 from src.providers.models import RegistryUpdatePayload, to_store
+from src.providers.utils import dump_json5, load_json5_from_file
 from src.providers.validation import PublishType, ValidationDict
 
 from .constants import (
@@ -149,9 +150,9 @@ def update_file(result: ValidationDict) -> None:
 
     logger.info(f"正在更新文件: {path}")
 
-    data = load_json(path)
+    data = load_json5_from_file(path)
     data.append(new_data)
-    dump_json(path, data, 2)
+    dump_json5(path, data)
 
     logger.info("文件更新完成")
 

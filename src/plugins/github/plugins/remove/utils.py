@@ -9,11 +9,8 @@ from src.plugins.github.depends.utils import (
     get_type_by_labels,
 )
 from src.plugins.github.models import GithubHandler, IssueHandler
-from src.plugins.github.utils import (
-    commit_message,
-    dump_json,
-    run_shell_command,
-)
+from src.plugins.github.utils import commit_message, run_shell_command
+from src.providers.utils import dump_json5
 from src.providers.validation.models import PublishType
 
 from .constants import COMMIT_MESSAGE_PREFIX, REMOVE_LABEL
@@ -40,7 +37,7 @@ def update_file(type: PublishType, key: str):
     data = load_publish_data(type)
     # 删除对应的数据项
     data.pop(key)
-    dump_json(path, list(data.values()))
+    dump_json5(path, list(data.values()))
     logger.info(f"已更新 {path.name} 文件")
 
 

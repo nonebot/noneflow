@@ -4,8 +4,9 @@ from pydantic_core import PydanticCustomError
 
 from src.plugins.github import plugin_config
 from src.plugins.github.models import AuthorInfo
-from src.plugins.github.utils import extract_issue_info_from_issue, load_json
+from src.plugins.github.utils import extract_issue_info_from_issue
 from src.providers.constants import BOT_KEY_TEMPLATE, PYPI_KEY_TEMPLATE
+from src.providers.utils import load_json5_from_file
 from src.providers.validation.models import PublishType
 
 from .constants import (
@@ -25,7 +26,9 @@ def load_publish_data(publish_type: PublishType):
                     project_link=adapter["project_link"],
                     module_name=adapter["module_name"],
                 ): adapter
-                for adapter in load_json(plugin_config.input_config.adapter_path)
+                for adapter in load_json5_from_file(
+                    plugin_config.input_config.adapter_path
+                )
             }
         case PublishType.BOT:
             return {
@@ -33,7 +36,7 @@ def load_publish_data(publish_type: PublishType):
                     name=bot["name"],
                     homepage=bot["homepage"],
                 ): bot
-                for bot in load_json(plugin_config.input_config.bot_path)
+                for bot in load_json5_from_file(plugin_config.input_config.bot_path)
             }
         case PublishType.PLUGIN:
             return {
@@ -41,7 +44,9 @@ def load_publish_data(publish_type: PublishType):
                     project_link=plugin["project_link"],
                     module_name=plugin["module_name"],
                 ): plugin
-                for plugin in load_json(plugin_config.input_config.plugin_path)
+                for plugin in load_json5_from_file(
+                    plugin_config.input_config.plugin_path
+                )
             }
         case PublishType.DRIVER:
             raise ValueError("不支持的删除类型")

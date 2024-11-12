@@ -1,6 +1,5 @@
 import json
 from pathlib import Path
-from typing import Any
 
 import pytest
 from inline_snapshot import snapshot
@@ -8,12 +7,13 @@ from nonebug import App
 from pytest_mock import MockerFixture
 from respx import MockRouter
 
-from tests.github.utils import MockBody, MockIssue, MockUser, get_github_bot
-
-
-def check_json_data(file: Path, data: Any) -> None:
-    with open(file, encoding="utf-8") as f:
-        assert json.load(f) == data
+from tests.github.utils import (
+    MockBody,
+    MockIssue,
+    MockUser,
+    check_json_data,
+    get_github_bot,
+)
 
 
 @pytest.fixture
