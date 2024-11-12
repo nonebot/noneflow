@@ -25,10 +25,10 @@ STORE_BASE_URL = (
     os.environ.get("STORE_BASE_URL")
     or "https://raw.githubusercontent.com/nonebot/nonebot2/master/assets"
 )
-STORE_ADAPTERS_URL = f"{STORE_BASE_URL}/adapters.json"
-STORE_BOTS_URL = f"{STORE_BASE_URL}/bots.json"
-STORE_DRIVERS_URL = f"{STORE_BASE_URL}/drivers.json"
-STORE_PLUGINS_URL = f"{STORE_BASE_URL}/plugins.json"
+STORE_ADAPTERS_URL = f"{STORE_BASE_URL}/adapters.json5"
+STORE_BOTS_URL = f"{STORE_BASE_URL}/bots.json5"
+STORE_DRIVERS_URL = f"{STORE_BASE_URL}/drivers.json5"
+STORE_PLUGINS_URL = f"{STORE_BASE_URL}/plugins.json5"
 """plugin_test.py 中也有一个常量，需要同时修改"""
 
 # 商店测试镜像
