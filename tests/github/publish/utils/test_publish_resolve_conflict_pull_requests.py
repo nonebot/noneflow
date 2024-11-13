@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 
 import pytest
@@ -31,6 +30,7 @@ async def test_resolve_conflict_pull_requests_adapter(
     from src.plugins.github import plugin_config
     from src.plugins.github.models import GithubHandler, RepoInfo
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
+    from src.providers.utils import dump_json5
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_result = mocker.MagicMock()
@@ -49,23 +49,21 @@ async def test_resolve_conflict_pull_requests_adapter(
 
     mock_pull.labels = [mock_label]
 
-    with open(tmp_path / "adapters.json", "w", encoding="utf-8") as f:
-        json.dump(
-            [
-                {
-                    "module_name": "nonebot.adapters.onebot.v11",
-                    "project_link": "nonebot-adapter-onebot",
-                    "name": "OneBot V11",
-                    "desc": "OneBot V11 协议",
-                    "author_id": 1,
-                    "homepage": "https://onebot.adapters.nonebot.dev/",
-                    "tags": [],
-                    "is_official": True,
-                }
-            ],
-            f,
-            ensure_ascii=False,
-        )
+    dump_json5(
+        tmp_path / "adapters.json5",
+        [
+            {
+                "module_name": "nonebot.adapters.onebot.v11",
+                "project_link": "nonebot-adapter-onebot",
+                "name": "OneBot V11",
+                "desc": "OneBot V11 协议",
+                "author_id": 1,
+                "homepage": "https://onebot.adapters.nonebot.dev/",
+                "tags": [],
+                "is_official": True,
+            }
+        ],
+    )
 
     async with app.test_api() as ctx:
         adapter, bot = get_github_bot(ctx)
@@ -166,6 +164,7 @@ async def test_resolve_conflict_pull_requests_bot(
     from src.plugins.github import plugin_config
     from src.plugins.github.models import GithubHandler, RepoInfo
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
+    from src.providers.utils import dump_json5
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_result = mocker.MagicMock()
@@ -184,21 +183,19 @@ async def test_resolve_conflict_pull_requests_bot(
 
     mock_pull.labels = [mock_label]
 
-    with open(tmp_path / "bots.json", "w", encoding="utf-8") as f:
-        json.dump(
-            [
-                {
-                    "name": "CoolQBot",
-                    "desc": "基于 NoneBot2 的聊天机器人",
-                    "author_id": 1,
-                    "homepage": "https://github.com/he0119/CoolQBot",
-                    "tags": [],
-                    "is_official": False,
-                }
-            ],
-            f,
-            ensure_ascii=False,
-        )
+    dump_json5(
+        tmp_path / "bots.json5",
+        [
+            {
+                "name": "CoolQBot",
+                "desc": "基于 NoneBot2 的聊天机器人",
+                "author_id": 1,
+                "homepage": "https://github.com/he0119/CoolQBot",
+                "tags": [],
+                "is_official": False,
+            }
+        ],
+    )
 
     async with app.test_api() as ctx:
         adapter, bot = get_github_bot(ctx)
@@ -297,6 +294,7 @@ async def test_resolve_conflict_pull_requests_plugin(
     from src.plugins.github.models import GithubHandler, RepoInfo
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
     from src.providers.docker_test import Metadata
+    from src.providers.utils import dump_json5
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_result = mocker.MagicMock()
@@ -332,20 +330,18 @@ async def test_resolve_conflict_pull_requests_plugin(
     mock_docker = mocker.patch("src.providers.docker_test.DockerPluginTest.run")
     mock_docker.return_value = mock_test_result
 
-    with open(tmp_path / "plugins.json", "w", encoding="utf-8") as f:
-        json.dump(
-            [
-                {
-                    "module_name": "nonebot_plugin_treehelp",
-                    "project_link": "nonebot-plugin-treehelp",
-                    "author_id": 1,
-                    "tags": [],
-                    "is_official": True,
-                }
-            ],
-            f,
-            ensure_ascii=False,
-        )
+    dump_json5(
+        tmp_path / "plugins.json5",
+        [
+            {
+                "module_name": "nonebot_plugin_treehelp",
+                "project_link": "nonebot-plugin-treehelp",
+                "author_id": 1,
+                "tags": [],
+                "is_official": True,
+            }
+        ],
+    )
 
     async with app.test_api() as ctx:
         adapter, bot = get_github_bot(ctx)
@@ -447,6 +443,7 @@ async def test_resolve_conflict_pull_requests_draft(
     from src.plugins.github import plugin_config
     from src.plugins.github.models import GithubHandler, RepoInfo
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
+    from src.providers.utils import dump_json5
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_result = mocker.MagicMock()
@@ -460,21 +457,19 @@ async def test_resolve_conflict_pull_requests_draft(
     mock_pull.draft = True
     mock_pull.labels = [mock_label]
 
-    with open(tmp_path / "bots.json", "w", encoding="utf-8") as f:
-        json.dump(
-            [
-                {
-                    "name": "CoolQBot",
-                    "desc": "基于 NoneBot2 的聊天机器人",
-                    "author_id": 1,
-                    "homepage": "https://github.com/he0119/CoolQBot",
-                    "tags": [],
-                    "is_official": False,
-                }
-            ],
-            f,
-            ensure_ascii=False,
-        )
+    dump_json5(
+        tmp_path / "bots.json5",
+        [
+            {
+                "name": "CoolQBot",
+                "desc": "基于 NoneBot2 的聊天机器人",
+                "author_id": 1,
+                "homepage": "https://github.com/he0119/CoolQBot",
+                "tags": [],
+                "is_official": False,
+            }
+        ],
+    )
 
     async with app.test_api() as ctx:
         adapter, bot = get_github_bot(ctx)
@@ -510,6 +505,7 @@ async def test_resolve_conflict_pull_requests_ref(
     from src.plugins.github import plugin_config
     from src.plugins.github.models import GithubHandler, RepoInfo
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
+    from src.providers.utils import dump_json5
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_result = mocker.MagicMock()
@@ -523,21 +519,19 @@ async def test_resolve_conflict_pull_requests_ref(
     mock_pull.draft = False
     mock_pull.labels = [mock_label]
 
-    with open(tmp_path / "bots.json", "w", encoding="utf-8") as f:
-        json.dump(
-            [
-                {
-                    "name": "CoolQBot",
-                    "desc": "基于 NoneBot2 的聊天机器人",
-                    "author_id": 1,
-                    "homepage": "https://github.com/he0119/CoolQBot",
-                    "tags": [],
-                    "is_official": False,
-                }
-            ],
-            f,
-            ensure_ascii=False,
-        )
+    dump_json5(
+        tmp_path / "bots.json5",
+        [
+            {
+                "name": "CoolQBot",
+                "desc": "基于 NoneBot2 的聊天机器人",
+                "author_id": 1,
+                "homepage": "https://github.com/he0119/CoolQBot",
+                "tags": [],
+                "is_official": False,
+            }
+        ],
+    )
 
     async with app.test_api() as ctx:
         adapter, bot = get_github_bot(ctx)

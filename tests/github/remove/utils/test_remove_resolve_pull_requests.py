@@ -1,6 +1,4 @@
-import json
 from pathlib import Path
-from typing import Any
 
 import pytest
 from inline_snapshot import snapshot
@@ -11,6 +9,7 @@ from respx import MockRouter
 from tests.github.utils import (
     MockIssue,
     MockUser,
+    check_json_data,
     generate_issue_body_remove,
     get_github_bot,
 )
@@ -23,11 +22,6 @@ def get_issue_labels(mocker: MockerFixture, labels: list[str]):
         mocker_label.name = label
         mocker_labels.append(mocker_label)
     return mocker_labels
-
-
-def check_json_data(file: Path, data: Any) -> None:
-    with open(file, encoding="utf-8") as f:
-        assert json.load(f) == data
 
 
 @pytest.fixture
@@ -45,6 +39,7 @@ async def test_resolve_conflict_pull_requests_bot(
     from src.plugins.github import plugin_config
     from src.plugins.github.models import GithubHandler, RepoInfo
     from src.plugins.github.plugins.remove.utils import resolve_conflict_pull_requests
+    from src.providers.utils import dump_json5
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_result = mocker.MagicMock()
@@ -62,21 +57,19 @@ async def test_resolve_conflict_pull_requests_bot(
 
     mock_pull.labels = get_issue_labels(mocker, ["Bot", "Remove"])
 
-    with open(tmp_path / "bots.json", "w", encoding="utf-8") as f:
-        json.dump(
-            [
-                {
-                    "name": "CoolQBot",
-                    "desc": "基于 NoneBot2 的聊天机器人",
-                    "author_id": 1,
-                    "homepage": "https://github.com/he0119/CoolQBot",
-                    "tags": [],
-                    "is_official": False,
-                }
-            ],
-            f,
-            ensure_ascii=False,
-        )
+    dump_json5(
+        tmp_path / "bots.json5",
+        [
+            {
+                "name": "CoolQBot",
+                "desc": "基于 NoneBot2 的聊天机器人",
+                "author_id": 1,
+                "homepage": "https://github.com/he0119/CoolQBot",
+                "tags": [],
+                "is_official": False,
+            }
+        ],
+    )
 
     async with app.test_api() as ctx:
         adapter, bot = get_github_bot(ctx)
@@ -150,6 +143,7 @@ async def test_resolve_conflict_pull_requests_plugin(
     from src.plugins.github import plugin_config
     from src.plugins.github.models import GithubHandler, RepoInfo
     from src.plugins.github.plugins.remove.utils import resolve_conflict_pull_requests
+    from src.providers.utils import dump_json5
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_result = mocker.MagicMock()
@@ -173,20 +167,18 @@ async def test_resolve_conflict_pull_requests_plugin(
     mock_list_comments_resp = mocker.MagicMock()
     mock_list_comments_resp.parsed_data = [mock_comment]
 
-    with open(tmp_path / "plugins.json", "w", encoding="utf-8") as f:
-        json.dump(
-            [
-                {
-                    "module_name": "nonebot_plugin_treehelp",
-                    "project_link": "nonebot-plugin-treehelp",
-                    "author_id": 1,
-                    "tags": [],
-                    "is_official": True,
-                }
-            ],
-            f,
-            ensure_ascii=False,
-        )
+    dump_json5(
+        tmp_path / "plugins.json5",
+        [
+            {
+                "module_name": "nonebot_plugin_treehelp",
+                "project_link": "nonebot-plugin-treehelp",
+                "author_id": 1,
+                "tags": [],
+                "is_official": True,
+            }
+        ],
+    )
 
     async with app.test_api() as ctx:
         adapter, bot = get_github_bot(ctx)
@@ -261,6 +253,7 @@ async def test_resolve_conflict_pull_requests_not_found(
     from src.plugins.github import plugin_config
     from src.plugins.github.models import GithubHandler, RepoInfo
     from src.plugins.github.plugins.remove.utils import resolve_conflict_pull_requests
+    from src.providers.utils import dump_json5
 
     mock_subprocess_run = mocker.patch("subprocess.run")
     mock_result = mocker.MagicMock()
@@ -284,12 +277,7 @@ async def test_resolve_conflict_pull_requests_not_found(
     mock_list_comments_resp = mocker.MagicMock()
     mock_list_comments_resp.parsed_data = [mock_comment]
 
-    with open(tmp_path / "plugins.json", "w", encoding="utf-8") as f:
-        json.dump(
-            [],
-            f,
-            ensure_ascii=False,
-        )
+    dump_json5(tmp_path / "plugins.json5", [])
 
     async with app.test_api() as ctx:
         adapter, bot = get_github_bot(ctx)

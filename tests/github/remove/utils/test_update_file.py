@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 
 from nonebug import App
@@ -13,6 +12,7 @@ async def test_update_file(
 ) -> None:
     from src.plugins.github import plugin_config
     from src.plugins.github.plugins.remove.utils import update_file
+    from src.providers.utils import dump_json5
     from src.providers.validation.models import PublishType
 
     data = [
@@ -33,8 +33,7 @@ async def test_update_file(
             "is_official": False,
         },
     ]
-    with open(tmp_path / "bots.json", "w", encoding="utf-8") as f:
-        json.dump(data, f)
+    dump_json5(tmp_path / "bots.json5", data)
 
     check_json_data(plugin_config.input_config.bot_path, data)
 
