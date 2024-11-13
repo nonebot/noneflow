@@ -58,7 +58,8 @@ def dump_json5(path: Path, data: Any) -> None:
     content = json.dumps(data, ensure_ascii=False, indent=2)
     # 手动添加末尾的逗号和换行符
     # 避免合并时出现冲突
-    content = content.replace("}\n]", "},\n]\n")
+    content = content.replace("}\n]", "},\n]")
+    content += "\n"
 
     with open(path, "w", encoding="utf-8") as f:
         f.write(content)

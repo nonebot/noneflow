@@ -4,6 +4,10 @@ from inline_snapshot import snapshot
 
 
 async def test_json5_dump(tmp_path: Path) -> None:
+    """输出 JSON5
+
+    有尾随逗号
+    """
     from src.providers.utils import dump_json5
 
     data = [
@@ -34,3 +38,18 @@ async def test_json5_dump(tmp_path: Path) -> None:
 ]
 """
     )
+
+
+async def test_json5_dump_empty_list(tmp_path: Path) -> None:
+    """空列表
+
+    末尾也应该有换行
+    """
+    from src.providers.utils import dump_json5
+
+    data = []
+
+    test_file = tmp_path / "test.json5"
+    dump_json5(test_file, data)
+
+    assert test_file.read_text() == snapshot("[]\n")
