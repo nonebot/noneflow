@@ -1,31 +1,9 @@
-import json
 from functools import cache
-from pathlib import Path
 from typing import Any
 
 import httpx
-from pydantic_core import to_jsonable_python
 
-
-def load_json(url: str) -> Any:
-    """从网络加载 JSON 文件"""
-    r = httpx.get(url)
-    if r.status_code != 200:
-        raise ValueError(f"下载文件失败：{r.text}")
-    return r.json()
-
-
-def dump_json(path: Path, data: Any, minify: bool = True) -> None:
-    """保存 JSON 文件
-
-    为减少文件大小，还需手动设置 separators
-    """
-    data = to_jsonable_python(data)
-    with open(path, "w", encoding="utf-8") as f:
-        if minify:
-            json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
-        else:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+from src.providers.utils import load_json_from_web
 
 
 @cache
@@ -55,5 +33,5 @@ def get_upload_time(project_link: str) -> str:
 
 def get_user_id(name: str) -> int:
     """获取用户信息"""
-    data = load_json(f"https://api.github.com/users/{name}")
+    data = load_json_from_web(f"https://api.github.com/users/{name}")
     return data["id"]

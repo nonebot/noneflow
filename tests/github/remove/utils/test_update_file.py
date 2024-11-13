@@ -1,15 +1,11 @@
 import json
 from pathlib import Path
-from typing import Any
 
 from nonebug import App
 from pytest_mock import MockerFixture
 from respx import MockRouter
 
-
-def check_json_data(file: Path, data: Any) -> None:
-    with open(file, encoding="utf-8") as f:
-        assert json.load(f) == data
+from tests.github.utils import check_json_data
 
 
 async def test_update_file(

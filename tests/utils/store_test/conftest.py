@@ -1,6 +1,6 @@
-import json
 from pathlib import Path
 
+import pyjson5
 import pytest
 from pytest_mock import MockerFixture
 from respx import MockRouter
@@ -20,9 +20,15 @@ from src.providers.constants import (
 
 
 def load_json(name: str) -> dict:
-    path = Path(__file__).parent / "store" / f"{name}.json"
+    # 商店为 json5 格式
+    if name.startswith("store_"):
+        name = f"{name}.json5"
+    else:
+        name = f"{name}.json"
+
+    path = Path(__file__).parent / "store" / name
     with path.open("r", encoding="utf-8") as f:
-        return json.load(f)
+        return pyjson5.decode_io(f)  # type: ignore
 
 
 @pytest.fixture
