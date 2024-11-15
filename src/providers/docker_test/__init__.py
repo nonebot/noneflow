@@ -1,10 +1,10 @@
 import json
 from typing import Any
 
+import docker
 from pydantic import BaseModel, Field, field_validator, model_validator
 from pydantic_core import PydanticCustomError
 
-import docker
 from src.providers.constants import DOCKER_IMAGES, STORE_PLUGINS_URL
 from src.providers.utils import load_json5_from_web
 
