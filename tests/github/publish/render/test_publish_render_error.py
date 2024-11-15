@@ -300,7 +300,7 @@ async def test_render_error_plugin_load_test(app: App):
 
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
-<pre><code><li>⚠️ : 无法获取到插件元数据。</li><li>⚠️ 插件加载测试未通过。<details><summary>测试输出</summary>output</details></li></code></pre>
+<pre><code><li>⚠️ 插件测试元数据: 无法获取到插件元数据。</li><li>⚠️ 插件加载测试未通过。<details><summary>测试输出</summary>output</details></li></code></pre>
 
 <details>
 <summary>详情</summary>
@@ -357,7 +357,7 @@ async def test_render_error_plugin_metadata(app: App, mocker: MockFixture):
 
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
-<pre><code><li>⚠️ : 无法获取到插件元数据。</li></code></pre>
+<pre><code><li>⚠️ 插件测试元数据: 无法获取到插件元数据。</li></code></pre>
 
 <details>
 <summary>详情</summary>
@@ -550,7 +550,7 @@ async def test_render_unknown_error(app: App, mocker: MockFixture):
 
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
-<pre><code><li>⚠️ : unknown error</li></code></pre>
+<pre><code><li>⚠️ tests &gt; 2 &gt; test: unknown error</li></code></pre>
 
 <details>
 <summary>详情</summary>

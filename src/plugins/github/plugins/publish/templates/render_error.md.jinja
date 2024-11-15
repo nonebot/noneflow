@@ -57,6 +57,6 @@ PyPI 项目名 {{ input }} 不符合规范。<dt>请确保项目名正确。</dt
 {%- elif type == "string_too_long" %}
 {{ name }}: 字符过多。<dt>请确保其不超过 {{ ctx.max_length }} 个字符。</dt>
 {%- else %}
-{{ error.name }}: {{ error.msg }}
+{{ name }}: {{ error.msg }}
 {%- endif %}
 {%- endmacro %}
