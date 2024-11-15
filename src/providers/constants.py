@@ -29,7 +29,6 @@ STORE_ADAPTERS_URL = f"{STORE_BASE_URL}/adapters.json5"
 STORE_BOTS_URL = f"{STORE_BASE_URL}/bots.json5"
 STORE_DRIVERS_URL = f"{STORE_BASE_URL}/drivers.json5"
 STORE_PLUGINS_URL = f"{STORE_BASE_URL}/plugins.json5"
-"""plugin_test.py 中也有一个常量，需要同时修改"""
 
 # 商店测试镜像
 # https://github.com/orgs/nonebot/packages/container/package/nonetest

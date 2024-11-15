@@ -19,11 +19,7 @@ from pathlib import Path
 from urllib.request import urlopen
 
 # NoneBot Store
-STORE_BASE_URL = (
-    os.environ.get("STORE_BASE_URL")
-    or "https://raw.githubusercontent.com/nonebot/nonebot2/master/assets"
-)
-STORE_PLUGINS_URL = f"{STORE_BASE_URL}/plugins.json5"
+PLUGINS_URL = os.environ.get("PLUGINS_URL")
 # 匹配信息的正则表达式
 ISSUE_PATTERN = r"### {}\s+([^\s#].*?)(?=(?:\s+###|$))"
 
@@ -156,7 +152,10 @@ def get_plugin_list() -> dict[str, str]:
 
     通过 package_name 获取 module_name
     """
-    with urlopen(STORE_PLUGINS_URL) as response:
+    if PLUGINS_URL is None:
+        raise ValueError("PLUGINS_URL 环境变量未设置")
+
+    with urlopen(PLUGINS_URL) as response:
         plugins = json.loads(response.read())
 
     return {plugin["project_link"]: plugin["module_name"] for plugin in plugins}
