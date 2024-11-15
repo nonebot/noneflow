@@ -26,7 +26,7 @@ from src.providers.models import (
     StorePlugin,
     StoreTestResult,
 )
-from src.providers.utils import dump_json, load_json5_from_web, load_json_from_web
+from src.providers.utils import dump_json, load_json_from_web
 from src.providers.validation.utils import get_author_name
 
 from .constants import (
@@ -53,28 +53,28 @@ class StoreTest:
                 project_link=adapter["project_link"],
                 module_name=adapter["module_name"],
             ): StoreAdapter(**adapter)
-            for adapter in load_json5_from_web(STORE_ADAPTERS_URL)
+            for adapter in load_json_from_web(STORE_ADAPTERS_URL)
         }
         self._store_bots: dict[str, StoreBot] = {
             BOT_KEY_TEMPLATE.format(
                 name=bot["name"],
                 homepage=bot["homepage"],
             ): StoreBot(**bot)
-            for bot in load_json5_from_web(STORE_BOTS_URL)
+            for bot in load_json_from_web(STORE_BOTS_URL)
         }
         self._store_drivers: dict[str, StoreDriver] = {
             PYPI_KEY_TEMPLATE.format(
                 project_link=driver["project_link"],
                 module_name=driver["module_name"],
             ): StoreDriver(**driver)
-            for driver in load_json5_from_web(STORE_DRIVERS_URL)
+            for driver in load_json_from_web(STORE_DRIVERS_URL)
         }
         self._store_plugins: dict[str, StorePlugin] = {
             PYPI_KEY_TEMPLATE.format(
                 project_link=plugin["project_link"],
                 module_name=plugin["module_name"],
             ): StorePlugin(**plugin)
-            for plugin in load_json5_from_web(STORE_PLUGINS_URL)
+            for plugin in load_json_from_web(STORE_PLUGINS_URL)
         }
         # 上次测试的结果
         self._previous_results: dict[str, StoreTestResult] = {

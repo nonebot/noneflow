@@ -1,11 +1,13 @@
 import json
 from typing import Any
 
-import docker
 from pydantic import BaseModel, Field, field_validator, model_validator
 from pydantic_core import PydanticCustomError
+from pyjson5 import Json5DecoderException
 
+import docker
 from src.providers.constants import DOCKER_IMAGES, REGISTRY_PLUGINS_URL
+from src.providers.utils import load_json
 
 
 class Metadata(BaseModel):
@@ -29,8 +31,8 @@ class Metadata(BaseModel):
     def supported_adapters_validator(cls, v: list[str] | str | None):
         if isinstance(v, str):
             try:
-                v = json.loads(v)
-            except json.JSONDecodeError:
+                v = load_json(v)
+            except Json5DecoderException:
                 raise PydanticCustomError("json_type", "JSON 格式不合法")
 
         return v

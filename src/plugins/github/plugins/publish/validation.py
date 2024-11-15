@@ -9,7 +9,7 @@ from src.plugins.github.models import AuthorInfo
 from src.plugins.github.models.issue import IssueHandler
 from src.plugins.github.utils import extract_issue_info_from_issue
 from src.providers.docker_test import DockerPluginTest, Metadata
-from src.providers.utils import load_json5_from_file
+from src.providers.utils import load_json_from_file
 from src.providers.validation import PublishType, ValidationDict, validate_info
 
 from .constants import (
@@ -64,7 +64,7 @@ async def validate_plugin_info_from_issue(
     test_config: str = raw_data.get("test_config", "")
 
     # 获取插件上次的数据
-    previous_data = load_json5_from_file(plugin_config.input_config.plugin_path)
+    previous_data = load_json_from_file(plugin_config.input_config.plugin_path)
 
     # 决定是否跳过插件测试
     # 因为在上一步可能已经知道了是否跳过插件测试，所以这里可以传入
@@ -146,7 +146,7 @@ async def validate_adapter_info_from_issue(issue: Issue) -> ValidationDict:
     )
     raw_data.update(AuthorInfo.from_issue(issue).model_dump())
 
-    previous_data = load_json5_from_file(plugin_config.input_config.adapter_path)
+    previous_data = load_json_from_file(plugin_config.input_config.adapter_path)
 
     return validate_info(PublishType.ADAPTER, raw_data, previous_data)
 
@@ -166,6 +166,6 @@ async def validate_bot_info_from_issue(issue: Issue) -> ValidationDict:
 
     raw_data.update(AuthorInfo.from_issue(issue).model_dump())
 
-    previous_data = load_json5_from_file(plugin_config.input_config.bot_path)
+    previous_data = load_json_from_file(plugin_config.input_config.bot_path)
 
     return validate_info(PublishType.BOT, raw_data, previous_data)
