@@ -4,7 +4,6 @@ from typing import Any
 
 import click
 
-from src.providers.constants import DOCKER_IMAGES
 from src.providers.docker_test import DockerPluginTest
 from src.providers.models import RegistryPlugin, StorePlugin, StoreTestResult
 from src.providers.validation import (
@@ -40,9 +39,9 @@ async def validate_plugin(
     pypi_time = get_upload_time(project_link)
 
     # 测试插件
-    plugin_test_result = await DockerPluginTest(
-        DOCKER_IMAGES, project_link, module_name, config
-    ).run("3.12")
+    plugin_test_result = await DockerPluginTest(project_link, module_name, config).run(
+        "3.12"
+    )
 
     # 获取测试结果
     click.echo(f"测试结果：{plugin_test_result}")

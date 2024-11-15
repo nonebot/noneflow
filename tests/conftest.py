@@ -10,7 +10,7 @@ from nonebug.app import App
 from pytest_mock import MockerFixture
 from respx import MockRouter
 
-from src.providers.constants import STORE_ADAPTERS_URL
+from src.providers.constants import STORE_ADAPTERS_URL, STORE_PLUGINS_URL
 
 if TYPE_CHECKING:
     from nonebot.plugin import Plugin
@@ -194,6 +194,17 @@ def mocked_api(respx_mock: MockRouter):
                 "desc": "OneBot V12 协议",
                 "author_id": 2,
                 "homepage": "https://onebot.adapters.nonebot.dev/",
+                "tags": [],
+                "is_official": True,
+            },
+        ]
+    )
+    respx_mock.get(STORE_PLUGINS_URL, name="store_plugins").respond(
+        json=[
+            {
+                "module_name": "nonebot-plugin-treehelp",
+                "project_link": "nonebot-plugin-treehelp",
+                "author_id": 1,
                 "tags": [],
                 "is_official": True,
             },

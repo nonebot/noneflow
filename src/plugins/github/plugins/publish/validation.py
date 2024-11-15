@@ -8,7 +8,6 @@ from src.plugins.github import plugin_config
 from src.plugins.github.models import AuthorInfo
 from src.plugins.github.models.issue import IssueHandler
 from src.plugins.github.utils import extract_issue_info_from_issue
-from src.providers.constants import DOCKER_IMAGES
 from src.providers.docker_test import DockerPluginTest, Metadata
 from src.providers.utils import load_json5_from_file
 from src.providers.validation import PublishType, ValidationDict, validate_info
@@ -95,7 +94,7 @@ async def validate_plugin_info_from_issue(
     else:
         # 插件不跳过则运行插件测试
         test_result = await DockerPluginTest(
-            DOCKER_IMAGES, project_link, module_name, test_config
+            project_link, module_name, test_config
         ).run("3.12")
         # 去除颜色字符
         test_output = strip_ansi("\n".join(test_result.outputs))

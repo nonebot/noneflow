@@ -1,11 +1,12 @@
 import json
 from typing import Any
 
-import docker
 from pydantic import BaseModel, Field, field_validator, model_validator
 from pydantic_core import PydanticCustomError
 
-from src.providers.constants import DOCKER_IMAGES
+import docker
+from src.providers.constants import DOCKER_IMAGES, STORE_PLUGINS_URL
+from src.providers.utils import load_json5_from_web
 
 
 class Metadata(BaseModel):
@@ -62,10 +63,7 @@ class DockerTestResult(BaseModel):
 
 
 class DockerPluginTest:
-    def __init__(
-        self, docker_images: str, project_link: str, module_name: str, config: str = ""
-    ):
-        self.docker_images = docker_images
+    def __init__(self, project_link: str, module_name: str, config: str = ""):
         self.project_link = project_link
         self.module_name = module_name
         self.config = config
@@ -95,7 +93,12 @@ class DockerPluginTest:
         # 运行 Docker 容器，捕获输出。 容器内运行的代码拥有超时设限，此处无需设置超时
         output = client.containers.run(
             image_name,
-            environment={"PLUGIN_INFO": self.key, "PLUGIN_CONFIG": self.config},
+            environment={
+                "PLUGIN_INFO": self.key,
+                "PLUGIN_CONFIG": self.config,
+                # 插件测试需要用到的商店插件列表来验证插件依赖是否正确加载
+                "STORE_PLUGINS": json.dumps(load_json5_from_web(STORE_PLUGINS_URL)),
+            },
             detach=False,
         ).decode()
 
