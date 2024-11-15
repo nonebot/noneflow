@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 import httpx
 
 from src.providers.constants import STORE_ADAPTERS_URL
-from src.providers.utils import load_json_from_web
+from src.providers.utils import load_json, load_json_from_web
 
 from .constants import MESSAGE_TRANSLATIONS
 
@@ -23,7 +23,7 @@ def get_pypi_name(project_link: str) -> str:
     url = f"https://pypi.org/pypi/{project_link}/json"
     r = get_url(url)
     r.raise_for_status()
-    data = r.json()
+    data = load_json(r.text)
     return data["info"]["name"]
 
 
@@ -34,7 +34,7 @@ def get_upload_time(project_link: str) -> str | None:
     if r.status_code != 200:
         return None
     try:
-        data = r.json()
+        data = load_json(r.text)
     except Exception:
         return None
     return data["urls"][0]["upload_time_iso_8601"]
