@@ -46,7 +46,7 @@ async def test_docker_plugin_test(mocked_api: MockRouter, mocker: MockerFixture)
             {
                 "PLUGIN_INFO": "project_link:module_name",
                 "PLUGIN_CONFIG": "",
-                "PLUGINS_URL": "https://raw.githubusercontent.com/nonebot/noneflow-test/results/plugins.json",
+                "PLUGINS_URL": "https://raw.githubusercontent.com/nonebot/registry/results/plugins.json",
             }
         ),
         detach=False,
