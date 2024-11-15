@@ -1,12 +1,11 @@
 import json
 from typing import Any
 
-import docker
 from pydantic import BaseModel, Field, field_validator, model_validator
 from pydantic_core import PydanticCustomError
 
-from src.providers.constants import DOCKER_IMAGES, STORE_PLUGINS_URL
-from src.providers.utils import load_json5_from_web
+import docker
+from src.providers.constants import DOCKER_IMAGES, REGISTRY_PLUGINS_URL
 
 
 class Metadata(BaseModel):
@@ -96,8 +95,8 @@ class DockerPluginTest:
             environment={
                 "PLUGIN_INFO": self.key,
                 "PLUGIN_CONFIG": self.config,
-                # 插件测试需要用到的商店插件列表来验证插件依赖是否正确加载
-                "STORE_PLUGINS": json.dumps(load_json5_from_web(STORE_PLUGINS_URL)),
+                # 插件测试需要用到的插件列表来验证插件依赖是否正确加载
+                "PLUGINS_URL": REGISTRY_PLUGINS_URL,
             },
             detach=False,
         ).decode()

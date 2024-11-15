@@ -39,14 +39,14 @@ async def test_docker_plugin_test(mocked_api: MockRouter, mocker: MockerFixture)
         )
     )
 
-    assert mocked_api["store_plugins"].called
+    assert not mocked_api["store_plugins"].called
     mocked_run.assert_called_once_with(
         "ghcr.io/nonebot/nonetest:3.12-latest",
         environment=snapshot(
             {
                 "PLUGIN_INFO": "project_link:module_name",
                 "PLUGIN_CONFIG": "",
-                "STORE_PLUGINS": '[{"module_name": "nonebot-plugin-treehelp", "project_link": "nonebot-plugin-treehelp", "author_id": 1, "tags": [], "is_official": true}]',
+                "PLUGINS_URL": "https://raw.githubusercontent.com/nonebot/noneflow-test/results/plugins.json",
             }
         ),
         detach=False,

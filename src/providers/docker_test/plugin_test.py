@@ -16,7 +16,10 @@ import os
 import re
 from asyncio import create_subprocess_shell, subprocess
 from pathlib import Path
+from urllib.request import urlopen
 
+# NoneBot Store
+PLUGINS_URL = os.environ.get("PLUGINS_URL")
 # 匹配信息的正则表达式
 ISSUE_PATTERN = r"### {}\s+([^\s#].*?)(?=(?:\s+###|$))"
 
@@ -149,11 +152,12 @@ def get_plugin_list() -> dict[str, str]:
 
     通过 package_name 获取 module_name
     """
-    plugins_json = os.environ.get("STORE_PLUGINS")
-    if plugins_json is None:
-        raise ValueError("STORE_PLUGINS 环境变量未设置")
+    if PLUGINS_URL is None:
+        raise ValueError("PLUGINS_URL 环境变量未设置")
 
-    plugins = json.loads(plugins_json)
+    with urlopen(PLUGINS_URL) as response:
+        plugins = json.loads(response.read())
+
     return {plugin["project_link"]: plugin["module_name"] for plugin in plugins}
 
 
