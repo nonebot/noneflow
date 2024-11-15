@@ -3,7 +3,7 @@ from typing import Any
 
 import httpx
 
-from src.providers.utils import load_json_from_web
+from src.providers.utils import load_json, load_json_from_web
 
 
 @cache
@@ -16,7 +16,7 @@ def get_pypi_data(project_link: str) -> dict[str, Any]:
     r = httpx.get(url, headers=headers)
     if r.status_code != 200:
         raise ValueError(f"获取 PyPI 数据失败：{r.text}")
-    return r.json()
+    return load_json(r.text)
 
 
 def get_latest_version(project_link: str) -> str:

@@ -8,17 +8,22 @@ from pydantic_core import to_jsonable_python
 
 
 def load_json_from_file(file_path: Path):
-    """从文件加载 JSON 文件"""
+    """从文件加载 JSON5 文件"""
     with open(file_path, encoding="utf-8") as file:
-        return json.load(file)
+        return pyjson5.decode_io(file)  # type: ignore
 
 
 def load_json_from_web(url: str):
-    """从网络加载 JSON 文件"""
+    """从网络加载 JSON5 文件"""
     r = httpx.get(url)
     if r.status_code != 200:
         raise ValueError(f"下载文件失败：{r.text}")
-    return r.json()
+    return pyjson5.decode(r.text)
+
+
+def load_json(text: str):
+    """从文本加载 JSON5"""
+    return pyjson5.decode(text)
 
 
 def dump_json(path: Path, data: Any, minify: bool = True) -> None:
@@ -32,20 +37,6 @@ def dump_json(path: Path, data: Any, minify: bool = True) -> None:
             json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
         else:
             json.dump(data, f, ensure_ascii=False, indent=2)
-
-
-def load_json5_from_file(file_path: Path):
-    """从文件加载 JSON5 文件"""
-    with open(file_path, encoding="utf-8") as file:
-        return pyjson5.decode_io(file)  # type: ignore
-
-
-def load_json5_from_web(url: str):
-    """从网络加载 JSON5 文件"""
-    r = httpx.get(url)
-    if r.status_code != 200:
-        raise ValueError(f"下载文件失败：{r.text}")
-    return pyjson5.decode(r.text)
 
 
 def dump_json5(path: Path, data: Any) -> None:

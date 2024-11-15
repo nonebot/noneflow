@@ -1,6 +1,5 @@
 # ruff: noqa: UP040
 import abc
-import json
 from enum import Enum
 from typing import Annotated, Any, TypeAlias
 
@@ -17,6 +16,9 @@ from pydantic import (
 )
 from pydantic_core import ErrorDetails, PydanticCustomError, to_jsonable_python
 from pydantic_extra_types.color import Color
+from pyjson5 import Json5DecoderException
+
+from src.providers.utils import load_json
 
 from .constants import (
     NAME_MAX_LENGTH,
@@ -188,8 +190,8 @@ class PublishInfo(abc.ABC, BaseModel):
             return v
 
         try:
-            return json.loads(v)
-        except json.JSONDecodeError:
+            return load_json(v)
+        except Json5DecoderException:
             raise PydanticCustomError("json_type", "JSON 格式不合法")
 
 
@@ -236,8 +238,8 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
         # 如果是从 issue 中获取的数据，需要先解码
         if skip_test and isinstance(v, str):
             try:
-                v = json.loads(v)
-            except json.JSONDecodeError:
+                v = load_json(v)
+            except Json5DecoderException:
                 raise PydanticCustomError("json_type", "JSON 格式不合法")
 
         # 如果是支持所有适配器，值应该是 None，不需要检查

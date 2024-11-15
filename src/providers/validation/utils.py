@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 import httpx
 
 from src.providers.constants import STORE_ADAPTERS_URL
+from src.providers.utils import load_json, load_json_from_web
 
 from .constants import MESSAGE_TRANSLATIONS
 
@@ -22,7 +23,7 @@ def get_pypi_name(project_link: str) -> str:
     url = f"https://pypi.org/pypi/{project_link}/json"
     r = get_url(url)
     r.raise_for_status()
-    data = r.json()
+    data = load_json(r.text)
     return data["info"]["name"]
 
 
@@ -33,7 +34,7 @@ def get_upload_time(project_link: str) -> str | None:
     if r.status_code != 200:
         return None
     try:
-        data = r.json()
+        data = load_json(r.text)
     except Exception:
         return None
     return data["urls"][0]["upload_time_iso_8601"]
@@ -62,14 +63,12 @@ def check_url(url: str) -> tuple[int, str]:
 def get_author_name(author_id: int) -> str:
     """通过作者的ID获取作者名字"""
     url = f"https://api.github.com/user/{author_id}"
-    resp = httpx.get(url)
-    return resp.json()["login"]
+    return load_json_from_web(url)["login"]
 
 
 def get_adapters() -> set[str]:
     """获取适配器列表"""
-    resp = httpx.get(STORE_ADAPTERS_URL)
-    adapters = resp.json()
+    adapters = load_json_from_web(STORE_ADAPTERS_URL)
     return {adapter["module_name"] for adapter in adapters}
 
 

@@ -12,7 +12,7 @@ from src.plugins.github.models.github import GithubHandler
 from src.plugins.github.utils import commit_message as _commit_message
 from src.plugins.github.utils import run_shell_command
 from src.providers.models import RegistryUpdatePayload, to_store
-from src.providers.utils import dump_json5, load_json5_from_file
+from src.providers.utils import dump_json5, load_json_from_file
 from src.providers.validation import PublishType, ValidationDict
 
 from .constants import (
@@ -150,7 +150,7 @@ def update_file(result: ValidationDict) -> None:
 
     logger.info(f"正在更新文件: {path}")
 
-    data = load_json5_from_file(path)
+    data = load_json_from_file(path)
     data.append(new_data)
     dump_json5(path, data)
 
