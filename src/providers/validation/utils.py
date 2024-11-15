@@ -3,8 +3,8 @@ from typing import TYPE_CHECKING
 
 import httpx
 
-from providers.utils import load_json_from_web
 from src.providers.constants import STORE_ADAPTERS_URL
+from src.providers.utils import load_json_from_web
 
 from .constants import MESSAGE_TRANSLATIONS
 
