@@ -54,7 +54,7 @@ async def test_bot_process_publish_check(
     mock_pulls_resp = mocker.MagicMock()
     mock_pulls_resp.parsed_data = mock_pull
 
-    with open(tmp_path / "bots.json", "w") as f:
+    with open(tmp_path / "bots.json5", "w") as f:
         json.dump([], f)
 
     check_json_data(plugin_config.input_config.bot_path, [])
@@ -245,7 +245,7 @@ async def test_adapter_process_publish_check(
     mock_pulls_resp = mocker.MagicMock()
     mock_pulls_resp.parsed_data = mock_pull
 
-    with open(tmp_path / "adapters.json", "w") as f:
+    with open(tmp_path / "adapters.json5", "w") as f:
         json.dump([], f)
 
     check_json_data(plugin_config.input_config.adapter_path, [])
@@ -458,7 +458,7 @@ async def test_edit_title(
     mock_pulls_resp = mocker.MagicMock()
     mock_pulls_resp.parsed_data = [mock_pull]
 
-    with open(tmp_path / "bots.json", "w") as f:
+    with open(tmp_path / "bots.json5", "w") as f:
         json.dump([], f)
 
     check_json_data(plugin_config.input_config.bot_path, [])
@@ -678,7 +678,7 @@ async def test_edit_title_too_long(
     mock_pulls_resp = mocker.MagicMock()
     mock_pulls_resp.parsed_data = []
 
-    with open(tmp_path / "bots.json", "w") as f:
+    with open(tmp_path / "bots.json5", "w") as f:
         json.dump([], f)
 
     check_json_data(plugin_config.input_config.bot_path, [])
@@ -809,7 +809,7 @@ async def test_process_publish_check_not_pass(
     mock_list_comments_resp = mocker.MagicMock()
     mock_list_comments_resp.parsed_data = [mock_comment]
 
-    with open(tmp_path / "bots.json", "w") as f:
+    with open(tmp_path / "bots.json5", "w") as f:
         json.dump([], f)
 
     check_json_data(plugin_config.input_config.bot_path, [])
@@ -1057,7 +1057,7 @@ async def test_skip_plugin_check(
     mock_pulls_resp = mocker.MagicMock()
     mock_pulls_resp.parsed_data = []
 
-    with open(tmp_path / "plugins.json", "w") as f:
+    with open(tmp_path / "plugins.json5", "w") as f:
         json.dump([], f)
 
     check_json_data(plugin_config.input_config.plugin_path, [])
@@ -1261,7 +1261,7 @@ async def test_convert_pull_request_to_draft(
     mock_list_comments_resp = mocker.MagicMock()
     mock_list_comments_resp.parsed_data = [mock_comment]
 
-    with open(tmp_path / "bots.json", "w") as f:
+    with open(tmp_path / "bots.json5", "w") as f:
         json.dump([], f)
 
     check_json_data(plugin_config.input_config.bot_path, [])
@@ -1404,7 +1404,7 @@ async def test_process_publish_check_ready_for_review(
     mock_pulls_resp = mocker.MagicMock()
     mock_pulls_resp.parsed_data = [mock_pull]
 
-    with open(tmp_path / "bots.json", "w") as f:
+    with open(tmp_path / "bots.json5", "w") as f:
         json.dump([], f)
 
     check_json_data(plugin_config.input_config.bot_path, [])

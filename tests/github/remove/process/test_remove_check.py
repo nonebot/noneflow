@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 
 from inline_snapshot import snapshot
@@ -30,6 +29,7 @@ async def test_process_remove_bot_check(
 ):
     """测试正常的删除流程"""
     from src.plugins.github import plugin_config
+    from src.providers.utils import dump_json5
 
     data = [
         {
@@ -70,8 +70,8 @@ async def test_process_remove_bot_check(
 
     mock_pulls_resp_list = mocker.MagicMock()
     mock_pulls_resp_list.parsed_data = [mock_pull]
-    with open(tmp_path / "bots.json", "w") as f:
-        json.dump(data, f)
+
+    dump_json5(tmp_path / "bots.json5", data)
 
     check_json_data(plugin_config.input_config.bot_path, data)
 
@@ -231,6 +231,7 @@ async def test_process_remove_plugin_check(
 ):
     """测试正常的删除流程"""
     from src.plugins.github import plugin_config
+    from src.providers.utils import dump_json5
 
     data = [
         {
@@ -273,8 +274,7 @@ async def test_process_remove_plugin_check(
     mock_pulls_resp_list = mocker.MagicMock()
     mock_pulls_resp_list.parsed_data = [mock_pull]
 
-    with open(tmp_path / "plugins.json", "w") as f:
-        json.dump(data, f)
+    dump_json5(tmp_path / "plugins.json5", data)
 
     check_json_data(plugin_config.input_config.plugin_path, data)
 
@@ -436,6 +436,7 @@ async def test_process_remove_not_found_check(
 ):
     """要删除的包不在数据文件中的情况"""
     from src.plugins.github import plugin_config
+    from src.providers.utils import dump_json5
 
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
@@ -465,8 +466,7 @@ async def test_process_remove_not_found_check(
     mock_pulls_resp = mocker.MagicMock()
     mock_pulls_resp.parsed_data = mock_pull
 
-    with open(tmp_path / "bots.json", "w") as f:
-        json.dump([], f)
+    dump_json5(tmp_path / "bots.json5", [])
 
     check_json_data(plugin_config.input_config.bot_path, [])
 
@@ -547,6 +547,7 @@ async def test_process_remove_author_info_not_eq(
 ):
     """删除包时作者信息不相等的问题"""
     from src.plugins.github import plugin_config
+    from src.providers.utils import dump_json5
 
     bot_data = [
         {
@@ -588,8 +589,7 @@ async def test_process_remove_author_info_not_eq(
     mock_pulls_resp = mocker.MagicMock()
     mock_pulls_resp.parsed_data = mock_pull
 
-    with open(tmp_path / "bots.json", "w") as f:
-        json.dump(bot_data, f)
+    dump_json5(tmp_path / "bots.json5", bot_data)
 
     check_json_data(plugin_config.input_config.bot_path, bot_data)
 
@@ -670,6 +670,7 @@ async def test_process_remove_issue_info_not_found(
 ):
     """删除包时无法从议题获取信息的测试"""
     from src.plugins.github import plugin_config
+    from src.providers.utils import dump_json5
 
     bot_data = [
         {
@@ -709,8 +710,7 @@ async def test_process_remove_issue_info_not_found(
     mock_pulls_resp = mocker.MagicMock()
     mock_pulls_resp.parsed_data = mock_pull
 
-    with open(tmp_path / "bots.json", "w") as f:
-        json.dump(bot_data, f)
+    dump_json5(tmp_path / "bots.json5", bot_data)
 
     check_json_data(plugin_config.input_config.bot_path, bot_data)
 
