@@ -1,5 +1,6 @@
 import re
 
+from src.plugins.github.constants import REMOVE_LABEL
 from src.plugins.github.typing import PullRequestLabels
 from src.providers.validation.models import PublishType
 
@@ -20,3 +21,13 @@ def get_type_by_labels(labels: PullRequestLabels) -> PublishType | None:
             if label.name == type.value:
                 return type
     return None
+
+
+def is_remove_by_pull_request_labels(labels: PullRequestLabels) -> bool:
+    """通过拉取请求的标签确认是否是删除类型"""
+    for label in labels:
+        if isinstance(label, str):
+            continue
+        if label.name == REMOVE_LABEL:
+            return True
+    return False

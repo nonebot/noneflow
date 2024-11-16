@@ -1,5 +1,4 @@
 import re
-from typing import TYPE_CHECKING
 
 from githubkit.exception import RequestFailed
 from nonebot import logger
@@ -7,8 +6,8 @@ from nonebot import logger
 from src.plugins.github import plugin_config
 from src.plugins.github.constants import ISSUE_FIELD_PATTERN, ISSUE_FIELD_TEMPLATE
 from src.plugins.github.depends.utils import get_type_by_labels
-from src.plugins.github.models import IssueHandler
-from src.plugins.github.models.github import GithubHandler
+from src.plugins.github.models import GithubHandler, IssueHandler
+from src.plugins.github.typing import PullRequestList
 from src.plugins.github.utils import commit_message as _commit_message
 from src.plugins.github.utils import run_shell_command
 from src.providers.models import RegistryUpdatePayload, to_store
@@ -28,12 +27,6 @@ from .validation import (
     validate_bot_info_from_issue,
     validate_plugin_info_from_issue,
 )
-
-if TYPE_CHECKING:
-    from githubkit.rest import (
-        PullRequest,
-        PullRequestSimple,
-    )
 
 
 def get_type_by_title(title: str) -> PublishType | None:
@@ -82,7 +75,7 @@ def extract_name_from_title(title: str, publish_type: PublishType) -> str | None
 
 
 async def resolve_conflict_pull_requests(
-    handler: GithubHandler, pulls: list["PullRequestSimple"] | list["PullRequest"]
+    handler: GithubHandler, pulls: PullRequestList
 ):
     """根据关联的议题提交来解决冲突
 

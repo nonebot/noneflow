@@ -7,40 +7,39 @@ from nonebot.adapters.github import (
     IssuesEdited,
     IssuesOpened,
     IssuesReopened,
-    PullRequestClosed,
     PullRequestReviewSubmitted,
 )
 from nonebot.params import Arg, Depends
 from nonebot.rule import Rule
 from nonebot.typing import T_State
 
-from src.plugins.github.constants import BRANCH_NAME_PREFIX, TITLE_MAX_LENGTH
+from src.plugins.github.constants import (
+    BRANCH_NAME_PREFIX,
+    REMOVE_LABEL,
+    TITLE_MAX_LENGTH,
+)
 from src.plugins.github.depends import (
     bypass_git,
     get_github_handler,
     get_installation_id,
     get_issue_handler,
     get_labels_name,
-    get_related_issue_handler,
-    get_related_issue_number,
     get_repo_info,
     install_pre_commit_hooks,
     is_bot_triggered_workflow,
 )
 from src.plugins.github.models import GithubHandler, IssueHandler, RepoInfo
-from src.plugins.github.plugins.publish.render import render_comment
-from src.plugins.github.plugins.remove.constants import REMOVE_LABEL
 from src.providers.validation.models import PublishType, ValidationDict
 
 from .depends import (
     get_type_by_labels_name,
 )
+from .render import render_comment
 from .utils import (
     ensure_issue_content,
     ensure_issue_plugin_test_button,
     process_pull_request,
     resolve_conflict_pull_requests,
-    trigger_registry_update,
 )
 from .validation import (
     validate_adapter_info_from_issue,
@@ -62,62 +61,6 @@ async def publish_related_rule(
         if label == REMOVE_LABEL:
             return False
     return True
-
-
-async def pr_close_rule(
-    publish_type: PublishType | None = Depends(get_type_by_labels_name),
-    related_issue_number: int | None = Depends(get_related_issue_number),
-) -> bool:
-    if publish_type is None:
-        logger.info("拉取请求与发布无关，已跳过")
-        return False
-
-    if not related_issue_number:
-        logger.error("无法获取相关的议题编号")
-        return False
-
-    return True
-
-
-pr_close_matcher = on_type(
-    PullRequestClosed, rule=Rule(pr_close_rule, publish_related_rule)
-)
-
-
-@pr_close_matcher.handle(
-    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hooks)]
-)
-async def handle_pr_close(
-    event: PullRequestClosed,
-    bot: GitHubBot,
-    installation_id: int = Depends(get_installation_id),
-    publish_type: PublishType = Depends(get_type_by_labels_name),
-    handler: IssueHandler = Depends(get_related_issue_handler),
-) -> None:
-    async with bot.as_installation(installation_id):
-        if handler.issue.state == "open":
-            reason = "completed" if event.payload.pull_request.merged else "not_planned"
-            await handler.close_issue(reason)
-        logger.info(f"议题 #{handler.issue.number} 已关闭")
-
-        try:
-            handler.delete_origin_branch(event.payload.pull_request.head.ref)
-            logger.info("已删除对应分支")
-        except Exception:
-            logger.info("对应分支不存在或已删除")
-
-        if event.payload.pull_request.merged:
-            logger.info("发布的拉取请求已合并，准备更新拉取请求的提交")
-            pull_requests = await handler.get_pull_requests_by_label(publish_type.value)
-            await resolve_conflict_pull_requests(handler, pull_requests)
-        else:
-            logger.info("发布的拉取请求未合并，已跳过")
-
-        # 如果商店更新则触发 registry 更新
-        if event.payload.pull_request.merged:
-            await trigger_registry_update(handler, publish_type)
-        else:
-            logger.info("拉取请求未合并，跳过触发商店列表更新")
 
 
 async def check_rule(

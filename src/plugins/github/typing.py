@@ -2,7 +2,9 @@
 from typing import TypeAlias
 
 from githubkit.rest import (
+    PullRequest,
     PullRequestPropLabelsItems,
+    PullRequestSimple,
     PullRequestSimplePropLabelsItems,
     WebhookIssueCommentCreatedPropIssueAllof0PropLabelsItems,
     WebhookIssuesEditedPropIssuePropLabelsItems,
@@ -41,3 +43,7 @@ IssueLabels: TypeAlias = (
 )
 
 LabelsItems: TypeAlias = PullRequestLabels | IssueLabels
+
+PullRequestList: TypeAlias = (
+    list[PullRequestSimple] | list[PullRequest] | list[PullRequest | PullRequestSimple]
+)

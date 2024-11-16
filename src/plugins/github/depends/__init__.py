@@ -10,6 +10,7 @@ from nonebot.adapters.github import (
 )
 from nonebot.params import Depends
 
+from src.plugins.github.constants import REMOVE_LABEL
 from src.plugins.github.models import GithubHandler, IssueHandler, RepoInfo
 from src.plugins.github.typing import IssuesEvent, LabelsItems, PullRequestEvent
 from src.plugins.github.utils import run_shell_command
@@ -144,3 +145,8 @@ def get_type_by_labels_name(
         if type.value in labels:
             return type
     return None
+
+
+def is_remove_workflow(labels: list[str] = Depends(get_labels_name)) -> bool:
+    """是否是 Remove 工作流"""
+    return REMOVE_LABEL in labels
