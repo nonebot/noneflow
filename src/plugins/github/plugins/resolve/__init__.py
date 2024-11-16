@@ -1,5 +1,5 @@
 from githubkit.rest import PullRequest, PullRequestSimple
-from nonebot import logger, on_type, require
+from nonebot import logger, on_type
 from nonebot.adapters.github import GitHubBot, PullRequestClosed
 from nonebot.params import Depends
 
@@ -10,24 +10,18 @@ from src.plugins.github.depends import (
     get_related_issue_number,
     get_type_by_labels_name,
     install_pre_commit_hooks,
-    is_remove_workflow,
 )
 from src.plugins.github.depends.utils import (
     is_remove_by_pull_request_labels,
 )
 from src.plugins.github.models import GithubHandler, IssueHandler
-from src.providers.validation.models import PublishType
-
-require("src.plugins.github.plugins.publish")
-require("src.plugins.github.plugins.remove")
-
 from src.plugins.github.plugins.publish import (
     resolve_conflict_pull_requests as resolve_conflict_publish_pull_requests,
 )
-from src.plugins.github.plugins.publish.utils import trigger_registry_update
 from src.plugins.github.plugins.remove import (
     resolve_conflict_pull_requests as resolve_conflict_remove_pull_requests,
 )
+from src.providers.validation.models import PublishType
 
 
 async def resolve_conflict_pull_requests(
@@ -56,7 +50,7 @@ async def pr_close_rule(
     return True
 
 
-pr_close_matcher = on_type(PullRequestClosed, rule=pr_close_rule)
+pr_close_matcher = on_type(PullRequestClosed, rule=pr_close_rule, priority=10)
 
 
 @pr_close_matcher.handle(
@@ -67,7 +61,6 @@ async def handle_pr_close(
     bot: GitHubBot,
     installation_id: int = Depends(get_installation_id),
     publish_type: PublishType = Depends(get_type_by_labels_name),
-    is_remove: bool = Depends(is_remove_workflow),
     handler: IssueHandler = Depends(get_related_issue_handler),
 ) -> None:
     async with bot.as_installation(installation_id):
@@ -88,11 +81,3 @@ async def handle_pr_close(
             await resolve_conflict_pull_requests(handler, pull_requests)
         else:
             logger.info("发布的拉取请求未合并，已跳过")
-
-        # 如果不是 remove 工作流
-        if not is_remove:
-            # 如果商店更新则触发 registry 更新
-            if event.payload.pull_request.merged:
-                await trigger_registry_update(handler, publish_type)
-            else:
-                logger.info("拉取请求未合并，跳过触发商店列表更新")

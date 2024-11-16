@@ -7,6 +7,7 @@ from nonebot.adapters.github import (
     IssuesEdited,
     IssuesOpened,
     IssuesReopened,
+    PullRequestClosed,
     PullRequestReviewSubmitted,
 )
 from nonebot.params import Arg, Depends
@@ -24,6 +25,8 @@ from src.plugins.github.depends import (
     get_installation_id,
     get_issue_handler,
     get_labels_name,
+    get_related_issue_handler,
+    get_related_issue_number,
     get_repo_info,
     install_pre_commit_hooks,
     is_bot_triggered_workflow,
@@ -40,6 +43,7 @@ from .utils import (
     ensure_issue_plugin_test_button,
     process_pull_request,
     resolve_conflict_pull_requests,
+    trigger_registry_update,
 )
 from .validation import (
     validate_adapter_info_from_issue,
@@ -191,6 +195,44 @@ async def handle_pull_request_and_update_issue(
 
         # 对议题评论
         await handler.comment_issue(comment)
+
+
+async def pr_close_rule(
+    publish_type: PublishType | None = Depends(get_type_by_labels_name),
+    related_issue_number: int | None = Depends(get_related_issue_number),
+) -> bool:
+    if publish_type is None:
+        logger.info("拉取请求与发布无关，已跳过")
+        return False
+
+    if not related_issue_number:
+        logger.error("无法获取相关的议题编号")
+        return False
+
+    return True
+
+
+pr_close_matcher = on_type(
+    PullRequestClosed, rule=Rule(pr_close_rule, publish_related_rule)
+)
+
+
+@pr_close_matcher.handle(
+    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hooks)]
+)
+async def handle_pr_close(
+    event: PullRequestClosed,
+    bot: GitHubBot,
+    installation_id: int = Depends(get_installation_id),
+    publish_type: PublishType = Depends(get_type_by_labels_name),
+    handler: IssueHandler = Depends(get_related_issue_handler),
+) -> None:
+    async with bot.as_installation(installation_id):
+        # 如果商店更新则触发 registry 更新
+        if event.payload.pull_request.merged:
+            await trigger_registry_update(handler, publish_type)
+        else:
+            logger.info("拉取请求未合并，跳过触发商店列表更新")
 
 
 async def review_submitted_rule(
