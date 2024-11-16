@@ -8,7 +8,7 @@ from pytest_mock import MockerFixture
 from tests.github.utils import MockIssue, generate_issue_body_remove, get_github_bot
 
 
-def get_remove_labels():
+def get_pr_labels(labels: list[str]):
     from githubkit.rest import PullRequestPropLabelsItems as Label
 
     return [
@@ -18,11 +18,12 @@ def get_remove_labels():
                 "default": False,
                 "description": "",
                 "id": 2798075966,
-                "name": "Remove",
+                "name": label,
                 "node_id": "MDU6TGFiZWwyNzk4MDc1OTY2",
                 "url": "https://api.github.com/repos/he0119/action-test/labels/Remove",
             }
         )
+        for label in labels
     ]
 
 
@@ -53,7 +54,7 @@ async def test_remove_process_pull_request(
         event_path = Path(__file__).parent.parent.parent / "events" / "pr-close.json"
         event = adapter.payload_to_event("1", "pull_request", event_path.read_bytes())
         assert isinstance(event, PullRequestClosed)
-        event.payload.pull_request.labels = get_remove_labels()
+        event.payload.pull_request.labels = get_pr_labels(["Remove", "Bot"])
         event.payload.pull_request.merged = True
 
         ctx.should_call_api(
@@ -144,7 +145,7 @@ async def test_process_remove_pull_request_not_merged(
         adapter, bot = get_github_bot(ctx)
         event = adapter.payload_to_event("1", "pull_request", event_path.read_bytes())
         assert isinstance(event, PullRequestClosed)
-        event.payload.pull_request.labels = get_remove_labels()
+        event.payload.pull_request.labels = get_pr_labels(["Remove", "Bot"])
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
