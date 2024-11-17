@@ -12,3 +12,5 @@ ISSUE_FIELD_TEMPLATE = "### {}"
 ISSUE_FIELD_PATTERN = r"### {}\s+"
 
 SKIP_COMMENT = "/skip"
+
+REMOVE_LABEL = "Remove"

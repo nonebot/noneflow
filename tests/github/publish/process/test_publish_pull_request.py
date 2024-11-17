@@ -74,22 +74,6 @@ async def test_process_pull_request(
             mock_issues_resp,
         )
         ctx.should_call_api(
-            "rest.issues.async_update",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "issue_number": 80,
-                "state": "closed",
-                "state_reason": "completed",
-            },
-            True,
-        )
-        ctx.should_call_api(
-            "rest.pulls.async_list",
-            {"owner": "he0119", "repo": "action-test", "state": "open"},
-            mock_pulls_resp,
-        )
-        ctx.should_call_api(
             "rest.issues.async_list_comments",
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
             mock_list_comments_resp,
@@ -147,6 +131,22 @@ async def test_process_pull_request(
                 }
             ),
             True,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 80,
+                "state": "closed",
+                "state_reason": "completed",
+            },
+            True,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_list",
+            {"owner": "he0119", "repo": "action-test", "state": "open"},
+            mock_pulls_resp,
         )
 
         ctx.receive_event(bot, event)
@@ -276,22 +276,6 @@ async def test_process_pull_request_skip_plugin_test(
             mock_issues_resp,
         )
         ctx.should_call_api(
-            "rest.issues.async_update",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "issue_number": 80,
-                "state": "closed",
-                "state_reason": "completed",
-            },
-            True,
-        )
-        ctx.should_call_api(
-            "rest.pulls.async_list",
-            {"owner": "he0119", "repo": "action-test", "state": "open"},
-            mock_pulls_resp,
-        )
-        ctx.should_call_api(
             "rest.issues.async_list_comments",
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
             mock_list_comments_resp,
@@ -350,7 +334,22 @@ async def test_process_pull_request_skip_plugin_test(
             ),
             True,
         )
-
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 80,
+                "state": "closed",
+                "state_reason": "completed",
+            },
+            True,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_list",
+            {"owner": "he0119", "repo": "action-test", "state": "open"},
+            mock_pulls_resp,
+        )
         ctx.receive_event(bot, event)
 
     # 测试 git 命令

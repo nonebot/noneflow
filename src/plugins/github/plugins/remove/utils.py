@@ -1,5 +1,3 @@
-from typing import TYPE_CHECKING
-
 from githubkit.exception import RequestFailed
 from nonebot import logger
 
@@ -9,15 +7,13 @@ from src.plugins.github.depends.utils import (
     get_type_by_labels,
 )
 from src.plugins.github.models import GithubHandler, IssueHandler
+from src.plugins.github.typing import PullRequestList
 from src.plugins.github.utils import commit_message, run_shell_command
 from src.providers.utils import dump_json5
 from src.providers.validation.models import PublishType
 
 from .constants import COMMIT_MESSAGE_PREFIX, REMOVE_LABEL
 from .validation import RemoveInfo, load_publish_data, validate_author_info
-
-if TYPE_CHECKING:
-    from githubkit.rest import PullRequest, PullRequestSimple
 
 
 def update_file(type: PublishType, key: str):
@@ -76,7 +72,7 @@ async def process_pull_reqeusts(
 
 
 async def resolve_conflict_pull_requests(
-    handler: GithubHandler, pulls: list["PullRequestSimple"] | list["PullRequest"]
+    handler: GithubHandler, pulls: PullRequestList
 ):
     """根据关联的议题提交来解决冲突
 
