@@ -87,7 +87,6 @@ async def test_resolve_conflict_pull_requests_bot(
     # 测试 git 命令
     mock_subprocess_run.assert_has_calls(
         [
-            mocker.call(["git", "fetch", "origin"], check=True, capture_output=True),
             mocker.call(["git", "checkout", "master"], check=True, capture_output=True),
             mocker.call(
                 ["git", "switch", "-C", "remove/issue1"],
@@ -196,7 +195,6 @@ async def test_resolve_conflict_pull_requests_plugin(
     # 测试 git 命令
     mock_subprocess_run.assert_has_calls(
         [
-            mocker.call(["git", "fetch", "origin"], check=True, capture_output=True),
             mocker.call(["git", "checkout", "master"], check=True, capture_output=True),
             mocker.call(
                 ["git", "switch", "-C", "remove/issue1"],
@@ -248,8 +246,6 @@ async def test_resolve_conflict_pull_requests_plugin(
 async def test_resolve_conflict_pull_requests_not_found(
     app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path, mock_pull
 ) -> None:
-    from pydantic_core import PydanticCustomError
-
     from src.plugins.github import plugin_config
     from src.plugins.github.models import GithubHandler, RepoInfo
     from src.plugins.github.plugins.remove.utils import resolve_conflict_pull_requests
@@ -290,16 +286,10 @@ async def test_resolve_conflict_pull_requests_not_found(
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
-        with pytest.raises(PydanticCustomError):
-            await resolve_conflict_pull_requests(handler, [mock_pull])
+        await resolve_conflict_pull_requests(handler, [mock_pull])
 
     # 测试 git 命令
-    mock_subprocess_run.assert_has_calls(
-        [
-            mocker.call(["git", "fetch", "origin"], check=True, capture_output=True),
-            mocker.call(["git", "checkout", "master"], check=True, capture_output=True),
-        ]  # type: ignore
-    )
+    mock_subprocess_run.assert_not_called()
 
     check_json_data(
         plugin_config.input_config.plugin_path,

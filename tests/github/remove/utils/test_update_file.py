@@ -12,6 +12,7 @@ async def test_update_file(
 ) -> None:
     from src.plugins.github import plugin_config
     from src.plugins.github.plugins.remove.utils import update_file
+    from src.plugins.github.plugins.remove.validation import RemoveInfo
     from src.providers.utils import dump_json5
     from src.providers.validation.models import PublishType
 
@@ -37,7 +38,12 @@ async def test_update_file(
 
     check_json_data(plugin_config.input_config.bot_path, data)
 
-    update_file(PublishType.BOT, "CoolQBot:https://github.com/he0119/CoolQBot")
+    remove_info = RemoveInfo(
+        publish_type=PublishType.BOT,
+        key="CoolQBot:https://github.com/he0119/CoolQBot",
+        name="CoolQBot",
+    )
+    update_file(remove_info)
 
     check_json_data(
         plugin_config.input_config.bot_path,

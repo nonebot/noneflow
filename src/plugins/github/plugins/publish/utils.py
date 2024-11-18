@@ -96,11 +96,6 @@ async def resolve_conflict_pull_requests(
         issue_handler = await handler.to_issue_handler(issue_number)
 
         if publish_type:
-            # 需要先获取远程分支，否则无法切换到对应分支
-            run_shell_command(["git", "fetch", "origin"])
-            # 因为当前分支为触发处理冲突的分支，所以需要切换到每个拉取请求对应的分支
-            run_shell_command(["git", "checkout", pull.head.ref])
-
             # 重新测试
             match publish_type:
                 case PublishType.ADAPTER:
@@ -112,14 +107,19 @@ async def resolve_conflict_pull_requests(
                 case _:
                     raise ValueError("暂不支持的发布类型")
 
-            # 回到主分支
+            # 如果信息验证失败，则跳过更新
+            if not result.valid:
+                logger.error("信息验证失败，已跳过")
+                continue
+
+            # 每次切换前都要确保回到主分支
             run_shell_command(["git", "checkout", plugin_config.input_config.base])
             # 切换到对应分支
             run_shell_command(["git", "switch", "-C", pull.head.ref])
             # 更新文件
             update_file(result)
-            message = commit_message(result.type, result.name, issue_number)
 
+            message = commit_message(result.type, result.name, issue_number)
             issue_handler.commit_and_push(message, pull.head.ref)
 
             logger.info("拉取请求更新完毕")

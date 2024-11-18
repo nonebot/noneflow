@@ -1,5 +1,6 @@
 from githubkit.exception import RequestFailed
 from nonebot import logger
+from pydantic_core import PydanticCustomError
 
 from src.plugins.github import plugin_config
 from src.plugins.github.depends.utils import (
@@ -16,11 +17,11 @@ from .constants import COMMIT_MESSAGE_PREFIX, REMOVE_LABEL
 from .validation import RemoveInfo, load_publish_data, validate_author_info
 
 
-def update_file(type: PublishType, key: str):
+def update_file(remove_info: RemoveInfo):
     """删除对应的包储存在 registry 里的数据"""
     logger.info("开始更新文件")
 
-    match type:
+    match remove_info.publish_type:
         case PublishType.PLUGIN:
             path = plugin_config.input_config.plugin_path
         case PublishType.BOT:
@@ -30,9 +31,9 @@ def update_file(type: PublishType, key: str):
         case _:
             raise ValueError("不支持的删除类型")
 
-    data = load_publish_data(type)
+    data = load_publish_data(remove_info.publish_type)
     # 删除对应的数据项
-    data.pop(key)
+    data.pop(remove_info.key)
     dump_json5(path, list(data.values()))
     logger.info(f"已更新 {path.name} 文件")
 
@@ -52,7 +53,7 @@ async def process_pull_reqeusts(
     # 切换分支
     run_shell_command(["git", "switch", "-C", branch_name])
     # 更新文件并提交更改
-    update_file(result.publish_type, result.key)
+    update_file(result)
     store_handler.commit_and_push(message, branch_name, author=handler.author)
     # 创建拉取请求
     logger.info("开始创建拉取请求")
@@ -95,19 +96,22 @@ async def resolve_conflict_pull_requests(
         issue_handler = await handler.to_issue_handler(issue_number)
 
         if publish_type:
-            # 需要先获取远程分支，否则无法切换到对应分支
-            run_shell_command(["git", "fetch", "origin"])
-            # 当前分支未触发处理冲突的分支，切换到主分支后验证其它的删除请求
+            # 验证作者信息
+            try:
+                result = await validate_author_info(issue_handler.issue, publish_type)
+            except PydanticCustomError as e:
+                logger.error(f"验证作者信息失败: {e}")
+                continue
+
+            # 每次切换前都要确保回到主分支
             run_shell_command(["git", "checkout", plugin_config.input_config.base])
-            # 再验证作者信息
-            result = await validate_author_info(issue_handler.issue, publish_type)
             # 切换到对应分支
             run_shell_command(["git", "switch", "-C", pull.head.ref])
             # 更新文件
-            update_file(publish_type, result.key)
+            update_file(result)
+
             # 生成提交信息并推送
             message = commit_message(COMMIT_MESSAGE_PREFIX, result.name, issue_number)
-
             issue_handler.commit_and_push(message, pull.head.ref)
 
             logger.info("拉取请求更新完毕")
