@@ -80,10 +80,6 @@ async def test_resolve_conflict_pull_requests_adapter(
     # 测试 git 命令
     mock_subprocess_run.assert_has_calls(
         [
-            mocker.call(["git", "fetch", "origin"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "checkout", "publish/issue1"], check=True, capture_output=True
-            ),
             mocker.call(["git", "checkout", "master"], check=True, capture_output=True),
             mocker.call(
                 ["git", "switch", "-C", "publish/issue1"],
@@ -213,10 +209,6 @@ async def test_resolve_conflict_pull_requests_bot(
     # 测试 git 命令
     mock_subprocess_run.assert_has_calls(
         [
-            mocker.call(["git", "fetch", "origin"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "checkout", "publish/issue1"], check=True, capture_output=True
-            ),
             mocker.call(["git", "checkout", "master"], check=True, capture_output=True),
             mocker.call(
                 ["git", "switch", "-C", "publish/issue1"],
@@ -364,10 +356,6 @@ async def test_resolve_conflict_pull_requests_plugin(
     # 测试 git 命令
     mock_subprocess_run.assert_has_calls(
         [
-            mocker.call(["git", "fetch", "origin"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "checkout", "publish/issue1"], check=True, capture_output=True
-            ),
             mocker.call(["git", "checkout", "master"], check=True, capture_output=True),
             mocker.call(
                 ["git", "switch", "-C", "publish/issue1"],
@@ -435,6 +423,98 @@ async def test_resolve_conflict_pull_requests_plugin(
     )
 
     assert mocked_api["homepage"].called
+
+
+async def test_resolve_conflict_pull_requests_plugin_not_valid(
+    app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path, mock_pull
+) -> None:
+    """测试插件信息不合法的情况"""
+    from src.plugins.github import plugin_config
+    from src.plugins.github.models import GithubHandler, RepoInfo
+    from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
+    from src.providers.utils import dump_json5
+
+    mock_subprocess_run = mocker.patch("subprocess.run")
+    mock_result = mocker.MagicMock()
+    mock_subprocess_run.side_effect = lambda *args, **kwargs: mock_result
+
+    mock_label = mocker.MagicMock()
+    mock_label.name = "Plugin"
+
+    mock_issue_repo = mocker.MagicMock()
+    mock_issue = MockIssue(
+        number=1,
+        body=MockBody(type="plugin").generate(),
+        user=MockUser(login="he0119", id=1),
+    ).as_mock(mocker)
+    mock_issue_repo.parsed_data = mock_issue
+
+    mock_pull.labels = [mock_label]
+    mock_pull.title = "Plugin: 帮助"
+
+    mock_comment = mocker.MagicMock()
+    mock_comment.body = "Plugin: test"
+    mock_list_comments_resp = mocker.MagicMock()
+    mock_list_comments_resp.parsed_data = [mock_comment]
+
+    mock_test_result = mocker.MagicMock()
+    mock_test_result.load = False
+    mock_test_result.metadata = None
+    mock_docker = mocker.patch("src.providers.docker_test.DockerPluginTest.run")
+    mock_docker.return_value = mock_test_result
+
+    dump_json5(
+        tmp_path / "plugins.json5",
+        [
+            {
+                "module_name": "nonebot_plugin_treehelp",
+                "project_link": "nonebot-plugin-treehelp",
+                "author_id": 1,
+                "tags": [],
+                "is_official": True,
+            }
+        ],
+    )
+
+    async with app.test_api() as ctx:
+        adapter, bot = get_github_bot(ctx)
+
+        handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
+
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            snapshot({"owner": "owner", "repo": "repo", "issue_number": 1}),
+            mock_issue_repo,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "owner", "repo": "repo", "issue_number": 1},
+            mock_list_comments_resp,
+        )
+
+        await resolve_conflict_pull_requests(handler, [mock_pull])
+
+    # 测试 git 命令
+    mock_subprocess_run.assert_not_called()
+
+    # 检查文件是否正确
+    # 因为没有进行 git 操作，所有会有两个插件信息
+    check_json_data(
+        plugin_config.input_config.plugin_path,
+        snapshot(
+            [
+                {
+                    "module_name": "nonebot_plugin_treehelp",
+                    "project_link": "nonebot-plugin-treehelp",
+                    "author_id": 1,
+                    "tags": [],
+                    "is_official": True,
+                },
+            ]
+        ),
+    )
+
+    assert not mocked_api["homepage"].called
 
 
 async def test_resolve_conflict_pull_requests_draft(
