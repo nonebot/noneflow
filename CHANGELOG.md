@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 手动指定 project 目录避免工作目录下 pyproject 的干扰
+
 ## [4.0.0] - 2024-11-18
 
 ### Added
