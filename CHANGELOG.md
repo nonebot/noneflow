@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [4.0.1] - 2024-11-18
+
 ### Fixed
 
 - 手动指定 project 目录避免工作目录下 pyproject 的干扰
@@ -464,7 +466,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.0.0...HEAD
+[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.0.1...HEAD
+[4.0.1]: https://github.com/nonebot/noneflow/compare/v4.0.0...v4.0.1
 [4.0.0]: https://github.com/nonebot/noneflow/compare/v3.3.3...v4.0.0
 [3.3.3]: https://github.com/nonebot/noneflow/compare/v3.3.2...v3.3.3
 [3.3.2]: https://github.com/nonebot/noneflow/compare/v3.3.1...v3.3.2
