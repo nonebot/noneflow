@@ -12,10 +12,10 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 # Python 依赖
-COPY pyproject.toml uv.lock ./
-RUN uv sync --no-dev --frozen --compile-bytecode
+COPY pyproject.toml uv.lock /app/
+RUN uv sync --project /app/ --no-dev --frozen --compile-bytecode
 
 COPY bot.py .env /app/
 COPY src /app/src/
 
-CMD ["uv", "run", "--no-dev", "/app/bot.py"]
+CMD ["uv", "run", "--project", "/app/", "--no-dev", "/app/bot.py"]
