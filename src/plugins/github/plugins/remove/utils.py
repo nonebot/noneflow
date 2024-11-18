@@ -17,11 +17,11 @@ from .constants import COMMIT_MESSAGE_PREFIX, REMOVE_LABEL
 from .validation import RemoveInfo, load_publish_data, validate_author_info
 
 
-def update_file(remove_info: RemoveInfo):
+def update_file(result: RemoveInfo):
     """删除对应的包储存在 registry 里的数据"""
     logger.info("开始更新文件")
 
-    match remove_info.publish_type:
+    match result.publish_type:
         case PublishType.PLUGIN:
             path = plugin_config.input_config.plugin_path
         case PublishType.BOT:
@@ -31,9 +31,9 @@ def update_file(remove_info: RemoveInfo):
         case _:
             raise ValueError("不支持的删除类型")
 
-    data = load_publish_data(remove_info.publish_type)
+    data = load_publish_data(result.publish_type)
     # 删除对应的数据项
-    data.pop(remove_info.key)
+    data.pop(result.key)
     dump_json5(path, list(data.values()))
     logger.info(f"已更新 {path.name} 文件")
 
