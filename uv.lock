@@ -447,7 +447,7 @@ wheels = [
 
 [[package]]
 name = "inline-snapshot"
-version = "0.13.3"
+version = "0.14.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "asttokens" },
@@ -457,9 +457,9 @@ dependencies = [
     { name = "rich" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/03/d8/49d563d434a7a601a0bd35c59ba8d03cd7d2b2d36ffcbc3f50e134d20a95/inline_snapshot-0.13.3.tar.gz", hash = "sha256:de85c5dfd31426c51b2820a3acb4569153fb62414a6a9833378b79859b869763", size = 84106 }
+sdist = { url = "https://files.pythonhosted.org/packages/45/a9/b6b9db4f2ef1e3261460701a429f8248e517cb8d18e27ff05f4690ac0a73/inline_snapshot-0.14.0.tar.gz", hash = "sha256:54fdf7831055d06a2423054875d640102865a164cc8291a8086e44dd9b4fd316", size = 209662 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2d/3a/f878e7bc11160d0eef30076363f0cd01fba454485ac61a6cee34c026cda1/inline_snapshot-0.13.3-py3-none-any.whl", hash = "sha256:b1cf31cea026fcc2abaeb4066950e2a94bc387912323e42752819f0972f12179", size = 31423 },
+    { url = "https://files.pythonhosted.org/packages/5e/a3/8ca14974625632d56d7e9f899d76d15dc4acd94ec15c179ca528beadeb4a/inline_snapshot-0.14.0-py3-none-any.whl", hash = "sha256:dc246d28b720f6050404b72cc1d171b0671e1494249197753d23771ff228748c", size = 31807 },
 ]
 
 [[package]]
@@ -695,7 +695,7 @@ requires-dist = [
     { name = "nonebot-adapter-github", specifier = ">=0.4.1" },
     { name = "nonebot2", specifier = ">=2.4.0" },
     { name = "pre-commit", specifier = ">=4.0.1" },
-    { name = "pydantic-extra-types", specifier = ">=2.9.0" },
+    { name = "pydantic-extra-types", specifier = ">=2.10.0" },
     { name = "pyjson5", specifier = ">=1.6.7" },
     { name = "tzdata", marker = "extra == 'plugin'", specifier = ">=2024.2" },
 ]
@@ -703,9 +703,9 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "bump-my-version", specifier = ">=0.28.1" },
-    { name = "inline-snapshot", specifier = ">=0.13.3" },
+    { name = "inline-snapshot", specifier = ">=0.14.0" },
     { name = "nonebug", specifier = ">=0.4.2" },
-    { name = "poethepoet", specifier = ">=0.29.0" },
+    { name = "poethepoet", specifier = ">=0.30.0" },
     { name = "pytest-asyncio", specifier = ">=0.24.0" },
     { name = "pytest-cov", specifier = ">=6.0.0" },
     { name = "pytest-mock", specifier = ">=3.14.0" },
@@ -760,15 +760,15 @@ wheels = [
 
 [[package]]
 name = "poethepoet"
-version = "0.29.0"
+version = "0.30.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pastel" },
     { name = "pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/dc/7a/7144e47128022146502e179e259b312335bc1465384025eee92d4c7e16b2/poethepoet-0.29.0.tar.gz", hash = "sha256:676842302f2304a86b31ac56398dd672fae8471128d2086896393384dbafc095", size = 58619 }
+sdist = { url = "https://files.pythonhosted.org/packages/be/07/dfaed168414cf1e10f5c90860cdc29ffd871df80be81f3d7abd0451a4508/poethepoet-0.30.0.tar.gz", hash = "sha256:9f7ccda2d6525616ce989ca8ef973739fd668f50bef0b9d3631421d504d9ae4a", size = 60139 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b5/7d/871be58cc970ab4c9a541d64b77b7454d150a409c3e48b53fc9eac7a8967/poethepoet-0.29.0-py3-none-any.whl", hash = "sha256:f8dfe55006dcfb5cf31bcb1904e1262e1c642a4502fee3688cbf1bddfe5c7601", size = 76069 },
+    { url = "https://files.pythonhosted.org/packages/25/98/12bff83ac39ba78ba4736c2f217bab294187de5d71ffbfeb3e126c230704/poethepoet-0.30.0-py3-none-any.whl", hash = "sha256:bf875741407a98da9e96f2f2d0b2c4c34f56d89939a7f53a4b6b3a64b546ec4e", size = 78036 },
 ]
 
 [[package]]
@@ -900,14 +900,15 @@ wheels = [
 
 [[package]]
 name = "pydantic-extra-types"
-version = "2.9.0"
+version = "2.10.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
+    { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fb/95/d61dcadd933cb34461adc271c13bbe14a7080b9922b9e0dc3c1d18b421cb/pydantic_extra_types-2.9.0.tar.gz", hash = "sha256:e061c01636188743bb69f368dcd391f327b8cfbfede2fe1cbb1211b06601ba3b", size = 39578 }
+sdist = { url = "https://files.pythonhosted.org/packages/f4/92/8542f406466d11bf348b795d498906034f9bb9016f09e906ff7fee6444be/pydantic_extra_types-2.10.0.tar.gz", hash = "sha256:552c47dd18fe1d00cfed75d9981162a2f3203cf7e77e55a3d3e70936f59587b9", size = 44559 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/37/2f/efc4877d1a1536ec76ca0114c3e9dee7d0a10a262c53d384d50163f5684c/pydantic_extra_types-2.9.0-py3-none-any.whl", hash = "sha256:f0bb975508572ba7bf3390b7337807588463b7248587e69f43b1ad7c797530d0", size = 30544 },
+    { url = "https://files.pythonhosted.org/packages/38/41/0b0cc8b59c31a04bdfde2ae71fccbb13c11fadafc8bd41a2af3e76db7e44/pydantic_extra_types-2.10.0-py3-none-any.whl", hash = "sha256:b19943914e6286548254f5079d1da094e9c0583ee91a8e611e9df24bfd07dbcd", size = 34185 },
 ]
 
 [[package]]
