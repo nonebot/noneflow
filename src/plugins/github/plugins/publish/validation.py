@@ -107,8 +107,14 @@ async def validate_plugin_info_from_issue(
         raw_data["test_output"] = test_output
         raw_data["metadata"] = bool(metadata)
 
-        logger.info(f"插件测试结果: {test_result}")
-        logger.info(f"插件元数据: {metadata}")
+        # 输出插件测试相关信息
+        logger.info(
+            f"插件 {project_link}({test_result.version}) 加载{'成功' if test_result.load else '失败'}，运行{'开始' if test_result.run else '失败'}"
+        )
+        logger.info(f"插件元数据：{metadata}")
+        logger.info("插件测试输出：")
+        for output in test_output:
+            logger.info(output)
 
     # 验证插件相关信息
     result = validate_info(PublishType.PLUGIN, raw_data, previous_data)
