@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import httpx
 from inline_snapshot import snapshot
 from pytest_mock import MockerFixture
 from respx import MockRouter
@@ -184,17 +185,25 @@ async def test_store_test_with_key_skip(
 
 
 async def test_store_test_raise(
-    mocked_store_data: dict[str, Path], mocked_api: MockRouter, mocker: MockerFixture
+    mocked_store_data: dict[str, Path],
+    mocked_api: MockRouter,
+    mocker: MockerFixture,
+    respx_mock: MockRouter,
 ):
     """测试插件，但是测试过程中报错
 
     第一个插件因为版本号无变化跳过
-    第二个插件测试中报错跳过
+    第二个插件获取版本号超时跳过
     第三个插件测试中也报错
 
     最后数据没有变化
     """
-    from src.providers.store_test.store import RegistryPlugin, StorePlugin, StoreTest
+    from src.providers.store_test.store import StorePlugin, StoreTest
+
+    respx_mock.get(
+        "https://pypi.org/pypi/nonebot-plugin-treehelp/json",
+        name="project_link_treehelp",
+    ).side_effect = httpx.ConnectTimeout
 
     mocked_validate_plugin = mocker.patch(
         "src.providers.store_test.store.validate_plugin"
@@ -206,32 +215,6 @@ async def test_store_test_raise(
 
     mocked_validate_plugin.assert_has_calls(
         [
-            mocker.call(
-                store_plugin=StorePlugin(
-                    module_name="nonebot_plugin_treehelp",
-                    project_link="nonebot-plugin-treehelp",
-                    author_id=1,
-                    tags=[],
-                    is_official=False,
-                ),
-                previous_plugin=RegistryPlugin(
-                    tags=[],
-                    module_name="nonebot_plugin_treehelp",
-                    project_link="nonebot-plugin-treehelp",
-                    name="帮助",
-                    desc="获取插件帮助信息",
-                    author="he0119",
-                    homepage="https://github.com/he0119/nonebot-plugin-treehelp",
-                    is_official=False,
-                    type="application",
-                    supported_adapters=None,
-                    valid=True,
-                    time="2023-06-22 12:10:18",
-                    version="0.0.1",
-                    skip_test=False,
-                ),
-                config="TEST_CONFIG=true",
-            ),
             mocker.call(
                 store_plugin=StorePlugin(
                     module_name="nonebot_plugin_wordcloud",
@@ -262,6 +245,11 @@ async def test_store_test_raise(
     assert mocked_store_data["results"].read_text(encoding="utf-8") == snapshot(
         '{"nonebot-plugin-datastore:nonebot_plugin_datastore":{"time":"2023-06-26T22:08:18.945584+08:00","config":"","version":"1.0.0","test_env":null,"results":{"validation":true,"load":true,"metadata":true},"outputs":{"validation":null,"load":"datastore","metadata":{"name":"数据存储","description":"NoneBot 数据存储插件","usage":"请参考文档","type":"library","homepage":"https://github.com/he0119/nonebot-plugin-datastore","supported_adapters":null}}},"nonebot-plugin-treehelp:nonebot_plugin_treehelp":{"time":"2023-06-26T22:20:41.833311+08:00","config":"","version":"0.3.0","test_env":null,"results":{"validation":true,"load":true,"metadata":true},"outputs":{"validation":null,"load":"treehelp","metadata":{"name":"帮助","description":"获取插件帮助信息","usage":"获取插件列表\\n/help\\n获取插件树\\n/help -t\\n/help --tree\\n获取某个插件的帮助\\n/help 插件名\\n获取某个插件的树\\n/help --tree 插件名\\n","type":"application","homepage":"https://github.com/he0119/nonebot-plugin-treehelp","supported_adapters":null}}}}'
     )
+
+    assert mocked_api["project_link_datastore"].called
+    assert mocked_api["project_link_treehelp"].called
+    # 因为没有之前测试的结果，所以不需要获取插件版本号，直接开始测试
+    assert not mocked_api["project_link_wordcloud"].called
 
 
 async def test_store_test_with_key_raise(

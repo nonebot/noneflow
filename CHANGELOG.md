@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 修复商店测试中获取 PyPI 数据出错会直接退出的问题
+
 ## [4.0.1] - 2024-11-18
 
 ### Fixed
