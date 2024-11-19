@@ -26,12 +26,13 @@ def load_json(text: str):
     return pyjson5.decode(text)
 
 
-def encode_json(data: Any, minify: bool = True):
+def encode_json(data: Any, minify: bool = True) -> str:
     """格式化对象"""
     if minify:
-        json.dumps(data, ensure_ascii=False, separators=(",", ":"))
+        data = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
     else:
-        json.dumps(data, ensure_ascii=False, indent=2)
+        data = json.dumps(data, ensure_ascii=False, indent=2)
+    return data
 
 
 def dump_json(path: Path, data: Any, minify: bool = True) -> None:
