@@ -43,13 +43,20 @@ async def validate_plugin(
         "3.12"
     )
 
-    # 获取测试结果
-    click.echo(f"测试结果：{plugin_test_result}")
     plugin_test_load = plugin_test_result.load
     plugin_test_output = "\n".join(plugin_test_result.outputs)
     plugin_test_version = plugin_test_result.version
     plugin_test_env = plugin_test_result.test_env
     plugin_metadata = plugin_test_result.metadata
+
+    # 输出插件测试相关信息
+    click.echo(
+        f"插件 {project_link}({plugin_test_version}) 加载{'成功' if plugin_test_load else '失败'}，运行{'开始' if plugin_test_result.run else '失败'}"
+    )
+    click.echo(f"插件元数据：{plugin_metadata}")
+    click.echo("插件测试输出：")
+    for output in plugin_test_output:
+        click.echo(output)
 
     if previous_plugin is None:
         # 使用商店插件数据作为新的插件数据
