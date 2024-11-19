@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [4.0.4] - 2024-11-20
+
 ### Fixed
 
 - 修复 Docker 容器测试后未正常清理的问题
@@ -488,7 +490,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.0.3...HEAD
+[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.0.4...HEAD
+[4.0.4]: https://github.com/nonebot/noneflow/compare/v4.0.3...v4.0.4
 [4.0.3]: https://github.com/nonebot/noneflow/compare/v4.0.2...v4.0.3
 [4.0.2]: https://github.com/nonebot/noneflow/compare/v4.0.1...v4.0.2
 [4.0.1]: https://github.com/nonebot/noneflow/compare/v4.0.0...v4.0.1
