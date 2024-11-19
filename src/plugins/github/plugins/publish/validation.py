@@ -113,7 +113,7 @@ async def validate_plugin_info_from_issue(
         )
         logger.info(f"插件元数据：{metadata}")
         logger.info("插件测试输出：")
-        for output in test_output:
+        for output in test_result.outputs:
             logger.info(output)
 
     # 验证插件相关信息

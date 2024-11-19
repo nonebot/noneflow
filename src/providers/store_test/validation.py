@@ -55,7 +55,7 @@ async def validate_plugin(
     )
     click.echo(f"插件元数据：{plugin_metadata}")
     click.echo("插件测试输出：")
-    for output in plugin_test_output:
+    for output in plugin_test_result.outputs:
         click.echo(output)
 
     if previous_plugin is None:
