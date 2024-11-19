@@ -40,6 +40,12 @@ def strip_ansi(text: str | None) -> str:
     return ansi_escape.sub("", text)
 
 
+def add_step_summary(summary: str):
+    """添加作业摘要"""
+    with plugin_config.github_step_summary.open("a") as f:
+        f.write(summary + "\n")
+
+
 async def validate_plugin_info_from_issue(
     handler: IssueHandler, skip_test: bool | None = None
 ) -> ValidationDict:
@@ -108,9 +114,14 @@ async def validate_plugin_info_from_issue(
         raw_data["metadata"] = bool(metadata)
 
         # 输出插件测试相关信息
-        logger.info(
-            f"插件 {project_link}({test_result.version}) 加载{'成功' if test_result.load else '失败'}，运行{'开始' if test_result.run else '失败'}"
-        )
+        test_status = f"插件 {project_link}({test_result.version}) 加载{'成功' if test_result.load else '失败'}，运行{'开始' if test_result.run else '失败'}"
+
+        add_step_summary(test_status)
+        add_step_summary(f"插件元数据：{metadata}")
+        add_step_summary("插件测试输出：")
+        add_step_summary(test_output)
+
+        logger.info(test_status)
         logger.info(f"插件元数据：{metadata}")
         logger.info("插件测试输出：")
         for output in test_result.outputs:

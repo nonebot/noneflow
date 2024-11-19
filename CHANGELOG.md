@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Added
+
+- 重新加回作业摘要
+
 ### Changed
 
 - 简化插件测试输出
