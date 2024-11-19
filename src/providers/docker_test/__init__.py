@@ -101,6 +101,7 @@ class DockerPluginTest:
                 "PLUGINS_URL": REGISTRY_PLUGINS_URL,
             },
             detach=False,
+            remove=True,
         ).decode()
 
         data = json.loads(output)

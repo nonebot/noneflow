@@ -50,4 +50,5 @@ async def test_docker_plugin_test(mocked_api: MockRouter, mocker: MockerFixture)
             }
         ),
         detach=False,
+        remove=True,
     )
