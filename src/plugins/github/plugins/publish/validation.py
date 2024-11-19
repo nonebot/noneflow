@@ -7,7 +7,6 @@ from nonebot import logger
 from src.plugins.github import plugin_config
 from src.plugins.github.models import AuthorInfo
 from src.plugins.github.models.issue import IssueHandler
-from src.plugins.github.plugins.publish.render import render_summary
 from src.plugins.github.utils import extract_issue_info_from_issue
 from src.providers.docker_test import DockerPluginTest, Metadata
 from src.providers.utils import load_json_from_file
@@ -31,6 +30,7 @@ from .constants import (
     PROJECT_LINK_PATTERN,
     TAGS_PATTERN,
 )
+from .render import render_summary
 
 
 def strip_ansi(text: str | None) -> str:

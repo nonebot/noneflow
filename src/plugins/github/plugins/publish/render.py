@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from typing import Any
 
@@ -101,6 +102,8 @@ async def render_summary(test_result: DockerTestResult, output: str, project_lin
         version=test_result.version,
         load=test_result.load,
         run=test_result.run,
-        metadata=test_result.metadata.model_dump() if test_result.metadata else {},
+        metadata=json.dumps(test_result.metadata.model_dump(), indent=2)
+        if test_result.metadata
+        else {},
         output=output,
     )

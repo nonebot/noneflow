@@ -109,7 +109,15 @@ async def test_validate_info_from_issue_plugin(
 
 ## 插件元数据
 
-<pre><code>{&#39;name&#39;: &#39;name&#39;, &#39;desc&#39;: &#39;desc&#39;, &#39;homepage&#39;: &#39;https://nonebot.dev&#39;, &#39;type&#39;: &#39;application&#39;, &#39;supported_adapters&#39;: [&#39;~onebot.v11&#39;]}</code></pre>
+<pre><code>{
+  &#34;name&#34;: &#34;name&#34;,
+  &#34;desc&#34;: &#34;desc&#34;,
+  &#34;homepage&#34;: &#34;https://nonebot.dev&#34;,
+  &#34;type&#34;: &#34;application&#34;,
+  &#34;supported_adapters&#34;: [
+    &#34;~onebot.v11&#34;
+  ]
+}</code></pre>
 
 ## 插件输出
 
