@@ -102,11 +102,31 @@ async def test_validate_info_from_issue_plugin(
     assert mocked_api["homepage"].called
     assert plugin_config.github_step_summary.read_text() == snapshot(
         """\
-插件 project_link(1.0.0) 加载成功，运行开始
-插件元数据：name='name' desc='desc' homepage='https://nonebot.dev' type='application' supported_adapters=['~onebot.v11']
-插件测试输出：
-require("nonebot_plugin_alconna")
-test
+# 📃 插件 project_link (1.0.0)
+
+> **✅ 插件已尝试运行**
+> **✅ 插件加载成功**
+
+## 插件元数据
+
+<pre><code>{
+  &#34;name&#34;: &#34;name&#34;,
+  &#34;desc&#34;: &#34;desc&#34;,
+  &#34;homepage&#34;: &#34;https://nonebot.dev&#34;,
+  &#34;type&#34;: &#34;application&#34;,
+  &#34;supported_adapters&#34;: [
+    &#34;~onebot.v11&#34;
+  ]
+}</code></pre>
+
+## 插件输出
+
+<pre><code>require(&#34;nonebot_plugin_alconna&#34;)
+test</code></pre>
+
+---
+
+💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
 """
     )
 

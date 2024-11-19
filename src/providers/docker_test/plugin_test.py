@@ -244,7 +244,6 @@ class PluginTest:
         # 创建测试目录
         if not self.test_dir.exists():
             self.test_dir.mkdir()
-            self._log_output(f"创建测试目录 {self.test_dir}")
 
         # 创建插件测试项目
         await self.create_poetry_project()

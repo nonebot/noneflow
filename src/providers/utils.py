@@ -26,14 +26,22 @@ def load_json(text: str):
     return pyjson5.decode(text)
 
 
-def dump_json(path: Path, data: Any, minify: bool = True) -> None:
-    """保存 JSON 文件
+def dumps_json(data: Any, minify: bool = True) -> str:
+    """格式化对象"""
+    if minify:
+        data = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
+    else:
+        data = json.dumps(data, ensure_ascii=False, indent=2)
+    return data
 
-    为减少文件大小，还需手动设置 separators
-    """
+
+def dump_json(path: Path, data: Any, minify: bool = True) -> None:
+    """保存 JSON 文件"""
     data = to_jsonable_python(data)
+
     with open(path, "w", encoding="utf-8") as f:
         if minify:
+            # 为减少文件大小，还需手动设置 separators
             json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
         else:
             json.dump(data, f, ensure_ascii=False, indent=2)

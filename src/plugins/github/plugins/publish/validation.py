@@ -30,6 +30,7 @@ from .constants import (
     PROJECT_LINK_PATTERN,
     TAGS_PATTERN,
 )
+from .render import render_summary
 
 
 def strip_ansi(text: str | None) -> str:
@@ -114,14 +115,10 @@ async def validate_plugin_info_from_issue(
         raw_data["metadata"] = bool(metadata)
 
         # 输出插件测试相关信息
-        test_status = f"插件 {project_link}({test_result.version}) 加载{'成功' if test_result.load else '失败'}，运行{'开始' if test_result.run else '失败'}"
-
-        add_step_summary(test_status)
-        add_step_summary(f"插件元数据：{metadata}")
-        add_step_summary("插件测试输出：")
-        add_step_summary(test_output)
-
-        logger.info(test_status)
+        add_step_summary(await render_summary(test_result, test_output, project_link))
+        logger.info(
+            f"插件 {project_link}({test_result.version}) 插件加载{'成功' if test_result.load else '失败'} {'插件已尝试加载' if test_result.run else '插件并未开始运行'}"
+        )
         logger.info(f"插件元数据：{metadata}")
         logger.info("插件测试输出：")
         for output in test_result.outputs:
