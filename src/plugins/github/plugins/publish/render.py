@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 from typing import Any
 
@@ -6,6 +5,7 @@ import jinja2
 
 from src.plugins.github import plugin_config
 from src.providers.docker_test import DockerTestResult
+from src.providers.utils import encode_json
 from src.providers.validation import ValidationDict
 from src.providers.validation.models import PublishType
 
@@ -102,7 +102,7 @@ async def render_summary(test_result: DockerTestResult, output: str, project_lin
         version=test_result.version,
         load=test_result.load,
         run=test_result.run,
-        metadata=json.dumps(test_result.metadata.model_dump(), indent=2)
+        metadata=encode_json(test_result.metadata.model_dump(), False)
         if test_result.metadata
         else {},
         output=output,
