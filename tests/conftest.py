@@ -31,6 +31,7 @@ def pytest_configure(config: pytest.Config) -> None:
         "github_run_id": "123456",
         "github_event_path": "event_path",
         "github_apps": [],
+        "github_step_summary": "step_summary",
     }
 
 
@@ -77,7 +78,6 @@ async def app(app: App, tmp_path: Path, mocker: MockerFixture):
             }
         ],
     )
-
     plugin_path = tmp_path / "plugins.json5"
     dump_json5(
         plugin_path,
@@ -95,6 +95,9 @@ async def app(app: App, tmp_path: Path, mocker: MockerFixture):
     mocker.patch.object(plugin_config.input_config, "adapter_path", adapter_path)
     mocker.patch.object(plugin_config.input_config, "bot_path", bot_path)
     mocker.patch.object(plugin_config.input_config, "plugin_path", plugin_path)
+    mocker.patch.object(
+        plugin_config, "github_step_summary", tmp_path / "step_summary.txt"
+    )
 
     yield app
 

@@ -32,3 +32,4 @@ class Config(BaseModel, extra="ignore"):
     input_config: PublishConfig
     github_repository: str
     github_run_id: str
+    github_step_summary: Path
