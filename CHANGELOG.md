@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [4.0.2] - 2024-11-19
+
 ### Fixed
 
 - 修复商店测试中获取 PyPI 数据出错会直接退出的问题
@@ -472,7 +474,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.0.1...HEAD
+[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.0.2...HEAD
+[4.0.2]: https://github.com/nonebot/noneflow/compare/v4.0.1...v4.0.2
 [4.0.1]: https://github.com/nonebot/noneflow/compare/v4.0.0...v4.0.1
 [4.0.0]: https://github.com/nonebot/noneflow/compare/v3.3.3...v4.0.0
 [3.3.3]: https://github.com/nonebot/noneflow/compare/v3.3.2...v3.3.3
