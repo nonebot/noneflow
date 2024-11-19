@@ -57,6 +57,14 @@ async def validate_plugin(
     else:
         # 将上次的插件数据作为新的插件数据
         raw_data: dict[str, Any] = previous_plugin.model_dump()
+        # 还需要同步商店中的数据，如 author_id, tags 和 is_official
+        raw_data.update(
+            {
+                "author_id": store_plugin.author_id,
+                "tags": store_plugin.tags,
+                "is_official": store_plugin.is_official,
+            }
+        )
 
     # 当跳过测试的插件首次通过加载测试，则不再标记为跳过测试
     should_skip: bool = False if plugin_test_load else raw_data.get("skip_test", False)
@@ -89,15 +97,12 @@ async def validate_plugin(
         new_plugin = RegistryPlugin.from_publish_info(result.info)
     else:
         # 如果验证失败则使用以前的数据
-        # 仅同步商店中的数据，比如 author_id, tags 和 is_official
         data = previous_plugin.model_dump() if previous_plugin else {}
         data.update(result.valid_data)
+        # 顺便更新作者名与验证结果
         data.update(
             {
-                "author_id": store_plugin.author_id,
                 "author": author_name,
-                "tags": store_plugin.tags,
-                "is_official": store_plugin.is_official,
                 "valid": result.valid,
             }
         )
