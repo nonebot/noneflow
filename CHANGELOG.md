@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 修复 Docker 容器测试后未正常清理的问题
+
 ## [4.0.3] - 2024-11-20
 
 ### Added
