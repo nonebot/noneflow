@@ -51,7 +51,7 @@ async def validate_plugin(
 
     # 输出插件测试相关信息
     click.echo(
-        f"插件 {project_link}({plugin_test_version}) 加载{'成功' if plugin_test_load else '失败'}，运行{'开始' if plugin_test_result.run else '失败'}"
+        f"插件 {project_link}({plugin_test_version}) 加载{'成功' if plugin_test_load else '失败'} {'插件已尝试加载' if plugin_test_result.run else '插件并未开始运行'}"
     )
     click.echo(f"插件元数据：{plugin_metadata}")
     click.echo("插件测试输出：")

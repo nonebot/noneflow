@@ -7,6 +7,7 @@ from nonebot import logger
 from src.plugins.github import plugin_config
 from src.plugins.github.models import AuthorInfo
 from src.plugins.github.models.issue import IssueHandler
+from src.plugins.github.plugins.publish.render import render_summary
 from src.plugins.github.utils import extract_issue_info_from_issue
 from src.providers.docker_test import DockerPluginTest, Metadata
 from src.providers.utils import load_json_from_file
@@ -114,14 +115,10 @@ async def validate_plugin_info_from_issue(
         raw_data["metadata"] = bool(metadata)
 
         # 输出插件测试相关信息
-        test_status = f"插件 {project_link}({test_result.version}) 加载{'成功' if test_result.load else '失败'}，运行{'开始' if test_result.run else '失败'}"
-
-        add_step_summary(test_status)
-        add_step_summary(f"插件元数据：{metadata}")
-        add_step_summary("插件测试输出：")
-        add_step_summary(test_output)
-
-        logger.info(test_status)
+        add_step_summary(await render_summary(test_result, test_output, project_link))
+        logger.info(
+            f"插件 {project_link}({test_result.version}) 插件加载{'成功' if test_result.load else '失败'} {'插件已尝试加载' if test_result.run else '插件并未开始运行'}"
+        )
         logger.info(f"插件元数据：{metadata}")
         logger.info("插件测试输出：")
         for output in test_result.outputs:
