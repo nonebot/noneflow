@@ -317,12 +317,11 @@ class PluginTest:
 
             if self._create:
                 self._log_output(f"项目 {self.project_link} 创建成功。")
-                for i in stdout.strip().splitlines():
-                    self._log_output(f"    {i}")
+
             else:
                 self._log_output(f"项目 {self.project_link} 创建失败：")
-                for i in stderr.strip().splitlines():
-                    self._log_output(f"    {i}")
+
+            self._std_output(stdout, stderr)
         else:
             self._log_output(f"项目 {self.project_link} 已存在，跳过创建。")
             self._create = True
@@ -339,10 +338,10 @@ class PluginTest:
 
                 # 记录插件信息至输出
                 self._log_output(f"插件 {self.project_link} 的信息如下：")
-                for i in stdout.strip().splitlines():
-                    self._log_output(f"    {i}")
             else:
                 self._log_output(f"插件 {self.project_link} 信息获取失败。")
+
+            self._std_output(stdout, stderr)
 
     async def run_poetry_project(self) -> None:
         """运行插件"""
@@ -377,13 +376,7 @@ class PluginTest:
             else:
                 self._log_output(f"插件 {self.module_name} 加载出错：")
 
-            _out = stdout.strip().splitlines()
-            _err = stderr.strip().splitlines()
-            for i in _out:
-                self._log_output(f"    {i}")
-
-            for i in _err:
-                self._log_output(f"    {i}")
+            self._std_output(stdout, stderr)
 
     async def show_plugin_dependencies(self) -> None:
         """获取插件的依赖"""
@@ -400,6 +393,8 @@ class PluginTest:
             else:
                 self._log_output(f"插件 {self.project_link} 依赖获取失败。")
 
+            self._std_output(stdout, stderr)
+
     @property
     def plugin_list(self) -> dict[str, str]:
         """
@@ -408,6 +403,18 @@ class PluginTest:
         if self._plugin_list is None:
             self._plugin_list = get_plugin_list()
         return self._plugin_list
+
+    def _std_output(self, stdout: str, stderr: str):
+        """
+        将标准输出流与标准错误流记录并输出
+        """
+        _out = stdout.strip().splitlines()
+        _err = stderr.strip().splitlines()
+        for i in _out:
+            self._log_output(f"    {i}")
+
+        for i in _err:
+            self._log_output(f"    {i}")
 
     def _get_plugin_module_name(self, require: str) -> str | None:
         """
