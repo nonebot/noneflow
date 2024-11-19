@@ -317,11 +317,11 @@ class PluginTest:
 
             if self._create:
                 self._log_output(f"项目 {self.project_link} 创建成功。")
-
+                self._std_output(stdout, "")
             else:
                 self._log_output(f"项目 {self.project_link} 创建失败：")
+                self._std_output(stdout, stderr)
 
-            self._std_output(stdout, stderr)
         else:
             self._log_output(f"项目 {self.project_link} 已存在，跳过创建。")
             self._create = True
@@ -338,10 +338,10 @@ class PluginTest:
 
                 # 记录插件信息至输出
                 self._log_output(f"插件 {self.project_link} 的信息如下：")
+                self._std_output(stdout, "")
             else:
                 self._log_output(f"插件 {self.project_link} 信息获取失败。")
-
-            self._std_output(stdout, stderr)
+                self._std_output(stdout, stderr)
 
     async def run_poetry_project(self) -> None:
         """运行插件"""
@@ -373,10 +373,10 @@ class PluginTest:
 
             if self._run:
                 self._log_output(f"插件 {self.module_name} 加载正常：")
+                self._std_output(stdout, "")
             else:
                 self._log_output(f"插件 {self.module_name} 加载出错：")
-
-            self._std_output(stdout, stderr)
+                self._std_output(stdout, stderr)
 
     async def show_plugin_dependencies(self) -> None:
         """获取插件的依赖"""
@@ -392,8 +392,7 @@ class PluginTest:
                 self._log_output(f"    {', '.join(self._deps)}")
             else:
                 self._log_output(f"插件 {self.project_link} 依赖获取失败。")
-
-            self._std_output(stdout, stderr)
+                self._std_output(stdout, stderr)
 
     @property
     def plugin_list(self) -> dict[str, str]:
