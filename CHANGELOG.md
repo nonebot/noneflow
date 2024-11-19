@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ### Fixed
 
 - 修复商店测试中获取 PyPI 数据出错会直接退出的问题
+- 修复商店测试时出现缺少 author_id 报错的问题
 
 ## [4.0.1] - 2024-11-18
 
