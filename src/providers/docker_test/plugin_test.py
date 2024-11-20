@@ -171,10 +171,11 @@ def extract_version(output: str, project_link: str) -> str | None:
         return match.group(1).strip()
 
     # 匹配版本解析失败的情况
-    # 目前有很多插件都把信息填错了，没有使用 - 而是使用了 _
-    project_link = project_link.replace("_", "-")
+    # poetry 会将插件名称变成小写的，所以匹配时忽略大小写
     match = re.search(
-        rf"depends on {project_link} \(\^(\S+)\), version solving failed\.", output
+        rf"depends on {project_link} \(\^(\S+)\), version solving failed\.",
+        output,
+        re.IGNORECASE,
     )
     if match:
         return match.group(1).strip()
@@ -318,6 +319,9 @@ class PluginTest:
                 self._log_output(f"项目 {self.project_link} 创建成功。")
                 self._std_output(stdout, "")
             else:
+                # 创建失败时尝试从报错中获取插件版本号
+                self._version = extract_version(stderr, self.project_link)
+
                 self._log_output(f"项目 {self.project_link} 创建失败：")
                 self._std_output(stdout, stderr)
 
