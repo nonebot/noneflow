@@ -217,13 +217,16 @@ async def test_trigger_registry_update_skip_test(
 
 
 async def test_trigger_registry_update_bot(app: App, mocker: MockerFixture):
-    """机器人发布的情况"""
+    """机器人发布的情况
+
+    已经有相同机器人的时候，registry_update 不会影响到机器人的测试
+    """
     from src.plugins.github.models import IssueHandler, RepoInfo
     from src.plugins.github.plugins.publish.utils import trigger_registry_update
     from src.providers.validation import PublishType
 
     mock_issue = MockIssue(
-        body=MockBody(type="bot").generate(),
+        body=MockBody(type="bot", homepage="https://v2.nonebot.dev").generate(),
         number=1,
     ).as_mock(mocker)
 
@@ -243,7 +246,7 @@ async def test_trigger_registry_update_bot(app: App, mocker: MockerFixture):
                             "name": "name",
                             "desc": "desc",
                             "author": "test",
-                            "homepage": "https://nonebot.dev",
+                            "homepage": "https://v2.nonebot.dev",
                             "tags": [{"label": "test", "color": "#ffffff"}],
                             "is_official": False,
                         },
