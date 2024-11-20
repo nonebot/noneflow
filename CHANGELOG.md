@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [4.0.8] - 2024-11-20
+
 ### Fixed
 
 - 修复插件元数据异常时导致插件测试验证报错的问题
@@ -514,7 +516,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.0.7...HEAD
+[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.0.8...HEAD
+[4.0.8]: https://github.com/nonebot/noneflow/compare/v4.0.7...v4.0.8
 [4.0.7]: https://github.com/nonebot/noneflow/compare/v4.0.6...v4.0.7
 [4.0.6]: https://github.com/nonebot/noneflow/compare/v4.0.5...v4.0.6
 [4.0.5]: https://github.com/nonebot/noneflow/compare/v4.0.4...v4.0.5
