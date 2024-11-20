@@ -1,7 +1,7 @@
 {
   "metadata": {
     "name": "TREEHELP",
-    "description": "\u8ba2\u9605\u725b\u5ba2/CF/AT\u5e73\u53f0\u7684\u6bd4\u8d5b\u4fe1\u606f",
+    "desc": "\u8ba2\u9605\u725b\u5ba2/CF/AT\u5e73\u53f0\u7684\u6bd4\u8d5b\u4fe1\u606f",
     "usage": "/contest.list \u83b7\u53d6\u6240\u6709/CF/\u725b\u5ba2/AT\u5e73\u53f0\u7684\u6bd4\u8d5b\u4fe1\u606f\n/contest.subscribe \u8ba2\u9605CF/\u725b\u5ba2/AT\u5e73\u53f0\u7684\u6bd4\u8d5b\u4fe1\u606f\n/contest.update \u624b\u52a8\u66f4\u65b0\u6bd4\u8d5b\u4fe1\u606f\n",
     "type": "application",
     "homepage": "https://nonebot.dev/",

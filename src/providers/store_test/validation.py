@@ -82,7 +82,7 @@ async def validate_plugin(
     # 使用最新的插件元数据更新插件信息
     raw_data["metadata"] = bool(plugin_metadata)
     if plugin_metadata:
-        raw_data.update(plugin_metadata.model_dump())
+        raw_data.update(plugin_metadata)
 
     # 通过 Github API 获取插件作者名称
     try:

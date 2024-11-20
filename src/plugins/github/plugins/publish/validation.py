@@ -108,7 +108,7 @@ async def validate_plugin_info_from_issue(
         metadata = test_result.metadata
         if metadata:
             # 从插件测试结果中获得元数据
-            raw_data.update(metadata.model_dump())
+            raw_data.update(metadata)
 
         raw_data["load"] = test_result.load
         raw_data["test_output"] = test_output
@@ -130,7 +130,7 @@ async def validate_plugin_info_from_issue(
     if not result.valid_data.get("metadata") and not skip_test:
         # 如果没有跳过测试且缺少插件元数据，则跳过元数据相关的错误
         # 因为这个时候这些项都会报错，错误在此时没有意义
-        metadata_keys = Metadata.model_fields.keys()
+        metadata_keys = Metadata.__annotations__.keys()
         # 如果是重复报错，error["loc"] 是 ()
         result.errors = [
             error

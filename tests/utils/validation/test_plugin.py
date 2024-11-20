@@ -139,7 +139,7 @@ async def test_plugin_info_validation_failed(mocked_api: MockRouter) -> None:
 async def test_plugin_info_validation_plugin_load_failed(
     mocked_api: MockRouter,
 ) -> None:
-    """测试验证失败的情况"""
+    """插件无法正常加载的情况"""
     from src.providers.validation import PublishType, ValidationDict, validate_info
 
     data = generate_plugin_data(load=False, metadata=False)
@@ -198,3 +198,84 @@ async def test_plugin_info_validation_plugin_load_failed(
     )
 
     assert mocked_api["homepage"].called
+
+
+async def test_plugin_info_validation_plugin_invalid_metadata(
+    mocked_api: MockRouter,
+) -> None:
+    """获取到的插件元数据无效的情况"""
+    from src.providers.validation import PublishType, ValidationDict, validate_info
+
+    data = generate_plugin_data(
+        homepage=12,  # type: ignore
+        type=True,  # type: ignore
+        supported_adapters={},
+    )
+
+    result = validate_info(PublishType.PLUGIN, data, [])
+
+    assert result == snapshot(
+        ValidationDict(
+            errors=[
+                {
+                    "type": "homepage",
+                    "loc": ("homepage",),
+                    "msg": "项目主页无法访问",
+                    "input": 12,
+                    "ctx": {
+                        "status_code": -1,
+                        "msg": "Invalid type for url.  Expected str or httpx.URL, got <class 'int'>: 12",
+                    },
+                },
+                {
+                    "type": "plugin.type",
+                    "loc": ("type",),
+                    "msg": "插件类型只能是 application 或 library",
+                    "input": True,
+                },
+                {
+                    "type": "set_type",
+                    "loc": ("supported_adapters",),
+                    "msg": "值不是合法的集合",
+                    "input": {},
+                },
+            ],
+            info=None,
+            raw_data={
+                "author": "author",
+                "module_name": "module_name",
+                "project_link": "project_link",
+                "tags": '[{"label": "test", "color": "#ffffff"}]',
+                "name": "name",
+                "desc": "desc",
+                "homepage": 12,
+                "type": True,
+                "supported_adapters": {},
+                "skip_test": False,
+                "metadata": True,
+                "author_id": 1,
+                "load": True,
+                "version": "0.0.1",
+                "test_output": "test_output",
+                "time": "2023-09-01T00:00:00+00:00Z",
+            },
+            type=PublishType.PLUGIN,
+            valid_data={
+                "module_name": "module_name",
+                "project_link": "project_link",
+                "time": "2023-09-01T00:00:00+00:00Z",
+                "name": "name",
+                "desc": "desc",
+                "author": "author",
+                "author_id": 1,
+                "tags": [{"label": "test", "color": "#ffffff"}],
+                "load": True,
+                "metadata": True,
+                "skip_test": False,
+                "version": "0.0.1",
+                "test_output": "test_output",
+            },
+        )
+    )
+
+    assert not mocked_api["homepage"].called

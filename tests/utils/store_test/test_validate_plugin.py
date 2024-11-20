@@ -26,12 +26,7 @@ def mock_docker_result(path: Path, mocker: MockerFixture):
 
 async def test_validate_plugin(mocked_api: MockRouter, mocker: MockerFixture) -> None:
     """验证插件信息"""
-    from src.providers.models import (
-        Metadata,
-        RegistryPlugin,
-        StorePlugin,
-        StoreTestResult,
-    )
+    from src.providers.models import RegistryPlugin, StorePlugin, StoreTestResult
     from src.providers.store_test.validation import validate_plugin
 
     mock_datetime = mocker.patch("src.providers.models.datetime")
@@ -61,13 +56,18 @@ async def test_validate_plugin(mocked_api: MockRouter, mocker: MockerFixture) ->
 创建测试目录 plugin_test
       require("nonebot_plugin_alconna")\
 """,
-                "metadata": Metadata(
-                    desc="订阅牛客/CF/AT平台的比赛信息",
-                    homepage="https://nonebot.dev/",
-                    name="TREEHELP",
-                    supported_adapters=None,
-                    type="application",
-                ),
+                "metadata": {
+                    "name": "TREEHELP",
+                    "desc": "订阅牛客/CF/AT平台的比赛信息",
+                    "usage": """\
+/contest.list 获取所有/CF/牛客/AT平台的比赛信息
+/contest.subscribe 订阅CF/牛客/AT平台的比赛信息
+/contest.update 手动更新比赛信息
+""",
+                    "type": "application",
+                    "homepage": "https://nonebot.dev/",
+                    "supported_adapters": None,
+                },
             },
             results={"validation": True, "load": True, "metadata": True},
             test_env={"unknown": True},
@@ -103,7 +103,6 @@ async def test_validate_plugin_with_previous(
 
     需要能够正常更新 author_id, tags 和 is_official 等信息
     """
-    from src.providers.docker_test import Metadata
     from src.providers.models import Color, RegistryPlugin, StoreTestResult, Tag
     from src.providers.store_test.validation import StorePlugin, validate_plugin
 
@@ -153,13 +152,18 @@ async def test_validate_plugin_with_previous(
 创建测试目录 plugin_test
       require("nonebot_plugin_alconna")\
 """,
-                "metadata": Metadata(
-                    desc="订阅牛客/CF/AT平台的比赛信息",
-                    homepage="https://nonebot.dev/",
-                    name="TREEHELP",
-                    supported_adapters=None,
-                    type="application",
-                ),
+                "metadata": {
+                    "name": "TREEHELP",
+                    "desc": "订阅牛客/CF/AT平台的比赛信息",
+                    "usage": """\
+/contest.list 获取所有/CF/牛客/AT平台的比赛信息
+/contest.subscribe 订阅CF/牛客/AT平台的比赛信息
+/contest.update 手动更新比赛信息
+""",
+                    "type": "application",
+                    "homepage": "https://nonebot.dev/",
+                    "supported_adapters": None,
+                },
             },
             results={"validation": True, "load": True, "metadata": True},
             test_env={"unknown": True},
@@ -196,7 +200,7 @@ async def test_validate_plugin_skip_test(
 
     如果插件之前是跳过测试的，如果插件测试成功，应将 skip_test 设置为 False。
     """
-    from src.providers.models import Metadata, RegistryPlugin, StoreTestResult
+    from src.providers.models import RegistryPlugin, StoreTestResult
     from src.providers.store_test.validation import StorePlugin, validate_plugin
 
     mock_datetime = mocker.patch("src.providers.models.datetime")
@@ -226,13 +230,18 @@ async def test_validate_plugin_skip_test(
 创建测试目录 plugin_test
       require("nonebot_plugin_alconna")\
 """,
-                "metadata": Metadata(
-                    desc="订阅牛客/CF/AT平台的比赛信息",
-                    homepage="https://nonebot.dev/",
-                    name="TREEHELP",
-                    supported_adapters=None,
-                    type="application",
-                ),
+                "metadata": {
+                    "name": "TREEHELP",
+                    "desc": "订阅牛客/CF/AT平台的比赛信息",
+                    "usage": """\
+/contest.list 获取所有/CF/牛客/AT平台的比赛信息
+/contest.subscribe 订阅CF/牛客/AT平台的比赛信息
+/contest.update 手动更新比赛信息
+""",
+                    "type": "application",
+                    "homepage": "https://nonebot.dev/",
+                    "supported_adapters": None,
+                },
             },
             results={"validation": True, "load": True, "metadata": True},
             test_env={"unknown": True},
