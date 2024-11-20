@@ -228,6 +228,7 @@ async def trigger_registry_update(handler: IssueHandler, publish_type: PublishTy
 
     if not result.valid or not result.info:
         logger.error("信息验证失败，跳过触发商店列表更新")
+        logger.debug(f"验证结果: {result}")
         return
 
     # 触发商店列表更新
