@@ -14,7 +14,7 @@ from src.providers.validation import (
 )
 from src.providers.validation.utils import get_author_name
 
-from .utils import get_latest_version, get_upload_time
+from .utils import get_upload_time
 
 
 async def validate_plugin(
@@ -35,7 +35,6 @@ async def validate_plugin(
     module_name = store_plugin.module_name
 
     # 从 PyPI 获取信息
-    pypi_version = get_latest_version(project_link)
     pypi_time = get_upload_time(project_link)
 
     # 测试插件
@@ -78,6 +77,7 @@ async def validate_plugin(
     raw_data["skip_test"] = should_skip
     raw_data["load"] = plugin_test_load
     raw_data["test_output"] = plugin_test_output
+    raw_data["version"] = plugin_test_version
 
     # 使用最新的插件元数据更新插件信息
     raw_data["metadata"] = bool(plugin_metadata)
@@ -93,7 +93,6 @@ async def validate_plugin(
     raw_data["author"] = author_name
 
     # 更新插件信息
-    raw_data["version"] = plugin_test_version or pypi_version
     raw_data["time"] = pypi_time
 
     # 验证插件信息
