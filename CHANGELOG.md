@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ### Fixed
 
 - 修复插件测试获取到的插件元数据主页为空时报错的问题
+- 使用规范化的名称匹配插件版本号
 
 ## [4.0.6] - 2024-11-20
 

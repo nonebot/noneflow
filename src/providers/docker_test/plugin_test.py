@@ -161,6 +161,9 @@ def get_plugin_list() -> dict[str, str]:
     return {plugin["project_link"]: plugin["module_name"] for plugin in plugins}
 
 
+_canonicalize_regex = re.compile(r"[-_.]+")
+
+
 def extract_version(output: str, project_link: str) -> str | None:
     """提取插件版本"""
     output = strip_ansi(output)
@@ -170,22 +173,19 @@ def extract_version(output: str, project_link: str) -> str | None:
     if match:
         return match.group(1).strip()
 
+    # poetry 使用 packaging.utils 中的 canonicalize_name 规范化名称
+    # 在这里我们也需要规范化名称，以正确匹配版本号
+    project_link = _canonicalize_regex.sub("-", project_link).lower()
+
     # 匹配版本解析失败的情况
-    # poetry 会将插件名称变成小写的，所以匹配时忽略大小写
     match = re.search(
-        rf"depends on {project_link} \(\^(\S+)\), version solving failed\.",
-        output,
-        re.IGNORECASE,
+        rf"depends on {project_link} \(\^(\S+)\), version solving failed\.", output
     )
     if match:
         return match.group(1).strip()
 
     # 插件安装失败的情况
-    match = re.search(
-        rf"Using version \^(\S+) for {project_link}",
-        output,
-        re.IGNORECASE,
-    )
+    match = re.search(rf"Using version \^(\S+) for {project_link}", output)
     if match:
         return match.group(1).strip()
 

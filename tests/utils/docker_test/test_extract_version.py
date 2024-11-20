@@ -106,6 +106,10 @@ def test_extract_version_install_failed(tmp_path: Path):
 
     assert version == "1.6.16"
 
+    version = extract_version(output, "nonebot_plugin_ncm")
+
+    assert version == "1.6.16"
+
     version = extract_version(output, "nonebot2")
 
     assert version is None
