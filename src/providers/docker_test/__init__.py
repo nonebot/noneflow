@@ -1,9 +1,9 @@
 import json
 from typing import TypedDict
 
+import docker
 from pydantic import BaseModel, Field, SkipValidation, field_validator
 
-import docker
 from src.providers.constants import DOCKER_IMAGES, REGISTRY_PLUGINS_URL
 
 
