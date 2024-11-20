@@ -102,7 +102,7 @@ async def render_summary(test_result: DockerTestResult, output: str, project_lin
         version=test_result.version,
         load=test_result.load,
         run=test_result.run,
-        metadata=dumps_json(test_result.metadata.model_dump(), False)
+        metadata=dumps_json(test_result.metadata, False)
         if test_result.metadata
         else {},
         output=output,

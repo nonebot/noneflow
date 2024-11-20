@@ -1,41 +1,20 @@
 import json
-from typing import Any
+from typing import TypedDict
 
 import docker
-from pydantic import BaseModel, Field, field_validator, model_validator
-from pydantic_core import PydanticCustomError
-from pyjson5 import Json5DecoderException
+from pydantic import BaseModel, Field, SkipValidation, field_validator
 
 from src.providers.constants import DOCKER_IMAGES, REGISTRY_PLUGINS_URL
-from src.providers.utils import load_json
 
 
-class Metadata(BaseModel):
+class Metadata(TypedDict):
     """插件元数据"""
 
     name: str
     desc: str
-    homepage: str | None = None
-    type: str | None = None
-    supported_adapters: list[str] | None = None
-
-    @model_validator(mode="before")
-    @classmethod
-    def model_validator(cls, data: dict[str, Any]):
-        if data.get("desc") is None:
-            data["desc"] = data.get("description")
-        return data
-
-    @field_validator("supported_adapters", mode="before")
-    @classmethod
-    def supported_adapters_validator(cls, v: list[str] | str | None):
-        if isinstance(v, str):
-            try:
-                v = load_json(v)
-            except Json5DecoderException:
-                raise PydanticCustomError("json_type", "JSON 格式不合法")
-
-        return v
+    homepage: str | None
+    type: str | None
+    supported_adapters: list[str] | None
 
 
 class DockerTestResult(BaseModel):
@@ -47,15 +26,8 @@ class DockerTestResult(BaseModel):
     config: str = ""
     # 测试环境 python==3.10 pytest==6.2.5 nonebot2==2.0.0a1 ...
     test_env: str = Field(default="unknown")
-    metadata: Metadata | None
+    metadata: SkipValidation[Metadata] | None
     outputs: list[str]
-
-    @field_validator("metadata", mode="before")
-    @classmethod
-    def metadata_validator(cls, v: Any):
-        if v:
-            return v
-        return None
 
     @field_validator("config", mode="before")
     @classmethod

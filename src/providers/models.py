@@ -353,7 +353,7 @@ class StoreTestResult(BaseModel):
                     homepage=info.homepage,
                     type=info.type,
                     supported_adapters=info.supported_adapters,
-                ).model_dump(),
+                ),
             },
         )
 

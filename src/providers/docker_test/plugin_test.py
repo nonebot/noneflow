@@ -100,17 +100,16 @@ class Driver(BaseDriver, ASGIMixin, HTTPClientMixin, WebSocketClientMixin):
 """
 
 RUNNER_SCRIPT = """import json
-import os
 
 from nonebot import init, load_plugin, logger, require
 from pydantic import BaseModel
 
 
 class SetEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, set):
-            return list(obj)
-        return json.JSONEncoder.default(self, obj)
+    def default(self, o):
+        if isinstance(o, set):
+            return list(o)
+        return json.JSONEncoder.default(self, o)
 
 
 init()
@@ -122,7 +121,7 @@ else:
     if plugin.metadata:
         metadata = {{
             "name": plugin.metadata.name,
-            "description": plugin.metadata.description,
+            "desc": plugin.metadata.description,
             "usage": plugin.metadata.usage,
             "type": plugin.metadata.type,
             "homepage": plugin.metadata.homepage,
@@ -264,7 +263,7 @@ class PluginTest:
             )
             await self.run_poetry_project()
 
-        metadata = {}
+        metadata = None
         metadata_path = self.path / "metadata.json"
         if metadata_path.exists():
             with open(self.path / "metadata.json", encoding="utf-8") as f:
@@ -373,7 +372,7 @@ class PluginTest:
                 f.write(
                     RUNNER_SCRIPT.format(
                         self.module_name,
-                        "\n".join([f"require('{i}')" for i in self._deps]),
+                        "\n".join([f'require("{i}")' for i in self._deps]),
                     )
                 )
 
