@@ -128,7 +128,10 @@ else:
             "supported_adapters": plugin.metadata.supported_adapters,
         }}
         with open("metadata.json", "w", encoding="utf-8") as f:
-            f.write(f"{{json.dumps(metadata, cls=SetEncoder)}}")
+            try:
+                f.write(f"{{json.dumps(metadata, cls=SetEncoder)}}")
+            except Exception:
+                f.write("{{}}")
 
         if plugin.metadata.config and not issubclass(plugin.metadata.config, BaseModel):
             logger.error("插件配置项不是 Pydantic BaseModel 的子类")
