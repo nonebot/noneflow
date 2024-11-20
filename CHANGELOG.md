@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 修复插件元数据不合法时 metadata.json 为空的问题
+
 ## [4.0.8] - 2024-11-20
 
 ### Fixed
