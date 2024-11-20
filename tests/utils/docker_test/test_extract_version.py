@@ -28,7 +28,7 @@ required by
     assert version == "2.0.1"
 
 
-def test_extract_version_failed(tmp_path: Path):
+def test_extract_version_resolve_failed(tmp_path: Path):
     """版本解析失败的情况"""
     from src.providers.docker_test.plugin_test import extract_version
 
@@ -70,6 +70,41 @@ def test_extract_version_failed(tmp_path: Path):
     version = extract_version(output, "ELF-RSS")
 
     assert version == "2.6.25"
+
+    version = extract_version(output, "nonebot2")
+
+    assert version is None
+
+
+def test_extract_version_install_failed(tmp_path: Path):
+    """安装插件失败的情况"""
+    from src.providers.docker_test.plugin_test import extract_version
+
+    output = """
+项目 nonebot-plugin-ncm 创建失败：
+    Virtualenv
+    Python:         3.12.7
+    Implementation: CPython
+    Path:           NA
+    Executable:     NA
+
+    Base
+    Platform:   linux
+    OS:         posix
+    Python:     3.12.7
+    Path:       /usr/local
+    Executable: /usr/local/bin/python3.12
+    Using version ^1.6.16 for nonebot-plugin-ncm
+
+    Updating dependencies
+    Resolving dependencies...
+
+    Package operations: 32 installs, 0 updates, 0 removals
+"""
+
+    version = extract_version(output, "nonebot-plugin-ncm")
+
+    assert version == "1.6.16"
 
     version = extract_version(output, "nonebot2")
 

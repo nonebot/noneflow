@@ -180,6 +180,15 @@ def extract_version(output: str, project_link: str) -> str | None:
     if match:
         return match.group(1).strip()
 
+    # 插件安装失败的情况
+    match = re.search(
+        rf"Using version \^(\S+) for {project_link}",
+        output,
+        re.IGNORECASE,
+    )
+    if match:
+        return match.group(1).strip()
+
 
 class PluginTest:
     def __init__(self, project_info: str, config: str | None = None) -> None:
@@ -320,7 +329,7 @@ class PluginTest:
                 self._std_output(stdout, "")
             else:
                 # 创建失败时尝试从报错中获取插件版本号
-                self._version = extract_version(stderr, self.project_link)
+                self._version = extract_version(stdout + stderr, self.project_link)
 
                 self._log_output(f"项目 {self.project_link} 创建失败：")
                 self._std_output(stdout, stderr)
