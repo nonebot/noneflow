@@ -216,13 +216,19 @@ async def trigger_registry_update(handler: IssueHandler, publish_type: PublishTy
     issue = handler.issue
 
     # 重新验证信息
+    # 这个时候已经合并了发布信息，如果还加载之前的数据则会报错重复
+    # 所以这里不能加载之前的数据
     match publish_type:
         case PublishType.ADAPTER:
-            result = await validate_adapter_info_from_issue(issue)
+            result = await validate_adapter_info_from_issue(
+                issue, load_previous_data=False
+            )
         case PublishType.BOT:
-            result = await validate_bot_info_from_issue(issue)
+            result = await validate_bot_info_from_issue(issue, load_previous_data=False)
         case PublishType.PLUGIN:
-            result = await validate_plugin_info_from_issue(handler)
+            result = await validate_plugin_info_from_issue(
+                handler, load_previous_data=False
+            )
         case _:
             raise ValueError("暂不支持的发布类型")
 

@@ -48,7 +48,9 @@ def add_step_summary(summary: str):
 
 
 async def validate_plugin_info_from_issue(
-    handler: IssueHandler, skip_test: bool | None = None
+    handler: IssueHandler,
+    skip_test: bool | None = None,
+    load_previous_data: bool = True,
 ) -> ValidationDict:
     """从议题中获取插件信息，并且运行插件测试加载且获取插件元信息后进行验证"""
     body = handler.issue.body if handler.issue.body else ""
@@ -71,7 +73,11 @@ async def validate_plugin_info_from_issue(
     test_config: str = raw_data.get("test_config", "")
 
     # 获取插件上次的数据
-    previous_data = load_json_from_file(plugin_config.input_config.plugin_path)
+    previous_data = (
+        load_json_from_file(plugin_config.input_config.plugin_path)
+        if load_previous_data
+        else []
+    )
 
     # 决定是否跳过插件测试
     # 因为在上一步可能已经知道了是否跳过插件测试，所以这里可以传入
@@ -144,7 +150,9 @@ async def validate_plugin_info_from_issue(
     return result
 
 
-async def validate_adapter_info_from_issue(issue: Issue) -> ValidationDict:
+async def validate_adapter_info_from_issue(
+    issue: Issue, load_previous_data: bool = True
+) -> ValidationDict:
     """从议题中提取适配器信息"""
     body = issue.body if issue.body else ""
     raw_data: dict[str, Any] = extract_issue_info_from_issue(
@@ -160,12 +168,19 @@ async def validate_adapter_info_from_issue(issue: Issue) -> ValidationDict:
     )
     raw_data.update(AuthorInfo.from_issue(issue).model_dump())
 
-    previous_data = load_json_from_file(plugin_config.input_config.adapter_path)
+    previous_data = (
+        load_json_from_file(plugin_config.input_config.adapter_path)
+        if load_previous_data
+        else []
+    )
 
     return validate_info(PublishType.ADAPTER, raw_data, previous_data)
 
 
-async def validate_bot_info_from_issue(issue: Issue) -> ValidationDict:
+async def validate_bot_info_from_issue(
+    issue: Issue,
+    load_previous_data: bool = True,
+) -> ValidationDict:
     """从议题中提取机器人信息"""
     body = issue.body if issue.body else ""
     raw_data: dict[str, Any] = extract_issue_info_from_issue(
@@ -180,6 +195,10 @@ async def validate_bot_info_from_issue(issue: Issue) -> ValidationDict:
 
     raw_data.update(AuthorInfo.from_issue(issue).model_dump())
 
-    previous_data = load_json_from_file(plugin_config.input_config.bot_path)
+    previous_data = (
+        load_json_from_file(plugin_config.input_config.bot_path)
+        if load_previous_data
+        else []
+    )
 
     return validate_info(PublishType.BOT, raw_data, previous_data)

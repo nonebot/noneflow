@@ -178,6 +178,7 @@ def mocked_api(respx_mock: MockRouter):
     )
     respx_mock.get("https://www.baidu.com", name="homepage_failed").respond(404)
     respx_mock.get("https://nonebot.dev/", name="homepage").respond()
+    respx_mock.get("https://v2.nonebot.dev", name="homepage").respond()
     respx_mock.get(STORE_ADAPTERS_URL, name="store_adapters").respond(
         json=[
             {
