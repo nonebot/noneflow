@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [4.0.9] - 2024-11-20
+
 ### Fixed
 
 - 修复插件元数据不合法时 metadata.json 为空的问题
@@ -520,7 +522,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.0.8...HEAD
+[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.0.9...HEAD
+[4.0.9]: https://github.com/nonebot/noneflow/compare/v4.0.8...v4.0.9
 [4.0.8]: https://github.com/nonebot/noneflow/compare/v4.0.7...v4.0.8
 [4.0.7]: https://github.com/nonebot/noneflow/compare/v4.0.6...v4.0.7
 [4.0.6]: https://github.com/nonebot/noneflow/compare/v4.0.5...v4.0.6
