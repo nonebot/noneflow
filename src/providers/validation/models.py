@@ -187,7 +187,8 @@ class PublishInfo(abc.ABC, BaseModel):
     @classmethod
     def tags_validator(cls, v: str | list[Any]) -> list[dict[str, str]]:
         if not isinstance(v, str):
-            return v
+            # 将值转成 Python dict，避免 model_type 报错
+            return to_jsonable_python(v)
 
         try:
             return load_json(v)

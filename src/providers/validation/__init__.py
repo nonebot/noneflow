@@ -3,7 +3,7 @@
 from typing import Any
 
 from pydantic import ValidationError
-from pydantic_core import ErrorDetails, to_jsonable_python
+from pydantic_core import ErrorDetails
 
 from .models import (
     AdapterPublishInfo,
@@ -61,7 +61,7 @@ def validate_info(
     return ValidationDict(
         type=publish_type,
         raw_data=raw_data,
-        valid_data=to_jsonable_python(context.get("valid_data", {})),
+        valid_data=context.get("valid_data", {}),
         info=info,
         errors=errors,
     )
