@@ -15,7 +15,7 @@ class Metadata(BaseModel):
 
     name: str
     desc: str
-    homepage: str
+    homepage: str | None = None
     type: str | None = None
     supported_adapters: list[str] | None = None
 
