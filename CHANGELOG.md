@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [4.0.5] - 2024-11-20
+
 ### Fixed
 
 - 修复商店测试时标签验证出错的问题
@@ -494,7 +496,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.0.4...HEAD
+[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.0.5...HEAD
+[4.0.5]: https://github.com/nonebot/noneflow/compare/v4.0.4...v4.0.5
 [4.0.4]: https://github.com/nonebot/noneflow/compare/v4.0.3...v4.0.4
 [4.0.3]: https://github.com/nonebot/noneflow/compare/v4.0.2...v4.0.3
 [4.0.2]: https://github.com/nonebot/noneflow/compare/v4.0.1...v4.0.2
