@@ -100,7 +100,7 @@ async def test_validate_info_from_issue_plugin(
 
     assert result.valid
     assert mocked_api["homepage"].called
-    assert plugin_config.github_step_summary.read_text() == snapshot(
+    assert plugin_config.github_step_summary.read_text(encoding="utf-8") == snapshot(
         """\
 # 📃 插件 project_link (1.0.0)
 

@@ -104,7 +104,7 @@ async def test_validate_plugin_with_previous(
     需要能够正常更新 author_id, tags 和 is_official 等信息
     """
     from src.providers.docker_test import Metadata
-    from src.providers.models import RegistryPlugin, StoreTestResult
+    from src.providers.models import Color, RegistryPlugin, StoreTestResult, Tag
     from src.providers.store_test.validation import StorePlugin, validate_plugin
 
     mock_datetime = mocker.patch("src.providers.models.datetime")
@@ -119,7 +119,7 @@ async def test_validate_plugin_with_previous(
         module_name="module_name",
         project_link="project_link",
         author_id=1,
-        tags=[],
+        tags=[Tag(label="test", color=Color("ffffff"))],
         is_official=True,
     )
 
@@ -167,23 +167,23 @@ async def test_validate_plugin_with_previous(
         )
     )
 
-    assert new_plugin == snapshot(
-        RegistryPlugin(
-            author="he0119",
-            desc="订阅牛客/CF/AT平台的比赛信息",
-            homepage="https://nonebot.dev/",
-            is_official=True,
-            module_name="module_name",
-            name="TREEHELP",
-            project_link="project_link",
-            skip_test=False,
-            supported_adapters=None,
-            tags=[],
-            time="2023-09-01T00:00:00+00:00Z",
-            type="application",
-            valid=True,
-            version="0.2.0",
-        )
+    assert new_plugin.model_dump() == snapshot(
+        {
+            "module_name": "module_name",
+            "project_link": "project_link",
+            "name": "TREEHELP",
+            "desc": "订阅牛客/CF/AT平台的比赛信息",
+            "author": "he0119",
+            "homepage": "https://nonebot.dev/",
+            "tags": [{"label": "test", "color": "#ffffff"}],
+            "is_official": True,
+            "type": "application",
+            "supported_adapters": None,
+            "valid": True,
+            "time": "2023-09-01T00:00:00+00:00Z",
+            "version": "0.2.0",
+            "skip_test": False,
+        }
     )
 
     assert mocked_api["homepage"].called

@@ -43,7 +43,7 @@ def strip_ansi(text: str | None) -> str:
 
 def add_step_summary(summary: str):
     """添加作业摘要"""
-    with plugin_config.github_step_summary.open("a") as f:
+    with plugin_config.github_step_summary.open("a", encoding="utf-8") as f:
         f.write(summary + "\n")
 
 
