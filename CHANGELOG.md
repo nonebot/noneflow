@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 修复商店测试时标签验证出错的问题
+
 ## [4.0.4] - 2024-11-20
 
 ### Fixed

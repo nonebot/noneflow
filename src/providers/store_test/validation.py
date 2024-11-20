@@ -3,6 +3,7 @@
 from typing import Any
 
 import click
+from pydantic_core import to_jsonable_python
 
 from src.providers.docker_test import DockerPluginTest
 from src.providers.models import RegistryPlugin, StorePlugin, StoreTestResult
@@ -68,7 +69,8 @@ async def validate_plugin(
         raw_data.update(
             {
                 "author_id": store_plugin.author_id,
-                "tags": store_plugin.tags,
+                # 必须转成 Python 的 dict，如果 tags 为 list[Tag] 无法进行验证
+                "tags": to_jsonable_python(store_plugin.tags),
                 "is_official": store_plugin.is_official,
             }
         )
