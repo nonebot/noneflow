@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [4.0.6] - 2024-11-20
+
 ### Fixed
 
 - 修复创建环境报错时无法匹配到版本号的问题
@@ -500,7 +502,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.0.5...HEAD
+[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.0.6...HEAD
+[4.0.6]: https://github.com/nonebot/noneflow/compare/v4.0.5...v4.0.6
 [4.0.5]: https://github.com/nonebot/noneflow/compare/v4.0.4...v4.0.5
 [4.0.4]: https://github.com/nonebot/noneflow/compare/v4.0.3...v4.0.4
 [4.0.3]: https://github.com/nonebot/noneflow/compare/v4.0.2...v4.0.3
