@@ -161,10 +161,21 @@ def get_plugin_list() -> dict[str, str]:
     with urlopen(PLUGINS_URL) as response:
         plugins = json.loads(response.read())
 
-    return {plugin["project_link"]: plugin["module_name"] for plugin in plugins}
+    return {
+        canonicalize_name(plugin["project_link"]): plugin["module_name"]
+        for plugin in plugins
+    }
 
 
 _canonicalize_regex = re.compile(r"[-_.]+")
+
+
+def canonicalize_name(name: str) -> str:
+    """规范化名称
+
+    packaging.utils 中的 canonicalize_name 实现
+    """
+    return _canonicalize_regex.sub("-", name).lower()
 
 
 def extract_version(output: str, project_link: str) -> str | None:
@@ -178,7 +189,7 @@ def extract_version(output: str, project_link: str) -> str | None:
 
     # poetry 使用 packaging.utils 中的 canonicalize_name 规范化名称
     # 在这里我们也需要规范化名称，以正确匹配版本号
-    project_link = _canonicalize_regex.sub("-", project_link).lower()
+    project_link = canonicalize_name(project_link)
 
     # 匹配版本解析失败的情况
     match = re.search(
@@ -191,6 +202,20 @@ def extract_version(output: str, project_link: str) -> str | None:
     match = re.search(rf"Using version \^(\S+) for {project_link}", output)
     if match:
         return match.group(1).strip()
+
+
+def parse_requirements(requirements: str) -> dict[str, str]:
+    """解析 requirements.txt 文件"""
+    # anyio==3.6.2 ; python_version >= "3.11" and python_version < "4.0"
+    # pydantic[dotenv]==1.10.6 ; python_version >= "3.10" and python_version < "4.0"
+    results = {}
+    for line in requirements.strip().splitlines():
+        match = re.match(r"^(.+?)(?:\[.+\])?==(.+) ;", line)
+        if match:
+            package_name = match.group(1)
+            version = match.group(2)
+            results[package_name] = version
+    return results
 
 
 class PluginTest:
@@ -215,9 +240,7 @@ class PluginTest:
 
         # 插件测试目录
         self.test_dir = Path("plugin_test")
-        self.test_env = [
-            f"python=={sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.minor}"
-        ]
+        self.test_env = []
 
     @property
     def key(self) -> str:
@@ -405,10 +428,9 @@ class PluginTest:
 
             if code:
                 self._log_output(f"插件 {self.project_link} 依赖的插件如下：")
-                for i in stdout.strip().splitlines():
-                    module_name = self._get_plugin_module_name(i)
-                    if module_name:
-                        self._deps.append(module_name)
+                requirements = parse_requirements(stdout)
+                self._deps = self._get_deps(requirements)
+                self.test_env = self._get_test_env(requirements)
                 self._log_output(f"    {', '.join(self._deps)}")
             else:
                 self._log_output(f"插件 {self.project_link} 依赖获取失败。")
@@ -431,16 +453,32 @@ class PluginTest:
         for i in _err:
             self._log_output(f"    {i}")
 
-    def _get_plugin_module_name(self, require: str) -> str | None:
-        """解析插件的依赖名称"""
-        # anyio==3.6.2 ; python_version >= "3.11" and python_version < "4.0"
-        # pydantic[dotenv]==1.10.6 ; python_version >= "3.10" and python_version < "4.0"
-        match = re.match(r"^(.+?)(?:\[.+\])?==", require.strip())
-        if match:
-            package_name = match.group(1)
-            # 不用包括自己
-            if package_name in self.plugin_list and package_name != self.project_link:
-                return self.plugin_list[package_name]
+    def _get_deps(self, requirements: dict[str, str]) -> list[str]:
+        """获取插件依赖"""
+        deps = []
+        for package_name in requirements:
+            if (
+                package_name in self.plugin_list
+                # 不用包括插件自己
+                and package_name != canonicalize_name(self.project_link)
+            ):
+                module_name = self.plugin_list[package_name]
+                deps.append(module_name)
+        return deps
+
+    def _get_test_env(self, requirements: dict[str, str]) -> list[str]:
+        """获取测试环境"""
+        # python 版本
+        envs = [
+            f"python=={sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.minor}"
+        ]
+        # 特定插件依赖
+        # 当前仅需记录 nonebot2 和 pydantic 的版本
+        if "nonebot2" in requirements:
+            envs.append(f"nonebot2=={requirements['nonebot2']}")
+        if "pydantic" in requirements:
+            envs.append(f"pydantic=={requirements['pydantic']}")
+        return envs
 
 
 def main():
