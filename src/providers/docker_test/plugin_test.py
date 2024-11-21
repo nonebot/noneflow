@@ -14,6 +14,7 @@ import asyncio
 import json
 import os
 import re
+import sys
 from asyncio import create_subprocess_shell, subprocess
 from pathlib import Path
 from urllib.request import urlopen
@@ -214,6 +215,9 @@ class PluginTest:
 
         # 插件测试目录
         self.test_dir = Path("plugin_test")
+        self.test_env = [
+            f"python=={sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.minor}"
+        ]
 
     @property
     def key(self) -> str:
@@ -282,7 +286,9 @@ class PluginTest:
                     "run": self._create,
                     "version": self._version,
                     "config": self.config,
-                }
+                    "test_env": " ".join(self.test_env),
+                },
+                ensure_ascii=False,
             )
         )
 
@@ -328,7 +334,7 @@ class PluginTest:
 
             if self._create:
                 self._log_output(f"项目 {self.project_link} 创建成功。")
-                self._std_output(stdout, "")
+                self._std_output(stdout)
             else:
                 # 创建失败时尝试从报错中获取插件版本号
                 self._version = extract_version(stdout + stderr, self.project_link)
@@ -352,7 +358,7 @@ class PluginTest:
 
                 # 记录插件信息至输出
                 self._log_output(f"插件 {self.project_link} 的信息如下：")
-                self._std_output(stdout, "")
+                self._std_output(stdout)
             else:
                 self._log_output(f"插件 {self.project_link} 信息获取失败。")
                 self._std_output(stdout, stderr)
@@ -387,7 +393,7 @@ class PluginTest:
 
             if self._run:
                 self._log_output(f"插件 {self.module_name} 加载正常：")
-                self._std_output(stdout, "")
+                self._std_output(stdout)
             else:
                 self._log_output(f"插件 {self.module_name} 加载出错：")
                 self._std_output(stdout, stderr)
@@ -410,29 +416,23 @@ class PluginTest:
 
     @property
     def plugin_list(self) -> dict[str, str]:
-        """
-        获取插件列表
-        """
+        """获取插件列表"""
         if self._plugin_list is None:
             self._plugin_list = get_plugin_list()
         return self._plugin_list
 
-    def _std_output(self, stdout: str, stderr: str):
-        """
-        将标准输出流与标准错误流记录并输出
-        """
+    def _std_output(self, stdout: str, stderr: str = ""):
+        """将标准输出流与标准错误流记录并输出"""
         _out = stdout.strip().splitlines()
         _err = stderr.strip().splitlines()
+
         for i in _out:
             self._log_output(f"    {i}")
-
         for i in _err:
             self._log_output(f"    {i}")
 
     def _get_plugin_module_name(self, require: str) -> str | None:
-        """
-        解析插件的依赖名称
-        """
+        """解析插件的依赖名称"""
         # anyio==3.6.2 ; python_version >= "3.11" and python_version < "4.0"
         # pydantic[dotenv]==1.10.6 ; python_version >= "3.10" and python_version < "4.0"
         match = re.match(r"^(.+?)(?:\[.+\])?==", require.strip())
@@ -444,10 +444,10 @@ class PluginTest:
 
 
 def main():
-    """
-    根据传入的环境变量 PLUGIN_INFO 和 PLUGIN_CONFIG 进行测试
+    """根据传入的环境变量进行测试
 
     PLUGIN_INFO 即为该插件的 KEY
+    PLUGIN_CONFIG 即为该插件的配置
     """
 
     plugin_info = os.environ.get("PLUGIN_INFO", "")
