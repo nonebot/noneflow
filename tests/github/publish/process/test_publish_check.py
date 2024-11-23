@@ -1244,9 +1244,6 @@ async def test_convert_pull_request_to_draft(
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        # event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
-        # event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
-        # assert isinstance(event, IssuesOpened)
         event = get_mock_event(IssuesOpened)
 
         ctx.should_call_api(
@@ -1388,9 +1385,6 @@ async def test_process_publish_check_ready_for_review(
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        # event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
-        # event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
-        # assert isinstance(event, IssuesOpened)
         event = get_mock_event(IssuesOpened)
 
         ctx.should_call_api(

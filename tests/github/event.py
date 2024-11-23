@@ -24,17 +24,17 @@ EVENT_INFO = {
 }
 
 
-def get_mock_event(event_type: type[T], path_name: str = "", id: str = "1") -> T:
+def get_mock_event(event_type: type[T], filename: str = "", id: str = "1") -> T:
     """通过事件类型获取事件对象"""
 
     if event_type not in EVENT_INFO:
         raise ValueError(f"Unknown event type: {event_type}")
 
-    event_name, event_path_name = EVENT_INFO[event_type]
-    if path_name:
-        event_path_name = path_name
+    event_name, _filename = EVENT_INFO[event_type]
+    if filename:
+        _filename = filename
 
-    event_path = Path(__file__).parent / "events" / f"{event_path_name}.json"
+    event_path = Path(__file__).parent / "events" / f"{_filename}.json"
     event = Adapter.payload_to_event(id, event_name, event_path.read_bytes())
 
     assert isinstance(event, event_type)
