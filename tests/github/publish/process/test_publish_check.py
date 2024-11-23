@@ -5,11 +5,12 @@ import httpx
 from githubkit import Response
 from githubkit.exception import RequestFailed
 from inline_snapshot import snapshot
-from nonebot.adapters.github import Adapter, IssueCommentCreated, IssuesOpened
+from nonebot.adapters.github import IssueCommentCreated, IssuesOpened
 from nonebug import App
 from pytest_mock import MockerFixture
 from respx import MockRouter
 
+from tests.github.event import get_mock_event
 from tests.github.utils import (
     MockBody,
     MockIssue,
@@ -61,9 +62,7 @@ async def test_bot_process_publish_check(
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
-        event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
-        assert isinstance(event, IssuesOpened)
+        event = get_mock_event(IssuesOpened)
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
@@ -252,10 +251,7 @@ async def test_adapter_process_publish_check(
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
-        event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
-
-        assert isinstance(event, IssuesOpened)
+        event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = get_issue_labels(["Adapter"])
 
         ctx.should_call_api(
@@ -465,9 +461,7 @@ async def test_edit_title(
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
-        event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
-        assert isinstance(event, IssuesOpened)
+        event = get_mock_event(IssuesOpened)
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
@@ -685,9 +679,7 @@ async def test_edit_title_too_long(
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
-        event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
-        assert isinstance(event, IssuesOpened)
+        event = get_mock_event(IssuesOpened)
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
@@ -816,9 +808,7 @@ async def test_process_publish_check_not_pass(
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
-        event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
-        assert isinstance(event, IssuesOpened)
+        event = get_mock_event(IssuesOpened)
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
@@ -919,9 +909,7 @@ async def test_comment_at_pull_request(
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = Path(__file__).parent.parent.parent / "events" / "pr-comment.json"
-        event = Adapter.payload_to_event("1", "issue_comment", event_path.read_bytes())
-        assert isinstance(event, IssueCommentCreated)
+        event = get_mock_event(IssueCommentCreated, "pr-comment")
 
         ctx.receive_event(bot, event)
 
@@ -946,9 +934,7 @@ async def test_issue_state_closed(
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
-        event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
-        assert isinstance(event, IssuesOpened)
+        event = get_mock_event(IssuesOpened)
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
@@ -993,9 +979,7 @@ async def test_not_publish_issue(
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
-        event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
-        assert isinstance(event, IssuesOpened)
+        event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = []
 
         ctx.receive_event(bot, event)
@@ -1013,11 +997,7 @@ async def test_comment_by_self(
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = (
-            Path(__file__).parent.parent.parent / "events" / "issue-comment-bot.json"
-        )
-        event = Adapter.payload_to_event("1", "issue_comment", event_path.read_bytes())
-        assert isinstance(event, IssueCommentCreated)
+        event = get_mock_event(IssueCommentCreated, "issue-comment-bot")
 
         ctx.receive_event(bot, event)
 
@@ -1064,11 +1044,7 @@ async def test_skip_plugin_check(
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = (
-            Path(__file__).parent.parent.parent / "events" / "issue-comment-skip.json"
-        )
-        event = Adapter.payload_to_event("1", "issue_comment", event_path.read_bytes())
-        assert isinstance(event, IssueCommentCreated)
+        event = get_mock_event(IssueCommentCreated, "issue-comment-skip")
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
@@ -1268,9 +1244,7 @@ async def test_convert_pull_request_to_draft(
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
-        event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
-        assert isinstance(event, IssuesOpened)
+        event = get_mock_event(IssuesOpened)
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
@@ -1411,9 +1385,7 @@ async def test_process_publish_check_ready_for_review(
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
-        event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
-        assert isinstance(event, IssuesOpened)
+        event = get_mock_event(IssuesOpened)
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",

@@ -1,9 +1,8 @@
-from pathlib import Path
-
-from nonebot.adapters.github import Adapter, PullRequestReviewSubmitted
+from nonebot.adapters.github import PullRequestReviewSubmitted
 from nonebug import App
 from pytest_mock import MockerFixture
 
+from tests.github.event import get_mock_event
 from tests.github.utils import get_github_bot
 
 
@@ -21,15 +20,7 @@ async def test_auto_merge(app: App, mocker: MockerFixture, mock_installation) ->
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = (
-            Path(__file__).parent.parent.parent
-            / "events"
-            / "pull_request_review_submitted.json"
-        )
-        event = adapter.payload_to_event(
-            "1", "pull_request_review", event_path.read_bytes()
-        )
-        assert isinstance(event, PullRequestReviewSubmitted)
+        event = get_mock_event(PullRequestReviewSubmitted)
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
@@ -94,15 +85,7 @@ async def test_auto_merge_need_rebase(
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = (
-            Path(__file__).parent.parent.parent
-            / "events"
-            / "pull_request_review_submitted.json"
-        )
-        event = Adapter.payload_to_event(
-            "1", "pull_request_review", event_path.read_bytes()
-        )
-        assert isinstance(event, PullRequestReviewSubmitted)
+        event = get_mock_event(PullRequestReviewSubmitted)
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
@@ -162,15 +145,7 @@ async def test_auto_merge_not_publish(app: App, mocker: MockerFixture) -> None:
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = (
-            Path(__file__).parent.parent.parent
-            / "events"
-            / "pull_request_review_submitted.json"
-        )
-        event = Adapter.payload_to_event(
-            "1", "pull_request_review", event_path.read_bytes()
-        )
-        assert isinstance(event, PullRequestReviewSubmitted)
+        event = get_mock_event(PullRequestReviewSubmitted)
         event.payload.pull_request.labels = []
 
         ctx.receive_event(bot, event)
@@ -192,17 +167,8 @@ async def test_auto_merge_not_member(app: App, mocker: MockerFixture) -> None:
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = (
-            Path(__file__).parent.parent.parent
-            / "events"
-            / "pull_request_review_submitted.json"
-        )
-        event = Adapter.payload_to_event(
-            "1", "pull_request_review", event_path.read_bytes()
-        )
-        assert isinstance(event, PullRequestReviewSubmitted)
+        event = get_mock_event(PullRequestReviewSubmitted)
         event.payload.review.author_association = "CONTRIBUTOR"
-
         ctx.receive_event(bot, event)
 
     # 测试 git 命令
@@ -222,15 +188,7 @@ async def test_auto_merge_not_approve(app: App, mocker: MockerFixture) -> None:
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = (
-            Path(__file__).parent.parent.parent
-            / "events"
-            / "pull_request_review_submitted.json"
-        )
-        event = Adapter.payload_to_event(
-            "1", "pull_request_review", event_path.read_bytes()
-        )
-        assert isinstance(event, PullRequestReviewSubmitted)
+        event = get_mock_event(PullRequestReviewSubmitted)
         event.payload.review.state = "commented"
 
         ctx.receive_event(bot, event)

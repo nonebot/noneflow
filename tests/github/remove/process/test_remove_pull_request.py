@@ -1,11 +1,15 @@
-from pathlib import Path
 from unittest.mock import MagicMock
 
-from nonebot.adapters.github import Adapter, PullRequestClosed
+from nonebot.adapters.github import PullRequestClosed
 from nonebug import App
 from pytest_mock import MockerFixture
 
-from tests.github.utils import MockIssue, generate_issue_body_remove, get_github_bot
+from tests.github.event import get_mock_event
+from tests.github.utils import (
+    MockIssue,
+    generate_issue_body_remove,
+    get_github_bot,
+)
 
 
 def get_pr_labels(labels: list[str]):
@@ -51,9 +55,8 @@ async def test_remove_process_pull_request(
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = Path(__file__).parent.parent.parent / "events" / "pr-close.json"
-        event = adapter.payload_to_event("1", "pull_request", event_path.read_bytes())
-        assert isinstance(event, PullRequestClosed)
+
+        event = get_mock_event(PullRequestClosed)
         event.payload.pull_request.labels = get_pr_labels(["Remove", "Bot"])
         event.payload.pull_request.merged = True
 
@@ -110,14 +113,12 @@ async def test_remove_process_pull_request(
 
 async def test_not_remove(app: App, mocker: MockerFixture) -> None:
     """测试与发布无关的拉取请求"""
-    event_path = Path(__file__).parent.parent.parent / "events" / "pr-close.json"
 
     mock_subprocess_run = mocker.patch("subprocess.run")
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event = Adapter.payload_to_event("1", "pull_request", event_path.read_bytes())
-        assert isinstance(event, PullRequestClosed)
+        event = get_mock_event(PullRequestClosed)
         event.payload.pull_request.labels = []
 
         ctx.receive_event(bot, event)
@@ -130,8 +131,6 @@ async def test_process_remove_pull_request_not_merged(
     app: App, mocker: MockerFixture, mock_installation
 ) -> None:
     """删除掉不合并的分支"""
-    event_path = Path(__file__).parent.parent.parent / "events" / "pr-close.json"
-
     mock_subprocess_run = mocker.patch("subprocess.run")
 
     remove_type = "Bot"
@@ -143,8 +142,7 @@ async def test_process_remove_pull_request_not_merged(
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event = adapter.payload_to_event("1", "pull_request", event_path.read_bytes())
-        assert isinstance(event, PullRequestClosed)
+        event = get_mock_event(PullRequestClosed)
         event.payload.pull_request.labels = get_pr_labels(["Remove", "Bot"])
 
         ctx.should_call_api(
