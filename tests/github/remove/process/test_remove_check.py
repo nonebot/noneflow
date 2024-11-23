@@ -1,11 +1,12 @@
 from pathlib import Path
 
 from inline_snapshot import snapshot
-from nonebot.adapters.github import Adapter, IssueCommentCreated, IssuesOpened
+from nonebot.adapters.github import IssueCommentCreated, IssuesOpened
 from nonebug import App
 from pytest_mock import MockerFixture
 from respx import MockRouter
 
+from tests.github.event import get_mock_event
 from tests.github.utils import (
     MockIssue,
     MockUser,
@@ -77,9 +78,7 @@ async def test_process_remove_bot_check(
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
-        event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
-        assert isinstance(event, IssuesOpened)
+        event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
 
         ctx.should_call_api(
@@ -280,9 +279,7 @@ async def test_process_remove_plugin_check(
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
-        event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
-        assert isinstance(event, IssuesOpened)
+        event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
 
         ctx.should_call_api(
@@ -472,9 +469,7 @@ async def test_process_remove_not_found_check(
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
-        event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
-        assert isinstance(event, IssuesOpened)
+        event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
 
         ctx.should_call_api(
@@ -595,9 +590,7 @@ async def test_process_remove_author_info_not_eq(
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
-        event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
-        assert isinstance(event, IssuesOpened)
+        event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
 
         ctx.should_call_api(
@@ -716,9 +709,7 @@ async def test_process_remove_issue_info_not_found(
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
-        event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
-        assert isinstance(event, IssuesOpened)
+        event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
 
         ctx.should_call_api(
@@ -818,9 +809,7 @@ async def test_process_remove_driver(
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
-        event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
-        assert isinstance(event, IssuesOpened)
+        event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
 
         ctx.should_call_api(
@@ -892,11 +881,8 @@ async def test_process_not_remove_label(app: App):
 
     async with app.test_matcher(remove_check_matcher) as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = Path(__file__).parent.parent.parent / "events" / "issue-open.json"
-        event = Adapter.payload_to_event("1", "issues", event_path.read_bytes())
-        assert isinstance(event, IssuesOpened)
+        event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = get_issue_labels([remove_type])
-
         ctx.receive_event(bot, event)
 
 
@@ -904,11 +890,7 @@ async def test_process_trigger_by_bot(app: App):
     """测试 Bot 触发工作流的情况"""
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
-        event_path = (
-            Path(__file__).parent.parent.parent / "events" / "issue-comment.json"
-        )
-        event = Adapter.payload_to_event("1", "issue_comment", event_path.read_bytes())
-        assert isinstance(event, IssueCommentCreated)
+        event = get_mock_event(IssueCommentCreated)
         assert event.payload.comment.user
         event.payload.comment.user.type = "Bot"
 
