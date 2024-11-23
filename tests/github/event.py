@@ -14,11 +14,15 @@ T = TypeVar("T", bound=Event)
 
 # 事件类型对应的事件名称和事件文件名
 EVENT_INFO = {
-    IssuesOpened:  ("issues", "issue-open"),
+    IssuesOpened: ("issues", "issue-open"),
     IssueCommentCreated: ("issue_comment", "issue-comment"),
     PullRequestClosed: ("pull_request", "pr-close"),
-    PullRequestReviewSubmitted: ("pull_request_review", "pull_request_review_submitted")
+    PullRequestReviewSubmitted: (
+        "pull_request_review",
+        "pull_request_review_submitted",
+    ),
 }
+
 
 def get_mock_event(event_type: type[T], path_name: str = "", id: str = "1") -> T:
     """通过事件类型获取事件对象"""
@@ -26,7 +30,7 @@ def get_mock_event(event_type: type[T], path_name: str = "", id: str = "1") -> T
     if event_type not in EVENT_INFO:
         raise ValueError(f"Unknown event type: {event_type}")
 
-    event_name, event_path_name= EVENT_INFO[event_type]
+    event_name, event_path_name = EVENT_INFO[event_type]
     if path_name:
         event_path_name = path_name
 
