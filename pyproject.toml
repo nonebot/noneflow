@@ -1,6 +1,6 @@
 [project]
 name = "noneflow"
-version = "4.0.10"
+version = "4.0.11"
 description = "Manage publish related issues in nonebot2 project"
 authors = [{ name = "uy_sun", email = "hmy0119@gmail.com" }]
 readme = "README.md"
@@ -100,7 +100,7 @@ adapters = [{ name = "GitHub", module_name = "nonebot.adapters.github" }]
 plugin_dirs = ["src/plugins"]
 
 [tool.bumpversion]
-current_version = "4.0.10"
+current_version = "4.0.11"
 commit = true
 message = "chore(release): {new_version}"
 

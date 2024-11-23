@@ -26,7 +26,7 @@ from src.providers.models import (
     StorePlugin,
     StoreTestResult,
 )
-from src.providers.utils import dump_json, load_json_from_web
+from src.providers.utils import dump_json, get_latest_version, load_json_from_web
 from src.providers.validation.utils import get_author_name
 
 from .constants import (
@@ -37,10 +37,7 @@ from .constants import (
     PLUGINS_PATH,
     RESULTS_PATH,
 )
-from .utils import get_latest_version
 from .validation import validate_plugin
-
-print = click.echo
 
 
 class StoreTest:

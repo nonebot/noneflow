@@ -209,7 +209,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     """插件测试元数据"""
     skip_test: bool
     """是否跳过插件测试"""
-    version: str = "0.0.1"
+    version: str
     """插件版本号
 
     从 PyPI 获取或者测试中获取

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [4.0.11] - 2024-11-23
+
+### Fixed
+
+- 修复发布后 registry_update 中版本号为默认值的问题
+
 ## [4.0.10] - 2024-11-21
 
 ### Fixed
@@ -528,7 +534,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.0.10...HEAD
+[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.0.11...HEAD
+[4.0.11]: https://github.com/nonebot/noneflow/compare/v4.0.10...v4.0.11
 [4.0.10]: https://github.com/nonebot/noneflow/compare/v4.0.9...v4.0.10
 [4.0.9]: https://github.com/nonebot/noneflow/compare/v4.0.8...v4.0.9
 [4.0.8]: https://github.com/nonebot/noneflow/compare/v4.0.7...v4.0.8
