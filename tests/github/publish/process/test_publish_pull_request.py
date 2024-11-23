@@ -53,6 +53,7 @@ async def test_process_pull_request(
         supported_adapters=["~onebot.v11"],
     )
     mock_test_result.load = True
+    mock_test_result.version = "1.0.0"
     mock_docker = mocker.patch("src.providers.docker_test.DockerPluginTest.run")
     mock_docker.return_value = mock_test_result
 
@@ -100,13 +101,13 @@ async def test_process_pull_request(
                             "supported_adapters": ["nonebot.adapters.onebot.v11"],
                             "valid": True,
                             "time": "2023-09-01T00:00:00+00:00Z",
-                            "version": "0.0.1",
+                            "version": "1.0.0",
                             "skip_test": False,
                         },
                         "result": {
                             "time": "2023-09-01T00:00:00+00:00Z",
                             "config": "log_level=DEBUG",
-                            "version": "0.0.1",
+                            "version": "1.0.0",
                             "test_env": {"python==3.12": True},
                             "results": {
                                 "validation": True,

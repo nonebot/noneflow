@@ -12,9 +12,7 @@ from src.providers.validation import (
     ValidationDict,
     validate_info,
 )
-from src.providers.validation.utils import get_author_name
-
-from .utils import get_upload_time
+from src.providers.validation.utils import get_author_name, get_upload_time
 
 
 async def validate_plugin(
