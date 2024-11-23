@@ -101,7 +101,7 @@ async def app(app: App, tmp_path: Path, mocker: MockerFixture):
 
     yield app
 
-    from src.providers.store_test.utils import get_pypi_data
+    from src.providers.utils import get_pypi_data
 
     get_pypi_data.cache_clear()
 

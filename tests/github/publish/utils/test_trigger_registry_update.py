@@ -44,6 +44,7 @@ async def test_trigger_registry_update(
         supported_adapters=["~onebot.v11"],
     )
     mock_test_result.load = True
+    mock_test_result.version = "1.0.0"
     mock_docker = mocker.patch("src.providers.docker_test.DockerPluginTest.run")
     mock_docker.return_value = mock_test_result
 
@@ -77,13 +78,13 @@ async def test_trigger_registry_update(
                             "supported_adapters": ["nonebot.adapters.onebot.v11"],
                             "valid": True,
                             "time": "2023-09-01T00:00:00+00:00Z",
-                            "version": "0.0.1",
+                            "version": "1.0.0",
                             "skip_test": False,
                         },
                         "result": {
                             "time": "2023-09-01T00:00:00+00:00Z",
                             "config": "log_level=DEBUG",
-                            "version": "0.0.1",
+                            "version": "1.0.0",
                             "test_env": {"python==3.12": True},
                             "results": {
                                 "validation": True,
@@ -216,7 +217,9 @@ async def test_trigger_registry_update_skip_test(
         await trigger_registry_update(handler, PublishType.PLUGIN)
 
 
-async def test_trigger_registry_update_bot(app: App, mocker: MockerFixture):
+async def test_trigger_registry_update_bot(
+    app: App, mocker: MockerFixture, mocked_api: MockRouter
+):
     """机器人发布的情况
 
     已经有相同机器人的时候，registry_update 不会影响到机器人的测试
@@ -265,9 +268,11 @@ async def test_trigger_registry_update_bot(app: App, mocker: MockerFixture):
 
         await trigger_registry_update(handler, PublishType.BOT)
 
+    assert mocked_api["homepage_v2"].called
+
 
 async def test_trigger_registry_update_plugins_issue_body_info_missing(
-    app: App, mocker: MockerFixture
+    app: App, mocker: MockerFixture, mocked_api: MockRouter
 ):
     """如果议题信息不全，应该不会触发更新"""
     from githubkit.rest import Issue
@@ -321,6 +326,8 @@ async def test_trigger_registry_update_plugins_issue_body_info_missing(
         )
 
         await trigger_registry_update(handler, PublishType.PLUGIN)
+
+    assert mocked_api["homepage"].called
 
 
 async def test_trigger_registry_update_validation_failed(
