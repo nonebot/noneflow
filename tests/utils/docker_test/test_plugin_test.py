@@ -13,7 +13,10 @@ async def test_plugin_test(mocker: MockerFixture, tmp_path: Path):
     mocker.patch.object(test, "_test_dir", tmp_path)
 
     def command_output(cmd: str, timeout: int = 300):
-        if "poetry init -n" in cmd:
+        if (
+            cmd
+            == r"""poetry init -n && sed -i "s/\^/~/g" pyproject.toml && poetry env info --ansi && poetry add project_link"""
+        ):
             # create_poetry_project
             return (
                 True,
@@ -57,7 +60,7 @@ async def test_plugin_test(mocker: MockerFixture, tmp_path: Path):
     Writing lock file""",
                 "",
             )
-        if "poetry show" in cmd:
+        if cmd == "poetry show project_link":
             # show_package_info
             return (
                 True,
@@ -70,7 +73,7 @@ async def test_plugin_test(mocker: MockerFixture, tmp_path: Path):
      - nonebot2 >=2.2.0""",
                 "",
             )
-        if "poetry export --without-hashes" in cmd:
+        if cmd == "poetry export --without-hashes":
             # show_plugin_dependencies
             return (
                 True,
@@ -81,7 +84,7 @@ pydantic==2.10.0 ; python_version >= "3.9" and python_version < "4.0"
                     """,
                 "",
             )
-        if "poetry run python runner.py" in cmd:
+        if cmd == "poetry run python runner.py":
             # run_plugin_test
             with open(
                 tmp_path / "project_link-module_name" / "metadata.json", "w"
