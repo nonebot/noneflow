@@ -299,23 +299,18 @@ class PluginTest:
             with open(self.path / "metadata.json", encoding="utf-8") as f:
                 metadata = json.load(f)
 
+        result = {
+            "metadata": metadata,
+            "outputs": self._lines_output,
+            "load": self._run,
+            "run": self._create,
+            "version": self._version,
+            "config": self.config,
+            "test_env": " ".join(self._test_env),
+        }
         # 输出测试结果
-        print(
-            json.dumps(
-                {
-                    "metadata": metadata,
-                    "outputs": self._lines_output,
-                    "load": self._run,
-                    "run": self._create,
-                    "version": self._version,
-                    "config": self.config,
-                    "test_env": " ".join(self._test_env),
-                },
-                ensure_ascii=False,
-            )
-        )
-
-        return self._run, self._lines_output
+        print(json.dumps(result, ensure_ascii=False))
+        return result
 
     async def command(self, cmd: str, timeout: int = 300) -> tuple[bool, str, str]:
         """执行命令
