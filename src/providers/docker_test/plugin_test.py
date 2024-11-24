@@ -334,7 +334,13 @@ class PluginTest:
             code = proc.returncode
         except TimeoutError:
             proc.terminate()
-            stdout, stderr = b"", "执行命令超时".encode()
+            # 超时后仍需读取 stdout 与 stderr 的内容
+            stdout = await proc.stdout.read() if proc.stdout else b""
+            stderr = (
+                "执行命令超时".encode() + await proc.stderr.read()
+                if proc.stderr
+                else "执行命令超时".encode()
+            )
             code = 1
 
         return not code, stdout.decode(), stderr.decode()

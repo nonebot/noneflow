@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 从插件测试中提取环境信息
 
+### Fixed
+
+- 超时后仍需读取 stdout 与 stderr 的内容
+
 ## [4.0.11] - 2024-11-23
 
 ### Fixed
