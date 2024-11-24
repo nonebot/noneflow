@@ -20,14 +20,23 @@ class Metadata(TypedDict):
 class DockerTestResult(BaseModel):
     """Docker 测试结果"""
 
-    run: bool  # 是否运行
-    load: bool  # 是否加载成功
+    run: bool
+    """ 是否运行测试 """
+    load: bool
+    """ 是否加载成功 """
     version: str | None = None
+    """ 测试版本 """
     config: str = ""
-    # 测试环境 python==3.10 pytest==6.2.5 nonebot2==2.0.0a1 ...
+    """ 测试配置 """
     test_env: str = Field(default="unknown")
+    """测试环境
+
+    python==3.12 nonebot2==2.4.0 pydantic==2.10.0
+    """
     metadata: SkipValidation[Metadata] | None
+    """ 插件元数据 """
     outputs: list[str]
+    """ 测试输出 """
 
     @field_validator("config", mode="before")
     @classmethod
@@ -77,5 +86,4 @@ class DockerPluginTest:
         ).decode()
 
         data = json.loads(output)
-        data["test_env"] = f"python=={version}"
         return DockerTestResult(**data)

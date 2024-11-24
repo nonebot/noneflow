@@ -17,6 +17,7 @@ async def test_docker_plugin_test(mocked_api: MockRouter, mocker: MockerFixture)
             "run": True,
             "version": "0.0.1",
             "config": "",
+            "test_env": "python==3.12",
         }
     ).encode()
     mocked_client = mocker.Mock()
@@ -75,6 +76,7 @@ async def test_docker_plugin_test_metadata_some_fields_empty(
             "run": True,
             "version": "0.0.1",
             "config": "",
+            "test_env": "python==3.12",
         }
     ).encode()
     mocked_client = mocker.Mock()
@@ -139,6 +141,7 @@ async def test_docker_plugin_test_metadata_some_fields_invalid(
             "run": True,
             "version": "0.0.1",
             "config": "",
+            "test_env": "python==3.12",
         }
     ).encode()
     mocked_client = mocker.Mock()
