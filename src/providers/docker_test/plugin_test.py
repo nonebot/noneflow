@@ -239,8 +239,8 @@ class PluginTest:
         self._lines_output = []
 
         # 插件测试目录
-        self.test_dir = Path("plugin_test")
-        self.test_env = []
+        self._test_dir = Path("plugin_test")
+        self._test_env = []
 
     @property
     def key(self) -> str:
@@ -256,7 +256,7 @@ class PluginTest:
         """插件测试目录"""
         # 替换 : 为 -，防止文件名不合法
         key = self.key.replace(":", "-")
-        return self.test_dir / f"{key}"
+        return self._test_dir / f"{key}"
 
     @property
     def env(self) -> dict[str, str]:
@@ -281,8 +281,8 @@ class PluginTest:
         """插件测试入口"""
 
         # 创建测试目录
-        if not self.test_dir.exists():
-            self.test_dir.mkdir()
+        if not self._test_dir.exists():
+            self._test_dir.mkdir()
 
         # 创建插件测试项目
         await self.create_poetry_project()
@@ -309,7 +309,7 @@ class PluginTest:
                     "run": self._create,
                     "version": self._version,
                     "config": self.config,
-                    "test_env": " ".join(self.test_env),
+                    "test_env": " ".join(self._test_env),
                 },
                 ensure_ascii=False,
             )
@@ -430,7 +430,7 @@ class PluginTest:
                 self._log_output(f"插件 {self.project_link} 依赖的插件如下：")
                 requirements = parse_requirements(stdout)
                 self._deps = self._get_deps(requirements)
-                self.test_env = self._get_test_env(requirements)
+                self._test_env = self._get_test_env(requirements)
                 self._log_output(f"    {', '.join(self._deps)}")
             else:
                 self._log_output(f"插件 {self.project_link} 依赖获取失败。")
