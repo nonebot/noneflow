@@ -470,7 +470,7 @@ class PluginTest:
         """获取测试环境"""
         # python 版本
         envs = [
-            f"python=={sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.minor}"
+            f"python=={sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
         ]
         # 特定插件依赖
         # 当前仅需记录 nonebot2 和 pydantic 的版本
