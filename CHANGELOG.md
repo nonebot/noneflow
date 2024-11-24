@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ### Added
 
 - 从插件测试中提取环境信息
+- 支持修改插件配置并重新测试
 
 ### Fixed
 

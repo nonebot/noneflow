@@ -8,7 +8,7 @@ import pyjson5
 from pydantic_core import to_jsonable_python
 
 
-def load_json_from_file(file_path: Path):
+def load_json_from_file(file_path: str | Path):
     """从文件加载 JSON5 文件"""
     with open(file_path, encoding="utf-8") as file:
         return pyjson5.decode_io(file)  # type: ignore
@@ -36,7 +36,7 @@ def dumps_json(data: Any, minify: bool = True) -> str:
     return data
 
 
-def dump_json(path: Path, data: Any, minify: bool = True) -> None:
+def dump_json(path: str | Path, data: Any, minify: bool = True) -> None:
     """保存 JSON 文件"""
     data = to_jsonable_python(data)
 

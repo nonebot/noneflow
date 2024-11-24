@@ -14,3 +14,4 @@ ISSUE_FIELD_PATTERN = r"### {}\s+"
 SKIP_COMMENT = "/skip"
 
 REMOVE_LABEL = "Remove"
+CONFIG_LABEL = "Config"
