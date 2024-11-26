@@ -42,6 +42,7 @@ from .render import render_comment
 from .utils import (
     ensure_issue_content,
     ensure_issue_plugin_test_button,
+    ensure_issue_plugin_test_button_in_progress,
     process_pull_request,
     resolve_conflict_pull_requests,
     trigger_registry_update,
@@ -108,6 +109,9 @@ async def handle_publish_plugin_check(
         if handler.issue.state != "open":
             logger.info("议题未开启，已跳过")
             await publish_check_matcher.finish()
+
+        # 提示插件正在测试中
+        await ensure_issue_plugin_test_button_in_progress(handler)
 
         # 是否需要跳过插件测试
         skip_test = await handler.should_skip_test()

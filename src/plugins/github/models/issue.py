@@ -51,6 +51,9 @@ class IssueHandler(GithubHandler):
         if issue_number is None:
             issue_number = self.issue_number
 
+        if self.issue_number == issue_number and self.issue.body == body:
+            return
+
         await super().update_issue_content(body, issue_number)
 
         # 更新缓存属性，避免重复或错误操作

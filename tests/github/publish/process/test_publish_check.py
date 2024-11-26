@@ -1057,18 +1057,86 @@ async def test_skip_plugin_check(
             mock_issues_resp,
         )
         ctx.should_call_api(
+            "rest.issues.async_update",
+            snapshot(
+                {
+                    "owner": "he0119",
+                    "repo": "action-test",
+                    "issue_number": 70,
+                    "body": """\
+### PyPI 项目名
+
+project_link
+
+### 插件 import 包名
+
+module_name
+
+### 标签
+
+[{"label": "test", "color": "#ffffff"}]
+
+### 插件配置项
+
+```dotenv
+log_level=DEBUG
+```
+
+### 插件测试
+
+- [x] 🔄插件测试中，请稍后\
+""",
+                }
+            ),
+            True,
+        )
+        ctx.should_call_api(
             "rest.issues.async_list_comments",
             {"owner": "he0119", "repo": "action-test", "issue_number": 70},
             mock_list_comments_resp,
         )
         ctx.should_call_api(
             "rest.issues.async_update",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "issue_number": 70,
-                "body": '### 插件名称\n\n### 插件描述\n\n### 插件项目仓库/主页链接\n\n### 插件类型\n\n### 插件支持的适配器\n\n### PyPI 项目名\n\nproject_link\n\n### 插件 import 包名\n\nmodule_name\n\n### 标签\n\n[{"label": "test", "color": "#ffffff"}]\n\n### 插件配置项\n\n```dotenv\nlog_level=DEBUG\n```',
-            },
+            snapshot(
+                {
+                    "owner": "he0119",
+                    "repo": "action-test",
+                    "issue_number": 70,
+                    "body": """\
+### 插件名称
+
+### 插件描述
+
+### 插件项目仓库/主页链接
+
+### 插件类型
+
+### 插件支持的适配器
+
+### PyPI 项目名
+
+project_link
+
+### 插件 import 包名
+
+module_name
+
+### 标签
+
+[{"label": "test", "color": "#ffffff"}]
+
+### 插件配置项
+
+```dotenv
+log_level=DEBUG
+```
+
+### 插件测试
+
+- [x] 🔄插件测试中，请稍后\
+""",
+                }
+            ),
             True,
         )
 
