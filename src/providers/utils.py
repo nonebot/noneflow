@@ -1,4 +1,5 @@
 import json
+import os
 from functools import cache
 from pathlib import Path
 from typing import Any
@@ -6,6 +7,8 @@ from typing import Any
 import httpx
 import pyjson5
 from pydantic_core import to_jsonable_python
+
+from src.providers.logger import logger
 
 
 def load_json_from_file(file_path: str | Path):
@@ -91,3 +94,14 @@ def get_upload_time(project_link: str) -> str:
     """获取插件的上传时间"""
     data = get_pypi_data(project_link)
     return data["urls"][0]["upload_time_iso_8601"]
+
+
+def add_step_summary(summary: str):
+    """添加作业摘要"""
+    github_step_summary = os.environ.get("GITHUB_STEP_SUMMARY")
+    if not github_step_summary:
+        logger.warning("未找到 GITHUB_STEP_SUMMARY 环境变量")
+        return
+    with open(github_step_summary, "a", encoding="utf-8") as f:
+        f.write(summary + "\n")
+    logger.debug(f"已添加作业摘要：{summary}")
