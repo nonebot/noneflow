@@ -16,6 +16,7 @@ from nonebot.typing import T_State
 
 from src.plugins.github.constants import (
     BRANCH_NAME_PREFIX,
+    CONFIG_LABEL,
     REMOVE_LABEL,
     TITLE_MAX_LENGTH,
 )
@@ -59,10 +60,12 @@ async def publish_related_rule(
     """确保与发布相关
 
     通过标签判断
-    仅包含发布相关标签，不包含 remove 标签
+    仅包含发布相关标签，不包含 remove/config 标签
     """
     for label in labels:
         if label == REMOVE_LABEL:
+            return False
+        if label == CONFIG_LABEL:
             return False
     return True
 
