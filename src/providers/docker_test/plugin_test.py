@@ -219,27 +219,30 @@ def parse_requirements(requirements: str) -> dict[str, str]:
 
 
 class PluginTest:
-    def __init__(self, project_info: str, config: str | None = None) -> None:
+    def __init__(
+        self, project_link: str, module_name: str, config: str | None = None
+    ) -> None:
         """插件测试构造函数
 
         Args:
             project_info (str): 项目信息，格式为 project_link:module_name
             config (str | None, optional): 插件配置. 默认为 None.
         """
-        self.project_link = project_info.split(":")[0]
-        self.module_name = project_info.split(":")[1]
+        self.project_link = project_link
+        self.module_name = module_name
         self.config = config
-        self._version = None
-        self._plugin_list = None
 
+        self._plugin_list = None
+        self._test_dir = Path("plugin_test")
+        # 插件信息
+        self._version = None
+        # 插件测试结果
         self._create = False
         self._run = False
-        self._deps = []
-
+        # 插件输出
         self._lines_output = []
-
-        # 插件测试目录
-        self._test_dir = Path("plugin_test")
+        # 插件测试环境
+        self._deps = []
         self._test_env = []
 
     @property
@@ -250,13 +253,6 @@ class PluginTest:
         例：nonebot-plugin-test:nonebot_plugin_test
         """
         return f"{self.project_link}:{self.module_name}"
-
-    @property
-    def path(self) -> Path:
-        """插件测试目录"""
-        # 替换 : 为 -，防止文件名不合法
-        key = self.key.replace(":", "-")
-        return self._test_dir / f"{key}"
 
     @property
     def env(self) -> dict[str, str]:
@@ -279,11 +275,6 @@ class PluginTest:
 
     async def run(self):
         """插件测试入口"""
-
-        # 创建测试目录
-        if not self._test_dir.exists():
-            self._test_dir.mkdir()
-
         # 创建插件测试项目
         await self.create_poetry_project()
         if self._create:
@@ -294,9 +285,9 @@ class PluginTest:
             await self.run_poetry_project()
 
         metadata = None
-        metadata_path = self.path / "metadata.json"
+        metadata_path = self._test_dir / "metadata.json"
         if metadata_path.exists():
-            with open(self.path / "metadata.json", encoding="utf-8") as f:
+            with open(self._test_dir / "metadata.json", encoding="utf-8") as f:
                 metadata = json.load(f)
 
         result = {
@@ -326,7 +317,7 @@ class PluginTest:
             cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            cwd=self.path,
+            cwd=self._test_dir,
             env=self.env,
         )
         try:
@@ -347,8 +338,8 @@ class PluginTest:
 
     async def create_poetry_project(self):
         """创建 poetry 项目用来测试插件"""
-        if not self.path.exists():
-            self.path.mkdir()
+        if not self._test_dir.exists():
+            self._test_dir.mkdir()
 
             code, stdout, stderr = await self.command(
                 f"""poetry init -n && sed -i "s/\\^/~/g" pyproject.toml && poetry env info --ansi && poetry add {self.project_link}"""
@@ -372,7 +363,7 @@ class PluginTest:
 
     async def show_package_info(self) -> None:
         """获取插件的版本与插件信息"""
-        if self.path.exists():
+        if self._test_dir.exists():
             code, stdout, stderr = await self.command(
                 f"poetry show {self.project_link}"
             )
@@ -389,19 +380,19 @@ class PluginTest:
 
     async def run_poetry_project(self) -> None:
         """运行插件"""
-        if self.path.exists():
+        if self._test_dir.exists():
             # 默认使用 fake 驱动
-            with open(self.path / ".env", "w", encoding="utf-8") as f:
+            with open(self._test_dir / ".env", "w", encoding="utf-8") as f:
                 f.write("DRIVER=fake")
             # 如果提供了插件配置项，则写入配置文件
             if self.config is not None:
-                with open(self.path / ".env.prod", "w", encoding="utf-8") as f:
+                with open(self._test_dir / ".env.prod", "w", encoding="utf-8") as f:
                     f.write(self.config)
 
-            with open(self.path / "fake.py", "w", encoding="utf-8") as f:
+            with open(self._test_dir / "fake.py", "w", encoding="utf-8") as f:
                 f.write(FAKE_SCRIPT)
 
-            with open(self.path / "runner.py", "w", encoding="utf-8") as f:
+            with open(self._test_dir / "runner.py", "w", encoding="utf-8") as f:
                 f.write(
                     RUNNER_SCRIPT.format(
                         self.module_name,
@@ -424,7 +415,7 @@ class PluginTest:
 
     async def show_plugin_dependencies(self) -> None:
         """获取插件的依赖"""
-        if self.path.exists():
+        if self._test_dir.exists():
             code, stdout, stderr = await self.command("poetry export --without-hashes")
 
             if code:
@@ -485,13 +476,15 @@ class PluginTest:
 def main():
     """根据传入的环境变量进行测试
 
-    PLUGIN_INFO 即为该插件的 KEY
+    PROJECT_LINK 为插件的项目名
+    MODULE_NAME 为插件的模块名
     PLUGIN_CONFIG 即为该插件的配置
     """
-
-    plugin_info = os.environ.get("PLUGIN_INFO", "")
+    project_link = os.environ.get("PROJECT_LINK", "")
+    module_name = os.environ.get("MODULE_NAME", "")
     plugin_config = os.environ.get("PLUGIN_CONFIG", None)
-    plugin = PluginTest(plugin_info, plugin_config)
+
+    plugin = PluginTest(project_link, module_name, plugin_config)
 
     asyncio.run(plugin.run())
 

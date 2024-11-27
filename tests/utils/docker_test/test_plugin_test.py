@@ -8,9 +8,9 @@ from pytest_mock import MockerFixture
 async def test_plugin_test(mocker: MockerFixture, tmp_path: Path):
     from src.providers.docker_test.plugin_test import PluginTest
 
-    test = PluginTest("project_link:module_name", "test=123")
+    test = PluginTest("project_link", "module_name", "test=123")
 
-    mocker.patch.object(test, "_test_dir", tmp_path)
+    mocker.patch.object(test, "_test_dir", tmp_path / "plugin_test")
 
     def command_output(cmd: str, timeout: int = 300):
         if (
@@ -86,9 +86,7 @@ pydantic==2.10.0 ; python_version >= "3.9" and python_version < "4.0"
             )
         if cmd == "poetry run python runner.py":
             # run_plugin_test
-            with open(
-                tmp_path / "project_link-module_name" / "metadata.json", "w"
-            ) as f:
+            with open(tmp_path / "plugin_test" / "metadata.json", "w") as f:
                 json.dump(
                     {
                         "name": "帮助",

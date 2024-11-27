@@ -45,7 +45,8 @@ async def test_docker_plugin_test(mocked_api: MockRouter, mocker: MockerFixture)
         "ghcr.io/nonebot/nonetest:3.12-latest",
         environment=snapshot(
             {
-                "PLUGIN_INFO": "project_link:module_name",
+                "PROJECT_LINK": "project_link",
+                "MODULE_NAME": "module_name",
                 "PLUGIN_CONFIG": "",
                 "PLUGINS_URL": "https://raw.githubusercontent.com/nonebot/registry/results/plugins.json",
             }
@@ -110,7 +111,8 @@ async def test_docker_plugin_test_metadata_some_fields_empty(
         "ghcr.io/nonebot/nonetest:3.12-latest",
         environment=snapshot(
             {
-                "PLUGIN_INFO": "project_link:module_name",
+                "PROJECT_LINK": "project_link",
+                "MODULE_NAME": "module_name",
                 "PLUGIN_CONFIG": "",
                 "PLUGINS_URL": "https://raw.githubusercontent.com/nonebot/registry/results/plugins.json",
             }
@@ -175,7 +177,8 @@ async def test_docker_plugin_test_metadata_some_fields_invalid(
         "ghcr.io/nonebot/nonetest:3.12-latest",
         environment=snapshot(
             {
-                "PLUGIN_INFO": "project_link:module_name",
+                "PROJECT_LINK": "project_link",
+                "MODULE_NAME": "module_name",
                 "PLUGIN_CONFIG": "",
                 "PLUGINS_URL": "https://raw.githubusercontent.com/nonebot/registry/results/plugins.json",
             }

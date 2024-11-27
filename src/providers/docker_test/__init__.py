@@ -77,7 +77,8 @@ class DockerPluginTest:
             output = client.containers.run(
                 image_name,
                 environment={
-                    "PLUGIN_INFO": self.key,
+                    "PROJECT_LINK": self.project_link,
+                    "MODULE_NAME": self.module_name,
                     "PLUGIN_CONFIG": self.config,
                     # 插件测试需要用到的插件列表来验证插件依赖是否正确加载
                     "PLUGINS_URL": REGISTRY_PLUGINS_URL,
