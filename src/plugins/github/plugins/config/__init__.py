@@ -1,3 +1,4 @@
+from githubkit.exception import RequestFailed
 from nonebot import logger, on_type
 from nonebot.adapters.github import GitHubBot
 from nonebot.adapters.github.event import (
@@ -27,10 +28,11 @@ from src.plugins.github.plugins.publish.validation import (
 )
 from src.plugins.github.plugins.remove.depends import check_labels
 from src.plugins.github.typing import IssuesEvent
+from src.plugins.github.utils import run_shell_command
 from src.providers.validation.models import PublishType
 
-from .constants import BRANCH_NAME_PREFIX
-from .utils import process_pull_request
+from .constants import BRANCH_NAME_PREFIX, COMMIT_MESSAGE_PREFIX, RESULTS_BRANCH
+from .utils import update_file
 
 
 async def check_rule(
@@ -85,11 +87,34 @@ async def handle_remove_check(
         # 渲染评论信息
         comment = await render_comment(result, True)
 
-        # 验证之后创建拉取请求
-        await process_pull_request(handler, result, branch_name, title)
-
         # 对议题评论
         await handler.comment_issue(comment)
+
+        if result.valid:
+            commit_message = f"{COMMIT_MESSAGE_PREFIX} {result.type.value.lower()} {result.name} (#{handler.issue_number})"
+
+            # 需要先切换到结果分支
+            run_shell_command(["git", "fetch", "origin", RESULTS_BRANCH])
+            run_shell_command(["git", "checkout", RESULTS_BRANCH])
+            # 创建新分支
+            run_shell_command(["git", "switch", "-C", branch_name])
+            # 更新文件
+            update_file(result)
+            handler.commit_and_push(commit_message, branch_name, handler.author)
+            # 创建拉取请求
+            try:
+                await handler.create_pull_request(
+                    RESULTS_BRANCH,
+                    title,
+                    branch_name,
+                    [result.type.value, CONFIG_LABEL],
+                )
+            except RequestFailed:
+                await handler.update_pull_request_status(title, branch_name)
+                logger.info("该分支的拉取请求已创建，请前往查看")
+        else:
+            # 如果之前已经创建了拉取请求，则将其转换为草稿
+            await handler.draft_pull_request(branch_name)
 
 
 async def review_submitted_rule(
