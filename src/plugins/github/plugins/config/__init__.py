@@ -23,16 +23,16 @@ from src.plugins.github.depends import (
 )
 from src.plugins.github.models import IssueHandler
 from src.plugins.github.plugins.publish.render import render_comment
-from src.plugins.github.plugins.publish.validation import (
-    validate_plugin_info_from_issue,
-)
 from src.plugins.github.plugins.remove.depends import check_labels
 from src.plugins.github.typing import IssuesEvent
 from src.plugins.github.utils import run_shell_command
 from src.providers.validation.models import PublishType
 
 from .constants import BRANCH_NAME_PREFIX, COMMIT_MESSAGE_PREFIX, RESULTS_BRANCH
-from .utils import update_file
+from .utils import (
+    update_file,
+    validate_info_from_issue,
+)
 
 
 async def check_rule(
@@ -74,15 +74,13 @@ async def handle_remove_check(
             logger.info("议题未开启，已跳过")
             await config_check_matcher.finish()
 
+        # 需要先切换到结果分支
+        run_shell_command(["git", "fetch", "origin", RESULTS_BRANCH])
+        run_shell_command(["git", "checkout", RESULTS_BRANCH])
+
         # 检查是否满足发布要求
         # 仅在通过检查的情况下创建拉取请求
-        result = await validate_plugin_info_from_issue(handler)
-
-        branch_name = f"{BRANCH_NAME_PREFIX}{handler.issue_number}"
-
-        # 设置拉取请求与议题的标题
-        # 限制标题长度，过长的标题不好看
-        title = f"{result.type}: {result.name[:TITLE_MAX_LENGTH]}"
+        result = await validate_info_from_issue(handler)
 
         # 渲染评论信息
         comment = await render_comment(result, True)
@@ -90,12 +88,15 @@ async def handle_remove_check(
         # 对议题评论
         await handler.comment_issue(comment)
 
+        branch_name = f"{BRANCH_NAME_PREFIX}{handler.issue_number}"
+
+        # 设置拉取请求与议题的标题
+        # 限制标题长度，过长的标题不好看
+        title = f"{result.type}: {result.name[:TITLE_MAX_LENGTH]}"
+
         if result.valid:
             commit_message = f"{COMMIT_MESSAGE_PREFIX} {result.type.value.lower()} {result.name} (#{handler.issue_number})"
 
-            # 需要先切换到结果分支
-            run_shell_command(["git", "fetch", "origin", RESULTS_BRANCH])
-            run_shell_command(["git", "checkout", RESULTS_BRANCH])
             # 创建新分支
             run_shell_command(["git", "switch", "-C", branch_name])
             # 更新文件
