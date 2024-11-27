@@ -3,6 +3,7 @@ import os
 
 import click
 
+from src.providers.logger import logger
 from src.providers.models import RegistryUpdatePayload
 
 from .store import StoreTest
@@ -11,7 +12,7 @@ from .store import StoreTest
 @click.group()
 @click.option("--debug/--no-debug", default=False)
 def cli(debug: bool):
-    click.echo(f"调试模式已{'开启' if debug else '关闭'}")
+    logger.setLevel("DEBUG" if debug else "INFO")
 
 
 @cli.command()
@@ -20,7 +21,7 @@ def registry_update():
     # 通过环境变量传递插件配置
     payload = os.environ.get("REGISTRY_UPDATE_PAYLOAD")
     if not payload:
-        click.echo("未传入更新数据")
+        logger.warning("未传入更新数据")
         return
 
     payload = RegistryUpdatePayload.model_validate_json(payload)

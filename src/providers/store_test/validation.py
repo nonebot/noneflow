@@ -2,9 +2,8 @@
 
 from typing import Any
 
-import click
-
 from src.providers.docker_test import DockerPluginTest
+from src.providers.logger import logger
 from src.providers.models import RegistryPlugin, StorePlugin, StoreTestResult
 from src.providers.validation import (
     PluginPublishInfo,
@@ -47,12 +46,12 @@ async def validate_plugin(
     plugin_metadata = plugin_test_result.metadata
 
     # 输出插件测试相关信息
-    click.echo(
+    logger.info(
         f"插件 {project_link}({plugin_test_version}) 加载{'成功' if plugin_test_load else '失败'} {'插件已尝试加载' if plugin_test_result.run else '插件并未开始运行'}"
     )
-    click.echo(f"插件元数据：{plugin_metadata}")
-    click.echo("插件测试输出：")
-    click.echo(plugin_test_output)
+    logger.info(f"插件元数据：{plugin_metadata}")
+    logger.info("插件测试输出：")
+    logger.info(plugin_test_output)
 
     if previous_plugin is None:
         # 使用商店插件数据作为新的插件数据

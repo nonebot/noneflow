@@ -1,4 +1,4 @@
-import click
+from datetime import datetime
 
 from src.providers.constants import (
     BOT_KEY_TEMPLATE,
@@ -14,6 +14,7 @@ from src.providers.constants import (
     STORE_DRIVERS_URL,
     STORE_PLUGINS_URL,
 )
+from src.providers.logger import logger
 from src.providers.models import (
     RegistryAdapter,
     RegistryBot,
@@ -26,7 +27,12 @@ from src.providers.models import (
     StorePlugin,
     StoreTestResult,
 )
-from src.providers.utils import dump_json, get_latest_version, load_json_from_web
+from src.providers.utils import (
+    add_step_summary,
+    dump_json,
+    get_latest_version,
+    load_json_from_web,
+)
 from src.providers.validation.utils import get_author_name
 
 from .constants import (
@@ -113,7 +119,7 @@ class StoreTest:
     def should_skip(self, key: str, force: bool = False) -> bool:
         """是否跳过测试"""
         if key.startswith("git+http"):
-            click.echo(f"插件 {key} 为 Git 插件，无法测试，已跳过")
+            logger.info(f"插件 {key} 为 Git 插件，无法测试，已跳过")
             return True
 
         # 如果强制测试，则不跳过
@@ -130,10 +136,10 @@ class StoreTest:
         try:
             latest_version = get_latest_version(previous_plugin.project_link)
         except ValueError as e:
-            click.echo(f"插件 {key} 获取最新版本失败：{e}，跳过测试")
+            logger.warning(f"插件 {key} 获取最新版本失败：{e}，跳过测试")
             return True
         if latest_version == previous_result.version:
-            click.echo(f"插件 {key} 为最新版本（{latest_version}），跳过测试")
+            logger.info(f"插件 {key} 为最新版本（{latest_version}），跳过测试")
             return True
         return False
 
@@ -182,7 +188,7 @@ class StoreTest:
 
         for key in test_plugins:
             if i > limit:
-                click.echo(f"已达到测试上限 {limit}，测试停止")
+                logger.info(f"已达到测试上限 {limit}，测试停止")
                 break
 
             # 是否需要跳过测试
@@ -195,13 +201,15 @@ class StoreTest:
                 new_plugins[key] = new_plugin
 
             try:
-                click.echo(f"{i}/{limit} 正在测试插件 {key} ...")
+                logger.info(f"{i}/{limit} 正在测试插件 {key} ...")
                 await worker()  # TODO: 修改为并行
                 i += 1
             except Exception as err:
-                click.echo(err)
+                logger.error(f"{err}")
                 continue
 
+        summary = self.generate_github_summary(new_results)
+        add_step_summary(summary)
         return new_results, new_plugins
 
     def merge_plugin_data(
@@ -273,7 +281,7 @@ class StoreTest:
             new_result, new_plugin = await self.test_plugin(key)
             self.merge_plugin_data({key: new_result}, {key: new_plugin})
         except Exception as err:
-            click.echo(err)
+            logger.error(f"{err}")
 
         self.dump_data()
 
@@ -347,3 +355,32 @@ class StoreTest:
                 # TODO: 如果 author_id 变化，应该重新获取 author
                 plugin_data.update(self._store_plugins[key].model_dump())
                 self._previous_plugins[key] = RegistryPlugin(**plugin_data)
+
+    def generate_github_summary(self, results: dict[str, StoreTestResult]):
+        """生成 GitHub 摘要"""
+        valid_plugins = [
+            plugin_name
+            for plugin_name, result in results.items()
+            if sum(result.results.values()) == 3
+        ]
+        invalid_plugins = [
+            plugin_name
+            for plugin_name, _ in results.items()
+            if plugin_name not in valid_plugins
+        ]
+        summary = f"""# 📃 商店测试结果
+
+> 📅 {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+> ♻️ 共测试 {len(results)} 个插件
+> ✅ 更新成功：{len(valid_plugins)} 个
+> ❌ 更新失败：{len(invalid_plugins)} 个
+
+## 通过测试插件列表
+
+{'\n'.join([f'- {name}' for name in valid_plugins])}
+
+## 未通过测试插件列表
+
+{'\n'.join([f'- {name}' for name in invalid_plugins])}
+"""
+        return summary
