@@ -72,18 +72,24 @@ class DockerPluginTest:
         # 连接 Docker 环境
         client = docker.DockerClient(base_url="unix://var/run/docker.sock")
 
-        # 运行 Docker 容器，捕获输出。 容器内运行的代码拥有超时设限，此处无需设置超时
-        output = client.containers.run(
-            image_name,
-            environment={
-                "PLUGIN_INFO": self.key,
-                "PLUGIN_CONFIG": self.config,
-                # 插件测试需要用到的插件列表来验证插件依赖是否正确加载
-                "PLUGINS_URL": REGISTRY_PLUGINS_URL,
-            },
-            detach=False,
-            remove=True,
-        ).decode()
-
-        data = json.loads(output)
+        try:
+            # 运行 Docker 容器，捕获输出。 容器内运行的代码拥有超时设限，此处无需设置超时
+            output = client.containers.run(
+                image_name,
+                environment={
+                    "PLUGIN_INFO": self.key,
+                    "PLUGIN_CONFIG": self.config,
+                    # 插件测试需要用到的插件列表来验证插件依赖是否正确加载
+                    "PLUGINS_URL": REGISTRY_PLUGINS_URL,
+                },
+                detach=False,
+                remove=True,
+            ).decode()
+            data = json.loads(output)
+        except Exception as e:
+            data = {
+                "run": False,
+                "load": False,
+                "outputs": str(e),
+            }
         return DockerTestResult(**data)
