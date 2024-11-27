@@ -173,11 +173,6 @@ async def test_process_config_check(
                 capture_output=True,
             ),
             mocker.call(
-                ["pre-commit", "install", "--install-hooks"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
                 ["git", "fetch", "origin", "results"], check=True, capture_output=True
             ),
             mocker.call(

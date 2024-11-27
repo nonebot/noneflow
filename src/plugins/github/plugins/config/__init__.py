@@ -61,9 +61,7 @@ config_check_matcher = on_type(
 )
 
 
-@config_check_matcher.handle(
-    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hooks)]
-)
+@config_check_matcher.handle(parameterless=[Depends(bypass_git)])
 async def handle_remove_check(
     bot: GitHubBot,
     installation_id: int = Depends(get_installation_id),
