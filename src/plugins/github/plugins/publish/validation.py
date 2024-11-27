@@ -112,7 +112,7 @@ async def validate_plugin_info_from_issue(
             project_link, module_name, test_config
         ).run("3.12")
         # 去除颜色字符
-        test_output = strip_ansi("\n".join(test_result.outputs))
+        test_output = strip_ansi(test_result.output)
         metadata = test_result.metadata
         if metadata:
             # 从插件测试结果中获得元数据
@@ -130,8 +130,7 @@ async def validate_plugin_info_from_issue(
         )
         logger.info(f"插件元数据：{metadata}")
         logger.info("插件测试输出：")
-        for output in test_result.outputs:
-            logger.info(output)
+        logger.info(test_result.output)
 
     # 验证插件相关信息
     result = validate_info(PublishType.PLUGIN, raw_data, previous_data)

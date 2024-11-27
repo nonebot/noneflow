@@ -292,7 +292,7 @@ class PluginTest:
 
         result = {
             "metadata": metadata,
-            "outputs": self._lines_output,
+            "output": "\n".join(self._lines_output),
             "load": self._run,
             "run": self._create,
             "version": self._version,

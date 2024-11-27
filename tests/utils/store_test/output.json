@@ -7,10 +7,7 @@
     "homepage": "https://nonebot.dev/",
     "supported_adapters": null
   },
-  "outputs": [
-    "\u521b\u5efa\u6d4b\u8bd5\u76ee\u5f55 plugin_test",
-    "      require(\"nonebot_plugin_alconna\")"
-  ],
+  "output": "\u521b\u5efa\u6d4b\u8bd5\u76ee\u5f55 plugin_test\n      require(\"nonebot_plugin_alconna\")",
   "load": true,
   "run": true,
   "version": "0.2.0",

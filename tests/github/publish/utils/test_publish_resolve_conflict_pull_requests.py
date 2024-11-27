@@ -320,6 +320,7 @@ async def test_resolve_conflict_pull_requests_plugin(
         supported_adapters=["~onebot.v11"],
     )
     mock_test_result.version = "1.0.0"
+    mock_test_result.output = ""
     mock_docker = mocker.patch("src.providers.docker_test.DockerPluginTest.run")
     mock_docker.return_value = mock_test_result
 
@@ -461,6 +462,7 @@ async def test_resolve_conflict_pull_requests_plugin_not_valid(
     mock_test_result = mocker.MagicMock()
     mock_test_result.load = False
     mock_test_result.metadata = None
+    mock_test_result.output = ""
     mock_docker = mocker.patch("src.providers.docker_test.DockerPluginTest.run")
     mock_docker.return_value = mock_test_result
 

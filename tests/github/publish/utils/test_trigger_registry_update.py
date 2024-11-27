@@ -45,6 +45,7 @@ async def test_trigger_registry_update(
     )
     mock_test_result.load = True
     mock_test_result.version = "1.0.0"
+    mock_test_result.output = ""
     mock_docker = mocker.patch("src.providers.docker_test.DockerPluginTest.run")
     mock_docker.return_value = mock_test_result
 
@@ -307,6 +308,7 @@ async def test_trigger_registry_update_plugins_issue_body_info_missing(
         supported_adapters=["~onebot.v11"],
     )
     mock_test_result.load = True
+    mock_test_result.output = ""
     mock_docker = mocker.patch("src.providers.docker_test.DockerPluginTest.run")
     mock_docker.return_value = mock_test_result
 

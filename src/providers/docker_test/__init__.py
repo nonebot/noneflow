@@ -35,7 +35,7 @@ class DockerTestResult(BaseModel):
     """
     metadata: SkipValidation[Metadata] | None
     """ 插件元数据 """
-    outputs: list[str]
+    output: str
     """ 测试输出 """
 
     @field_validator("config", mode="before")
@@ -49,15 +49,6 @@ class DockerPluginTest:
         self.project_link = project_link
         self.module_name = module_name
         self.config = config
-
-    @property
-    def key(self) -> str:
-        """插件的标识符
-
-        project_link:module_name
-        例：nonebot-plugin-test:nonebot_plugin_test
-        """
-        return f"{self.project_link}:{self.module_name}"
 
     async def run(self, version: str) -> DockerTestResult:
         """运行 Docker 容器测试插件
