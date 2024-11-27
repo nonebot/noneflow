@@ -59,7 +59,7 @@ async def validate_info_from_issue(handler: IssueHandler) -> ValidationDict:
     test_result = await test.run("3.12")
 
     # 去除颜色字符
-    test_output = strip_ansi("\n".join(test_result.outputs))
+    test_output = strip_ansi(test_result.output)
     metadata = test_result.metadata
     if metadata:
         # 从插件测试结果中获得元数据
@@ -78,8 +78,7 @@ async def validate_info_from_issue(handler: IssueHandler) -> ValidationDict:
     )
     logger.info(f"插件元数据：{metadata}")
     logger.info("插件测试输出：")
-    for output in test_result.outputs:
-        logger.info(output)
+    logger.info(test_output)
 
     # 验证插件相关信息
     result = validate_info(PublishType.PLUGIN, raw_data, previous_data)

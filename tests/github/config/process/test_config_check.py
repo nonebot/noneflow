@@ -76,6 +76,7 @@ async def test_process_config_check(
     )
     mock_test_result.load = True
     mock_test_result.version = "1.0.0"
+    mock_test_result.output = ""
     mock_docker = mocker.patch("src.providers.docker_test.DockerPluginTest.run")
     mock_docker.return_value = mock_test_result
 

@@ -12,7 +12,7 @@ async def test_docker_plugin_test(mocked_api: MockRouter, mocker: MockerFixture)
     mocked_run.return_value = json.dumps(
         {
             "metadata": None,
-            "outputs": ["test"],
+            "output": "test",
             "load": True,
             "run": True,
             "version": "0.0.1",
@@ -33,7 +33,7 @@ async def test_docker_plugin_test(mocked_api: MockRouter, mocker: MockerFixture)
             config="",
             load=True,
             metadata=None,
-            outputs=["test"],
+            output="test",
             run=True,
             test_env="python==3.12",
             version="0.0.1",
@@ -45,7 +45,8 @@ async def test_docker_plugin_test(mocked_api: MockRouter, mocker: MockerFixture)
         "ghcr.io/nonebot/nonetest:3.12-latest",
         environment=snapshot(
             {
-                "PLUGIN_INFO": "project_link:module_name",
+                "PROJECT_LINK": "project_link",
+                "MODULE_NAME": "module_name",
                 "PLUGIN_CONFIG": "",
                 "PLUGINS_URL": "https://raw.githubusercontent.com/nonebot/registry/results/plugins.json",
             }
@@ -71,7 +72,7 @@ async def test_docker_plugin_test_metadata_some_fields_empty(
                 "type": None,
                 "supported_adapters": None,
             },
-            "outputs": ["test"],
+            "output": "test",
             "load": True,
             "run": True,
             "version": "0.0.1",
@@ -98,7 +99,7 @@ async def test_docker_plugin_test_metadata_some_fields_empty(
                 "type": None,
                 "supported_adapters": None,
             },
-            outputs=["test"],
+            output="test",
             run=True,
             test_env="python==3.12",
             version="0.0.1",
@@ -110,7 +111,8 @@ async def test_docker_plugin_test_metadata_some_fields_empty(
         "ghcr.io/nonebot/nonetest:3.12-latest",
         environment=snapshot(
             {
-                "PLUGIN_INFO": "project_link:module_name",
+                "PROJECT_LINK": "project_link",
+                "MODULE_NAME": "module_name",
                 "PLUGIN_CONFIG": "",
                 "PLUGINS_URL": "https://raw.githubusercontent.com/nonebot/registry/results/plugins.json",
             }
@@ -136,7 +138,7 @@ async def test_docker_plugin_test_metadata_some_fields_invalid(
                 "type": True,
                 "supported_adapters": {},
             },
-            "outputs": ["test"],
+            "output": "test",
             "load": True,
             "run": True,
             "version": "0.0.1",
@@ -163,7 +165,7 @@ async def test_docker_plugin_test_metadata_some_fields_invalid(
                 type=True,  # type: ignore
                 supported_adapters={},  # type: ignore
             ),
-            outputs=["test"],
+            output="test",
             run=True,
             test_env="python==3.12",
             version="0.0.1",
@@ -175,7 +177,8 @@ async def test_docker_plugin_test_metadata_some_fields_invalid(
         "ghcr.io/nonebot/nonetest:3.12-latest",
         environment=snapshot(
             {
-                "PLUGIN_INFO": "project_link:module_name",
+                "PROJECT_LINK": "project_link",
+                "MODULE_NAME": "module_name",
                 "PLUGIN_CONFIG": "",
                 "PLUGINS_URL": "https://raw.githubusercontent.com/nonebot/registry/results/plugins.json",
             }

@@ -35,7 +35,7 @@ class DockerTestResult(BaseModel):
     """
     metadata: SkipValidation[Metadata] | None
     """ 插件元数据 """
-    outputs: list[str]
+    output: str
     """ 测试输出 """
 
     @field_validator("config", mode="before")
@@ -50,15 +50,6 @@ class DockerPluginTest:
         self.module_name = module_name
         self.config = config
 
-    @property
-    def key(self) -> str:
-        """插件的标识符
-
-        project_link:module_name
-        例：nonebot-plugin-test:nonebot_plugin_test
-        """
-        return f"{self.project_link}:{self.module_name}"
-
     async def run(self, version: str) -> DockerTestResult:
         """运行 Docker 容器测试插件
 
@@ -72,18 +63,25 @@ class DockerPluginTest:
         # 连接 Docker 环境
         client = docker.DockerClient(base_url="unix://var/run/docker.sock")
 
-        # 运行 Docker 容器，捕获输出。 容器内运行的代码拥有超时设限，此处无需设置超时
-        output = client.containers.run(
-            image_name,
-            environment={
-                "PLUGIN_INFO": self.key,
-                "PLUGIN_CONFIG": self.config,
-                # 插件测试需要用到的插件列表来验证插件依赖是否正确加载
-                "PLUGINS_URL": REGISTRY_PLUGINS_URL,
-            },
-            detach=False,
-            remove=True,
-        ).decode()
-
-        data = json.loads(output)
+        try:
+            # 运行 Docker 容器，捕获输出。 容器内运行的代码拥有超时设限，此处无需设置超时
+            output = client.containers.run(
+                image_name,
+                environment={
+                    "PROJECT_LINK": self.project_link,
+                    "MODULE_NAME": self.module_name,
+                    "PLUGIN_CONFIG": self.config,
+                    # 插件测试需要用到的插件列表来验证插件依赖是否正确加载
+                    "PLUGINS_URL": REGISTRY_PLUGINS_URL,
+                },
+                detach=False,
+                remove=True,
+            ).decode()
+            data = json.loads(output)
+        except Exception as e:
+            data = {
+                "run": False,
+                "load": False,
+                "outputs": str(e),
+            }
         return DockerTestResult(**data)

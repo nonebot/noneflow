@@ -1,9 +1,6 @@
 {
   "metadata": null,
-  "outputs": [
-    "\u521b\u5efa\u6d4b\u8bd5\u76ee\u5f55 plugin_test",
-    "        For further information visit https://errors.pydantic.dev/2.9/v/model_type\u001b[0m"
-  ],
+  "output": "\u521b\u5efa\u6d4b\u8bd5\u76ee\u5f55 plugin_test\n        For further information visit https://errors.pydantic.dev/2.9/v/model_type\u001b[0m",
   "load": false,
   "run": true,
   "version": "0.3.9",

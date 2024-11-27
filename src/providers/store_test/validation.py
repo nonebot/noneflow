@@ -41,7 +41,7 @@ async def validate_plugin(
     )
 
     plugin_test_load = plugin_test_result.load
-    plugin_test_output = "\n".join(plugin_test_result.outputs)
+    plugin_test_output = plugin_test_result.output
     plugin_test_version = plugin_test_result.version
     plugin_test_env = plugin_test_result.test_env
     plugin_metadata = plugin_test_result.metadata
@@ -52,8 +52,7 @@ async def validate_plugin(
     )
     click.echo(f"插件元数据：{plugin_metadata}")
     click.echo("插件测试输出：")
-    for output in plugin_test_result.outputs:
-        click.echo(output)
+    click.echo(plugin_test_output)
 
     if previous_plugin is None:
         # 使用商店插件数据作为新的插件数据

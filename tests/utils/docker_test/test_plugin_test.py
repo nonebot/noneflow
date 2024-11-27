@@ -8,9 +8,9 @@ from pytest_mock import MockerFixture
 async def test_plugin_test(mocker: MockerFixture, tmp_path: Path):
     from src.providers.docker_test.plugin_test import PluginTest
 
-    test = PluginTest("project_link:module_name", "test=123")
+    test = PluginTest("project_link", "module_name", "test=123")
 
-    mocker.patch.object(test, "_test_dir", tmp_path)
+    mocker.patch.object(test, "_test_dir", tmp_path / "plugin_test")
 
     def command_output(cmd: str, timeout: int = 300):
         if (
@@ -86,9 +86,7 @@ pydantic==2.10.0 ; python_version >= "3.9" and python_version < "4.0"
             )
         if cmd == "poetry run python runner.py":
             # run_plugin_test
-            with open(
-                tmp_path / "project_link-module_name" / "metadata.json", "w"
-            ) as f:
+            with open(tmp_path / "plugin_test" / "metadata.json", "w") as f:
                 json.dump(
                     {
                         "name": "帮助",
@@ -123,56 +121,56 @@ pydantic==2.10.0 ; python_version >= "3.9" and python_version < "4.0"
                 "type": "application",
                 "supported_adapters": None,
             },
-            "outputs": [
-                "项目 project_link 创建成功。",
-                "    Virtualenv",
-                "        Python:         3.12.7",
-                "        Implementation: CPython",
-                "        Path:           NA",
-                "        Executable:     NA",
-                "    ",
-                "        Base",
-                "        Platform:   linux",
-                "        OS:         posix",
-                "        Python:     3.12.7",
-                "        Path:       /usr/local",
-                "        Executable: /usr/local/bin/python3.12",
-                "        Using version ^0.5.0 for nonebot-plugin-treehelp",
-                "    ",
-                "        Updating dependencies",
-                "        Resolving dependencies...",
-                "    ",
-                "        Package operations: 16 installs, 0 updates, 0 removals",
-                "    ",
-                "          - Installing typing-extensions (4.12.2)",
-                "          - Installing annotated-types (0.7.0)",
-                "          - Installing idna (3.10)",
-                "          - Installing multidict (6.1.0)",
-                "          - Installing propcache (0.2.0)",
-                "          - Installing pydantic-core (2.23.4)",
-                "          - Installing sniffio (1.3.1)",
-                "          - Installing anyio (4.6.2.post1)",
-                "          - Installing exceptiongroup (1.2.2)",
-                "          - Installing loguru (0.7.2)",
-                "          - Installing pydantic (2.9.2)",
-                "          - Installing pygtrie (2.5.0)",
-                "          - Installing python-dotenv (1.0.1)",
-                "          - Installing yarl (1.17.2)",
-                "          - Installing nonebot2 (2.4.0)",
-                "          - Installing nonebot-plugin-treehelp (0.5.0)",
-                "    ",
-                "        Writing lock file",
-                "插件 project_link 的信息如下：",
-                "    name         : nonebot-plugin-treehelp",
-                "         version      : 0.5.0",
-                "         description  : 适用于 Nonebot2 的树形帮助插件",
-                "    ",
-                "        dependencies",
-                "         - nonebot2 >=2.2.0",
-                "插件 project_link 依赖的插件如下：",
-                "    ",
-                "插件 module_name 加载正常：",
-            ],
+            "output": """\
+项目 project_link 创建成功。
+    Virtualenv
+        Python:         3.12.7
+        Implementation: CPython
+        Path:           NA
+        Executable:     NA
+    
+        Base
+        Platform:   linux
+        OS:         posix
+        Python:     3.12.7
+        Path:       /usr/local
+        Executable: /usr/local/bin/python3.12
+        Using version ^0.5.0 for nonebot-plugin-treehelp
+    
+        Updating dependencies
+        Resolving dependencies...
+    
+        Package operations: 16 installs, 0 updates, 0 removals
+    
+          - Installing typing-extensions (4.12.2)
+          - Installing annotated-types (0.7.0)
+          - Installing idna (3.10)
+          - Installing multidict (6.1.0)
+          - Installing propcache (0.2.0)
+          - Installing pydantic-core (2.23.4)
+          - Installing sniffio (1.3.1)
+          - Installing anyio (4.6.2.post1)
+          - Installing exceptiongroup (1.2.2)
+          - Installing loguru (0.7.2)
+          - Installing pydantic (2.9.2)
+          - Installing pygtrie (2.5.0)
+          - Installing python-dotenv (1.0.1)
+          - Installing yarl (1.17.2)
+          - Installing nonebot2 (2.4.0)
+          - Installing nonebot-plugin-treehelp (0.5.0)
+    
+        Writing lock file
+插件 project_link 的信息如下：
+    name         : nonebot-plugin-treehelp
+         version      : 0.5.0
+         description  : 适用于 Nonebot2 的树形帮助插件
+    
+        dependencies
+         - nonebot2 >=2.2.0
+插件 project_link 依赖的插件如下：
+    
+插件 module_name 加载正常：\
+""",  # noqa: W293
             "load": True,
             "run": True,
             "version": "0.5.0",

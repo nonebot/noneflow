@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ### Fixed
 
 - 超时后仍需读取 stdout 与 stderr 的内容
+- 修复 Docker Test 报错未捕获的问题
 
 ## [4.0.11] - 2024-11-23
 

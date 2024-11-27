@@ -80,7 +80,7 @@ async def test_validate_info_from_issue_plugin(
     )
     mock_test_result.version = "1.0.0"
     mock_test_result.load = True
-    mock_test_result.outputs = ['require("nonebot_plugin_alconna")', "test"]
+    mock_test_result.output = 'require("nonebot_plugin_alconna")\ntest'
     mock_docker = mocker.patch("src.providers.docker_test.DockerPluginTest.run")
     mock_docker.return_value = mock_test_result
 
