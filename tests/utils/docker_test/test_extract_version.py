@@ -113,3 +113,27 @@ def test_extract_version_install_failed(tmp_path: Path):
     version = extract_version(output, "nonebot2")
 
     assert version is None
+
+
+def test_extract_version_install_failed_partial_output(tmp_path: Path):
+    """安装插件失败的情况，输出不知道为什么只剩下了部分
+
+    TODO: 弄清楚为什么输出不完整。
+    """
+    from src.providers.docker_test.plugin_test import extract_version
+
+    output = """
+项目 nonebot-plugin-todo-nlp 创建失败：
+    执行命令超时
+    - Installing nonebot-plugin-todo-nlp (0.1.9)
+
+    Writing lock file
+"""
+
+    version = extract_version(output, "nonebot-plugin-todo-nlp")
+
+    assert version == "0.1.9"
+
+    version = extract_version(output, "nonebot2")
+
+    assert version is None
