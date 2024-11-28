@@ -95,6 +95,36 @@ async def test_process_config_check(
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
             mock_issues_resp,
         )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            snapshot(
+                {
+                    "owner": "he0119",
+                    "repo": "action-test",
+                    "issue_number": 80,
+                    "body": """\
+### PyPI 项目名
+
+nonebot-plugin-treehelp
+
+### 插件 import 包名
+
+nonebot_plugin_treehelp
+
+### 插件配置项
+
+```dotenv
+log_level=DEBUG
+```
+
+### 插件测试
+
+- [x] 🔥插件测试中，请稍后\
+""",
+                }
+            ),
+            None,
+        )
         # 检查是否可以复用评论
         ctx.should_call_api(
             "rest.issues.async_list_comments",
@@ -157,6 +187,36 @@ async def test_process_config_check(
                     "repo": "action-test",
                     "issue_number": 100,
                     "labels": ["Plugin", "Config"],
+                }
+            ),
+            None,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            snapshot(
+                {
+                    "owner": "he0119",
+                    "repo": "action-test",
+                    "issue_number": 80,
+                    "body": """\
+### PyPI 项目名
+
+nonebot-plugin-treehelp
+
+### 插件 import 包名
+
+nonebot_plugin_treehelp
+
+### 插件配置项
+
+```dotenv
+log_level=DEBUG
+```
+
+### 插件测试
+
+- [ ] 如需重新运行插件测试，请勾选左侧勾选框\
+""",
                 }
             ),
             None,

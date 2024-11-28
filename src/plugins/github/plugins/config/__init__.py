@@ -23,6 +23,10 @@ from src.plugins.github.depends import (
 )
 from src.plugins.github.models import IssueHandler
 from src.plugins.github.plugins.publish.render import render_comment
+from src.plugins.github.plugins.publish.utils import (
+    ensure_issue_plugin_test_button,
+    ensure_issue_plugin_test_button_in_progress,
+)
 from src.plugins.github.plugins.remove.depends import check_labels
 from src.plugins.github.typing import IssuesEvent
 from src.plugins.github.utils import run_shell_command
@@ -72,6 +76,9 @@ async def handle_remove_check(
             logger.info("议题未开启，已跳过")
             await config_check_matcher.finish()
 
+        # 提示插件正在测试中
+        await ensure_issue_plugin_test_button_in_progress(handler)
+
         # 需要先切换到结果分支
         run_shell_command(["git", "fetch", "origin", RESULTS_BRANCH])
         run_shell_command(["git", "checkout", RESULTS_BRANCH])
@@ -114,6 +121,9 @@ async def handle_remove_check(
         else:
             # 如果之前已经创建了拉取请求，则将其转换为草稿
             await handler.draft_pull_request(branch_name)
+
+        # 确保插件重测按钮存在
+        await ensure_issue_plugin_test_button(handler)
 
 
 async def review_submitted_rule(
