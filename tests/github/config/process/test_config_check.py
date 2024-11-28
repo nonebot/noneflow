@@ -258,7 +258,7 @@ async def test_process_config_check(
                         "load": "",
                         "metadata": {
                             "name": "name",
-                            "desc": "desc",
+                            "description": "desc",
                             "homepage": "https://nonebot.dev",
                             "type": "application",
                             "supported_adapters": ["nonebot.adapters.onebot.v11"],

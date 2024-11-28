@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any, Literal, Self, TypeAlias
 from zoneinfo import ZoneInfo
 
-from pydantic import BaseModel, Field, field_serializer
+from pydantic import BaseModel, Field, field_serializer, field_validator
 from pydantic_extra_types.color import Color
 
 from src.providers.constants import BOT_KEY_TEMPLATE, PYPI_KEY_TEMPLATE
@@ -356,6 +356,22 @@ class StoreTestResult(BaseModel):
                 ),
             },
         )
+
+    @field_validator("outputs", mode="before")
+    @classmethod
+    def outputs_metadata_validator(cls, v: dict[str, Any]) -> dict[str, Any]:
+        # nonebot2 中插件元数据的字段和商店中的字段不一致
+        if v["metadata"] is not None:
+            metadata = {}
+            # 将 metadata 中 desc 字段重命名为 description
+            # 同时保证其他字段顺序不变
+            for key, value in v["metadata"].items():
+                if key == "desc":
+                    metadata["description"] = value
+                else:
+                    metadata[key] = value
+            v["metadata"] = metadata
+        return v
 
 
 class RegistryUpdatePayload(BaseModel):

@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 超时后仍需读取 stdout 与 stderr 的内容
 - 修复 Docker Test 报错未捕获的问题
+- 修复插件测试结果中插件元数据 description 字段名称不正确的问题
 
 ## [4.0.11] - 2024-11-23
 
