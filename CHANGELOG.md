@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [4.1.0] - 2024-11-28
+
 ### Added
 
 - 从插件测试中提取环境信息
@@ -546,7 +548,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.0.11...HEAD
+[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.1.0...HEAD
+[4.1.0]: https://github.com/nonebot/noneflow/compare/v4.0.11...v4.1.0
 [4.0.11]: https://github.com/nonebot/noneflow/compare/v4.0.10...v4.0.11
 [4.0.10]: https://github.com/nonebot/noneflow/compare/v4.0.9...v4.0.10
 [4.0.9]: https://github.com/nonebot/noneflow/compare/v4.0.8...v4.0.9
