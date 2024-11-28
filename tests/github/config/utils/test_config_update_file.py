@@ -97,7 +97,7 @@ async def test_update_file(
                         "load": "test_output",
                         "metadata": {
                             "name": "帮助",
-                            "desc": "获取插件帮助信息",
+                            "description": "获取插件帮助信息",
                             "homepage": "https://github.com/he0119/nonebot-plugin-treehelp",
                             "type": "application",
                             "supported_adapters": None,

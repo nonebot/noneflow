@@ -97,7 +97,7 @@ async def test_trigger_registry_update(
                                 "load": "",
                                 "metadata": {
                                     "name": "name",
-                                    "desc": "desc",
+                                    "description": "desc",
                                     "homepage": "https://nonebot.dev",
                                     "type": "application",
                                     "supported_adapters": [
@@ -195,7 +195,7 @@ async def test_trigger_registry_update_skip_test(
                                 "load": "插件未进行测试",
                                 "metadata": {
                                     "name": "name",
-                                    "desc": "desc",
+                                    "description": "desc",
                                     "homepage": "https://nonebot.dev",
                                     "type": "application",
                                     "supported_adapters": [

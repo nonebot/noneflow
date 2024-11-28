@@ -117,7 +117,7 @@ async def test_process_pull_request(
                                 "load": "",
                                 "metadata": {
                                     "name": "name",
-                                    "desc": "desc",
+                                    "description": "desc",
                                     "homepage": "https://nonebot.dev",
                                     "type": "application",
                                     "supported_adapters": [
@@ -314,7 +314,7 @@ async def test_process_pull_request_skip_plugin_test(
                                 "load": "插件未进行测试",
                                 "metadata": {
                                     "name": "name",
-                                    "desc": "desc",
+                                    "description": "desc",
                                     "homepage": "https://nonebot.dev",
                                     "type": "application",
                                     "supported_adapters": [
