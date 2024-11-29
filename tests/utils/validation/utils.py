@@ -71,6 +71,7 @@ def generate_plugin_data(
     test_output: str | None = "test_output",
     load: bool | None = True,
     metadata: bool | None = True,
+    version: str | None = "0.0.1",
 ):
     return exclude_none(
         {
@@ -87,7 +88,7 @@ def generate_plugin_data(
             "metadata": metadata,
             "author_id": author_id,
             "load": load,
-            "version": "0.0.1",
+            "version": version,
             "test_output": test_output,
         }
     )

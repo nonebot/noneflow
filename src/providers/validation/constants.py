@@ -18,6 +18,7 @@ PLUGIN_VALID_TYPE: list[LiteralString] = ["application", "library"]
 
 # Pydantic 错误信息翻译
 MESSAGE_TRANSLATIONS = {
+    "string_type": "值不是合法的字符串",
     "model_type": "值不是合法的字典",
     "list_type": "值不是合法的列表",
     "set_type": "值不是合法的集合",

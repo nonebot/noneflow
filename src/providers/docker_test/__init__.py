@@ -82,6 +82,7 @@ class DockerPluginTest:
             data = {
                 "run": False,
                 "load": False,
-                "outputs": str(e),
+                "output": str(e),
+                "metadata": None,
             }
         return DockerTestResult(**data)

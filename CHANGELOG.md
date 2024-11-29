@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 修复 Docker Test 报错后仍无法运行的问题
+
 ## [4.1.0] - 2024-11-28
 
 ### Added
