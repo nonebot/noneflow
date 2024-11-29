@@ -210,10 +210,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     skip_test: bool
     """是否跳过插件测试"""
     version: str
-    """插件版本号
-
-    从 PyPI 获取或者测试中获取
-    """
+    """插件版本号"""
     test_config: str = ""
     """插件测试配置"""
     test_output: str = ""

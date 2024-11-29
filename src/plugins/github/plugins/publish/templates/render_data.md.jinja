@@ -16,6 +16,6 @@
 插件 <a href="{{ value }}">加载测试</a> 通过。
 {%- endif %}
 {% else %}
-{{ key }}: {{ value }}。
+{{ key|key_to_name }}: {{ value }}。
 {%- endif %}
 {% endmacro %}

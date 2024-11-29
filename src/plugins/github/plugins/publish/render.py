@@ -36,6 +36,10 @@ def loc_to_name(loc: list[str | int]) -> str:
     return " > ".join([_loc_to_name(str(item)) for item in loc])
 
 
+def key_to_name(key: str) -> str:
+    return _loc_to_name(key)
+
+
 env = jinja2.Environment(
     loader=jinja2.FileSystemLoader(Path(__file__).parent / "templates"),
     enable_async=True,
@@ -48,6 +52,7 @@ env = jinja2.Environment(
 env.filters["tags_to_str"] = tags_to_str
 env.filters["supported_adapters_to_str"] = supported_adapters_to_str
 env.filters["loc_to_name"] = loc_to_name
+env.filters["key_to_name"] = key_to_name
 
 
 async def render_comment(result: ValidationDict, reuse: bool = False) -> str:
@@ -64,6 +69,8 @@ async def render_comment(result: ValidationDict, reuse: bool = False) -> str:
         "project_link",
         "type",
         "supported_adapters",
+        "time",
+        "version",
     ]
 
     for key in data.copy():

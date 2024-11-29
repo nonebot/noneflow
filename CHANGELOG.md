@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Added
+
+- 插件插件测试结果显示版本号和发布时间
+
 ### Fixed
 
 - 修复 Docker Test 报错后仍无法运行的问题
