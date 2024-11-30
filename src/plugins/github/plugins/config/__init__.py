@@ -12,16 +12,15 @@ from nonebot.params import Depends
 
 from src.plugins.github.constants import CONFIG_LABEL, TITLE_MAX_LENGTH
 from src.plugins.github.depends import (
-    RepoInfo,
     bypass_git,
+    get_github_handler,
     get_installation_id,
     get_issue_handler,
-    get_repo_info,
     get_type_by_labels_name,
-    install_pre_commit_hooks,
     is_bot_triggered_workflow,
 )
 from src.plugins.github.models import IssueHandler
+from src.plugins.github.models.github import GithubHandler
 from src.plugins.github.plugins.publish.render import render_comment
 from src.plugins.github.plugins.publish.utils import (
     ensure_issue_plugin_test_button,
@@ -29,7 +28,6 @@ from src.plugins.github.plugins.publish.utils import (
 )
 from src.plugins.github.plugins.remove.depends import check_labels
 from src.plugins.github.typing import IssuesEvent
-from src.plugins.github.utils import run_shell_command
 from src.providers.validation.models import PublishType
 
 from .constants import BRANCH_NAME_PREFIX, COMMIT_MESSAGE_PREFIX, RESULTS_BRANCH
@@ -80,8 +78,7 @@ async def handle_remove_check(
         await ensure_issue_plugin_test_button_in_progress(handler)
 
         # 需要先切换到结果分支
-        run_shell_command(["git", "fetch", "origin", RESULTS_BRANCH])
-        run_shell_command(["git", "checkout", RESULTS_BRANCH])
+        handler.checkout_remote_branch(RESULTS_BRANCH)
 
         # 检查是否满足发布要求
         # 仅在通过检查的情况下创建拉取请求
@@ -103,16 +100,19 @@ async def handle_remove_check(
             commit_message = f"{COMMIT_MESSAGE_PREFIX} {result.type.value.lower()} {result.name} (#{handler.issue_number})"
 
             # 创建新分支
-            run_shell_command(["git", "switch", "-C", branch_name])
+            handler.switch_branch(branch_name)
             # 更新文件
             update_file(result)
             handler.commit_and_push(commit_message, branch_name, handler.author)
             # 创建拉取请求
             try:
-                await handler.create_pull_request(
+                pull_number = await handler.create_pull_request(
                     RESULTS_BRANCH,
                     title,
                     branch_name,
+                )
+                await handler.add_labels(
+                    pull_number,
                     [result.type.value, CONFIG_LABEL],
                 )
             except RequestFailed:
@@ -146,21 +146,18 @@ async def review_submitted_rule(
 auto_merge_matcher = on_type(PullRequestReviewSubmitted, rule=review_submitted_rule)
 
 
-@auto_merge_matcher.handle(
-    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hooks)]
-)
+@auto_merge_matcher.handle(parameterless=[Depends(bypass_git)])
 async def handle_auto_merge(
     bot: GitHubBot,
     event: PullRequestReviewSubmitted,
     installation_id: int = Depends(get_installation_id),
-    repo_info: RepoInfo = Depends(get_repo_info),
+    handler: GithubHandler = Depends(get_github_handler),
 ) -> None:
     async with bot.as_installation(installation_id):
+        pull_number = event.payload.pull_request.number
+
         # 如果有冲突的话，不会触发 Github Actions
         # 所以直接合并即可
-        await bot.rest.pulls.async_merge(
-            **repo_info.model_dump(),
-            pull_number=event.payload.pull_request.number,
-            merge_method="rebase",
-        )
+        await handler.merge_pull_request(pull_number, "rebase")
+
         logger.info(f"已自动合并 #{event.payload.pull_request.number}")

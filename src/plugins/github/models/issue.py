@@ -77,15 +77,12 @@ class IssueHandler(GithubHandler):
         base_branch: str,
         title: str,
         branch_name: str,
-        label: str | list[str],
         body: str = "",
     ):
         if not body:
             body = f"resolve #{self.issue_number}"
 
-        return await super().create_pull_request(
-            base_branch, title, branch_name, label, body
-        )
+        return await super().create_pull_request(base_branch, title, branch_name, body)
 
     async def should_skip_test(self) -> bool:
         """判断评论是否包含跳过的标记"""

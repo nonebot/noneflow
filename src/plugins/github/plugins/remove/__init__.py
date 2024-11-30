@@ -13,13 +13,11 @@ from pydantic_core import PydanticCustomError
 from src.plugins.github import plugin_config
 from src.plugins.github.constants import TITLE_MAX_LENGTH
 from src.plugins.github.depends import (
-    RepoInfo,
     bypass_git,
     get_github_handler,
     get_installation_id,
     get_issue_handler,
     get_related_issue_number,
-    get_repo_info,
     get_type_by_labels_name,
     install_pre_commit_hooks,
     is_bot_triggered_workflow,
@@ -32,7 +30,7 @@ from src.providers.validation.models import PublishType
 from .constants import BRANCH_NAME_PREFIX, REMOVE_LABEL
 from .depends import check_labels
 from .render import render_comment, render_error
-from .utils import process_pull_reqeusts, resolve_conflict_pull_requests
+from .utils import process_pull_reqeusts
 from .validation import validate_author_info
 
 
@@ -113,13 +111,13 @@ async def handle_remove_check(
         pull_number = (
             await store_handler.get_pull_request_by_branch(branch_name)
         ).number
+
         # 评论议题
-        await handler.comment_issue(
-            await render_comment(
-                result,
-                pr_url=f"{plugin_config.input_config.store_repository}#{pull_number}",
-            )
+        comment = await render_comment(
+            result,
+            f"{plugin_config.input_config.store_repository}#{pull_number}",
         )
+        await handler.comment_issue(comment)
 
 
 async def review_submitted_rule(
@@ -142,30 +140,16 @@ async def review_submitted_rule(
 auto_merge_matcher = on_type(PullRequestReviewSubmitted, rule=review_submitted_rule)
 
 
-@auto_merge_matcher.handle(
-    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hooks)]
-)
+@auto_merge_matcher.handle(parameterless=[Depends(bypass_git)])
 async def handle_auto_merge(
     bot: GitHubBot,
     event: PullRequestReviewSubmitted,
     installation_id: int = Depends(get_installation_id),
-    repo_info: RepoInfo = Depends(get_repo_info),
     handler: GithubHandler = Depends(get_github_handler),
 ) -> None:
     async with bot.as_installation(installation_id):
-        pull_request = (
-            await bot.rest.pulls.async_get(
-                **repo_info.model_dump(), pull_number=event.payload.pull_request.number
-            )
-        ).parsed_data
+        pull_number = event.payload.pull_request.number
 
-        if not pull_request.mergeable:
-            # 尝试处理冲突
-            await resolve_conflict_pull_requests(handler, [pull_request])
+        await handler.merge_pull_request(pull_number, "rebase")
 
-        await bot.rest.pulls.async_merge(
-            **repo_info.model_dump(),
-            pull_number=event.payload.pull_request.number,
-            merge_method="rebase",
-        )
-        logger.info(f"已自动合并 #{event.payload.pull_request.number}")
+        logger.info(f"已自动合并 #{pull_number}")

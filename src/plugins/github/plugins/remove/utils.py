@@ -9,7 +9,7 @@ from src.plugins.github.depends.utils import (
 )
 from src.plugins.github.models import GithubHandler, IssueHandler
 from src.plugins.github.typing import PullRequestList
-from src.plugins.github.utils import commit_message, run_shell_command
+from src.plugins.github.utils import commit_message
 from src.providers.utils import dump_json5
 from src.providers.validation.models import PublishType
 
@@ -51,7 +51,7 @@ async def process_pull_reqeusts(
     message = commit_message(COMMIT_MESSAGE_PREFIX, result.name, handler.issue_number)
 
     # 切换分支
-    run_shell_command(["git", "switch", "-C", branch_name])
+    handler.switch_branch(branch_name)
     # 更新文件并提交更改
     update_file(result)
     store_handler.commit_and_push(message, branch_name, author=handler.author)
@@ -59,12 +59,14 @@ async def process_pull_reqeusts(
     logger.info("开始创建拉取请求")
 
     try:
-        await store_handler.create_pull_request(
+        pull_number = await store_handler.create_pull_request(
             plugin_config.input_config.base,
             title,
             branch_name,
-            [REMOVE_LABEL, result.publish_type.value],
             body=f"resolve {handler.repo_info}#{handler.issue_number}",
+        )
+        await store_handler.add_labels(
+            pull_number, [REMOVE_LABEL, result.publish_type.value]
         )
     except RequestFailed:
         # 如果之前已经创建了拉取请求，则将其转换为草稿
@@ -104,9 +106,9 @@ async def resolve_conflict_pull_requests(
                 continue
 
             # 每次切换前都要确保回到主分支
-            run_shell_command(["git", "checkout", plugin_config.input_config.base])
+            handler.checkout_branch(plugin_config.input_config.base)
             # 切换到对应分支
-            run_shell_command(["git", "switch", "-C", pull.head.ref])
+            handler.switch_branch(pull.head.ref)
             # 更新文件
             update_file(result)
 

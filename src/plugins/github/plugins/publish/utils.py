@@ -9,7 +9,6 @@ from src.plugins.github.depends.utils import get_type_by_labels
 from src.plugins.github.models import GithubHandler, IssueHandler
 from src.plugins.github.typing import PullRequestList
 from src.plugins.github.utils import commit_message as _commit_message
-from src.plugins.github.utils import run_shell_command
 from src.providers.models import RegistryUpdatePayload, to_store
 from src.providers.utils import dump_json5, load_json_from_file
 from src.providers.validation import PublishType, ValidationDict
@@ -114,9 +113,9 @@ async def resolve_conflict_pull_requests(
                 continue
 
             # 每次切换前都要确保回到主分支
-            run_shell_command(["git", "checkout", plugin_config.input_config.base])
+            handler.checkout_branch(plugin_config.input_config.base)
             # 切换到对应分支
-            run_shell_command(["git", "switch", "-C", pull.head.ref])
+            handler.switch_branch(pull.head.ref)
             # 更新文件
             update_file(result)
 
@@ -210,15 +209,18 @@ async def process_pull_request(
     if result.valid:
         commit_message = f"{COMMIT_MESSAGE_PREFIX} {result.type.value.lower()} {result.name} (#{handler.issue_number})"
 
-        run_shell_command(["git", "switch", "-C", branch_name])
+        handler.switch_branch(branch_name)
         # 更新文件
         update_file(result)
         handler.commit_and_push(commit_message, branch_name, handler.author)
         # 创建拉取请求
         try:
-            await handler.create_pull_request(
-                plugin_config.input_config.base, title, branch_name, result.type.value
+            pull_number = await handler.create_pull_request(
+                plugin_config.input_config.base,
+                title,
+                branch_name,
             )
+            await handler.add_labels(pull_number, result.type.value)
         except RequestFailed:
             # 如果之前已经创建了拉取请求，则将其转换为草稿
             logger.info("该分支的拉取请求已创建，请前往查看")
