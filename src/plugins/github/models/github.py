@@ -26,7 +26,7 @@ class GithubHandler(GitHandler):
         )
         logger.info(f"标题已修改为 {title}")
 
-    async def update_issue_content(self, body: str, issue_number: int):
+    async def update_issue_body(self, body: str, issue_number: int):
         """更新议题内容"""
         await self.bot.rest.issues.async_update(
             **self.repo_info.model_dump(), issue_number=issue_number, body=body
@@ -57,13 +57,13 @@ class GithubHandler(GitHandler):
 
     async def create_comment(self, comment: str, issue_number: int):
         """发布评论"""
-        await self.bot.rest.issues.async_create_comment(
+        return await self.bot.rest.issues.async_create_comment(
             **self.repo_info.model_dump(), issue_number=issue_number, body=comment
         )
 
     async def update_comment(self, comment_id: int, comment: str):
         """修改评论"""
-        await self.bot.rest.issues.async_update_comment(
+        return await self.bot.rest.issues.async_update_comment(
             **self.repo_info.model_dump(), comment_id=comment_id, body=comment
         )
 
@@ -234,6 +234,18 @@ class GithubHandler(GitHandler):
                 **self.repo_info.model_dump(), issue_number=issue_number
             )
         ).parsed_data
+
+    async def close_issue(
+        self, reason: Literal["completed", "not_planned", "reopened"], issue_number: int
+    ):
+        """关闭议题"""
+        logger.info(f"正在关闭议题 #{issue_number}")
+        await self.bot.rest.issues.async_update(
+            **self.repo_info.model_dump(),
+            issue_number=issue_number,
+            state="closed",
+            state_reason=reason,
+        )
 
     async def to_issue_handler(self, issue_number: int):
         """获取议题处理器"""

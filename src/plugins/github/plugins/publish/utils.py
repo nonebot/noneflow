@@ -162,7 +162,7 @@ async def ensure_issue_content(handler: IssueHandler):
 
     if new_content:
         new_content.append(issue_body)
-        await handler.update_issue_content("\n\n".join(new_content))
+        await handler.update_issue_body("\n\n".join(new_content))
         logger.info("检测到议题内容缺失，已更新")
 
 
@@ -180,7 +180,7 @@ async def ensure_issue_plugin_test_button(handler: IssueHandler):
         new_content = PLUGIN_TEST_PATTERN.sub(new_content, issue_body)
         logger.info("重置插件重测按钮文本")
 
-    await handler.update_issue_content(new_content)
+    await handler.update_issue_body(new_content)
 
 
 async def ensure_issue_plugin_test_button_in_progress(handler: IssueHandler):
@@ -197,7 +197,7 @@ async def ensure_issue_plugin_test_button_in_progress(handler: IssueHandler):
         new_content = PLUGIN_TEST_PATTERN.sub(new_content, issue_body)
         logger.info("重置插件测试进行中文本")
 
-    await handler.update_issue_content(new_content)
+    await handler.update_issue_body(new_content)
 
 
 async def process_pull_request(
