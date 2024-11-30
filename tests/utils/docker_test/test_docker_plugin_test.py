@@ -56,6 +56,47 @@ async def test_docker_plugin_test(mocked_api: MockRouter, mocker: MockerFixture)
     )
 
 
+async def test_docker_plugin_test_exception(
+    mocked_api: MockRouter, mocker: MockerFixture
+):
+    """插件测试时报错"""
+    from src.providers.docker_test import DockerPluginTest, DockerTestResult
+
+    mocked_run = mocker.Mock()
+    mocked_run.side_effect = Exception("Docker failed")
+    mocked_client = mocker.Mock()
+    mocked_client.containers.run = mocked_run
+    mocked_docker = mocker.patch("docker.DockerClient")
+    mocked_docker.return_value = mocked_client
+
+    test = DockerPluginTest("project_link", "module_name")
+    result = await test.run("3.12")
+
+    assert result == snapshot(
+        DockerTestResult(
+            run=False,
+            load=False,
+            metadata=None,
+            output="Docker failed",
+        )
+    )
+
+    assert not mocked_api["store_plugins"].called
+    mocked_run.assert_called_once_with(
+        "ghcr.io/nonebot/nonetest:3.12-latest",
+        environment=snapshot(
+            {
+                "PROJECT_LINK": "project_link",
+                "MODULE_NAME": "module_name",
+                "PLUGIN_CONFIG": "",
+                "PLUGINS_URL": "https://raw.githubusercontent.com/nonebot/registry/results/plugins.json",
+            }
+        ),
+        detach=False,
+        remove=True,
+    )
+
+
 async def test_docker_plugin_test_metadata_some_fields_empty(
     mocked_api: MockRouter, mocker: MockerFixture
 ):
