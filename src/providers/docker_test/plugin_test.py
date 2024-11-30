@@ -203,6 +203,10 @@ def extract_version(output: str, project_link: str) -> str | None:
     if match:
         return match.group(1).strip()
 
+    match = re.search(rf"- Installing {project_link} \((\S+)\)", output)
+    if match:
+        return match.group(1).strip()
+
 
 def parse_requirements(requirements: str) -> dict[str, str]:
     """解析 requirements.txt 文件"""
@@ -326,12 +330,9 @@ class PluginTest:
         except TimeoutError:
             proc.terminate()
             # 超时后仍需读取 stdout 与 stderr 的内容
-            stdout = await proc.stdout.read() if proc.stdout else b""
-            stderr = (
-                "执行命令超时".encode() + await proc.stderr.read()
-                if proc.stderr
-                else "执行命令超时".encode()
-            )
+            stdout = "执行命令超时\n".encode()
+            stdout += await proc.stdout.read() if proc.stdout else b""
+            stderr = await proc.stderr.read() if proc.stderr else b""
             code = 1
 
         return not code, stdout.decode(), stderr.decode()
