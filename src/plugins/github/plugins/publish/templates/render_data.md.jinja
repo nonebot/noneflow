@@ -15,7 +15,9 @@
 {%- else %}
 插件 <a href="{{ value }}">加载测试</a> 通过。
 {%- endif %}
-{% else %}
+{%- elif key == "time" %}
+插件发布时间：{{ value|format_time }}。
+{%- else %}
 {{ key|key_to_name }}: {{ value }}。
 {%- endif %}
 {% endmacro %}

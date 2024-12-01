@@ -20,7 +20,7 @@ async def test_name_too_long(mocked_api: MockRouter) -> None:
         {
             "module_name": "module_name",
             "project_link": "project_link",
-            "time": "2023-09-01T00:00:00+00:00Z",
+            "time": "2023-09-01T00:00:00+00:00",
             "desc": "desc",
             "author": "author",
             "homepage": "https://nonebot.dev",
