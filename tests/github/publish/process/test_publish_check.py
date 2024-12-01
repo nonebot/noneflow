@@ -416,6 +416,596 @@ async def test_adapter_process_publish_check(
     assert mocked_api["homepage"].called
 
 
+async def test_plugin_process_publish_check(
+    app: App,
+    mocker: MockerFixture,
+    mocked_api: MockRouter,
+    tmp_path: Path,
+    mock_installation,
+) -> None:
+    """测试插件的发布流程"""
+    from src.plugins.github import plugin_config
+    from src.providers.docker_test import Metadata
+
+    mock_subprocess_run = mocker.patch(
+        "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
+    )
+
+    mock_issue = MockIssue(body=MockBody(type="plugin").generate()).as_mock(mocker)
+
+    mock_event = mocker.MagicMock()
+    mock_event.issue = mock_issue
+
+    mock_issues_resp = mocker.MagicMock()
+    mock_issues_resp.parsed_data = mock_issue
+
+    mock_comment = mocker.MagicMock()
+    mock_comment.body = "Plugin: name"
+    mock_list_comments_resp = mocker.MagicMock()
+    mock_list_comments_resp.parsed_data = [mock_comment]
+
+    mock_pull = mocker.MagicMock()
+    mock_pull.number = 2
+    mock_pulls_resp = mocker.MagicMock()
+    mock_pulls_resp.parsed_data = mock_pull
+
+    mock_test_result = mocker.MagicMock()
+    mock_test_result.metadata = Metadata(
+        name="name",
+        desc="desc",
+        homepage="https://nonebot.dev",
+        type="application",
+        supported_adapters=None,
+    )
+    mock_test_result.load = True
+    mock_test_result.version = "1.0.0"
+    mock_test_result.output = ""
+    mock_docker = mocker.patch("src.providers.docker_test.DockerPluginTest.run")
+    mock_docker.return_value = mock_test_result
+
+    with open(tmp_path / "plugins.json5", "w") as f:
+        json.dump([], f)
+
+    check_json_data(plugin_config.input_config.plugin_path, [])
+
+    async with app.test_matcher() as ctx:
+        adapter, bot = get_github_bot(ctx)
+        event = get_mock_event(IssuesOpened)
+        event.payload.issue.labels = get_issue_labels(["Plugin"])
+
+        ctx.should_call_api(
+            "rest.apps.async_get_repo_installation",
+            {"owner": "he0119", "repo": "action-test"},
+            mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+            mock_issues_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            snapshot(
+                {
+                    "owner": "he0119",
+                    "repo": "action-test",
+                    "issue_number": 80,
+                    "body": """\
+### PyPI 项目名
+
+project_link
+
+### 插件 import 包名
+
+module_name
+
+### 标签
+
+[{"label": "test", "color": "#ffffff"}]
+
+### 插件配置项
+
+```dotenv
+log_level=DEBUG
+```
+
+### 插件测试
+
+- [x] 🔥插件测试中，请稍后\
+""",
+                }
+            ),
+            True,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            snapshot(
+                {
+                    "owner": "he0119",
+                    "repo": "action-test",
+                    "issue_number": 80,
+                    "body": """\
+### PyPI 项目名
+
+project_link
+
+### 插件 import 包名
+
+module_name
+
+### 标签
+
+[{"label": "test", "color": "#ffffff"}]
+
+### 插件配置项
+
+```dotenv
+log_level=DEBUG
+```
+
+### 插件测试
+
+- [ ] 如需重新运行插件测试，请勾选左侧勾选框\
+""",
+                }
+            ),
+            True,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_create",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "title": snapshot("Plugin: name"),
+                "body": "resolve #80",
+                "base": "master",
+                "head": "publish/issue80",
+            },
+            mock_pulls_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_add_labels",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 2,
+                "labels": ["Plugin"],
+            },
+            True,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            snapshot(
+                {
+                    "owner": "he0119",
+                    "repo": "action-test",
+                    "issue_number": 80,
+                    "title": "Plugin: name",
+                }
+            ),
+            True,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_create_comment",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 80,
+                "body": snapshot(
+                    """\
+# 📃 商店发布检查结果
+
+> Plugin: name
+
+**✅ 所有测试通过，一切准备就绪！**
+
+
+<details>
+<summary>详情</summary>
+<pre><code><li>✅ 项目 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li><li>✅ 插件发布时间：2023-09-01 00:00:00。</li><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 标签: test-#ffffff。</li><li>✅ 插件类型: application。</li><li>✅ 插件支持的适配器: 所有。</li><li>✅ 插件版本号: 1.0.0。</li><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 通过。</li></code></pre>
+</details>
+
+---
+
+💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
+💡 当插件加载测试失败时，请发布新版本后勾选插件测试勾选框重新运行插件测试。
+
+♻️ 评论已更新至最新检查结果
+
+💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
+<!-- NONEFLOW -->
+"""
+                ),
+            },
+            True,
+        )
+
+        ctx.receive_event(bot, event)
+
+    # 测试 git 命令
+    mock_subprocess_run.assert_has_calls(
+        [
+            mocker.call(
+                ["git", "config", "--global", "safe.directory", "*"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                ["pre-commit", "install", "--install-hooks"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                ["git", "switch", "-C", "publish/issue80"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                ["git", "config", "--global", "user.name", "test"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                [
+                    "git",
+                    "config",
+                    "--global",
+                    "user.email",
+                    "test@users.noreply.github.com",
+                ],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(["git", "add", "-A"], check=True, capture_output=True),
+            mocker.call(
+                ["git", "commit", "-m", ":beers: publish plugin name (#80)"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(["git", "fetch", "origin"], check=True, capture_output=True),
+            mocker.call(
+                ["git", "diff", "origin/publish/issue80", "publish/issue80"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                ["git", "push", "origin", "publish/issue80", "-f"],
+                check=True,
+                capture_output=True,
+            ),
+        ]  # type: ignore
+    )
+
+    # 检查文件是否正确
+    check_json_data(
+        plugin_config.input_config.adapter_path,
+        [
+            snapshot(
+                {
+                    "module_name": "module_name1",
+                    "project_link": "project_link1",
+                    "name": "name",
+                    "desc": "desc",
+                    "author_id": 1,
+                    "homepage": "https://v2.nonebot.dev",
+                    "tags": [],
+                    "is_official": False,
+                }
+            )
+        ],
+    )
+
+    assert mocked_api["homepage"].called
+    mock_docker.assert_called_once_with("3.12")
+
+
+async def test_plugin_process_publish_check_re_run(
+    app: App,
+    mocker: MockerFixture,
+    mocked_api: MockRouter,
+    tmp_path: Path,
+    mock_installation,
+) -> None:
+    """测试插件的发布流程，重新运行插件测试"""
+    from src.plugins.github import plugin_config
+    from src.providers.docker_test import Metadata
+
+    mock_subprocess_run = mocker.patch(
+        "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
+    )
+
+    # 这次运行时，议题内容已经包含了插件测试按钮
+    mock_issue = MockIssue(
+        body=MockBody(type="plugin", test_button=True).generate()
+    ).as_mock(mocker)
+
+    mock_event = mocker.MagicMock()
+    mock_event.issue = mock_issue
+
+    mock_issues_resp = mocker.MagicMock()
+    mock_issues_resp.parsed_data = mock_issue
+
+    mock_comment = mocker.MagicMock()
+    mock_comment.body = "Plugin: name"
+    mock_list_comments_resp = mocker.MagicMock()
+    mock_list_comments_resp.parsed_data = [mock_comment]
+
+    mock_pull = mocker.MagicMock()
+    mock_pull.number = 2
+    mock_pulls_resp = mocker.MagicMock()
+    mock_pulls_resp.parsed_data = mock_pull
+
+    mock_test_result = mocker.MagicMock()
+    mock_test_result.metadata = Metadata(
+        name="name",
+        desc="desc",
+        homepage="https://nonebot.dev",
+        type="application",
+        supported_adapters=None,
+    )
+    mock_test_result.load = True
+    mock_test_result.version = "1.0.0"
+    mock_test_result.output = ""
+    mock_docker = mocker.patch("src.providers.docker_test.DockerPluginTest.run")
+    mock_docker.return_value = mock_test_result
+
+    with open(tmp_path / "plugins.json5", "w") as f:
+        json.dump([], f)
+
+    check_json_data(plugin_config.input_config.plugin_path, [])
+
+    async with app.test_matcher() as ctx:
+        adapter, bot = get_github_bot(ctx)
+        event = get_mock_event(IssuesOpened)
+        event.payload.issue.labels = get_issue_labels(["Plugin"])
+
+        ctx.should_call_api(
+            "rest.apps.async_get_repo_installation",
+            {"owner": "he0119", "repo": "action-test"},
+            mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+            mock_issues_resp,
+        )
+        # 测试前，将插件测试状态修改为插件测试中，提示用户
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            snapshot(
+                {
+                    "owner": "he0119",
+                    "repo": "action-test",
+                    "issue_number": 80,
+                    "body": """\
+### PyPI 项目名
+
+project_link
+
+### 插件 import 包名
+
+module_name
+
+### 标签
+
+[{"label": "test", "color": "#ffffff"}]
+
+### 插件配置项
+
+```dotenv
+log_level=DEBUG
+```
+
+### 插件测试
+
+- [x] 🔥插件测试中，请稍后\
+""",
+                }
+            ),
+            True,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            snapshot(
+                {
+                    "owner": "he0119",
+                    "repo": "action-test",
+                    "issue_number": 80,
+                    "body": """\
+### PyPI 项目名
+
+project_link
+
+### 插件 import 包名
+
+module_name
+
+### 标签
+
+[{"label": "test", "color": "#ffffff"}]
+
+### 插件配置项
+
+```dotenv
+log_level=DEBUG
+```
+
+### 插件测试
+
+- [ ] 如需重新运行插件测试，请勾选左侧勾选框\
+""",
+                }
+            ),
+            True,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_create",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "title": snapshot("Plugin: name"),
+                "body": "resolve #80",
+                "base": "master",
+                "head": "publish/issue80",
+            },
+            mock_pulls_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_add_labels",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 2,
+                "labels": ["Plugin"],
+            },
+            True,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            snapshot(
+                {
+                    "owner": "he0119",
+                    "repo": "action-test",
+                    "issue_number": 80,
+                    "title": "Plugin: name",
+                }
+            ),
+            True,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_create_comment",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 80,
+                "body": snapshot(
+                    """\
+# 📃 商店发布检查结果
+
+> Plugin: name
+
+**✅ 所有测试通过，一切准备就绪！**
+
+
+<details>
+<summary>详情</summary>
+<pre><code><li>✅ 项目 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li><li>✅ 插件发布时间：2023-09-01 00:00:00。</li><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 标签: test-#ffffff。</li><li>✅ 插件类型: application。</li><li>✅ 插件支持的适配器: 所有。</li><li>✅ 插件版本号: 1.0.0。</li><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 通过。</li></code></pre>
+</details>
+
+---
+
+💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
+💡 当插件加载测试失败时，请发布新版本后勾选插件测试勾选框重新运行插件测试。
+
+♻️ 评论已更新至最新检查结果
+
+💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
+<!-- NONEFLOW -->
+"""
+                ),
+            },
+            True,
+        )
+
+        ctx.receive_event(bot, event)
+
+    # 测试 git 命令
+    mock_subprocess_run.assert_has_calls(
+        [
+            mocker.call(
+                ["git", "config", "--global", "safe.directory", "*"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                ["pre-commit", "install", "--install-hooks"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                ["git", "switch", "-C", "publish/issue80"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                ["git", "config", "--global", "user.name", "test"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                [
+                    "git",
+                    "config",
+                    "--global",
+                    "user.email",
+                    "test@users.noreply.github.com",
+                ],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(["git", "add", "-A"], check=True, capture_output=True),
+            mocker.call(
+                ["git", "commit", "-m", ":beers: publish plugin name (#80)"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(["git", "fetch", "origin"], check=True, capture_output=True),
+            mocker.call(
+                ["git", "diff", "origin/publish/issue80", "publish/issue80"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                ["git", "push", "origin", "publish/issue80", "-f"],
+                check=True,
+                capture_output=True,
+            ),
+        ]  # type: ignore
+    )
+
+    # 检查文件是否正确
+    check_json_data(
+        plugin_config.input_config.adapter_path,
+        [
+            snapshot(
+                {
+                    "module_name": "module_name1",
+                    "project_link": "project_link1",
+                    "name": "name",
+                    "desc": "desc",
+                    "author_id": 1,
+                    "homepage": "https://v2.nonebot.dev",
+                    "tags": [],
+                    "is_official": False,
+                }
+            )
+        ],
+    )
+
+    assert mocked_api["homepage"].called
+    mock_docker.assert_called_once_with("3.12")
+
+
 async def test_edit_title(
     app: App,
     mocker: MockerFixture,
