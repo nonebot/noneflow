@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -36,6 +37,17 @@ def loc_to_name(loc: list[str | int]) -> str:
     return " > ".join([_loc_to_name(str(item)) for item in loc])
 
 
+def key_to_name(key: str) -> str:
+    """将 key 转换为可读名称"""
+    return _loc_to_name(key)
+
+
+def format_time(time: str) -> str:
+    """格式化时间"""
+    dt = datetime.fromisoformat(time)
+    return dt.strftime("%Y-%m-%d %H:%M:%S")
+
+
 env = jinja2.Environment(
     loader=jinja2.FileSystemLoader(Path(__file__).parent / "templates"),
     enable_async=True,
@@ -48,6 +60,8 @@ env = jinja2.Environment(
 env.filters["tags_to_str"] = tags_to_str
 env.filters["supported_adapters_to_str"] = supported_adapters_to_str
 env.filters["loc_to_name"] = loc_to_name
+env.filters["key_to_name"] = key_to_name
+env.filters["format_time"] = format_time
 
 
 async def render_comment(result: ValidationDict, reuse: bool = False) -> str:
@@ -64,6 +78,8 @@ async def render_comment(result: ValidationDict, reuse: bool = False) -> str:
         "project_link",
         "type",
         "supported_adapters",
+        "time",
+        "version",
     ]
 
     for key in data.copy():

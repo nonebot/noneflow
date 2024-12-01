@@ -24,7 +24,7 @@ async def test_adapter_info_validation_success(mocked_api: MockRouter) -> None:
             "homepage": "https://nonebot.dev",
             "tags": '[{"label": "test", "color": "#ffffff"}]',
             "author_id": 1,
-            "time": "2023-09-01T00:00:00+00:00Z",
+            "time": "2023-09-01T00:00:00+00:00",
         }
     )
 

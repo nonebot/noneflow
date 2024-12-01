@@ -17,7 +17,7 @@ async def test_project_link_invalid(mocked_api: MockRouter) -> None:
     assert result.valid_data == snapshot(
         {
             "module_name": "module_name",
-            "time": "2023-10-01T00:00:00+00:00Z",
+            "time": "2023-10-01T00:00:00+00:00",
             "name": "name",
             "desc": "desc",
             "author": "author",
@@ -54,7 +54,7 @@ async def test_module_name_invalid(mocked_api: MockRouter) -> None:
     assert result.valid_data == snapshot(
         {
             "project_link": "project_link",
-            "time": "2023-09-01T00:00:00+00:00Z",
+            "time": "2023-09-01T00:00:00+00:00",
             "name": "name",
             "desc": "desc",
             "author": "author",
@@ -183,7 +183,7 @@ async def test_project_link_normalization(mocked_api: MockRouter) -> None:
         {
             "module_name": "module_name",
             "project_link": "project-link-normalization",
-            "time": "2023-10-01T00:00:00+00:00Z",
+            "time": "2023-10-01T00:00:00+00:00",
             "name": "name",
             "desc": "desc",
             "author": "author",

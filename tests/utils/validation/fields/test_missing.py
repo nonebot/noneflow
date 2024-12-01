@@ -29,7 +29,7 @@ async def test_fields_missing_plugin(mocked_api: MockRouter) -> None:
         {
             "module_name": "module_name",
             "project_link": "project_link",
-            "time": "2023-09-01T00:00:00+00:00Z",
+            "time": "2023-09-01T00:00:00+00:00",
             "author": "author",
             "author_id": 1,
             "tags": [{"label": "test", "color": "#ffffff"}],
@@ -58,7 +58,7 @@ async def test_fields_missing_plugin(mocked_api: MockRouter) -> None:
                     "load": False,
                     "test_output": "error",
                     "version": None,
-                    "time": "2023-09-01T00:00:00+00:00Z",
+                    "time": "2023-09-01T00:00:00+00:00",
                 },
             },
             {
@@ -77,7 +77,7 @@ async def test_fields_missing_plugin(mocked_api: MockRouter) -> None:
                     "load": False,
                     "test_output": "error",
                     "version": None,
-                    "time": "2023-09-01T00:00:00+00:00Z",
+                    "time": "2023-09-01T00:00:00+00:00",
                 },
             },
             {
@@ -96,7 +96,7 @@ async def test_fields_missing_plugin(mocked_api: MockRouter) -> None:
                     "load": False,
                     "test_output": "error",
                     "version": None,
-                    "time": "2023-09-01T00:00:00+00:00Z",
+                    "time": "2023-09-01T00:00:00+00:00",
                 },
             },
             {
@@ -115,7 +115,7 @@ async def test_fields_missing_plugin(mocked_api: MockRouter) -> None:
                     "load": False,
                     "test_output": "error",
                     "version": None,
-                    "time": "2023-09-01T00:00:00+00:00Z",
+                    "time": "2023-09-01T00:00:00+00:00",
                 },
             },
             {

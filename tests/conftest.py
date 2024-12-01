@@ -122,7 +122,7 @@ def mocked_api(respx_mock: MockRouter):
     ).respond(
         json={
             "info": {"name": "project_link", "version": "0.0.1"},
-            "urls": [{"upload_time_iso_8601": "2023-09-01T00:00:00+00:00Z"}],
+            "urls": [{"upload_time_iso_8601": "2023-09-01T00:00:00+00:00"}],
         }
     )
     respx_mock.get(
@@ -130,7 +130,7 @@ def mocked_api(respx_mock: MockRouter):
     ).respond(
         json={
             "info": {"name": "project_link/", "version": "0.0.1"},
-            "urls": [{"upload_time_iso_8601": "2023-10-01T00:00:00+00:00Z"}],
+            "urls": [{"upload_time_iso_8601": "2023-10-01T00:00:00+00:00"}],
         }
     )
     respx_mock.get(
@@ -161,7 +161,7 @@ def mocked_api(respx_mock: MockRouter):
     ).respond(
         json={
             "info": {"name": "project_link1", "version": "0.5.0"},
-            "urls": [{"upload_time_iso_8601": "2023-10-01T00:00:00+00:00Z"}],
+            "urls": [{"upload_time_iso_8601": "2023-10-01T00:00:00+00:00"}],
         }
     )
     respx_mock.get(
@@ -173,7 +173,7 @@ def mocked_api(respx_mock: MockRouter):
     ).respond(
         json={
             "info": {"name": "project-link-normalization", "version": "0.0.1"},
-            "urls": [{"upload_time_iso_8601": "2023-10-01T00:00:00+00:00Z"}],
+            "urls": [{"upload_time_iso_8601": "2023-10-01T00:00:00+00:00"}],
         }
     )
     respx_mock.get("https://www.baidu.com", name="homepage_failed").respond(404)
