@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [4.1.1] - 2024-12-01
+
 ### Added
 
 - 插件插件测试结果显示版本号和发布时间
@@ -557,7 +559,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.1.0...HEAD
+[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.1.1...HEAD
+[4.1.1]: https://github.com/nonebot/noneflow/compare/v4.1.0...v4.1.1
 [4.1.0]: https://github.com/nonebot/noneflow/compare/v4.0.11...v4.1.0
 [4.0.11]: https://github.com/nonebot/noneflow/compare/v4.0.10...v4.0.11
 [4.0.10]: https://github.com/nonebot/noneflow/compare/v4.0.9...v4.0.10
