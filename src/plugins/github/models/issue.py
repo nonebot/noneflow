@@ -84,7 +84,7 @@ class IssueHandler(GithubHandler):
 
     async def should_skip_test(self) -> bool:
         """判断评论是否包含跳过的标记"""
-        comments = await self.list_comments(self.issue_number)
+        comments = await self.list_comments()
         for comment in comments:
             author_association = comment.author_association
             if comment.body == SKIP_COMMENT and author_association in [
