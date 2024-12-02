@@ -6,18 +6,13 @@ on:
       - "src/providers/docker_test/**"
   pull_request:
     paths:
-      - "src/providers/docker_test//**"
+      - "src/providers/docker_test/**"
   workflow_dispatch:
 
 jobs:
   build:
     name: Docker
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
-      fail-fast: false
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,8 +33,6 @@ jobs:
         id: metadata
         with:
           images: ghcr.io/nonebot/nonetest
-          flavor: |
-            prefix=${{ matrix.python-version }}-,onlatest=true
           tags: |
             type=semver,pattern={{version}}
             type=ref,event=branch
@@ -47,8 +40,8 @@ jobs:
       - name: Build and Publish
         uses: docker/build-push-action@v6
         with:
-          context: ./src/providers/docker_test
+          context: .
+          file: ./src/providers/docker_test/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
-          build-args: PYTHON_VERSION=${{ matrix.python-version }}
