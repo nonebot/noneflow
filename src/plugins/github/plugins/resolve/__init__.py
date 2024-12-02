@@ -15,10 +15,10 @@ from src.plugins.github.depends.utils import (
     is_remove_by_pull_request_labels,
 )
 from src.plugins.github.models import GithubHandler, IssueHandler
-from src.plugins.github.plugins.publish import (
+from src.plugins.github.plugins.publish.utils import (
     resolve_conflict_pull_requests as resolve_conflict_publish_pull_requests,
 )
-from src.plugins.github.plugins.remove import (
+from src.plugins.github.plugins.remove.utils import (
     resolve_conflict_pull_requests as resolve_conflict_remove_pull_requests,
 )
 from src.providers.validation.models import PublishType

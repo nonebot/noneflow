@@ -1,7 +1,6 @@
 from typing import Literal
 
 from githubkit.rest import Issue
-from nonebot import logger
 from pydantic import ConfigDict
 
 from src.plugins.github.constants import SKIP_COMMENT
@@ -46,7 +45,7 @@ class IssueHandler(GithubHandler):
         # 更新缓存属性，避免重复或错误操作
         self.issue.title = title
 
-    async def update_issue_content(self, body: str, issue_number: int | None = None):
+    async def update_issue_body(self, body: str, issue_number: int | None = None):
         """更新议题内容"""
         if issue_number is None:
             issue_number = self.issue_number
@@ -54,42 +53,38 @@ class IssueHandler(GithubHandler):
         if self.issue_number == issue_number and self.issue.body == body:
             return
 
-        await super().update_issue_content(body, issue_number)
+        await super().update_issue_body(body, issue_number)
 
         # 更新缓存属性，避免重复或错误操作
         self.issue.body = body
 
     async def close_issue(
-        self, reason: Literal["completed", "not_planned", "reopened"]
+        self,
+        reason: Literal["completed", "not_planned", "reopened"],
+        issue_number: int | None = None,
     ):
         """关闭议题"""
+        if issue_number is None:
+            issue_number = self.issue_number
+
         if self.issue and self.issue.state == "open":
-            logger.info(f"正在关闭议题 #{self.issue_number}")
-            await self.bot.rest.issues.async_update(
-                **self.repo_info.model_dump(),
-                issue_number=self.issue_number,
-                state="closed",
-                state_reason=reason,
-            )
+            await super().close_issue(reason, issue_number)
 
     async def create_pull_request(
         self,
         base_branch: str,
         title: str,
         branch_name: str,
-        label: str | list[str],
         body: str = "",
     ):
         if not body:
             body = f"resolve #{self.issue_number}"
 
-        return await super().create_pull_request(
-            base_branch, title, branch_name, label, body
-        )
+        return await super().create_pull_request(base_branch, title, branch_name, body)
 
     async def should_skip_test(self) -> bool:
         """判断评论是否包含跳过的标记"""
-        comments = await self.list_comments(self.issue_number)
+        comments = await self.list_comments()
         for comment in comments:
             author_association = comment.author_association
             if comment.body == SKIP_COMMENT and author_association in [
@@ -121,4 +116,5 @@ class IssueHandler(GithubHandler):
     ):
         if author is None:
             author = self.author
+
         return super().commit_and_push(message, branch_name, author)

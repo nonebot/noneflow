@@ -1301,7 +1301,6 @@ async def test_edit_title_too_long(
             },
             True,
         )
-
         ctx.should_call_api(
             "rest.issues.async_list_comments",
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},

@@ -28,11 +28,10 @@ from src.plugins.github.depends import (
     get_labels_name,
     get_related_issue_handler,
     get_related_issue_number,
-    get_repo_info,
     install_pre_commit_hooks,
     is_bot_triggered_workflow,
 )
-from src.plugins.github.models import GithubHandler, IssueHandler, RepoInfo
+from src.plugins.github.models import GithubHandler, IssueHandler
 from src.providers.validation.models import PublishType, ValidationDict
 
 from .depends import (
@@ -44,7 +43,6 @@ from .utils import (
     ensure_issue_plugin_test_button,
     ensure_issue_plugin_test_button_in_progress,
     process_pull_request,
-    resolve_conflict_pull_requests,
     trigger_registry_update,
 )
 from .validation import (
@@ -126,7 +124,6 @@ async def handle_publish_plugin_check(
         # 确保插件重测按钮存在
         await ensure_issue_plugin_test_button(handler)
 
-        state["handler"] = handler
         state["validation"] = result
 
 
@@ -149,7 +146,6 @@ async def handle_adapter_publish_check(
         # 仅在通过检查的情况下创建拉取请求
         result = await validate_adapter_info_from_issue(handler.issue)
 
-        state["handler"] = handler
         state["validation"] = result
 
 
@@ -264,30 +260,16 @@ auto_merge_matcher = on_type(
 )
 
 
-@auto_merge_matcher.handle(
-    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hooks)]
-)
+@auto_merge_matcher.handle(parameterless=[Depends(bypass_git)])
 async def handle_auto_merge(
     bot: GitHubBot,
     event: PullRequestReviewSubmitted,
     installation_id: int = Depends(get_installation_id),
-    repo_info: RepoInfo = Depends(get_repo_info),
     handler: GithubHandler = Depends(get_github_handler),
 ) -> None:
     async with bot.as_installation(installation_id):
-        pull_request = (
-            await bot.rest.pulls.async_get(
-                **repo_info.model_dump(), pull_number=event.payload.pull_request.number
-            )
-        ).parsed_data
+        pull_number = event.payload.pull_request.number
 
-        if not pull_request.mergeable:
-            # 尝试处理冲突
-            await resolve_conflict_pull_requests(handler, [pull_request])
+        await handler.merge_pull_request(pull_number, "rebase")
 
-        await bot.rest.pulls.async_merge(
-            **repo_info.model_dump(),
-            pull_number=event.payload.pull_request.number,
-            merge_method="rebase",
-        )
-        logger.info(f"已自动合并 #{event.payload.pull_request.number}")
+        logger.info(f"已自动合并 #{pull_number}")

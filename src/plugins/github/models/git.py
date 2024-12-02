@@ -7,6 +7,17 @@ from src.plugins.github.utils import run_shell_command
 class GitHandler(BaseModel):
     """Git 操作"""
 
+    def checkout_branch(self, branch_name: str):
+        """检出分支"""
+
+        run_shell_command(["git", "checkout", branch_name])
+
+    def checkout_remote_branch(self, branch_name: str):
+        """检出远程分支"""
+
+        run_shell_command(["git", "fetch", "origin", branch_name])
+        run_shell_command(["git", "checkout", branch_name])
+
     def commit_and_push(self, message: str, branch_name: str, author: str):
         """提交并推送"""
 
@@ -36,3 +47,8 @@ class GitHandler(BaseModel):
         """删除远程分支"""
 
         run_shell_command(["git", "push", "origin", "--delete", branch_name])
+
+    def switch_branch(self, branch_name: str):
+        """切换分支"""
+
+        run_shell_command(["git", "switch", "-C", branch_name])

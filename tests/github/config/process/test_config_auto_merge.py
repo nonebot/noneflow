@@ -43,8 +43,6 @@ async def test_config_auto_merge(
         event = get_mock_event(PullRequestReviewSubmitted)
         event.payload.pull_request.labels = get_issue_labels(["Config", "Plugin"])
 
-        ctx.receive_event(bot, event)
-        ctx.should_pass_rule(auto_merge_matcher)
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
@@ -61,6 +59,9 @@ async def test_config_auto_merge(
             True,
         )
 
+        ctx.receive_event(bot, event)
+        ctx.should_pass_rule(auto_merge_matcher)
+
     # 测试 git 命令
     mock_subprocess_run.assert_has_calls(
         [
@@ -68,13 +69,8 @@ async def test_config_auto_merge(
                 ["git", "config", "--global", "safe.directory", "*"],
                 check=True,
                 capture_output=True,
-            ),
-            mocker.call(
-                ["pre-commit", "install", "--install-hooks"],
-                check=True,
-                capture_output=True,
-            ),
-        ],  # type: ignore
+            ),  # type: ignore
+        ],
         any_order=True,
     )
 
@@ -87,20 +83,17 @@ async def test_auto_merge_not_remove(app: App, mocker: MockerFixture) -> None:
     from src.plugins.github.plugins.config import auto_merge_matcher
 
     mock_subprocess_run = mocker.patch("subprocess.run")
-    mock_resolve_conflict_pull_requests = mocker.patch(
-        "src.plugins.github.plugins.remove.resolve_conflict_pull_requests"
-    )
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event = get_mock_event(PullRequestReviewSubmitted)
         event.payload.pull_request.labels = []
+
         ctx.receive_event(bot, event)
         ctx.should_not_pass_rule(auto_merge_matcher)
 
     # 测试 git 命令
     mock_subprocess_run.assert_not_called()
-    mock_resolve_conflict_pull_requests.assert_not_called()
 
 
 async def test_auto_merge_not_member(app: App, mocker: MockerFixture) -> None:
