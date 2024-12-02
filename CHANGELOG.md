@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [4.1.2] - 2024-12-02
+
 ### Fixed
 
 - 修复重新测试时没有提示测试进行中的问题
@@ -565,7 +567,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.1.1...HEAD
+[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.1.2...HEAD
+[4.1.2]: https://github.com/nonebot/noneflow/compare/v4.1.1...v4.1.2
 [4.1.1]: https://github.com/nonebot/noneflow/compare/v4.1.0...v4.1.1
 [4.1.0]: https://github.com/nonebot/noneflow/compare/v4.0.11...v4.1.0
 [4.0.11]: https://github.com/nonebot/noneflow/compare/v4.0.10...v4.0.11
