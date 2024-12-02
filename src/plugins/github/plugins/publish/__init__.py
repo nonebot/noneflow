@@ -25,7 +25,6 @@ from src.plugins.github.depends import (
     get_issue_handler,
     get_related_issue_handler,
     get_related_issue_number,
-    install_pre_commit_hooks,
     is_bot_triggered_workflow,
     is_publish_workflow,
 )
@@ -74,9 +73,7 @@ publish_check_matcher = on_type(
 )
 
 
-@publish_check_matcher.handle(
-    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hooks)]
-)
+@publish_check_matcher.handle(parameterless=[Depends(bypass_git)])
 async def handle_publish_plugin_check(
     bot: GitHubBot,
     state: T_State,
@@ -108,9 +105,7 @@ async def handle_publish_plugin_check(
         state["validation"] = result
 
 
-@publish_check_matcher.handle(
-    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hooks)]
-)
+@publish_check_matcher.handle(parameterless=[Depends(bypass_git)])
 async def handle_adapter_publish_check(
     bot: GitHubBot,
     state: T_State,
@@ -130,9 +125,7 @@ async def handle_adapter_publish_check(
         state["validation"] = result
 
 
-@publish_check_matcher.handle(
-    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hooks)]
-)
+@publish_check_matcher.handle(parameterless=[Depends(bypass_git)])
 async def handle_bot_publish_check(
     bot: GitHubBot,
     state: T_State,
@@ -152,9 +145,7 @@ async def handle_bot_publish_check(
         state["validation"] = result
 
 
-@publish_check_matcher.handle(
-    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hooks)]
-)
+@publish_check_matcher.handle(parameterless=[Depends(bypass_git)])
 async def handle_pull_request_and_update_issue(
     bot: GitHubBot,
     validation: ValidationDict = Arg(),
@@ -199,9 +190,7 @@ async def pr_close_rule(
 pr_close_matcher = on_type(PullRequestClosed, rule=Rule(pr_close_rule))
 
 
-@pr_close_matcher.handle(
-    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hooks)]
-)
+@pr_close_matcher.handle(parameterless=[Depends(bypass_git)])
 async def handle_pr_close(
     event: PullRequestClosed,
     bot: GitHubBot,

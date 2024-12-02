@@ -19,7 +19,6 @@ from src.plugins.github.depends import (
     get_issue_handler,
     get_related_issue_number,
     get_type_by_labels_name,
-    install_pre_commit_hooks,
     is_bot_triggered_workflow,
     is_remove_workflow,
 )
@@ -71,9 +70,7 @@ remove_check_matcher = on_type(
 )
 
 
-@remove_check_matcher.handle(
-    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hooks)]
-)
+@remove_check_matcher.handle(parameterless=[Depends(bypass_git)])
 async def handle_remove_check(
     bot: GitHubBot,
     installation_id: int = Depends(get_installation_id),

@@ -11,7 +11,6 @@ from src.plugins.github.depends import (
     get_related_issue_handler,
     get_related_issue_number,
     get_type_by_labels_name,
-    install_pre_commit_hooks,
     is_publish_workflow,
     is_remove_workflow,
 )
@@ -43,9 +42,7 @@ async def pr_close_rule(
 pr_close_matcher = on_type(PullRequestClosed, rule=pr_close_rule, priority=10)
 
 
-@pr_close_matcher.handle(
-    parameterless=[Depends(bypass_git), Depends(install_pre_commit_hooks)]
-)
+@pr_close_matcher.handle(parameterless=[Depends(bypass_git)])
 async def handle_pr_close(
     event: PullRequestClosed,
     bot: GitHubBot,
