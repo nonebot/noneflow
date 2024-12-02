@@ -171,13 +171,13 @@ async def ensure_issue_plugin_test_button(handler: IssueHandler):
     """确保议题内容中包含插件测试按钮"""
     issue_body = handler.issue.body or ""
 
+    new_content = f"{ISSUE_FIELD_TEMPLATE.format(PLUGIN_TEST_STRING)}\n\n{PLUGIN_TEST_BUTTON_STRING}"
+
     match = PLUGIN_TEST_PATTERN.search(issue_body)
     if not match:
-        new_content = f"{ISSUE_FIELD_TEMPLATE.format(PLUGIN_TEST_STRING)}\n\n{PLUGIN_TEST_BUTTON_STRING}"
         new_content = f"{issue_body}\n\n{new_content}"
         logger.info("为议题添加插件重测按钮")
     else:
-        new_content = f"{ISSUE_FIELD_TEMPLATE.format(PLUGIN_TEST_STRING)}\n\n{PLUGIN_TEST_BUTTON_STRING}"
         new_content = PLUGIN_TEST_PATTERN.sub(new_content, issue_body)
         logger.info("重置插件重测按钮文本")
 
@@ -188,12 +188,17 @@ async def ensure_issue_plugin_test_button_in_progress(handler: IssueHandler):
     """确保议题内容中包含插件测试进行中的提示"""
     issue_body = handler.issue.body or ""
 
+    new_content = f"{ISSUE_FIELD_TEMPLATE.format(PLUGIN_TEST_STRING)}\n\n{PLUGIN_TEST_BUTTON_IN_PROGRESS_STRING}"
+
     match = PLUGIN_TEST_PATTERN.search(issue_body)
     if not match:
-        new_content = f"{ISSUE_FIELD_TEMPLATE.format(PLUGIN_TEST_STRING)}\n\n{PLUGIN_TEST_BUTTON_IN_PROGRESS_STRING}"
-
-        await handler.update_issue_content(f"{issue_body}\n\n{new_content}")
+        new_content = f"{issue_body}\n\n{new_content}"
         logger.info("为议题添加插件测试进行中的提示")
+    else:
+        new_content = PLUGIN_TEST_PATTERN.sub(new_content, issue_body)
+        logger.info("重置插件测试进行中文本")
+
+    await handler.update_issue_content(new_content)
 
 
 async def process_pull_request(
