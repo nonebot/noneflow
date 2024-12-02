@@ -96,6 +96,9 @@ async def handle_remove_check(
         # 限制标题长度，过长的标题不好看
         title = f"{result.type}: {result.name[:TITLE_MAX_LENGTH]}"
 
+        # 修改议题标题
+        await handler.update_issue_title(title)
+
         if result.valid:
             commit_message = f"{COMMIT_MESSAGE_PREFIX} {result.type.value.lower()} {result.name} (#{handler.issue_number})"
 
