@@ -166,6 +166,18 @@ log_level=DEBUG
             True,
         )
         ctx.should_call_api(
+            "rest.issues.async_update",
+            snapshot(
+                {
+                    "owner": "he0119",
+                    "repo": "action-test",
+                    "issue_number": 80,
+                    "title": "Plugin: name",
+                }
+            ),
+            None,
+        )
+        ctx.should_call_api(
             "rest.pulls.async_create",
             snapshot(
                 {
