@@ -895,3 +895,13 @@ async def test_process_trigger_by_bot(app: App):
         event.payload.comment.user.type = "Bot"
 
         ctx.receive_event(bot, event)
+        ctx.should_not_pass_rule()
+
+    async with app.test_matcher() as ctx:
+        adapter, bot = get_github_bot(ctx)
+        event = get_mock_event(IssuesOpened)
+        assert event.payload.sender.type
+        event.payload.sender.type = "Bot"
+
+        ctx.receive_event(bot, event)
+        ctx.should_not_pass_rule()

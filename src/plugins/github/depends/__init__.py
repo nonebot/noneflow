@@ -95,8 +95,7 @@ def is_bot_triggered_workflow(event: IssuesEvent):
         return True
     if (
         isinstance(event, IssuesOpened | IssuesReopened | IssuesEdited)
-        and event.payload.issue.user
-        and event.payload.issue.user.type == "Bot"
+        and event.payload.sender.type == "Bot"
     ):
         logger.info("议题操作来自机器人，已跳过")
         return True
