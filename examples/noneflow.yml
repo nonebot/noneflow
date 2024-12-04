@@ -63,4 +63,3 @@ jobs:
         env:
           APP_ID: ${{ secrets.APP_ID }}
           PRIVATE_KEY: ${{ secrets.APP_KEY }}
-          PRE_COMMIT_HOME: /github/workspace/.cache/.pre-commit
