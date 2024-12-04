@@ -7,6 +7,7 @@ readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">= 3.12"
 dependencies = [
+  "click>=8.1.7",
   "docker>=7.1.0",
   "githubkit>=0.11.14",
   "jinja2>=3.1.4",
@@ -15,6 +16,7 @@ dependencies = [
   "pre-commit>=4.0.1",
   "pydantic-extra-types>=2.10.0",
   "pyjson5>=1.6.7",
+  "tzdata>=2024.2",
 ]
 
 [project.urls]
@@ -22,9 +24,6 @@ Homepage = "https://github.com/nonebot/noneflow"
 Repository = "https://github.com/nonebot/noneflow.git"
 Issues = "https://github.com/nonebot/noneflow/issues"
 Changelog = "https://github.com/nonebot/noneflow/blob/main/CHANGELOG.md"
-
-[project.optional-dependencies]
-plugin = ["click>=8.1.7", "tzdata>=2024.2"]
 
 [tool.uv]
 dev-dependencies = [

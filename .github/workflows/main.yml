@@ -21,9 +21,6 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Sync dependencies
-        run: uv sync --all-extras
-
       - name: Run tests
         run: uv run poe test
 
