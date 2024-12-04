@@ -16,8 +16,8 @@ from src.plugins.github.depends import (
     get_github_handler,
     get_installation_id,
     get_issue_handler,
-    get_type_by_labels_name,
     is_bot_triggered_workflow,
+    is_config_workflow,
 )
 from src.plugins.github.models import IssueHandler
 from src.plugins.github.models.github import GithubHandler
@@ -26,9 +26,7 @@ from src.plugins.github.plugins.publish.utils import (
     ensure_issue_plugin_test_button,
     ensure_issue_plugin_test_button_in_progress,
 )
-from src.plugins.github.plugins.remove.depends import check_labels
 from src.plugins.github.typing import IssuesEvent
-from src.providers.validation.models import PublishType
 
 from .constants import BRANCH_NAME_PREFIX, COMMIT_MESSAGE_PREFIX, RESULTS_BRANCH
 from .utils import (
@@ -39,20 +37,16 @@ from .utils import (
 
 async def check_rule(
     event: IssuesEvent,
-    is_config: bool = check_labels(CONFIG_LABEL),
     is_bot: bool = Depends(is_bot_triggered_workflow),
-    publish_type: PublishType = Depends(get_type_by_labels_name),
+    is_config: bool = Depends(is_config_workflow),
 ) -> bool:
     if is_bot:
         logger.info("机器人触发的工作流，已跳过")
         return False
-    if publish_type != PublishType.PLUGIN:
-        logger.info("与插件无关，已跳过")
-        return False
     if event.payload.issue.pull_request:
         logger.info("评论在拉取请求下，已跳过")
         return False
-    if is_config is False:
+    if not is_config:
         logger.info("非配置工作流，已跳过")
         return False
     return True
@@ -131,7 +125,7 @@ async def handle_remove_check(
 
 async def review_submitted_rule(
     event: PullRequestReviewSubmitted,
-    is_config: bool = check_labels(CONFIG_LABEL),
+    is_config: bool = Depends(is_config_workflow),
 ) -> bool:
     if not is_config:
         logger.info("拉取请求与配置无关，已跳过")
