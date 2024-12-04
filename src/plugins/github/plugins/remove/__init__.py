@@ -21,21 +21,21 @@ from src.plugins.github.depends import (
     get_type_by_labels_name,
     install_pre_commit_hooks,
     is_bot_triggered_workflow,
+    is_remove_workflow,
 )
 from src.plugins.github.models import IssueHandler
 from src.plugins.github.models.github import GithubHandler
 from src.plugins.github.typing import IssuesEvent
 from src.providers.validation.models import PublishType
 
-from .constants import BRANCH_NAME_PREFIX, REMOVE_LABEL
-from .depends import check_labels
+from .constants import BRANCH_NAME_PREFIX
 from .render import render_comment, render_error
 from .utils import process_pull_reqeusts
 from .validation import validate_author_info
 
 
 async def pr_close_rule(
-    is_remove: bool = check_labels(REMOVE_LABEL),
+    is_remove: bool = Depends(is_remove_workflow),
     related_issue_number: int | None = Depends(get_related_issue_number),
 ) -> bool:
     if not is_remove:
@@ -51,7 +51,7 @@ async def pr_close_rule(
 
 async def check_rule(
     event: IssuesEvent,
-    is_remove: bool = check_labels(REMOVE_LABEL),
+    is_remove: bool = Depends(is_remove_workflow),
     is_bot: bool = Depends(is_bot_triggered_workflow),
 ) -> bool:
     if is_bot:
@@ -60,7 +60,7 @@ async def check_rule(
     if event.payload.issue.pull_request:
         logger.info("评论在拉取请求下，已跳过")
         return False
-    if is_remove is False:
+    if not is_remove:
         logger.info("非删除工作流，已跳过")
         return False
     return True
@@ -122,7 +122,7 @@ async def handle_remove_check(
 
 async def review_submitted_rule(
     event: PullRequestReviewSubmitted,
-    is_remove: bool = check_labels(REMOVE_LABEL),
+    is_remove: bool = Depends(is_remove_workflow),
 ) -> bool:
     if not is_remove:
         logger.info("拉取请求与删除无关，已跳过")

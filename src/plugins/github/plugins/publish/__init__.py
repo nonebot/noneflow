@@ -16,8 +16,6 @@ from nonebot.typing import T_State
 
 from src.plugins.github.constants import (
     BRANCH_NAME_PREFIX,
-    CONFIG_LABEL,
-    REMOVE_LABEL,
     TITLE_MAX_LENGTH,
 )
 from src.plugins.github.depends import (
@@ -25,11 +23,11 @@ from src.plugins.github.depends import (
     get_github_handler,
     get_installation_id,
     get_issue_handler,
-    get_labels_name,
     get_related_issue_handler,
     get_related_issue_number,
     install_pre_commit_hooks,
     is_bot_triggered_workflow,
+    is_publish_workflow,
 )
 from src.plugins.github.models import GithubHandler, IssueHandler
 from src.providers.validation.models import PublishType, ValidationDict
@@ -52,27 +50,10 @@ from .validation import (
 )
 
 
-async def publish_related_rule(
-    labels: list[str] = Depends(get_labels_name),
-    publish_type: PublishType = Depends(get_type_by_labels_name),
-) -> bool:
-    """确保与发布相关
-
-    通过标签判断
-    仅包含发布相关标签，不包含 remove/config 标签
-    """
-    for label in labels:
-        if label == REMOVE_LABEL:
-            return False
-        if label == CONFIG_LABEL:
-            return False
-    return True
-
-
 async def check_rule(
     event: IssuesOpened | IssuesReopened | IssuesEdited | IssueCommentCreated,
-    publish_type: PublishType | None = Depends(get_type_by_labels_name),
     is_bot: bool = Depends(is_bot_triggered_workflow),
+    is_publish: bool = Depends(is_publish_workflow),
 ) -> bool:
     if is_bot:
         logger.info("机器人触发的工作流，已跳过")
@@ -80,7 +61,7 @@ async def check_rule(
     if event.payload.issue.pull_request:
         logger.info("评论在拉取请求下，已跳过")
         return False
-    if not publish_type:
+    if not is_publish:
         logger.info("议题与发布无关，已跳过")
         return False
 
@@ -89,7 +70,7 @@ async def check_rule(
 
 publish_check_matcher = on_type(
     (IssuesOpened, IssuesReopened, IssuesEdited, IssueCommentCreated),
-    rule=Rule(check_rule, publish_related_rule),
+    rule=Rule(check_rule),
 )
 
 
@@ -201,10 +182,10 @@ async def handle_pull_request_and_update_issue(
 
 
 async def pr_close_rule(
-    publish_type: PublishType | None = Depends(get_type_by_labels_name),
+    is_publish: bool = Depends(is_publish_workflow),
     related_issue_number: int | None = Depends(get_related_issue_number),
 ) -> bool:
-    if publish_type is None:
+    if not is_publish:
         logger.info("拉取请求与发布无关，已跳过")
         return False
 
@@ -215,9 +196,7 @@ async def pr_close_rule(
     return True
 
 
-pr_close_matcher = on_type(
-    PullRequestClosed, rule=Rule(pr_close_rule, publish_related_rule)
-)
+pr_close_matcher = on_type(PullRequestClosed, rule=Rule(pr_close_rule))
 
 
 @pr_close_matcher.handle(
@@ -240,9 +219,9 @@ async def handle_pr_close(
 
 async def review_submitted_rule(
     event: PullRequestReviewSubmitted,
-    publish_type: PublishType | None = Depends(get_type_by_labels_name),
+    is_publish: bool = Depends(is_publish_workflow),
 ) -> bool:
-    if publish_type is None:
+    if not is_publish:
         logger.info("拉取请求与发布无关，已跳过")
         return False
     if event.payload.review.author_association not in ["OWNER", "MEMBER"]:
@@ -256,7 +235,7 @@ async def review_submitted_rule(
 
 
 auto_merge_matcher = on_type(
-    PullRequestReviewSubmitted, rule=Rule(review_submitted_rule, publish_related_rule)
+    PullRequestReviewSubmitted, rule=Rule(review_submitted_rule)
 )
 
 

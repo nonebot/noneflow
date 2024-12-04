@@ -1,7 +1,9 @@
-from githubkit.rest import PullRequest, PullRequestSimple
+from typing import Literal
+
 from nonebot import logger, on_type
 from nonebot.adapters.github import GitHubBot, PullRequestClosed
-from nonebot.params import Depends
+from nonebot.params import Arg, Depends
+from nonebot.typing import T_State
 
 from src.plugins.github.depends import (
     bypass_git,
@@ -10,11 +12,10 @@ from src.plugins.github.depends import (
     get_related_issue_number,
     get_type_by_labels_name,
     install_pre_commit_hooks,
+    is_publish_workflow,
+    is_remove_workflow,
 )
-from src.plugins.github.depends.utils import (
-    is_remove_by_pull_request_labels,
-)
-from src.plugins.github.models import GithubHandler, IssueHandler
+from src.plugins.github.models import IssueHandler
 from src.plugins.github.plugins.publish.utils import (
     resolve_conflict_pull_requests as resolve_conflict_publish_pull_requests,
 )
@@ -22,17 +23,6 @@ from src.plugins.github.plugins.remove.utils import (
     resolve_conflict_pull_requests as resolve_conflict_remove_pull_requests,
 )
 from src.providers.validation.models import PublishType
-
-
-async def resolve_conflict_pull_requests(
-    handler: GithubHandler, pull_requests: list[PullRequest] | list[PullRequestSimple]
-):
-    for pull_request in pull_requests:
-        is_remove = is_remove_by_pull_request_labels(pull_request.labels)
-        if is_remove:
-            await resolve_conflict_remove_pull_requests(handler, [pull_request])
-        else:
-            await resolve_conflict_publish_pull_requests(handler, [pull_request])
 
 
 async def pr_close_rule(
@@ -59,6 +49,7 @@ pr_close_matcher = on_type(PullRequestClosed, rule=pr_close_rule, priority=10)
 async def handle_pr_close(
     event: PullRequestClosed,
     bot: GitHubBot,
+    state: T_State,
     installation_id: int = Depends(get_installation_id),
     publish_type: PublishType = Depends(get_type_by_labels_name),
     handler: IssueHandler = Depends(get_related_issue_handler),
@@ -75,9 +66,36 @@ async def handle_pr_close(
         except Exception:
             logger.info("对应分支不存在或已删除")
 
-        if event.payload.pull_request.merged:
-            logger.info("发布的拉取请求已合并，准备更新拉取请求的提交")
-            pull_requests = await handler.get_pull_requests_by_label(publish_type.value)
-            await resolve_conflict_pull_requests(handler, pull_requests)
-        else:
+        if not event.payload.pull_request.merged:
             logger.info("发布的拉取请求未合并，已跳过")
+            await pr_close_matcher.finish()
+
+        state["pull_requests"] = await handler.get_pull_requests_by_label(
+            publish_type.value
+        )
+
+
+@pr_close_matcher.handle()
+async def handle_pr_close_resolve_conflict_publish(
+    bot: GitHubBot,
+    pull_requests: list = Arg(),
+    installation_id: int = Depends(get_installation_id),
+    handler: IssueHandler = Depends(get_related_issue_handler),
+    is_publish: Literal[True] = Depends(is_publish_workflow),
+) -> None:
+    async with bot.as_installation(installation_id):
+        logger.info("发布的拉取请求已合并，准备更新拉取请求的提交")
+        await resolve_conflict_publish_pull_requests(handler, pull_requests)
+
+
+@pr_close_matcher.handle()
+async def handle_pr_close_resolve_conflict_remove(
+    bot: GitHubBot,
+    pull_requests: list = Arg(),
+    installation_id: int = Depends(get_installation_id),
+    handler: IssueHandler = Depends(get_related_issue_handler),
+    is_remove: Literal[True] = Depends(is_remove_workflow),
+) -> None:
+    async with bot.as_installation(installation_id):
+        logger.info("发布的拉取请求已合并，准备更新拉取请求的提交")
+        await resolve_conflict_remove_pull_requests(handler, pull_requests)

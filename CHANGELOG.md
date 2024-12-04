@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 修复合并插件配置后没有删除对应分支和关闭议题的问题
+
 ## [4.1.2] - 2024-12-02
 
 ### Fixed
