@@ -170,7 +170,7 @@ async def is_remove_workflow(
 ) -> bool:
     """是否是 Remove 工作流"""
     if publish_type is None:
-        logger.debug("与发布无关，已跳过")
+        logger.debug("无法获取到发布类型，已跳过")
         return False
 
     return REMOVE_LABEL in labels
