@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Changed
+
+- 发布检查时第一时间评论议题并修改标题
+
 ### Fixed
 
 - 修复合并插件配置后没有删除对应分支和关闭议题的问题
