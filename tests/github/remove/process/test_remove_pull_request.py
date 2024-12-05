@@ -97,11 +97,6 @@ async def test_remove_process_pull_request(
                 capture_output=True,
             ),
             mocker.call(
-                ["pre-commit", "install", "--install-hooks"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
                 ["git", "push", "origin", "--delete", "publish/issue76"],
                 check=True,
                 capture_output=True,
@@ -174,11 +169,6 @@ async def test_process_remove_pull_request_not_merged(
         [
             mocker.call(
                 ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["pre-commit", "install", "--install-hooks"],
                 check=True,
                 capture_output=True,
             ),

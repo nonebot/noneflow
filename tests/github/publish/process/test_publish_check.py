@@ -147,11 +147,6 @@ async def test_bot_process_publish_check(
                 capture_output=True,
             ),
             mocker.call(
-                ["pre-commit", "install", "--install-hooks"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
                 ["git", "switch", "-C", "publish/issue80"],
                 check=True,
                 capture_output=True,
@@ -345,11 +340,6 @@ async def test_adapter_process_publish_check(
         [
             mocker.call(
                 ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["pre-commit", "install", "--install-hooks"],
                 check=True,
                 capture_output=True,
             ),
@@ -637,11 +627,6 @@ log_level=DEBUG
         [
             mocker.call(
                 ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["pre-commit", "install", "--install-hooks"],
                 check=True,
                 capture_output=True,
             ),
@@ -938,11 +923,6 @@ log_level=DEBUG
                 capture_output=True,
             ),
             mocker.call(
-                ["pre-commit", "install", "--install-hooks"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
                 ["git", "switch", "-C", "publish/issue80"],
                 check=True,
                 capture_output=True,
@@ -1158,11 +1138,6 @@ async def test_edit_title(
         [
             mocker.call(
                 ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["pre-commit", "install", "--install-hooks"],
                 check=True,
                 capture_output=True,
             ),
@@ -1471,11 +1446,6 @@ async def test_process_publish_check_not_pass(
                 check=True,
                 capture_output=True,
             ),
-            mocker.call(
-                ["pre-commit", "install", "--install-hooks"],
-                check=True,
-                capture_output=True,
-            ),
         ]  # type: ignore
     )
 
@@ -1543,11 +1513,6 @@ async def test_issue_state_closed(
         [
             mocker.call(
                 ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["pre-commit", "install", "--install-hooks"],
                 check=True,
                 capture_output=True,
             ),
@@ -1844,11 +1809,6 @@ log_level=DEBUG
                 check=True,
                 capture_output=True,
             ),
-            mocker.call(
-                ["pre-commit", "install", "--install-hooks"],
-                check=True,
-                capture_output=True,
-            ),
         ]  # type: ignore
     )
 
@@ -1979,11 +1939,6 @@ async def test_convert_pull_request_to_draft(
         [
             mocker.call(
                 ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["pre-commit", "install", "--install-hooks"],
                 check=True,
                 capture_output=True,
             ),
@@ -2142,11 +2097,6 @@ mutation markPullRequestReadyForReview($pullRequestId: ID!) {
         [
             mocker.call(
                 ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["pre-commit", "install", "--install-hooks"],
                 check=True,
                 capture_output=True,
             ),

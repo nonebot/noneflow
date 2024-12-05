@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - 修复机器人修改议题等操作时仍会触发响应器的问题
 - 修复修改配置流程中忘记修改标题的问题
 
+### Removed
+
+- 移除 pre-commit 相关操作
+
 ## [4.1.1] - 2024-12-01
 
 ### Added

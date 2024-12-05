@@ -175,11 +175,6 @@ async def test_process_remove_bot_check(
                 capture_output=True,
             ),
             mocker.call(
-                ["pre-commit", "install", "--install-hooks"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
                 ["git", "switch", "-C", "remove/issue80"],
                 check=True,
                 capture_output=True,
@@ -378,11 +373,6 @@ async def test_process_remove_plugin_check(
                 capture_output=True,
             ),
             mocker.call(
-                ["pre-commit", "install", "--install-hooks"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
                 ["git", "switch", "-C", "remove/issue80"],
                 check=True,
                 capture_output=True,
@@ -524,11 +514,6 @@ async def test_process_remove_not_found_check(
                 check=True,
                 capture_output=True,
             ),
-            mocker.call(
-                ["pre-commit", "install", "--install-hooks"],
-                check=True,
-                capture_output=True,
-            ),
         ]  # type: ignore
     )
 
@@ -642,11 +627,6 @@ async def test_process_remove_author_info_not_eq(
         [
             mocker.call(
                 ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["pre-commit", "install", "--install-hooks"],
                 check=True,
                 capture_output=True,
             ),
@@ -764,11 +744,6 @@ async def test_process_remove_issue_info_not_found(
                 check=True,
                 capture_output=True,
             ),
-            mocker.call(
-                ["pre-commit", "install", "--install-hooks"],
-                check=True,
-                capture_output=True,
-            ),
         ]  # type: ignore
     )
 
@@ -861,11 +836,6 @@ async def test_process_remove_driver(
         [
             mocker.call(
                 ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["pre-commit", "install", "--install-hooks"],
                 check=True,
                 capture_output=True,
             ),
