@@ -67,6 +67,12 @@ async def test_adapter_info_validation_failed(mocked_api: MockRouter) -> None:
                     "input": "project_link_failed",
                 },
                 {
+                    "type": "string_type",
+                    "loc": ("time",),
+                    "msg": "值不是合法的字符串",
+                    "input": None,
+                },
+                {
                     "type": "homepage",
                     "loc": ("homepage",),
                     "msg": "项目主页无法访问",
@@ -101,7 +107,6 @@ async def test_adapter_info_validation_failed(mocked_api: MockRouter) -> None:
             },
             type=PublishType.ADAPTER,
             valid_data={
-                "time": None,
                 "name": "name",
                 "desc": "desc",
                 "author": "author",

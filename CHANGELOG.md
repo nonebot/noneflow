@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ### Fixed
 
 - 修复合并插件配置后没有删除对应分支和关闭议题的问题
+- 修复无法获取到项目上传时间导致的报错
 
 ## [4.1.2] - 2024-12-02
 

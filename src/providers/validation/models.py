@@ -75,7 +75,7 @@ class PyPIMixin(BaseModel):
     module_name: str
     project_link: str
 
-    time: str | None = None
+    time: str
     """上传时间
 
     从 PyPI 获取最新版本的上传时间
