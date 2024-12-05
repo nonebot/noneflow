@@ -162,23 +162,23 @@ async def handle_pull_request_and_update_issue(
     installation_id: int = Depends(get_installation_id),
 ) -> None:
     async with bot.as_installation(installation_id):
-        branch_name = f"{BRANCH_NAME_PREFIX}{handler.issue_number}"
+        # 渲染评论信息
+        comment = await render_comment(validation, True)
+
+        # 对议题评论
+        await handler.comment_issue(comment)
 
         # 设置拉取请求与议题的标题
         # 限制标题长度，过长的标题不好看
         title = f"{validation.type}: {validation.name[:TITLE_MAX_LENGTH]}"
 
-        # 渲染评论信息
-        comment = await render_comment(validation, True)
-
-        # 验证之后创建拉取请求和修改议题的标题
-        await process_pull_request(handler, validation, branch_name, title)
-
         # 修改议题标题
         await handler.update_issue_title(title)
 
-        # 对议题评论
-        await handler.comment_issue(comment)
+        branch_name = f"{BRANCH_NAME_PREFIX}{handler.issue_number}"
+
+        # 验证之后创建拉取请求和修改议题的标题
+        await process_pull_request(handler, validation, branch_name, title)
 
 
 async def pr_close_rule(

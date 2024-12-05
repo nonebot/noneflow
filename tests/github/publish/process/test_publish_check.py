@@ -75,28 +75,6 @@ async def test_bot_process_publish_check(
             mock_issues_resp,
         )
         ctx.should_call_api(
-            "rest.pulls.async_create",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "title": "Bot: test",
-                "body": "resolve #80",
-                "base": "master",
-                "head": "publish/issue80",
-            },
-            mock_pulls_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_add_labels",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "issue_number": 2,
-                "labels": ["Bot"],
-            },
-            True,
-        )
-        ctx.should_call_api(
             "rest.issues.async_list_comments",
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
             mock_list_comments_resp,
@@ -132,6 +110,28 @@ async def test_bot_process_publish_check(
 <!-- NONEFLOW -->
 """
                 ),
+            },
+            True,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_create",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "title": "Bot: test",
+                "body": "resolve #80",
+                "base": "master",
+                "head": "publish/issue80",
+            },
+            mock_pulls_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_add_labels",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 2,
+                "labels": ["Bot"],
             },
             True,
         )
@@ -265,40 +265,6 @@ async def test_adapter_process_publish_check(
             mock_issues_resp,
         )
         ctx.should_call_api(
-            "rest.pulls.async_create",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "title": snapshot("Adapter: test"),
-                "body": "resolve #80",
-                "base": "master",
-                "head": "publish/issue80",
-            },
-            mock_pulls_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_add_labels",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "issue_number": 2,
-                "labels": ["Adapter"],
-            },
-            True,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_update",
-            snapshot(
-                {
-                    "owner": "he0119",
-                    "repo": "action-test",
-                    "issue_number": 80,
-                    "title": "Adapter: test",
-                }
-            ),
-            True,
-        )
-        ctx.should_call_api(
             "rest.issues.async_list_comments",
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
             mock_list_comments_resp,
@@ -334,6 +300,40 @@ async def test_adapter_process_publish_check(
 <!-- NONEFLOW -->
 """
                 ),
+            },
+            True,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            snapshot(
+                {
+                    "owner": "he0119",
+                    "repo": "action-test",
+                    "issue_number": 80,
+                    "title": "Adapter: test",
+                }
+            ),
+            True,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_create",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "title": snapshot("Adapter: test"),
+                "body": "resolve #80",
+                "base": "master",
+                "head": "publish/issue80",
+            },
+            mock_pulls_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_add_labels",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 2,
+                "labels": ["Adapter"],
             },
             True,
         )
@@ -557,40 +557,6 @@ log_level=DEBUG
             True,
         )
         ctx.should_call_api(
-            "rest.pulls.async_create",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "title": snapshot("Plugin: name"),
-                "body": "resolve #80",
-                "base": "master",
-                "head": "publish/issue80",
-            },
-            mock_pulls_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_add_labels",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "issue_number": 2,
-                "labels": ["Plugin"],
-            },
-            True,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_update",
-            snapshot(
-                {
-                    "owner": "he0119",
-                    "repo": "action-test",
-                    "issue_number": 80,
-                    "title": "Plugin: name",
-                }
-            ),
-            True,
-        )
-        ctx.should_call_api(
             "rest.issues.async_list_comments",
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
             mock_list_comments_resp,
@@ -626,6 +592,40 @@ log_level=DEBUG
 <!-- NONEFLOW -->
 """
                 ),
+            },
+            True,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            snapshot(
+                {
+                    "owner": "he0119",
+                    "repo": "action-test",
+                    "issue_number": 80,
+                    "title": "Plugin: name",
+                }
+            ),
+            True,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_create",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "title": snapshot("Plugin: name"),
+                "body": "resolve #80",
+                "base": "master",
+                "head": "publish/issue80",
+            },
+            mock_pulls_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_add_labels",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 2,
+                "labels": ["Plugin"],
             },
             True,
         )
@@ -854,40 +854,6 @@ log_level=DEBUG
             True,
         )
         ctx.should_call_api(
-            "rest.pulls.async_create",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "title": snapshot("Plugin: name"),
-                "body": "resolve #80",
-                "base": "master",
-                "head": "publish/issue80",
-            },
-            mock_pulls_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_add_labels",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "issue_number": 2,
-                "labels": ["Plugin"],
-            },
-            True,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_update",
-            snapshot(
-                {
-                    "owner": "he0119",
-                    "repo": "action-test",
-                    "issue_number": 80,
-                    "title": "Plugin: name",
-                }
-            ),
-            True,
-        )
-        ctx.should_call_api(
             "rest.issues.async_list_comments",
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
             mock_list_comments_resp,
@@ -923,6 +889,40 @@ log_level=DEBUG
 <!-- NONEFLOW -->
 """
                 ),
+            },
+            True,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            snapshot(
+                {
+                    "owner": "he0119",
+                    "repo": "action-test",
+                    "issue_number": 80,
+                    "title": "Plugin: name",
+                }
+            ),
+            True,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_create",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "title": snapshot("Plugin: name"),
+                "body": "resolve #80",
+                "base": "master",
+                "head": "publish/issue80",
+            },
+            mock_pulls_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_add_labels",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 2,
+                "labels": ["Plugin"],
             },
             True,
         )
@@ -1064,54 +1064,6 @@ async def test_edit_title(
             mock_issues_resp,
         )
         ctx.should_call_api(
-            "rest.pulls.async_create",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "title": "Bot: test1",
-                "body": "resolve #80",
-                "base": "master",
-                "head": "publish/issue80",
-            },
-            exception=RequestFailed(
-                Response(
-                    httpx.Response(422, request=httpx.Request("test", "test")),
-                    None,  # type: ignore
-                )
-            ),
-        )
-        ctx.should_call_api(
-            "rest.pulls.async_list",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "head": "he0119:publish/issue80",
-            },
-            mock_pulls_resp,
-        )
-        # 修改标题
-        ctx.should_call_api(
-            "rest.pulls.async_update",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "pull_number": 2,
-                "title": "Bot: test1",
-            },
-            True,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_update",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "issue_number": 80,
-                "title": "Bot: test1",
-            },
-            True,
-        )
-
-        ctx.should_call_api(
             "rest.issues.async_list_comments",
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
             mock_list_comments_resp,
@@ -1147,6 +1099,54 @@ async def test_edit_title(
 <!-- NONEFLOW -->
 """
                 ),
+            },
+            True,
+        )
+        # 修改议题标题
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 80,
+                "title": "Bot: test1",
+            },
+            True,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_create",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "title": "Bot: test1",
+                "body": "resolve #80",
+                "base": "master",
+                "head": "publish/issue80",
+            },
+            exception=RequestFailed(
+                Response(
+                    httpx.Response(422, request=httpx.Request("test", "test")),
+                    None,  # type: ignore
+                )
+            ),
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_list",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "head": "he0119:publish/issue80",
+            },
+            mock_pulls_resp,
+        )
+        # 修改拉取请求标题
+        ctx.should_call_api(
+            "rest.pulls.async_update",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "pull_number": 2,
+                "title": "Bot: test1",
             },
             True,
         )
@@ -1282,26 +1282,6 @@ async def test_edit_title_too_long(
             mock_issues_resp,
         )
         ctx.should_call_api(
-            "rest.pulls.async_list",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "head": "he0119:publish/issue80",
-            },
-            mock_pulls_resp,
-        )
-        # 修改标题，应该被截断，且不会更新拉取请求的标题
-        ctx.should_call_api(
-            "rest.issues.async_update",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "issue_number": 80,
-                "title": "Bot: looooooooooooooooooooooooooooooooooooooooooooooooo",
-            },
-            True,
-        )
-        ctx.should_call_api(
             "rest.issues.async_list_comments",
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
             mock_list_comments_resp,
@@ -1340,6 +1320,26 @@ async def test_edit_title_too_long(
                 ),
             },
             True,
+        )
+        # 修改标题，应该被截断，且不会更新拉取请求的标题
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 80,
+                "title": "Bot: looooooooooooooooooooooooooooooooooooooooooooooooo",
+            },
+            True,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_list",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "head": "he0119:publish/issue80",
+            },
+            mock_pulls_resp,
         )
 
         ctx.receive_event(bot, event)
@@ -1409,15 +1409,6 @@ async def test_process_publish_check_not_pass(
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
             mock_issues_resp,
         )
-        ctx.should_call_api(
-            "rest.pulls.async_list",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "head": "he0119:publish/issue80",
-            },
-            mock_pulls_resp,
-        )
         # 检查是否可以复用评论
         ctx.should_call_api(
             "rest.issues.async_list_comments",
@@ -1459,6 +1450,15 @@ async def test_process_publish_check_not_pass(
                 ),
             },
             True,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_list",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "head": "he0119:publish/issue80",
+            },
+            mock_pulls_resp,
         )
 
         ctx.receive_event(bot, event)
@@ -1728,7 +1728,6 @@ log_level=DEBUG
             ),
             True,
         )
-
         ctx.should_call_api(
             "rest.issues.async_update",
             {
@@ -1774,27 +1773,6 @@ log_level=DEBUG
             True,
         )
         ctx.should_call_api(
-            "rest.pulls.async_list",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "head": "he0119:publish/issue70",
-            },
-            mock_pulls_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_update",
-            snapshot(
-                {
-                    "owner": "he0119",
-                    "repo": "action-test",
-                    "issue_number": 70,
-                    "title": "Plugin: project_link",
-                }
-            ),
-            True,
-        )
-        ctx.should_call_api(
             "rest.issues.async_list_comments",
             {"owner": "he0119", "repo": "action-test", "issue_number": 70},
             mock_list_comments_resp,
@@ -1833,6 +1811,27 @@ log_level=DEBUG
                 ),
             },
             True,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            snapshot(
+                {
+                    "owner": "he0119",
+                    "repo": "action-test",
+                    "issue_number": 70,
+                    "title": "Plugin: project_link",
+                }
+            ),
+            True,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_list",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "head": "he0119:publish/issue70",
+            },
+            mock_pulls_resp,
         )
 
         ctx.receive_event(bot, event)
@@ -1913,31 +1912,12 @@ async def test_convert_pull_request_to_draft(
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
             mock_issues_resp,
         )
-        ctx.should_call_api(
-            "rest.pulls.async_list",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "head": "he0119:publish/issue80",
-            },
-            mock_pulls_resp,
-        )
-        # 将拉取请求转换为草稿
-        ctx.should_call_api(
-            "async_graphql",
-            {
-                "query": "mutation convertPullRequestToDraft($pullRequestId: ID!) {\n                    convertPullRequestToDraft(input: {pullRequestId: $pullRequestId}) {\n                        clientMutationId\n                    }\n                }",
-                "variables": {"pullRequestId": "123"},
-            },
-            True,
-        )
         # 检查是否可以复用评论
         ctx.should_call_api(
             "rest.issues.async_list_comments",
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
             mock_list_comments_resp,
         )
-
         ctx.should_call_api(
             "rest.issues.async_create_comment",
             {
@@ -1970,6 +1950,24 @@ async def test_convert_pull_request_to_draft(
 <!-- NONEFLOW -->
 """
                 ),
+            },
+            True,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_list",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "head": "he0119:publish/issue80",
+            },
+            mock_pulls_resp,
+        )
+        # 将拉取请求转换为草稿
+        ctx.should_call_api(
+            "async_graphql",
+            {
+                "query": "mutation convertPullRequestToDraft($pullRequestId: ID!) {\n                    convertPullRequestToDraft(input: {pullRequestId: $pullRequestId}) {\n                        clientMutationId\n                    }\n                }",
+                "variables": {"pullRequestId": "123"},
             },
             True,
         )
@@ -2054,7 +2052,45 @@ async def test_process_publish_check_ready_for_review(
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
             mock_issues_resp,
         )
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_create_comment",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 80,
+                "body": snapshot(
+                    """\
+# 📃 商店发布检查结果
 
+> Bot: test
+
+**✅ 所有测试通过，一切准备就绪！**
+
+
+<details>
+<summary>详情</summary>
+<pre><code><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 标签: test-#ffffff。</li></code></pre>
+</details>
+
+---
+
+💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
+💡 当插件加载测试失败时，请发布新版本后勾选插件测试勾选框重新运行插件测试。
+
+♻️ 评论已更新至最新检查结果
+
+💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
+<!-- NONEFLOW -->
+"""
+                ),
+            },
+            True,
+        )
         ctx.should_call_api(
             "rest.pulls.async_create",
             {
@@ -2095,45 +2131,6 @@ mutation markPullRequestReadyForReview($pullRequestId: ID!) {
 """
                 ),
                 "variables": {"pullRequestId": "123"},
-            },
-            True,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_list_comments",
-            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-            mock_list_comments_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_create_comment",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "issue_number": 80,
-                "body": snapshot(
-                    """\
-# 📃 商店发布检查结果
-
-> Bot: test
-
-**✅ 所有测试通过，一切准备就绪！**
-
-
-<details>
-<summary>详情</summary>
-<pre><code><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 标签: test-#ffffff。</li></code></pre>
-</details>
-
----
-
-💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
-💡 当插件加载测试失败时，请发布新版本后勾选插件测试勾选框重新运行插件测试。
-
-♻️ 评论已更新至最新检查结果
-
-💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
-<!-- NONEFLOW -->
-"""
-                ),
             },
             True,
         )
