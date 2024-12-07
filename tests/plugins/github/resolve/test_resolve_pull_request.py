@@ -1,11 +1,11 @@
 from typing import Any, NotRequired, TypedDict
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, _Call, call
 
 from inline_snapshot import snapshot
 from nonebot.adapters.github import PullRequestClosed
 from nonebug import App
 from nonebug.mixin.process import MatcherContext
-from pytest_mock import MockerFixture
+from pytest_mock import MockerFixture, MockType
 
 from tests.plugins.github.event import get_mock_event
 from tests.plugins.github.resolve.utils import get_pr_labels
@@ -25,6 +25,16 @@ class GitHubApi(TypedDict):
 def should_call_api(ctx: MatcherContext, apis: list[GitHubApi], data: Any) -> None:
     for api in apis:
         ctx.should_call_api(**api, data=data[api["api"]])
+
+
+def assert_subprocess_run_calls(mock: MockType, commands: list[list[str]]):
+    calls = []
+    for command in commands:
+        calls.append(call(command, check=True, capture_output=True))
+        calls.append(call().stdout.decode())
+        calls.append(_Call(("().stdout.decode().__str__", (), {})))
+
+    mock.assert_has_calls(calls)
 
 
 async def test_resolve_pull_request(
@@ -105,18 +115,10 @@ async def test_resolve_pull_request(
         ctx.receive_event(bot, event)
 
     # 测试 git 命令
-    mock_subprocess_run.assert_has_calls(
+    assert_subprocess_run_calls(
+        mock_subprocess_run,
         [
-            mocker.call(
-                ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "push", "origin", "--delete", "publish/issue76"],
-                check=True,
-                capture_output=True,
-            ),
-        ],  # type: ignore
-        any_order=True,
+            ["git", "config", "--global", "safe.directory", "*"],
+            ["git", "push", "origin", "--delete", "publish/issue76"],
+        ],
     )
