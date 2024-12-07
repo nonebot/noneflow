@@ -1,11 +1,35 @@
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, NotRequired, TypedDict
+from unittest.mock import _Call, call
 
 import pyjson5
 from githubkit.rest import Issue
-from pytest_mock import MockFixture
+from nonebug.mixin.process import MatcherContext
+from pytest_mock import MockFixture, MockType
+
+
+class GitHubApi(TypedDict):
+    api: str
+    result: Any | None
+    exception: NotRequired[Exception | None]
+
+
+def should_call_apis(ctx: MatcherContext, apis: list[GitHubApi], data: Any) -> None:
+    for api in apis:
+        ctx.should_call_api(**api, data=data[api["api"]])
+
+
+def assert_subprocess_run_calls(mock: MockType, commands: list[list[str]]):
+    calls = []
+    for command in commands:
+        calls.append(call(command, check=True, capture_output=True))
+        # 暂时不考虑报错的情况，仅涉及到 stdout
+        calls.append(call().stdout.decode())
+        calls.append(_Call(("().stdout.decode().__str__", (), {})))
+
+    mock.assert_has_calls(calls)
 
 
 def generate_issue_body_adapter(

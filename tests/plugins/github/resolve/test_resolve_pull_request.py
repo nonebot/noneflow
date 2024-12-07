@@ -1,40 +1,20 @@
-from typing import Any, NotRequired, TypedDict
-from unittest.mock import MagicMock, _Call, call
+from unittest.mock import MagicMock
 
 from inline_snapshot import snapshot
 from nonebot.adapters.github import PullRequestClosed
 from nonebug import App
-from nonebug.mixin.process import MatcherContext
-from pytest_mock import MockerFixture, MockType
+from pytest_mock import MockerFixture
 
 from tests.plugins.github.event import get_mock_event
 from tests.plugins.github.resolve.utils import get_pr_labels
 from tests.plugins.github.utils import (
+    GitHubApi,
     MockIssue,
+    assert_subprocess_run_calls,
     generate_issue_body_remove,
     get_github_bot,
+    should_call_apis,
 )
-
-
-class GitHubApi(TypedDict):
-    api: str
-    result: Any | None
-    exception: NotRequired[Exception | None]
-
-
-def should_call_api(ctx: MatcherContext, apis: list[GitHubApi], data: Any) -> None:
-    for api in apis:
-        ctx.should_call_api(**api, data=data[api["api"]])
-
-
-def assert_subprocess_run_calls(mock: MockType, commands: list[list[str]]):
-    calls = []
-    for command in commands:
-        calls.append(call(command, check=True, capture_output=True))
-        calls.append(call().stdout.decode())
-        calls.append(_Call(("().stdout.decode().__str__", (), {})))
-
-    mock.assert_has_calls(calls)
 
 
 async def test_resolve_pull_request(
@@ -66,7 +46,7 @@ async def test_resolve_pull_request(
         event.payload.pull_request.labels = get_pr_labels(["Remove", "Bot"])
         event.payload.pull_request.merged = True
 
-        should_call_api(
+        should_call_apis(
             ctx,
             [
                 GitHubApi(
