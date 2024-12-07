@@ -17,7 +17,6 @@ async def test_ensure_issue_content(app: App, mocker: MockerFixture):
             bot=bot,
             repo_info=RepoInfo(owner="owner", repo="repo"),
             issue=issue.as_mock(mocker),
-            issue_number=issue.number,
         )
 
         ctx.should_call_api(
@@ -61,7 +60,6 @@ async def test_ensure_issue_content_partial(app: App, mocker: MockerFixture):
             bot=bot,
             repo_info=RepoInfo(owner="owner", repo="repo"),
             issue=issue.as_mock(mocker),
-            issue_number=issue.number,
         )
 
         ctx.should_call_api(
@@ -93,7 +91,6 @@ async def test_ensure_issue_content_complete(app: App, mocker: MockerFixture):
             bot=bot,
             repo_info=RepoInfo(owner="owner", repo="repo"),
             issue=issue.as_mock(mocker),
-            issue_number=issue.number,
         )
 
         await ensure_issue_content(handler)

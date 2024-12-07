@@ -1445,8 +1445,8 @@ async def test_process_publish_check_not_pass(
                 ["git", "config", "--global", "safe.directory", "*"],
                 check=True,
                 capture_output=True,
-            ),
-        ]  # type: ignore
+            ),  # type: ignore
+        ]
     )
 
     # 检查文件是否正确
@@ -1515,8 +1515,8 @@ async def test_issue_state_closed(
                 ["git", "config", "--global", "safe.directory", "*"],
                 check=True,
                 capture_output=True,
-            ),
-        ]  # type: ignore
+            ),  # type: ignore
+        ]
     )
 
 
@@ -1808,8 +1808,8 @@ log_level=DEBUG
                 ["git", "config", "--global", "safe.directory", "*"],
                 check=True,
                 capture_output=True,
-            ),
-        ]  # type: ignore
+            ),  # type: ignore
+        ]
     )
 
     # 检查文件是否正确
@@ -1941,8 +1941,8 @@ async def test_convert_pull_request_to_draft(
                 ["git", "config", "--global", "safe.directory", "*"],
                 check=True,
                 capture_output=True,
-            ),
-        ]  # type: ignore
+            ),  # type: ignore
+        ]
     )
 
     # 检查文件是否正确
