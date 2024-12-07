@@ -16,18 +16,22 @@ class GitHubApi(TypedDict):
     exception: NotRequired[Exception | None]
 
 
-def should_call_apis(ctx: MatcherContext, apis: list[GitHubApi], data: Any) -> None:
-    for api in apis:
-        ctx.should_call_api(**api, data=data[api["api"]])
+def should_call_apis(ctx: MatcherContext, apis: list[GitHubApi], data: list[Any]) -> None:
+    for n, api in enumerate(apis):
+        ctx.should_call_api(**api, data=data[n])
 
 
 def assert_subprocess_run_calls(mock: MockType, commands: list[list[str]]):
     calls = []
     for command in commands:
+        command_str = " ".join(command)
+
         calls.append(call(command, check=True, capture_output=True))
         # 暂时不考虑报错的情况，仅涉及到 stdout
         calls.append(call().stdout.decode())
         calls.append(_Call(("().stdout.decode().__str__", (), {})))
+        if command_str.startswith("git diff"):
+            calls.append(_Call(("().stdout.__bool__", (), {})))
 
     mock.assert_has_calls(calls)
 
@@ -89,15 +93,9 @@ def generate_issue_body_remove(
 ):
     match type:
         case "Bot":
-            return (
-                """### 机器人名称\n\n{}\n\n### 机器人项目仓库/主页链接\n\n{}""".format(
-                    *key.split(":", 1)
-                )
-            )
+            return """### 机器人名称\n\n{}\n\n### 机器人项目仓库/主页链接\n\n{}""".format(*key.split(":", 1))
         case _:
-            return """### PyPI 项目名\n\n{}\n\n### import 包名\n\n{}""".format(
-                *key.split(":", 1)
-            )
+            return """### PyPI 项目名\n\n{}\n\n### import 包名\n\n{}""".format(*key.split(":", 1))
 
 
 def check_json_data(file: Path, data: Any) -> None:
@@ -162,9 +160,7 @@ class MockBody:
                         config=self.config,
                     )
                 if self.test_button is not None:
-                    body = generate_issue_body_plugin_test_button(
-                        body, self.test_button
-                    )
+                    body = generate_issue_body_plugin_test_button(body, self.test_button)
                 return body
 
 
