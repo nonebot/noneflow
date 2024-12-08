@@ -14,7 +14,6 @@ import asyncio
 import json
 import os
 import re
-import sys
 from asyncio import create_subprocess_shell, subprocess
 from pathlib import Path
 from urllib.request import urlopen
@@ -429,11 +428,23 @@ class PluginTest:
                 self._log_output(f"插件 {self.project_link} 依赖的插件如下：")
                 requirements = parse_requirements(stdout)
                 self._deps = self._get_deps(requirements)
-                self._test_env = self._get_test_env(requirements)
+                self._test_env = await self._get_test_env(requirements)
                 self._log_output(f"    {', '.join(self._deps)}")
             else:
                 self._log_output(f"插件 {self.project_link} 依赖获取失败。")
                 self._std_output(stdout, stderr)
+
+    async def get_python_version(self) -> str:
+        """获取 Python 版本"""
+        code, stdout, stderr = await self.command("poetry run python --version")
+        if code:
+            version = stdout.strip()
+            if version.startswith("Python "):
+                return version.removeprefix("Python ")
+        else:
+            self._log_output("Python 版本获取失败。")
+            self._std_output(stdout, stderr)
+        return "unknown"
 
     @property
     def plugin_list(self) -> dict[str, str]:
@@ -465,12 +476,11 @@ class PluginTest:
                 deps.append(module_name)
         return deps
 
-    def _get_test_env(self, requirements: dict[str, str]) -> list[str]:
+    async def _get_test_env(self, requirements: dict[str, str]) -> list[str]:
         """获取测试环境"""
         # python 版本
-        envs = [
-            f"python=={sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-        ]
+        python_version = await self.get_python_version()
+        envs = [f"python=={python_version}"]
         # 特定插件依赖
         # 当前仅需记录 nonebot2 和 pydantic 的版本
         if "nonebot2" in requirements:
