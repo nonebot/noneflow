@@ -18,22 +18,28 @@ from tests.plugins.github.utils import (
 )
 
 
-async def test_resolve_pull_request(app: App, mocker: MockerFixture, mock_installation: MagicMock) -> None:
+async def test_resolve_pull_request(
+    app: App, mocker: MockerFixture, mock_installation: MagicMock
+) -> None:
     """测试能正确处理拉取请求关闭后其他拉取请求的冲突问题"""
     mock_subprocess_run = mocker.patch("subprocess.run")
 
-    mock_issue = MockIssue(body=generate_issue_body_remove(type="Bot"), number=76).as_mock(mocker)
+    mock_issue = MockIssue(
+        body=generate_issue_body_remove(type="Bot"), number=76
+    ).as_mock(mocker)
     mock_issues_resp = mocker.MagicMock()
     mock_issues_resp.parsed_data = mock_issue
 
-    mock_publish_issue = MockIssue(body=generate_issue_body_bot(), number=100).as_mock(mocker)
+    mock_publish_issue = MockIssue(body=generate_issue_body_bot(), number=100).as_mock(
+        mocker
+    )
     mock_publish_issue_resp = mocker.MagicMock()
     mock_publish_issue_resp.parsed_data = mock_publish_issue
     mock_publish_pull = mocker.MagicMock()
     mock_publish_pull.title = "Bot: test"
     mock_publish_pull.draft = False
     mock_publish_pull.head.ref = "publish/issue100"
-    mock_publish_pull.labels = get_pr_labels(["Bot"])
+    mock_publish_pull.labels = get_pr_labels(["Bot", "Publish"])
     mock_remove_issue = MockIssue(
         body=generate_issue_body_remove(type="Bot", key="name:https://v2.nonebot.dev"),
         number=101,
@@ -112,7 +118,13 @@ async def test_resolve_pull_request(app: App, mocker: MockerFixture, mock_instal
             ["git", "checkout", "master"],
             ["git", "switch", "-C", "publish/issue100"],
             ["git", "config", "--global", "user.name", "test"],
-            ["git", "config", "--global", "user.email", "test@users.noreply.github.com"],
+            [
+                "git",
+                "config",
+                "--global",
+                "user.email",
+                "test@users.noreply.github.com",
+            ],
             ["git", "add", "-A"],
             ["git", "commit", "-m", ":beers: publish bot name (#100)"],
             ["git", "fetch", "origin"],
@@ -122,7 +134,13 @@ async def test_resolve_pull_request(app: App, mocker: MockerFixture, mock_instal
             ["git", "checkout", "master"],
             ["git", "switch", "-C", "remove/issue101"],
             ["git", "config", "--global", "user.name", "test"],
-            ["git", "config", "--global", "user.email", "test@users.noreply.github.com"],
+            [
+                "git",
+                "config",
+                "--global",
+                "user.email",
+                "test@users.noreply.github.com",
+            ],
             ["git", "add", "-A"],
             ["git", "commit", "-m", ":hammer: remove name (#101)"],
             ["git", "fetch", "origin"],

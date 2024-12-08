@@ -1,8 +1,8 @@
 from nonebot import logger, on_type
 from nonebot.adapters.github import GitHubBot, PullRequestClosed
 from nonebot.params import Depends
-from nonebot.typing import T_State
 
+from src.plugins.github.constants import PUBLISH_LABEL, REMOVE_LABEL
 from src.plugins.github.depends import (
     bypass_git,
     get_installation_id,
@@ -18,19 +18,21 @@ from src.plugins.github.plugins.publish.utils import (
 from src.plugins.github.plugins.remove.utils import (
     resolve_conflict_pull_requests as resolve_conflict_remove_pull_requests,
 )
-from src.plugins.github.typing import PullRequestList
+from src.plugins.github.typing import PullRequestLabels, PullRequestList
 from src.providers.validation.models import PublishType
 
 
-def is_publish(labels: list) -> bool:
-    return all(label.name != "Remove" or label.name != "Config" for label in labels)
+def is_publish(labels: PullRequestLabels) -> bool:
+    return any(label.name == PUBLISH_LABEL for label in labels)
 
 
-def is_remove(labels: list) -> bool:
-    return any(label.name == "Remove" for label in labels)
+def is_remove(labels: PullRequestLabels) -> bool:
+    return any(label.name == REMOVE_LABEL for label in labels)
 
 
-async def resolve_conflict_pull_requests(handler: GithubHandler, pull_requests: PullRequestList):
+async def resolve_conflict_pull_requests(
+    handler: GithubHandler, pull_requests: PullRequestList
+):
     for pull_request in pull_requests:
         if is_remove(pull_request.labels):
             await resolve_conflict_remove_pull_requests(handler, [pull_request])
@@ -60,7 +62,6 @@ pr_close_matcher = on_type(PullRequestClosed, rule=pr_close_rule, priority=10)
 async def handle_pr_close(
     event: PullRequestClosed,
     bot: GitHubBot,
-    state: T_State,
     installation_id: int = Depends(get_installation_id),
     publish_type: PublishType = Depends(get_type_by_labels_name),
     handler: IssueHandler = Depends(get_related_issue_handler),

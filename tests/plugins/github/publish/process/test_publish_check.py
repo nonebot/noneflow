@@ -247,7 +247,7 @@ async def test_adapter_process_publish_check(
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
-        event.payload.issue.labels = get_issue_labels(["Adapter"])
+        event.payload.issue.labels = get_issue_labels(["Adapter", "Publish"])
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
@@ -461,7 +461,7 @@ async def test_plugin_process_publish_check(
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
-        event.payload.issue.labels = get_issue_labels(["Plugin"])
+        event.payload.issue.labels = get_issue_labels(["Plugin", "Publish"])
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
@@ -752,7 +752,7 @@ async def test_plugin_process_publish_check_re_run(
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
-        event.payload.issue.labels = get_issue_labels(["Plugin"])
+        event.payload.issue.labels = get_issue_labels(["Plugin", "Publish"])
 
         ctx.should_call_api(
             "rest.apps.async_get_repo_installation",
