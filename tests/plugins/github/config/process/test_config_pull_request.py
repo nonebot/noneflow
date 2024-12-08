@@ -6,29 +6,11 @@ from pytest_mock import MockerFixture
 
 from tests.plugins.github.config.utils import generate_issue_body
 from tests.plugins.github.event import get_mock_event
+from tests.plugins.github.resolve.utils import get_pr_labels
 from tests.plugins.github.utils import (
     MockIssue,
     get_github_bot,
 )
-
-
-def get_pr_labels(labels: list[str]):
-    from githubkit.rest import PullRequestPropLabelsItems as Label
-
-    return [
-        Label.model_construct(
-            **{
-                "color": "2A2219",
-                "default": False,
-                "description": "",
-                "id": 2798075966,
-                "name": label,
-                "node_id": "MDU6TGFiZWwyNzk4MDc1OTY2",
-                "url": "https://api.github.com/repos/he0119/action-test/labels/Remove",
-            }
-        )
-        for label in labels
-    ]
 
 
 async def test_config_process_pull_request(

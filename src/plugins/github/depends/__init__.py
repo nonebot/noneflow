@@ -10,7 +10,7 @@ from nonebot.adapters.github import (
 )
 from nonebot.params import Depends
 
-from src.plugins.github.constants import CONFIG_LABEL, REMOVE_LABEL
+from src.plugins.github.constants import CONFIG_LABEL, PUBLISH_LABEL, REMOVE_LABEL
 from src.plugins.github.models import GithubHandler, IssueHandler, RepoInfo
 from src.plugins.github.typing import IssuesEvent, LabelsItems, PullRequestEvent
 from src.plugins.github.utils import run_shell_command
@@ -152,23 +152,19 @@ async def is_publish_workflow(
     labels: list[str] = Depends(get_labels_name),
     publish_type: PublishType | None = Depends(get_type_by_labels_name),
 ) -> bool:
-    """是否是发布工作流
-
-    通过标签判断
-    仅包含发布相关标签，不包含 remove/config 标签
-    """
-    if publish_type is None or REMOVE_LABEL in labels or CONFIG_LABEL in labels:
-        logger.debug("与发布无关，已跳过")
+    """是否是发布工作流"""
+    if publish_type is None:
+        logger.debug("无法获取到发布类型，已跳过")
         return False
 
-    return True
+    return PUBLISH_LABEL in labels
 
 
 async def is_remove_workflow(
     labels: list[str] = Depends(get_labels_name),
     publish_type: PublishType | None = Depends(get_type_by_labels_name),
 ) -> bool:
-    """是否是 Remove 工作流"""
+    """是否是删除工作流"""
     if publish_type is None:
         logger.debug("无法获取到发布类型，已跳过")
         return False
@@ -180,7 +176,7 @@ async def is_config_workflow(
     labels: list[str] = Depends(get_labels_name),
     publish_type: PublishType | None = Depends(get_type_by_labels_name),
 ) -> bool:
-    """是否是 Config 工作流
+    """是否是配置工作流
 
     仅支持插件发布
     """

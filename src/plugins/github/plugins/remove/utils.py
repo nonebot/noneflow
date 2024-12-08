@@ -3,6 +3,7 @@ from nonebot import logger
 from pydantic_core import PydanticCustomError
 
 from src.plugins.github import plugin_config
+from src.plugins.github.constants import REMOVE_LABEL
 from src.plugins.github.depends.utils import (
     extract_issue_number_from_ref,
     get_type_by_labels,
@@ -13,7 +14,7 @@ from src.plugins.github.utils import commit_message
 from src.providers.utils import dump_json5
 from src.providers.validation.models import PublishType
 
-from .constants import COMMIT_MESSAGE_PREFIX, REMOVE_LABEL
+from .constants import COMMIT_MESSAGE_PREFIX
 from .validation import RemoveInfo, load_publish_data, validate_author_info
 
 

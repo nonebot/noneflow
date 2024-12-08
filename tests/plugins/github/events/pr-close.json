@@ -341,6 +341,15 @@
         "name": "Plugin",
         "node_id": "MDU6TGFiZWwyNzk4MDc1OTY2",
         "url": "https://api.github.com/repos/he0119/action-test/labels/Plugin"
+      },
+      {
+        "color": "2A2219",
+        "default": false,
+        "description": "",
+        "id": 2798075967,
+        "name": "Publish",
+        "node_id": "MDU6TGFiZWwyNzk4MDc1OTY2",
+        "url": "https://api.github.com/repos/he0119/action-test/labels/Publish"
       }
     ],
     "locked": false,
