@@ -8,14 +8,14 @@ from pytest_mock import MockerFixture
 async def test_plugin_test(mocker: MockerFixture, tmp_path: Path):
     from src.providers.docker_test.plugin_test import PluginTest
 
-    test = PluginTest("project_link", "module_name", "test=123")
+    test = PluginTest("3.12", "project_link", "module_name", "test=123")
 
     mocker.patch.object(test, "_test_dir", tmp_path / "plugin_test")
 
     def command_output(cmd: str, timeout: int = 300):
         if (
             cmd
-            == r"""poetry init -n && sed -i "s/\^/~/g" pyproject.toml && poetry env info --ansi && poetry add project_link"""
+            == r"""uv venv --python 3.12 && poetry init -n --python "~3.12" && poetry env info --ansi && poetry add project_link"""
         ):
             # create_poetry_project
             return (
