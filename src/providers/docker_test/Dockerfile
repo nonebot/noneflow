@@ -1,8 +1,10 @@
-ARG PYTHON_VERSION=3.12
+FROM python:3.12.4
+COPY --from=ghcr.io/astral-sh/uv:0.5.6 /uv /bin/uv
 
-FROM python:${PYTHON_VERSION}
+WORKDIR /app
 
-WORKDIR /tmp
+# 设置时区
+ENV TZ=Asia/Shanghai
 
 # OpenCV 所需的依赖
 RUN apt-get update \
@@ -11,11 +13,14 @@ RUN apt-get update \
   && apt-get purge -y --auto-remove \
   && rm -rf /var/lib/apt/lists/*
 
-# 测试插件依赖 Poetry
-RUN curl -sSL https://install.python-poetry.org | python3 -
-
+# 插件测试需要 Poetry
 ENV PATH="${PATH}:/root/.local/bin"
+RUN uv tool install poetry
 
-COPY ./plugin_test.py /tmp/plugin_test.py
+# Python 依赖
+COPY pyproject.toml uv.lock /app/
+RUN uv sync --project /app/ --no-dev --frozen --compile-bytecode
 
-CMD ["python", "plugin_test.py"]
+COPY src /app/src/
+
+CMD ["uv", "run", "--project", "/app/", "--no-dev", "-m", "src.providers.docker_test"]

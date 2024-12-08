@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Added
+
+- 插件测试中使用 uv 来控制 Python 版本并与本体共享依赖
+
 ## [4.1.4] - 2024-12-08
 
 ### Fixed

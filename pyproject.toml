@@ -47,6 +47,7 @@ show-bump = "bump-my-version show-bump"
 snapshot-create = "pytest --inline-snapshot=create"
 snapshot-fix = "pytest --inline-snapshot=fix"
 store-test = "python -m src.providers.store_test"
+docker-test = "python -m src.providers.docker_test"
 
 [tool.pyright]
 pythonVersion = "3.12"

@@ -4,7 +4,7 @@ from typing import TypedDict
 import docker
 from pydantic import BaseModel, Field, SkipValidation, field_validator
 
-from src.providers.constants import DOCKER_IMAGES, REGISTRY_PLUGINS_URL
+from src.providers.constants import DOCKER_IMAGES
 
 
 class Metadata(TypedDict):
@@ -59,20 +59,20 @@ class DockerPluginTest:
         Returns:
             DockerTestResult: 测试结果
         """
-        image_name = DOCKER_IMAGES.format(version)
         # 连接 Docker 环境
         client = docker.DockerClient(base_url="unix://var/run/docker.sock")
 
         try:
             # 运行 Docker 容器，捕获输出。 容器内运行的代码拥有超时设限，此处无需设置超时
             output = client.containers.run(
-                image_name,
+                DOCKER_IMAGES,
                 environment={
+                    # 运行测试的 Python 版本
+                    "PYTHON_VERSION": version,
+                    # 插件信息
                     "PROJECT_LINK": self.project_link,
                     "MODULE_NAME": self.module_name,
                     "PLUGIN_CONFIG": self.config,
-                    # 插件测试需要用到的插件列表来验证插件依赖是否正确加载
-                    "PLUGINS_URL": REGISTRY_PLUGINS_URL,
                 },
                 detach=False,
                 remove=True,
