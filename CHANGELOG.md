@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [4.1.4] - 2024-12-08
 
+### Fixed
+
+- 修复解决冲突时未能正确分类的问题
+
 ## [4.1.3] - 2024-12-05
 
 ### Changed
