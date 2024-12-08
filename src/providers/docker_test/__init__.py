@@ -4,7 +4,7 @@ from typing import TypedDict
 import docker
 from pydantic import BaseModel, Field, SkipValidation, field_validator
 
-from src.providers.constants import DOCKER_IMAGES, REGISTRY_PLUGINS_URL
+from src.providers.constants import DOCKER_IMAGES
 
 
 class Metadata(TypedDict):
@@ -70,8 +70,6 @@ class DockerPluginTest:
                     "PROJECT_LINK": self.project_link,
                     "MODULE_NAME": self.module_name,
                     "PLUGIN_CONFIG": self.config,
-                    # 插件测试需要用到的插件列表来验证插件依赖是否正确加载
-                    "PLUGINS_URL": REGISTRY_PLUGINS_URL,
                     # 运行测试的 Python 版本
                     "PYTHON_VERSION": version,
                 },
