@@ -67,11 +67,12 @@ class DockerPluginTest:
             output = client.containers.run(
                 DOCKER_IMAGES,
                 environment={
+                    # 运行测试的 Python 版本
+                    "PYTHON_VERSION": version,
+                    # 插件信息
                     "PROJECT_LINK": self.project_link,
                     "MODULE_NAME": self.module_name,
                     "PLUGIN_CONFIG": self.config,
-                    # 运行测试的 Python 版本
-                    "PYTHON_VERSION": version,
                 },
                 detach=False,
                 remove=True,
