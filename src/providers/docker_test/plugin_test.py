@@ -1,12 +1,6 @@
 """插件加载测试
 
 测试代码修改自 <https://github.com/Lancercmd/nonebot2-store-test>，谢谢 [Lan 佬](https://github.com/Lancercmd)。
-
-在 GitHub Actions 中运行，通过 GitHub Event 文件获取所需信息。并将测试结果保存至 GitHub Action 的输出文件中。
-
-当前会输出 RESULT, OUTPUT, METADATA 三个数据，分别对应测试结果、测试输出、插件元数据。
-
-经测试可以直接在 Python 3.10+ 环境下运行，无需额外依赖。
 """
 # ruff: noqa: T201, ASYNC109
 
@@ -21,122 +15,7 @@ import httpx
 
 from src.providers.constants import REGISTRY_PLUGINS_URL
 
-# 伪造的驱动
-FAKE_SCRIPT = """from typing import Optional, Union
-
-from nonebot import logger
-from nonebot.drivers import (
-    ASGIMixin,
-    HTTPClientMixin,
-    HTTPClientSession,
-    HTTPVersion,
-    Request,
-    Response,
-    WebSocketClientMixin,
-)
-from nonebot.drivers import Driver as BaseDriver
-from nonebot.internal.driver.model import (
-    CookieTypes,
-    HeaderTypes,
-    QueryTypes,
-)
-from typing_extensions import override
-
-
-class Driver(BaseDriver, ASGIMixin, HTTPClientMixin, WebSocketClientMixin):
-    @property
-    @override
-    def type(self) -> str:
-        return "fake"
-
-    @property
-    @override
-    def logger(self):
-        return logger
-
-    @override
-    def run(self, *args, **kwargs):
-        super().run(*args, **kwargs)
-
-    @property
-    @override
-    def server_app(self):
-        return None
-
-    @property
-    @override
-    def asgi(self):
-        raise NotImplementedError
-
-    @override
-    def setup_http_server(self, setup):
-        raise NotImplementedError
-
-    @override
-    def setup_websocket_server(self, setup):
-        raise NotImplementedError
-
-    @override
-    async def request(self, setup: Request) -> Response:
-        raise NotImplementedError
-
-    @override
-    async def websocket(self, setup: Request) -> Response:
-        raise NotImplementedError
-
-    @override
-    def get_session(
-        self,
-        params: QueryTypes = None,
-        headers: HeaderTypes = None,
-        cookies: CookieTypes = None,
-        version: Union[str, HTTPVersion] = HTTPVersion.H11,
-        timeout: Optional[float] = None,
-        proxy: Optional[str] = None,
-    ) -> HTTPClientSession:
-        raise NotImplementedError
-"""
-
-RUNNER_SCRIPT = """import json
-
-from nonebot import init, load_plugin, logger, require
-from pydantic import BaseModel
-
-
-class SetEncoder(json.JSONEncoder):
-    def default(self, o):
-        if isinstance(o, set):
-            return list(o)
-        return json.JSONEncoder.default(self, o)
-
-
-init()
-plugin = load_plugin("{}")
-
-if not plugin:
-    exit(1)
-else:
-    if plugin.metadata:
-        metadata = {{
-            "name": plugin.metadata.name,
-            "desc": plugin.metadata.description,
-            "usage": plugin.metadata.usage,
-            "type": plugin.metadata.type,
-            "homepage": plugin.metadata.homepage,
-            "supported_adapters": plugin.metadata.supported_adapters,
-        }}
-        with open("metadata.json", "w", encoding="utf-8") as f:
-            try:
-                f.write(f"{{json.dumps(metadata, cls=SetEncoder)}}")
-            except Exception:
-                f.write("{{}}")
-
-        if plugin.metadata.config and not issubclass(plugin.metadata.config, BaseModel):
-            logger.error("插件配置项不是 Pydantic BaseModel 的子类")
-            exit(1)
-
-{}
-"""
+from .render import render_fake, render_runner
 
 
 def strip_ansi(text: str | None) -> str:
@@ -389,16 +268,13 @@ class PluginTest:
                 with open(self._test_dir / ".env.prod", "w", encoding="utf-8") as f:
                     f.write(self.config)
 
+            fake_script = await render_fake()
             with open(self._test_dir / "fake.py", "w", encoding="utf-8") as f:
-                f.write(FAKE_SCRIPT)
+                f.write(fake_script)
 
+            runner_script = await render_runner(self.module_name, self._deps)
             with open(self._test_dir / "runner.py", "w", encoding="utf-8") as f:
-                f.write(
-                    RUNNER_SCRIPT.format(
-                        self.module_name,
-                        "\n".join([f'require("{i}")' for i in self._deps]),
-                    )
-                )
+                f.write(runner_script)
 
             code, stdout, stderr = await self.command(
                 "poetry run python runner.py", timeout=600
@@ -482,25 +358,3 @@ class PluginTest:
         if "pydantic" in requirements:
             envs.append(f"pydantic=={requirements['pydantic']}")
         return envs
-
-
-def main():
-    """根据传入的环境变量进行测试
-
-    PROJECT_LINK 为插件的项目名
-    MODULE_NAME 为插件的模块名
-    PLUGIN_CONFIG 即为该插件的配置
-    """
-    python_version = os.environ.get("PYTHON_VERSION", "3.12")
-
-    project_link = os.environ.get("PROJECT_LINK", "")
-    module_name = os.environ.get("MODULE_NAME", "")
-    plugin_config = os.environ.get("PLUGIN_CONFIG", None)
-
-    plugin = PluginTest(python_version, project_link, module_name, plugin_config)
-
-    asyncio.run(plugin.run())
-
-
-if __name__ == "__main__":
-    main()

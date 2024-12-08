@@ -1,0 +1,41 @@
+import json
+
+from nonebot import init, load_plugin, logger, require
+from pydantic import BaseModel
+
+
+class SetEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, set):
+            return list(o)
+        return json.JSONEncoder.default(self, o)
+
+
+init()
+plugin = load_plugin("{{ module_name }}")
+
+if not plugin:
+    exit(1)
+else:
+    if plugin.metadata:
+        metadata = {
+            "name": plugin.metadata.name,
+            "desc": plugin.metadata.description,
+            "usage": plugin.metadata.usage,
+            "type": plugin.metadata.type,
+            "homepage": plugin.metadata.homepage,
+            "supported_adapters": plugin.metadata.supported_adapters,
+        }
+        with open("metadata.json", "w", encoding="utf-8") as f:
+            try:
+                f.write(f"{json.dumps(metadata, cls=SetEncoder)}")
+            except Exception:
+                f.write("{}")
+
+        if plugin.metadata.config and not issubclass(plugin.metadata.config, BaseModel):
+            logger.error("插件配置项不是 Pydantic BaseModel 的子类")
+            exit(1)
+
+{% for dep in deps %}
+require("{{ dep }}")
+{% endfor %}
