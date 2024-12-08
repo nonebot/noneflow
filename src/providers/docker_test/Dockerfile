@@ -1,7 +1,7 @@
 FROM python:3.12.4
 COPY --from=ghcr.io/astral-sh/uv:0.5.6 /uv /bin/uv
 
-WORKDIR /tmp
+WORKDIR /app
 
 # 设置时区
 ENV TZ=Asia/Shanghai
