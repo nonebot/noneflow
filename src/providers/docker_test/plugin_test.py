@@ -16,12 +16,10 @@ import os
 import re
 from asyncio import create_subprocess_shell, subprocess
 from pathlib import Path
-from urllib.request import urlopen
 
-# NoneBot Store
-PLUGINS_URL = os.environ.get("PLUGINS_URL")
-# 匹配信息的正则表达式
-ISSUE_PATTERN = r"### {}\s+([^\s#].*?)(?=(?:\s+###|$))"
+import httpx
+
+from src.providers.constants import REGISTRY_PLUGINS_URL
 
 # 伪造的驱动
 FAKE_SCRIPT = """from typing import Optional, Union
@@ -154,11 +152,7 @@ def get_plugin_list() -> dict[str, str]:
 
     通过 package_name 获取 module_name
     """
-    if PLUGINS_URL is None:
-        raise ValueError("PLUGINS_URL 环境变量未设置")
-
-    with urlopen(PLUGINS_URL) as response:
-        plugins = json.loads(response.read())
+    plugins = httpx.get(REGISTRY_PLUGINS_URL).json()
 
     return {
         canonicalize_name(plugin["project_link"]): plugin["module_name"]
