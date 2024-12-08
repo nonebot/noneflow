@@ -224,7 +224,11 @@ def parse_requirements(requirements: str) -> dict[str, str]:
 
 class PluginTest:
     def __init__(
-        self, project_link: str, module_name: str, config: str | None = None
+        self,
+        python_version: str,
+        project_link: str,
+        module_name: str,
+        config: str | None = None,
     ) -> None:
         """插件测试构造函数
 
@@ -232,6 +236,8 @@ class PluginTest:
             project_info (str): 项目信息，格式为 project_link:module_name
             config (str | None, optional): 插件配置. 默认为 None.
         """
+        self.python_version = python_version
+
         self.project_link = project_link
         self.module_name = module_name
         self.config = config
@@ -343,7 +349,7 @@ class PluginTest:
             self._test_dir.mkdir()
 
             code, stdout, stderr = await self.command(
-                f"""poetry init -n && sed -i "s/\\^/~/g" pyproject.toml && poetry env info --ansi && poetry add {self.project_link}"""
+                f"""uv venv --python {self.python_version} && poetry init -n --python "~{self.python_version}" && poetry env info --ansi && poetry add {self.project_link}"""
             )
 
             self._create = code
@@ -481,11 +487,13 @@ def main():
     MODULE_NAME 为插件的模块名
     PLUGIN_CONFIG 即为该插件的配置
     """
+    python_version = os.environ.get("PYTHON_VERSION", "3.12")
+
     project_link = os.environ.get("PROJECT_LINK", "")
     module_name = os.environ.get("MODULE_NAME", "")
     plugin_config = os.environ.get("PLUGIN_CONFIG", None)
 
-    plugin = PluginTest(project_link, module_name, plugin_config)
+    plugin = PluginTest(python_version, project_link, module_name, plugin_config)
 
     asyncio.run(plugin.run())
 
