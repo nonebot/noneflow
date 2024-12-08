@@ -48,7 +48,6 @@ async def test_docker_plugin_test(mocked_api: MockRouter, mocker: MockerFixture)
                 "PROJECT_LINK": "project_link",
                 "MODULE_NAME": "module_name",
                 "PLUGIN_CONFIG": "",
-                "PLUGINS_URL": "https://raw.githubusercontent.com/nonebot/registry/results/plugins.json",
                 "PYTHON_VERSION": "3.12",
             }
         ),
@@ -90,7 +89,6 @@ async def test_docker_plugin_test_exception(
                 "PROJECT_LINK": "project_link",
                 "MODULE_NAME": "module_name",
                 "PLUGIN_CONFIG": "",
-                "PLUGINS_URL": "https://raw.githubusercontent.com/nonebot/registry/results/plugins.json",
                 "PYTHON_VERSION": "3.12",
             }
         ),
@@ -157,7 +155,6 @@ async def test_docker_plugin_test_metadata_some_fields_empty(
                 "PROJECT_LINK": "project_link",
                 "MODULE_NAME": "module_name",
                 "PLUGIN_CONFIG": "",
-                "PLUGINS_URL": "https://raw.githubusercontent.com/nonebot/registry/results/plugins.json",
                 "PYTHON_VERSION": "3.12",
             }
         ),
@@ -224,7 +221,6 @@ async def test_docker_plugin_test_metadata_some_fields_invalid(
                 "PROJECT_LINK": "project_link",
                 "MODULE_NAME": "module_name",
                 "PLUGIN_CONFIG": "",
-                "PLUGINS_URL": "https://raw.githubusercontent.com/nonebot/registry/results/plugins.json",
                 "PYTHON_VERSION": "3.12",
             }
         ),

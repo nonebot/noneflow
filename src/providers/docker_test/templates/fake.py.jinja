@@ -1,0 +1,73 @@
+from typing import Optional, Union
+
+from nonebot import logger
+from nonebot.drivers import (
+    ASGIMixin,
+    HTTPClientMixin,
+    HTTPClientSession,
+    HTTPVersion,
+    Request,
+    Response,
+    WebSocketClientMixin,
+)
+from nonebot.drivers import Driver as BaseDriver
+from nonebot.internal.driver.model import (
+    CookieTypes,
+    HeaderTypes,
+    QueryTypes,
+)
+from typing_extensions import override
+
+
+class Driver(BaseDriver, ASGIMixin, HTTPClientMixin, WebSocketClientMixin):
+    @property
+    @override
+    def type(self) -> str:
+        return "fake"
+
+    @property
+    @override
+    def logger(self):
+        return logger
+
+    @override
+    def run(self, *args, **kwargs):
+        super().run(*args, **kwargs)
+
+    @property
+    @override
+    def server_app(self):
+        return None
+
+    @property
+    @override
+    def asgi(self):
+        raise NotImplementedError
+
+    @override
+    def setup_http_server(self, setup):
+        raise NotImplementedError
+
+    @override
+    def setup_websocket_server(self, setup):
+        raise NotImplementedError
+
+    @override
+    async def request(self, setup: Request) -> Response:
+        raise NotImplementedError
+
+    @override
+    async def websocket(self, setup: Request) -> Response:
+        raise NotImplementedError
+
+    @override
+    def get_session(
+        self,
+        params: QueryTypes = None,
+        headers: HeaderTypes = None,
+        cookies: CookieTypes = None,
+        version: Union[str, HTTPVersion] = HTTPVersion.H11,
+        timeout: Optional[float] = None,
+        proxy: Optional[str] = None,
+    ) -> HTTPClientSession:
+        raise NotImplementedError

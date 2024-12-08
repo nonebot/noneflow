@@ -23,4 +23,4 @@ RUN uv sync --project /app/ --no-dev --frozen --compile-bytecode
 
 COPY src /app/src/
 
-CMD ["uv", "run", "--project", "/app/", "--no-dev", "/app/src/providers/docker_test/plugin_test.py"]
+CMD ["uv", "run", "--project", "/app/", "--no-dev", "-m", "src.providers.docker_test"]
