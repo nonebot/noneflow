@@ -4,5 +4,6 @@
   "load": false,
   "run": true,
   "version": "0.3.9",
-  "config": null
+  "config": null,
+  "test_env": "python==3.12.7"
 }

@@ -58,7 +58,7 @@ async def test_validate_plugin(mocked_api: MockRouter, mocker: MockerFixture) ->
 """,
                 "metadata": {
                     "name": "TREEHELP",
-                    "desc": "订阅牛客/CF/AT平台的比赛信息",
+                    "description": "订阅牛客/CF/AT平台的比赛信息",
                     "usage": """\
 /contest.list 获取所有/CF/牛客/AT平台的比赛信息
 /contest.subscribe 订阅CF/牛客/AT平台的比赛信息
@@ -70,7 +70,7 @@ async def test_validate_plugin(mocked_api: MockRouter, mocker: MockerFixture) ->
                 },
             },
             results={"validation": True, "load": True, "metadata": True},
-            test_env={"unknown": True},
+            test_env={"python==3.12.7": True},
             version="0.2.0",
         )
     )
@@ -154,7 +154,7 @@ async def test_validate_plugin_with_previous(
 """,
                 "metadata": {
                     "name": "TREEHELP",
-                    "desc": "订阅牛客/CF/AT平台的比赛信息",
+                    "description": "订阅牛客/CF/AT平台的比赛信息",
                     "usage": """\
 /contest.list 获取所有/CF/牛客/AT平台的比赛信息
 /contest.subscribe 订阅CF/牛客/AT平台的比赛信息
@@ -166,7 +166,7 @@ async def test_validate_plugin_with_previous(
                 },
             },
             results={"validation": True, "load": True, "metadata": True},
-            test_env={"unknown": True},
+            test_env={"python==3.12.7": True},
             version="0.2.0",
         )
     )
@@ -232,7 +232,7 @@ async def test_validate_plugin_skip_test(
 """,
                 "metadata": {
                     "name": "TREEHELP",
-                    "desc": "订阅牛客/CF/AT平台的比赛信息",
+                    "description": "订阅牛客/CF/AT平台的比赛信息",
                     "usage": """\
 /contest.list 获取所有/CF/牛客/AT平台的比赛信息
 /contest.subscribe 订阅CF/牛客/AT平台的比赛信息
@@ -244,7 +244,7 @@ async def test_validate_plugin_skip_test(
                 },
             },
             results={"validation": True, "load": True, "metadata": True},
-            test_env={"unknown": True},
+            test_env={"python==3.12.7": True},
             version="0.2.0",
         )
     )
@@ -329,7 +329,7 @@ async def test_validate_plugin_skip_test_plugin_test_failed(
                 "metadata": None,
             },
             results={"validation": True, "load": False, "metadata": False},
-            test_env={"unknown": True},
+            test_env={"python==3.12.7": True},
             version="0.3.9",
         )
     )
@@ -450,7 +450,7 @@ async def test_validate_plugin_failed_with_previous(
                 "metadata": None,
             },
             results={"validation": False, "load": False, "metadata": False},
-            test_env={"unknown": True},
+            test_env={"python==3.12.7": True},
             version="0.3.9",
         )
     )

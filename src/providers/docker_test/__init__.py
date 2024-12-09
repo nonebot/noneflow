@@ -2,9 +2,9 @@ import json
 from typing import TypedDict
 
 import docker
-from pydantic import BaseModel, Field, SkipValidation, field_validator
+from pydantic import BaseModel, SkipValidation, field_validator
 
-from src.providers.constants import DOCKER_IMAGES, REGISTRY_PLUGINS_URL
+from src.providers.constants import DOCKER_IMAGES
 
 
 class Metadata(TypedDict):
@@ -24,19 +24,19 @@ class DockerTestResult(BaseModel):
     """ 是否运行测试 """
     load: bool
     """ 是否加载成功 """
+    output: str
+    """ 测试输出 """
     version: str | None = None
     """ 测试版本 """
     config: str = ""
     """ 测试配置 """
-    test_env: str = Field(default="unknown")
+    test_env: str = ""
     """测试环境
 
     python==3.12 nonebot2==2.4.0 pydantic==2.10.0
     """
-    metadata: SkipValidation[Metadata] | None
+    metadata: SkipValidation[Metadata] | None = None
     """ 插件元数据 """
-    output: str
-    """ 测试输出 """
 
     @field_validator("config", mode="before")
     @classmethod
@@ -59,20 +59,20 @@ class DockerPluginTest:
         Returns:
             DockerTestResult: 测试结果
         """
-        image_name = DOCKER_IMAGES.format(version)
         # 连接 Docker 环境
         client = docker.DockerClient(base_url="unix://var/run/docker.sock")
 
         try:
             # 运行 Docker 容器，捕获输出。 容器内运行的代码拥有超时设限，此处无需设置超时
             output = client.containers.run(
-                image_name,
+                DOCKER_IMAGES,
                 environment={
+                    # 运行测试的 Python 版本
+                    "PYTHON_VERSION": version,
+                    # 插件信息
                     "PROJECT_LINK": self.project_link,
                     "MODULE_NAME": self.module_name,
                     "PLUGIN_CONFIG": self.config,
-                    # 插件测试需要用到的插件列表来验证插件依赖是否正确加载
-                    "PLUGINS_URL": REGISTRY_PLUGINS_URL,
                 },
                 detach=False,
                 remove=True,
@@ -83,6 +83,5 @@ class DockerPluginTest:
                 "run": False,
                 "load": False,
                 "output": str(e),
-                "metadata": None,
             }
         return DockerTestResult(**data)

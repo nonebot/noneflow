@@ -11,5 +11,6 @@
   "load": true,
   "run": true,
   "version": "0.2.0",
-  "config": null
+  "config": null,
+  "test_env": "python==3.12.7"
 }

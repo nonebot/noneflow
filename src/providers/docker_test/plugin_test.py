@@ -1,12 +1,6 @@
 """插件加载测试
 
 测试代码修改自 <https://github.com/Lancercmd/nonebot2-store-test>，谢谢 [Lan 佬](https://github.com/Lancercmd)。
-
-在 GitHub Actions 中运行，通过 GitHub Event 文件获取所需信息。并将测试结果保存至 GitHub Action 的输出文件中。
-
-当前会输出 RESULT, OUTPUT, METADATA 三个数据，分别对应测试结果、测试输出、插件元数据。
-
-经测试可以直接在 Python 3.10+ 环境下运行，无需额外依赖。
 """
 # ruff: noqa: T201, ASYNC109
 
@@ -14,132 +8,14 @@ import asyncio
 import json
 import os
 import re
-import sys
 from asyncio import create_subprocess_shell, subprocess
 from pathlib import Path
-from urllib.request import urlopen
 
-# NoneBot Store
-PLUGINS_URL = os.environ.get("PLUGINS_URL")
-# 匹配信息的正则表达式
-ISSUE_PATTERN = r"### {}\s+([^\s#].*?)(?=(?:\s+###|$))"
+import httpx
 
-# 伪造的驱动
-FAKE_SCRIPT = """from typing import Optional, Union
+from src.providers.constants import REGISTRY_PLUGINS_URL
 
-from nonebot import logger
-from nonebot.drivers import (
-    ASGIMixin,
-    HTTPClientMixin,
-    HTTPClientSession,
-    HTTPVersion,
-    Request,
-    Response,
-    WebSocketClientMixin,
-)
-from nonebot.drivers import Driver as BaseDriver
-from nonebot.internal.driver.model import (
-    CookieTypes,
-    HeaderTypes,
-    QueryTypes,
-)
-from typing_extensions import override
-
-
-class Driver(BaseDriver, ASGIMixin, HTTPClientMixin, WebSocketClientMixin):
-    @property
-    @override
-    def type(self) -> str:
-        return "fake"
-
-    @property
-    @override
-    def logger(self):
-        return logger
-
-    @override
-    def run(self, *args, **kwargs):
-        super().run(*args, **kwargs)
-
-    @property
-    @override
-    def server_app(self):
-        return None
-
-    @property
-    @override
-    def asgi(self):
-        raise NotImplementedError
-
-    @override
-    def setup_http_server(self, setup):
-        raise NotImplementedError
-
-    @override
-    def setup_websocket_server(self, setup):
-        raise NotImplementedError
-
-    @override
-    async def request(self, setup: Request) -> Response:
-        raise NotImplementedError
-
-    @override
-    async def websocket(self, setup: Request) -> Response:
-        raise NotImplementedError
-
-    @override
-    def get_session(
-        self,
-        params: QueryTypes = None,
-        headers: HeaderTypes = None,
-        cookies: CookieTypes = None,
-        version: Union[str, HTTPVersion] = HTTPVersion.H11,
-        timeout: Optional[float] = None,
-        proxy: Optional[str] = None,
-    ) -> HTTPClientSession:
-        raise NotImplementedError
-"""
-
-RUNNER_SCRIPT = """import json
-
-from nonebot import init, load_plugin, logger, require
-from pydantic import BaseModel
-
-
-class SetEncoder(json.JSONEncoder):
-    def default(self, o):
-        if isinstance(o, set):
-            return list(o)
-        return json.JSONEncoder.default(self, o)
-
-
-init()
-plugin = load_plugin("{}")
-
-if not plugin:
-    exit(1)
-else:
-    if plugin.metadata:
-        metadata = {{
-            "name": plugin.metadata.name,
-            "desc": plugin.metadata.description,
-            "usage": plugin.metadata.usage,
-            "type": plugin.metadata.type,
-            "homepage": plugin.metadata.homepage,
-            "supported_adapters": plugin.metadata.supported_adapters,
-        }}
-        with open("metadata.json", "w", encoding="utf-8") as f:
-            try:
-                f.write(f"{{json.dumps(metadata, cls=SetEncoder)}}")
-            except Exception:
-                f.write("{{}}")
-
-        if plugin.metadata.config and not issubclass(plugin.metadata.config, BaseModel):
-            logger.error("插件配置项不是 Pydantic BaseModel 的子类")
-            exit(1)
-
-{}
-"""
+from .render import render_fake, render_runner
 
 
 def strip_ansi(text: str | None) -> str:
@@ -155,11 +31,7 @@ def get_plugin_list() -> dict[str, str]:
 
     通过 package_name 获取 module_name
     """
-    if PLUGINS_URL is None:
-        raise ValueError("PLUGINS_URL 环境变量未设置")
-
-    with urlopen(PLUGINS_URL) as response:
-        plugins = json.loads(response.read())
+    plugins = httpx.get(REGISTRY_PLUGINS_URL).json()
 
     return {
         canonicalize_name(plugin["project_link"]): plugin["module_name"]
@@ -224,7 +96,11 @@ def parse_requirements(requirements: str) -> dict[str, str]:
 
 class PluginTest:
     def __init__(
-        self, project_link: str, module_name: str, config: str | None = None
+        self,
+        python_version: str,
+        project_link: str,
+        module_name: str,
+        config: str | None = None,
     ) -> None:
         """插件测试构造函数
 
@@ -232,6 +108,8 @@ class PluginTest:
             project_info (str): 项目信息，格式为 project_link:module_name
             config (str | None, optional): 插件配置. 默认为 None.
         """
+        self.python_version = python_version
+
         self.project_link = project_link
         self.module_name = module_name
         self.config = config
@@ -248,6 +126,7 @@ class PluginTest:
         # 插件测试环境
         self._deps = []
         self._test_env = []
+        self._test_python_version = "unknown"
 
     @property
     def key(self) -> str:
@@ -285,9 +164,13 @@ class PluginTest:
             await asyncio.gather(
                 self.show_package_info(),
                 self.show_plugin_dependencies(),
+                self.get_python_version(),
             )
             await self.run_poetry_project()
 
+        # 补上获取到 Python 版本
+        self._test_env.insert(0, f"python=={self._test_python_version}")
+        # 读取插件元数据
         metadata = None
         metadata_path = self._test_dir / "metadata.json"
         if metadata_path.exists():
@@ -343,7 +226,7 @@ class PluginTest:
             self._test_dir.mkdir()
 
             code, stdout, stderr = await self.command(
-                f"""poetry init -n && sed -i "s/\\^/~/g" pyproject.toml && poetry env info --ansi && poetry add {self.project_link}"""
+                f"""uv venv --python {self.python_version} && poetry init -n --python "~{self.python_version}" && poetry env info --ansi && poetry add {self.project_link}"""
             )
 
             self._create = code
@@ -390,16 +273,13 @@ class PluginTest:
                 with open(self._test_dir / ".env.prod", "w", encoding="utf-8") as f:
                     f.write(self.config)
 
+            fake_script = await render_fake()
             with open(self._test_dir / "fake.py", "w", encoding="utf-8") as f:
-                f.write(FAKE_SCRIPT)
+                f.write(fake_script)
 
+            runner_script = await render_runner(self.module_name, self._deps)
             with open(self._test_dir / "runner.py", "w", encoding="utf-8") as f:
-                f.write(
-                    RUNNER_SCRIPT.format(
-                        self.module_name,
-                        "\n".join([f'require("{i}")' for i in self._deps]),
-                    )
-                )
+                f.write(runner_script)
 
             code, stdout, stderr = await self.command(
                 "poetry run python runner.py", timeout=600
@@ -427,6 +307,18 @@ class PluginTest:
                 self._log_output(f"    {', '.join(self._deps)}")
             else:
                 self._log_output(f"插件 {self.project_link} 依赖获取失败。")
+                self._std_output(stdout, stderr)
+
+    async def get_python_version(self):
+        """获取 Python 版本"""
+        if self._test_dir.exists():
+            code, stdout, stderr = await self.command("poetry run python --version")
+            if code:
+                version = stdout.strip()
+                if version.startswith("Python "):
+                    self._test_python_version = version.removeprefix("Python ")
+            else:
+                self._log_output("Python 版本获取失败。")
                 self._std_output(stdout, stderr)
 
     @property
@@ -461,10 +353,7 @@ class PluginTest:
 
     def _get_test_env(self, requirements: dict[str, str]) -> list[str]:
         """获取测试环境"""
-        # python 版本
-        envs = [
-            f"python=={sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-        ]
+        envs = []
         # 特定插件依赖
         # 当前仅需记录 nonebot2 和 pydantic 的版本
         if "nonebot2" in requirements:
@@ -472,23 +361,3 @@ class PluginTest:
         if "pydantic" in requirements:
             envs.append(f"pydantic=={requirements['pydantic']}")
         return envs
-
-
-def main():
-    """根据传入的环境变量进行测试
-
-    PROJECT_LINK 为插件的项目名
-    MODULE_NAME 为插件的模块名
-    PLUGIN_CONFIG 即为该插件的配置
-    """
-    project_link = os.environ.get("PROJECT_LINK", "")
-    module_name = os.environ.get("MODULE_NAME", "")
-    plugin_config = os.environ.get("PLUGIN_CONFIG", None)
-
-    plugin = PluginTest(project_link, module_name, plugin_config)
-
-    asyncio.run(plugin.run())
-
-
-if __name__ == "__main__":
-    main()
