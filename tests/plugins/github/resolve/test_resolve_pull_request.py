@@ -4,6 +4,7 @@ from inline_snapshot import snapshot
 from nonebot.adapters.github import PullRequestClosed
 from nonebug import App
 from pytest_mock import MockerFixture
+from respx import MockRouter
 
 from tests.plugins.github.event import get_mock_event
 from tests.plugins.github.resolve.utils import get_pr_labels
@@ -19,9 +20,14 @@ from tests.plugins.github.utils import (
 
 
 async def test_resolve_pull_request(
-    app: App, mocker: MockerFixture, mock_installation: MagicMock
+    app: App,
+    mocker: MockerFixture,
+    mock_installation: MagicMock,
+    mocked_api: MockRouter,
 ) -> None:
     """测试能正确处理拉取请求关闭后其他拉取请求的冲突问题"""
+    from src.plugins.github.plugins.resolve import pr_close_matcher
+
     mock_subprocess_run = mocker.patch("subprocess.run")
 
     mock_issue = MockIssue(
@@ -39,7 +45,7 @@ async def test_resolve_pull_request(
     mock_publish_pull.title = "Bot: test"
     mock_publish_pull.draft = False
     mock_publish_pull.head.ref = "publish/issue100"
-    mock_publish_pull.labels = get_pr_labels(["Bot", "Publish"])
+    mock_publish_pull.labels = get_pr_labels(["Publish", "Bot"])
     mock_remove_issue = MockIssue(
         body=generate_issue_body_remove(type="Bot", key="name:https://v2.nonebot.dev"),
         number=101,
@@ -107,6 +113,7 @@ async def test_resolve_pull_request(
             ),
         )
         ctx.receive_event(bot, event)
+        ctx.should_pass_rule(pr_close_matcher)
 
     # 测试 git 命令
     assert_subprocess_run_calls(
@@ -148,3 +155,5 @@ async def test_resolve_pull_request(
             ["git", "push", "origin", "remove/issue101", "-f"],
         ],
     )
+
+    assert mocked_api["homepage"].called
