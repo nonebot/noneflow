@@ -2,7 +2,7 @@ import json
 from typing import TypedDict
 
 import docker
-from pydantic import BaseModel, Field, SkipValidation, field_validator
+from pydantic import BaseModel, SkipValidation, field_validator
 
 from src.providers.constants import DOCKER_IMAGES
 
@@ -24,19 +24,19 @@ class DockerTestResult(BaseModel):
     """ 是否运行测试 """
     load: bool
     """ 是否加载成功 """
+    output: str
+    """ 测试输出 """
     version: str | None = None
     """ 测试版本 """
     config: str = ""
     """ 测试配置 """
-    test_env: str = Field(default="unknown")
+    test_env: str = ""
     """测试环境
 
     python==3.12 nonebot2==2.4.0 pydantic==2.10.0
     """
-    metadata: SkipValidation[Metadata] | None
+    metadata: SkipValidation[Metadata] | None = None
     """ 插件元数据 """
-    output: str
-    """ 测试输出 """
 
     @field_validator("config", mode="before")
     @classmethod
@@ -83,6 +83,5 @@ class DockerPluginTest:
                 "run": False,
                 "load": False,
                 "output": str(e),
-                "metadata": None,
             }
         return DockerTestResult(**data)
