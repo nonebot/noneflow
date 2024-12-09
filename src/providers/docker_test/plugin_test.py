@@ -126,6 +126,7 @@ class PluginTest:
         # 插件测试环境
         self._deps = []
         self._test_env = []
+        self._test_python_version = "unknown"
 
     @property
     def key(self) -> str:
@@ -163,9 +164,13 @@ class PluginTest:
             await asyncio.gather(
                 self.show_package_info(),
                 self.show_plugin_dependencies(),
+                self.get_python_version(),
             )
             await self.run_poetry_project()
 
+        # 补上获取到 Python 版本
+        self._test_env.insert(0, f"python=={self._test_python_version}")
+        # 读取插件元数据
         metadata = None
         metadata_path = self._test_dir / "metadata.json"
         if metadata_path.exists():
@@ -298,23 +303,23 @@ class PluginTest:
                 self._log_output(f"插件 {self.project_link} 依赖的插件如下：")
                 requirements = parse_requirements(stdout)
                 self._deps = self._get_deps(requirements)
-                self._test_env = await self._get_test_env(requirements)
+                self._test_env = self._get_test_env(requirements)
                 self._log_output(f"    {', '.join(self._deps)}")
             else:
                 self._log_output(f"插件 {self.project_link} 依赖获取失败。")
                 self._std_output(stdout, stderr)
 
-    async def get_python_version(self) -> str:
+    async def get_python_version(self):
         """获取 Python 版本"""
-        code, stdout, stderr = await self.command("poetry run python --version")
-        if code:
-            version = stdout.strip()
-            if version.startswith("Python "):
-                return version.removeprefix("Python ")
-        else:
-            self._log_output("Python 版本获取失败。")
-            self._std_output(stdout, stderr)
-        return "unknown"
+        if self._test_dir.exists():
+            code, stdout, stderr = await self.command("poetry run python --version")
+            if code:
+                version = stdout.strip()
+                if version.startswith("Python "):
+                    self._test_python_version = version.removeprefix("Python ")
+            else:
+                self._log_output("Python 版本获取失败。")
+                self._std_output(stdout, stderr)
 
     @property
     def plugin_list(self) -> dict[str, str]:
@@ -346,11 +351,9 @@ class PluginTest:
                 deps.append(module_name)
         return deps
 
-    async def _get_test_env(self, requirements: dict[str, str]) -> list[str]:
+    def _get_test_env(self, requirements: dict[str, str]) -> list[str]:
         """获取测试环境"""
-        # python 版本
-        python_version = await self.get_python_version()
-        envs = [f"python=={python_version}"]
+        envs = []
         # 特定插件依赖
         # 当前仅需记录 nonebot2 和 pydantic 的版本
         if "nonebot2" in requirements:
