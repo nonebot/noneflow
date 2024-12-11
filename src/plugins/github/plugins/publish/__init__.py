@@ -28,7 +28,7 @@ from src.plugins.github.depends import (
     is_bot_triggered_workflow,
     is_publish_workflow,
 )
-from src.plugins.github.models import GithubHandler, IssueHandler
+from src.plugins.github.handlers import GithubHandler, IssueHandler
 from src.providers.validation.models import PublishType, ValidationDict
 
 from .depends import (

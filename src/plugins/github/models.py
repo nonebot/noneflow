@@ -32,10 +32,3 @@ class AuthorInfo(BaseModel):
             author=issue.user.login if issue.user else "",
             author_id=issue.user.id if issue.user else 0,
         )
-
-
-from .git import GitHandler as GitHandler
-from .github import GithubHandler as GithubHandler
-from .issue import IssueHandler as IssueHandler
-
-__all__ = ["GitHandler", "GithubHandler", "IssueHandler", "RepoInfo", "AuthorInfo"]

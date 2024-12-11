@@ -4,7 +4,9 @@ from githubkit.rest import Issue
 from pydantic import ConfigDict
 
 from src.plugins.github.constants import SKIP_COMMENT
-from src.plugins.github.models import AuthorInfo, GithubHandler
+from src.plugins.github.models import AuthorInfo
+
+from .github import GithubHandler
 
 
 class IssueHandler(GithubHandler):

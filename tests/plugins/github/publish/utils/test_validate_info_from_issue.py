@@ -51,8 +51,8 @@ async def test_validate_info_from_issue_plugin(
     app: App, mocker: MockerFixture, mocked_api: MockRouter
 ):
     from src.plugins.github import plugin_config
+    from src.plugins.github.handlers import IssueHandler
     from src.plugins.github.models import RepoInfo
-    from src.plugins.github.models.issue import IssueHandler
     from src.plugins.github.plugins.publish.validation import (
         validate_plugin_info_from_issue,
     )
@@ -135,8 +135,8 @@ async def test_validate_info_from_issue_plugin_skip_test(
     app: App, mocker: MockerFixture, mocked_api: MockRouter
 ):
     """跳过插件测试的情况"""
+    from src.plugins.github.handlers import IssueHandler
     from src.plugins.github.models import RepoInfo
-    from src.plugins.github.models.issue import IssueHandler
     from src.plugins.github.plugins.publish.validation import (
         validate_plugin_info_from_issue,
     )

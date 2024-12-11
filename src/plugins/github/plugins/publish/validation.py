@@ -5,8 +5,8 @@ from githubkit.rest import Issue
 from nonebot import logger
 
 from src.plugins.github import plugin_config
+from src.plugins.github.handlers import IssueHandler
 from src.plugins.github.models import AuthorInfo
-from src.plugins.github.models.issue import IssueHandler
 from src.plugins.github.utils import extract_issue_info_from_issue
 from src.providers.docker_test import DockerPluginTest, Metadata
 from src.providers.utils import get_latest_version, load_json_from_file

@@ -8,7 +8,9 @@ from nonebot.adapters.github import Bot
 from pydantic import ConfigDict
 
 from src.plugins.github.constants import NONEFLOW_MARKER
-from src.plugins.github.models import GitHandler, RepoInfo
+from src.plugins.github.models import RepoInfo
+
+from .git import GitHandler
 
 
 class GithubHandler(GitHandler):
@@ -249,7 +251,7 @@ class GithubHandler(GitHandler):
 
     async def to_issue_handler(self, issue_number: int):
         """获取议题处理器"""
-        from src.plugins.github.models.issue import IssueHandler
+        from src.plugins.github.handlers import IssueHandler
 
         issue = await self.get_issue(issue_number)
 

@@ -2,8 +2,8 @@ from typing import Any
 
 from nonebot import logger
 
+from src.plugins.github.handlers import IssueHandler
 from src.plugins.github.models import AuthorInfo
-from src.plugins.github.models.issue import IssueHandler
 from src.plugins.github.plugins.publish.constants import (
     PLUGIN_CONFIG_PATTERN,
     PLUGIN_MODULE_NAME_PATTERN,

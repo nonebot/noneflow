@@ -8,7 +8,7 @@ from src.plugins.github.depends.utils import (
     extract_issue_number_from_ref,
     get_type_by_labels,
 )
-from src.plugins.github.models import GithubHandler, IssueHandler
+from src.plugins.github.handlers import GithubHandler, IssueHandler
 from src.plugins.github.typing import PullRequestList
 from src.plugins.github.utils import commit_message
 from src.providers.utils import dump_json5
