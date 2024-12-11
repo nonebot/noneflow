@@ -42,13 +42,13 @@ async def test_docker_plugin_test(mocked_api: MockRouter, mocker: MockerFixture)
 
     assert not mocked_api["store_plugins"].called
     mocked_run.assert_called_once_with(
-        "ghcr.io/nonebot/nonetest:3.12-latest",
+        "ghcr.io/nonebot/nonetest:latest",
         environment=snapshot(
             {
                 "PROJECT_LINK": "project_link",
                 "MODULE_NAME": "module_name",
                 "PLUGIN_CONFIG": "",
-                "PLUGINS_URL": "https://raw.githubusercontent.com/nonebot/registry/results/plugins.json",
+                "PYTHON_VERSION": "3.12",
             }
         ),
         detach=False,
@@ -83,13 +83,13 @@ async def test_docker_plugin_test_exception(
 
     assert not mocked_api["store_plugins"].called
     mocked_run.assert_called_once_with(
-        "ghcr.io/nonebot/nonetest:3.12-latest",
+        "ghcr.io/nonebot/nonetest:latest",
         environment=snapshot(
             {
                 "PROJECT_LINK": "project_link",
                 "MODULE_NAME": "module_name",
                 "PLUGIN_CONFIG": "",
-                "PLUGINS_URL": "https://raw.githubusercontent.com/nonebot/registry/results/plugins.json",
+                "PYTHON_VERSION": "3.12",
             }
         ),
         detach=False,
@@ -149,13 +149,13 @@ async def test_docker_plugin_test_metadata_some_fields_empty(
 
     assert not mocked_api["store_plugins"].called
     mocked_run.assert_called_once_with(
-        "ghcr.io/nonebot/nonetest:3.12-latest",
+        "ghcr.io/nonebot/nonetest:latest",
         environment=snapshot(
             {
                 "PROJECT_LINK": "project_link",
                 "MODULE_NAME": "module_name",
                 "PLUGIN_CONFIG": "",
-                "PLUGINS_URL": "https://raw.githubusercontent.com/nonebot/registry/results/plugins.json",
+                "PYTHON_VERSION": "3.12",
             }
         ),
         detach=False,
@@ -215,13 +215,13 @@ async def test_docker_plugin_test_metadata_some_fields_invalid(
 
     assert not mocked_api["store_plugins"].called
     mocked_run.assert_called_once_with(
-        "ghcr.io/nonebot/nonetest:3.12-latest",
+        "ghcr.io/nonebot/nonetest:latest",
         environment=snapshot(
             {
                 "PROJECT_LINK": "project_link",
                 "MODULE_NAME": "module_name",
                 "PLUGIN_CONFIG": "",
-                "PLUGINS_URL": "https://raw.githubusercontent.com/nonebot/registry/results/plugins.json",
+                "PYTHON_VERSION": "3.12",
             }
         ),
         detach=False,

@@ -33,4 +33,4 @@ STORE_PLUGINS_URL = f"{STORE_BASE_URL}/plugins.json5"
 # 商店测试镜像
 # https://github.com/orgs/nonebot/packages/container/package/nonetest
 DOCKER_IMAGES_VERSION = os.environ.get("DOCKER_IMAGES_VERSION") or "latest"
-DOCKER_IMAGES = f"ghcr.io/nonebot/nonetest:{{}}-{DOCKER_IMAGES_VERSION}"
+DOCKER_IMAGES = f"ghcr.io/nonebot/nonetest:{DOCKER_IMAGES_VERSION}"

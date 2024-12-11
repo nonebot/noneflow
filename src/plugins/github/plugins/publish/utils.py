@@ -110,6 +110,7 @@ async def resolve_conflict_pull_requests(
             # 如果信息验证失败，则跳过更新
             if not result.valid:
                 logger.error("信息验证失败，已跳过")
+                logger.error(f"验证结果: {result}")
                 continue
 
             # 每次切换前都要确保回到主分支
