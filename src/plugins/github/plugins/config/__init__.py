@@ -19,8 +19,7 @@ from src.plugins.github.depends import (
     is_bot_triggered_workflow,
     is_config_workflow,
 )
-from src.plugins.github.models import IssueHandler
-from src.plugins.github.models.github import GithubHandler
+from src.plugins.github.handlers import GithubHandler, IssueHandler
 from src.plugins.github.plugins.publish.render import render_comment
 from src.plugins.github.plugins.publish.utils import (
     ensure_issue_plugin_test_button,

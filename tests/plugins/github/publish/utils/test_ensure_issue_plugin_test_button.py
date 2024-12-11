@@ -7,7 +7,8 @@ from tests.plugins.github.utils import MockBody, MockIssue, get_github_bot
 
 async def test_ensure_issue_plugin_test_button(app: App, mocker: MockerFixture):
     """确保添加插件测试按钮"""
-    from src.plugins.github.models import IssueHandler, RepoInfo
+    from src.plugins.github.handlers import IssueHandler
+    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import (
         ensure_issue_plugin_test_button,
     )
@@ -66,7 +67,8 @@ log_level=DEBUG
 
 async def test_ensure_issue_plugin_test_button_checked(app: App, mocker: MockerFixture):
     """如果测试按钮勾选，则自动取消勾选"""
-    from src.plugins.github.models import IssueHandler, RepoInfo
+    from src.plugins.github.handlers import IssueHandler
+    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import (
         ensure_issue_plugin_test_button,
     )
@@ -127,7 +129,8 @@ async def test_ensure_issue_plugin_test_button_unchecked(
     app: App, mocker: MockerFixture
 ):
     """如果测试按钮未勾选，则不进行操作"""
-    from src.plugins.github.models import IssueHandler, RepoInfo
+    from src.plugins.github.handlers import IssueHandler
+    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import (
         ensure_issue_plugin_test_button,
     )
@@ -153,7 +156,8 @@ async def test_ensure_issue_plugin_test_button_in_progress(
     app: App, mocker: MockerFixture
 ):
     """确保添加插件测试按钮"""
-    from src.plugins.github.models import IssueHandler, RepoInfo
+    from src.plugins.github.handlers import IssueHandler
+    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import (
         ensure_issue_plugin_test_button_in_progress,
     )

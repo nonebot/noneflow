@@ -14,7 +14,8 @@ from tests.plugins.github.utils import (
 async def test_trigger_registry_update(
     app: App, mocker: MockerFixture, mocked_api: MockRouter
 ):
-    from src.plugins.github.models import IssueHandler, RepoInfo
+    from src.plugins.github.handlers import IssueHandler
+    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import trigger_registry_update
     from src.providers.docker_test import Metadata
     from src.providers.validation import PublishType
@@ -126,7 +127,8 @@ async def test_trigger_registry_update_skip_test(
     app: App, mocker: MockerFixture, mocked_api: MockRouter
 ):
     """跳过插件加载测试的情况"""
-    from src.plugins.github.models import IssueHandler, RepoInfo
+    from src.plugins.github.handlers import IssueHandler
+    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import trigger_registry_update
     from src.providers.validation import PublishType
 
@@ -225,7 +227,8 @@ async def test_trigger_registry_update_bot(
 
     已经有相同机器人的时候，registry_update 不会影响到机器人的测试
     """
-    from src.plugins.github.models import IssueHandler, RepoInfo
+    from src.plugins.github.handlers import IssueHandler
+    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import trigger_registry_update
     from src.providers.validation import PublishType
 
@@ -278,7 +281,8 @@ async def test_trigger_registry_update_plugins_issue_body_info_missing(
     """如果议题信息不全，应该不会触发更新"""
     from githubkit.rest import Issue
 
-    from src.plugins.github.models import IssueHandler, RepoInfo
+    from src.plugins.github.handlers import IssueHandler
+    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import trigger_registry_update
     from src.providers.docker_test import Metadata
     from src.providers.validation import PublishType
@@ -336,7 +340,8 @@ async def test_trigger_registry_update_validation_failed(
     app: App, mocker: MockerFixture, mocked_api: MockRouter
 ):
     """验证失败时也不会触发更新"""
-    from src.plugins.github.models import IssueHandler, RepoInfo
+    from src.plugins.github.handlers import IssueHandler
+    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import trigger_registry_update
     from src.providers.validation import PublishType
 

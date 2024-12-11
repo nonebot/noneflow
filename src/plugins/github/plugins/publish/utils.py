@@ -6,7 +6,7 @@ from nonebot import logger
 from src.plugins.github import plugin_config
 from src.plugins.github.constants import ISSUE_FIELD_PATTERN, ISSUE_FIELD_TEMPLATE
 from src.plugins.github.depends.utils import get_type_by_labels
-from src.plugins.github.models import GithubHandler, IssueHandler
+from src.plugins.github.handlers import GithubHandler, IssueHandler
 from src.plugins.github.typing import PullRequestList
 from src.plugins.github.utils import commit_message as _commit_message
 from src.providers.models import RegistryUpdatePayload, to_store

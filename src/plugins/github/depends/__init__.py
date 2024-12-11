@@ -11,7 +11,8 @@ from nonebot.adapters.github import (
 from nonebot.params import Depends
 
 from src.plugins.github.constants import CONFIG_LABEL, PUBLISH_LABEL, REMOVE_LABEL
-from src.plugins.github.models import GithubHandler, IssueHandler, RepoInfo
+from src.plugins.github.handlers import GithubHandler, IssueHandler
+from src.plugins.github.models import RepoInfo
 from src.plugins.github.typing import IssuesEvent, LabelsItems, PullRequestEvent
 from src.plugins.github.utils import run_shell_command
 from src.providers.validation.models import PublishType

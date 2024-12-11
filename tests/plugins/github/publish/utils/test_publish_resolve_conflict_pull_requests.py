@@ -28,7 +28,8 @@ async def test_resolve_conflict_pull_requests_adapter(
     app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path, mock_pull
 ) -> None:
     from src.plugins.github import plugin_config
-    from src.plugins.github.models import GithubHandler, RepoInfo
+    from src.plugins.github.handlers import GithubHandler
+    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
     from src.providers.utils import dump_json5
 
@@ -158,7 +159,8 @@ async def test_resolve_conflict_pull_requests_bot(
     app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path, mock_pull
 ) -> None:
     from src.plugins.github import plugin_config
-    from src.plugins.github.models import GithubHandler, RepoInfo
+    from src.plugins.github.handlers import GithubHandler
+    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
     from src.providers.utils import dump_json5
 
@@ -283,7 +285,8 @@ async def test_resolve_conflict_pull_requests_plugin(
     app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path, mock_pull
 ) -> None:
     from src.plugins.github import plugin_config
-    from src.plugins.github.models import GithubHandler, RepoInfo
+    from src.plugins.github.handlers import GithubHandler
+    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
     from src.providers.docker_test import Metadata
     from src.providers.utils import dump_json5
@@ -432,7 +435,8 @@ async def test_resolve_conflict_pull_requests_plugin_not_valid(
 ) -> None:
     """测试插件信息不合法的情况"""
     from src.plugins.github import plugin_config
-    from src.plugins.github.models import GithubHandler, RepoInfo
+    from src.plugins.github.handlers import GithubHandler
+    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
     from src.providers.utils import dump_json5
 
@@ -524,7 +528,8 @@ async def test_resolve_conflict_pull_requests_draft(
     app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path
 ) -> None:
     from src.plugins.github import plugin_config
-    from src.plugins.github.models import GithubHandler, RepoInfo
+    from src.plugins.github.handlers import GithubHandler
+    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
     from src.providers.utils import dump_json5
 
@@ -586,7 +591,8 @@ async def test_resolve_conflict_pull_requests_ref(
     app: App, mocker: MockerFixture, mocked_api: MockRouter, tmp_path: Path
 ) -> None:
     from src.plugins.github import plugin_config
-    from src.plugins.github.models import GithubHandler, RepoInfo
+    from src.plugins.github.handlers import GithubHandler
+    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
     from src.providers.utils import dump_json5
 

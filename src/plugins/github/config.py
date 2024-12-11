@@ -2,7 +2,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from src.plugins.github.models import RepoInfo
+from .models import RepoInfo
 
 
 class PublishConfig(BaseModel):

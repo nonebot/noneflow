@@ -10,8 +10,7 @@ from src.plugins.github.depends import (
     get_related_issue_number,
     get_type_by_labels_name,
 )
-from src.plugins.github.models import IssueHandler
-from src.plugins.github.models.github import GithubHandler
+from src.plugins.github.handlers import GithubHandler, IssueHandler
 from src.plugins.github.plugins.publish.utils import (
     resolve_conflict_pull_requests as resolve_conflict_publish_pull_requests,
 )

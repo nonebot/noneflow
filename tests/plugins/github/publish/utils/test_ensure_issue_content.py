@@ -7,7 +7,8 @@ from tests.plugins.github.utils import MockIssue, get_github_bot
 
 async def test_ensure_issue_content(app: App, mocker: MockerFixture):
     """确保议题内容完整"""
-    from src.plugins.github.models import IssueHandler, RepoInfo
+    from src.plugins.github.handlers import IssueHandler
+    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import ensure_issue_content
 
     async with app.test_api() as ctx:
@@ -49,7 +50,8 @@ async def test_ensure_issue_content(app: App, mocker: MockerFixture):
 
 async def test_ensure_issue_content_partial(app: App, mocker: MockerFixture):
     """确保议题内容被补全"""
-    from src.plugins.github.models import IssueHandler, RepoInfo
+    from src.plugins.github.handlers import IssueHandler
+    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import ensure_issue_content
 
     async with app.test_api() as ctx:
@@ -78,7 +80,8 @@ async def test_ensure_issue_content_partial(app: App, mocker: MockerFixture):
 
 async def test_ensure_issue_content_complete(app: App, mocker: MockerFixture):
     """确保议题内容已经补全之后不会再次补全"""
-    from src.plugins.github.models import IssueHandler, RepoInfo
+    from src.plugins.github.handlers import IssueHandler
+    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import ensure_issue_content
 
     async with app.test_api() as ctx:
