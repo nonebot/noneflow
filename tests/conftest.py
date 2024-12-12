@@ -44,7 +44,9 @@ def load_plugin(nonebug_init: None) -> set["Plugin"]:
 
 
 @pytest.fixture
-async def app(app: App, tmp_path: Path, mocker: MockerFixture):
+async def app(
+    app: App, tmp_path: Path, mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch
+):
     from src.plugins.github import plugin_config
     from src.providers.utils import dump_json5
 
@@ -98,6 +100,9 @@ async def app(app: App, tmp_path: Path, mocker: MockerFixture):
     mocker.patch.object(
         plugin_config, "github_step_summary", tmp_path / "step_summary.txt"
     )
+    # NOTE: 由于 providers 中没有初始化 nonebot，所以不能使用插件中的配置，只能直接使用环境变量。
+    # 以后需要想想办法，如果能通过 nb-cli 启动就好了。
+    monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(tmp_path / "step_summary.md"))
 
     yield app
 
