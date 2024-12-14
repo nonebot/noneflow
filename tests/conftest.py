@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import httpx
 import nonebot
@@ -7,13 +6,11 @@ import pytest
 from nonebot.adapters.github import Adapter
 from nonebug import NONEBOT_INIT_KWARGS
 from nonebug.app import App
+from pytest_asyncio import is_async_test
 from pytest_mock import MockerFixture
 from respx import MockRouter
 
 from src.providers.constants import STORE_ADAPTERS_URL, STORE_PLUGINS_URL
-
-if TYPE_CHECKING:
-    from nonebot.plugin import Plugin
 
 
 def pytest_configure(config: pytest.Config) -> None:
@@ -35,12 +32,21 @@ def pytest_configure(config: pytest.Config) -> None:
     }
 
 
+def pytest_collection_modifyitems(items: list[pytest.Item]):
+    pytest_asyncio_tests = (item for item in items if is_async_test(item))
+    session_scope_marker = pytest.mark.asyncio(loop_scope="session")
+    for async_test in pytest_asyncio_tests:
+        async_test.add_marker(session_scope_marker, append=False)
+
+
 @pytest.fixture(scope="session", autouse=True)
-def load_plugin(nonebug_init: None) -> set["Plugin"]:
-    nonebot.get_driver().register_adapter(Adapter)
-    return nonebot.load_plugins(
-        str(Path(__file__).parent.parent.parent / "src" / "plugins")
-    )
+async def _after_nonebot_init(after_nonebot_init: None):
+    # 加载适配器
+    driver = nonebot.get_driver()
+    driver.register_adapter(Adapter)
+
+    # 加载插件
+    nonebot.load_plugins(str(Path(__file__).parent.parent.parent / "src" / "plugins"))
 
 
 @pytest.fixture
