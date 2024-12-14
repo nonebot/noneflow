@@ -177,6 +177,8 @@ class RegistryAdapter(BaseModel):
     homepage: str
     tags: list[Tag]
     is_official: bool
+    time: str
+    version: str
 
     @property
     def key(self):
@@ -195,6 +197,8 @@ class RegistryAdapter(BaseModel):
             homepage=publish_info.homepage,
             tags=[Tag(label=tag.label, color=tag.color) for tag in publish_info.tags],
             is_official=publish_info.is_official,
+            time=publish_info.time,
+            version=publish_info.version,
         )
 
 
@@ -235,6 +239,8 @@ class RegistryDriver(BaseModel):
     homepage: str
     tags: list[Tag]
     is_official: bool
+    time: str
+    version: str
 
     @property
     def key(self):
@@ -253,6 +259,8 @@ class RegistryDriver(BaseModel):
             homepage=publish_info.homepage,
             tags=[Tag(label=tag.label, color=tag.color) for tag in publish_info.tags],
             is_official=publish_info.is_official,
+            time=publish_info.time,
+            version=publish_info.version,
         )
 
 
@@ -282,9 +290,6 @@ class RegistryPlugin(BaseModel):
 
     @classmethod
     def from_publish_info(cls, publish_info: PluginPublishInfo) -> Self:
-        if publish_info.time is None:
-            raise ValueError("上传时间不能为空")
-
         return cls(
             module_name=publish_info.module_name,
             project_link=publish_info.project_link,

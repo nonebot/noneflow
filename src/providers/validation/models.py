@@ -31,6 +31,7 @@ from .utils import (
     check_url,
     get_adapters,
     get_pypi_name,
+    get_pypi_version,
     get_upload_time,
     resolve_adapter_name,
 )
@@ -79,6 +80,11 @@ class PyPIMixin(BaseModel):
     """上传时间
 
     从 PyPI 获取最新版本的上传时间
+    """
+    version: str
+    """版本号
+
+    从 PyPI 获取最新版本号或者由插件测试提供
     """
 
     @field_validator("module_name", mode="before")
@@ -130,9 +136,18 @@ class PyPIMixin(BaseModel):
                 {"project_link": project_link, "module_name": module_name},
             )
 
-        # 如果一切正常才记录上传时间
-        if project_link:
+        # 如果一切正常才记录上传时间和版本号
+        if project_link is not None:
+            if issubclass(cls, DriverPublishInfo) and (
+                project_link == "" or project_link.startswith("nonebot2[")
+            ):
+                project_link = "nonebot2"
+
             values["time"] = get_upload_time(project_link)
+            # 只有不是插件测试的情况下才获取版本号
+            # 插件测试的时候应该使用从插件测试获取的版本号，也就是传入的版本号
+            if not issubclass(cls, PluginPublishInfo):
+                values["version"] = get_pypi_version(project_link)
 
         return values
 
@@ -209,8 +224,6 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     """插件测试元数据"""
     skip_test: bool
     """是否跳过插件测试"""
-    version: str
-    """插件版本号"""
     test_config: str = ""
     """插件测试配置"""
     test_output: str = ""

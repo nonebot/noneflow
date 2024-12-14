@@ -27,6 +27,15 @@ def get_pypi_name(project_link: str) -> str:
     return data["info"]["name"]
 
 
+def get_pypi_version(project_link: str) -> str:
+    """获取 PyPI 版本"""
+    url = f"https://pypi.org/pypi/{project_link}/json"
+    r = get_url(url)
+    r.raise_for_status()
+    data = load_json(r.text)
+    return data["info"]["version"]
+
+
 def get_upload_time(project_link: str) -> str | None:
     """获取插件的上传时间"""
     url = f"https://pypi.org/pypi/{project_link}/json"
