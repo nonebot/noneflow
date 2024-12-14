@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import TypedDict
 
 import httpx
 import nonebot
@@ -10,7 +11,18 @@ from pytest_asyncio import is_async_test
 from pytest_mock import MockerFixture
 from respx import MockRouter
 
-from src.providers.constants import STORE_ADAPTERS_URL, STORE_PLUGINS_URL
+from src.providers.constants import (
+    REGISTRY_ADAPTERS_URL,
+    REGISTRY_BOTS_URL,
+    REGISTRY_DRIVERS_URL,
+    REGISTRY_PLUGIN_CONFIG_URL,
+    REGISTRY_PLUGINS_URL,
+    REGISTRY_RESULTS_URL,
+    STORE_ADAPTERS_URL,
+    STORE_BOTS_URL,
+    STORE_DRIVERS_URL,
+    STORE_PLUGINS_URL,
+)
 
 
 def pytest_configure(config: pytest.Config) -> None:
@@ -125,110 +137,110 @@ def _clear_cache(app: App):
     get_url.cache_clear()
 
 
+class PyPIProject(TypedDict):
+    url: str
+    name: str
+    version: str
+    upload_time_iso_8601: str
+
+
 @pytest.fixture
 def mocked_api(respx_mock: MockRouter):
+    # 主页数据
     respx_mock.get("exception", name="exception").mock(side_effect=httpx.ConnectError)
-    respx_mock.get(
-        "https://pypi.org/pypi/project_link/json", name="project_link"
-    ).respond(
-        json={
-            "info": {"name": "project_link", "version": "0.0.1"},
-            "urls": [{"upload_time_iso_8601": "2023-09-01T00:00:00+00:00"}],
-        }
-    )
-    respx_mock.get(
-        "https://pypi.org/pypi/project_link//json", name="project_link/"
-    ).respond(
-        json={
-            "info": {"name": "project_link/", "version": "0.0.1"},
-            "urls": [{"upload_time_iso_8601": "2023-10-01T00:00:00+00:00"}],
-        }
-    )
-    respx_mock.get(
-        "https://pypi.org/pypi/nonebot-plugin-treehelp/json",
-        name="project_link_treehelp",
-    ).respond(
-        json={
-            "info": {"name": "nonebot-plugin-treehelp", "version": "0.3.1"},
-            "urls": [{"upload_time_iso_8601": "2021-08-01T00:00:00+00:00"}],
-        }
-    )
-    respx_mock.get(
-        "https://pypi.org/pypi/nonebot-plugin-datastore/json",
-        name="project_link_datastore",
-    ).respond(
-        json={
-            "info": {"name": "nonebot-plugin-datastore", "version": "1.0.0"},
-        }
-    )
-    respx_mock.get(
-        "https://pypi.org/pypi/nonebot-plugin-wordcloud/json",
-        name="project_link_wordcloud",
-    ).respond(
-        json={"info": {"name": "nonebot-plugin-wordcloud", "version": "0.5.0"}},
-    )
-    respx_mock.get(
-        "https://pypi.org/pypi/project_link1/json", name="project_link1"
-    ).respond(
-        json={
-            "info": {"name": "project_link1", "version": "0.5.0"},
-            "urls": [{"upload_time_iso_8601": "2023-10-01T00:00:00+00:00"}],
-        }
-    )
-    respx_mock.get(
-        "https://pypi.org/pypi/project_link_failed/json", name="project_link_failed"
-    ).respond(404)
-    respx_mock.get(
-        "https://pypi.org/pypi/project_link_normalization/json",
-        name="project_link_normalization",
-    ).respond(
-        json={
-            "info": {"name": "project-link-normalization", "version": "0.0.1"},
-            "urls": [{"upload_time_iso_8601": "2023-10-01T00:00:00+00:00"}],
-        }
-    )
-    respx_mock.get("https://www.baidu.com", name="homepage_failed").respond(404)
     respx_mock.get("https://nonebot.dev/", name="homepage").respond()
-    respx_mock.get("https://v2.nonebot.dev", name="homepage_v2").respond()
-    respx_mock.get(STORE_ADAPTERS_URL, name="store_adapters").respond(
-        json=[
-            {
-                "module_name": "nonebot.adapters.onebot.v11",
-                "project_link": "nonebot-adapter-onebot",
-                "name": "OneBot V11",
-                "desc": "OneBot V11 协议",
-                "author_id": 2,
-                "homepage": "https://onebot.adapters.nonebot.dev/",
-                "tags": [],
-                "is_official": True,
-            },
-            {
-                "module_name": "nonebot.adapters.onebot.v12",
-                "project_link": "nonebot-adapter-onebot",
-                "name": "OneBot V12",
-                "desc": "OneBot V12 协议",
-                "author_id": 2,
-                "homepage": "https://onebot.adapters.nonebot.dev/",
-                "tags": [],
-                "is_official": True,
-            },
-        ]
-    )
-    respx_mock.get(STORE_PLUGINS_URL, name="store_plugins").respond(
-        json=[
-            {
-                "module_name": "nonebot-plugin-treehelp",
-                "project_link": "nonebot-plugin-treehelp",
-                "author_id": 1,
-                "tags": [],
-                "is_official": True,
-            },
-        ]
-    )
+    respx_mock.get("https://www.baidu.com", name="homepage_failed").respond(404)
+    # GitHub 数据
     respx_mock.get("https://api.github.com/user/1", name="github_username_1").respond(
         json={"login": "he0119"}
     )
     respx_mock.get("https://api.github.com/user/2", name="github_username_2").respond(
         json={"login": "BigOrangeQWQ"}
     )
+    # PyPI 数据
+    pypi_projects = [
+        PyPIProject(
+            url="project_link",
+            name="project_link",
+            version="0.0.1",
+            upload_time_iso_8601="2023-09-01T00:00:00.000000Z",
+        ),
+        PyPIProject(
+            url="project_link/",
+            name="project_link/",
+            version="0.0.1",
+            upload_time_iso_8601="2023-10-01T00:00:00.000000Z",
+        ),
+        PyPIProject(
+            url="nonebot-plugin-datastore",
+            name="nonebot-plugin-datastore",
+            version="1.3.0",
+            upload_time_iso_8601="2024-06-20T07:53:23.524486Z",
+        ),
+        PyPIProject(
+            url="nonebot-plugin-treehelp",
+            name="nonebot-plugin-treehelp",
+            version="0.5.0",
+            upload_time_iso_8601="2024-07-13T04:41:40.905441Z",
+        ),
+        PyPIProject(
+            url="nonebot-plugin-wordcloud",
+            name="nonebot-plugin-wordcloud",
+            version="0.8.0",
+            upload_time_iso_8601="2024-08-15T13:06:51.084754Z",
+        ),
+        PyPIProject(
+            url="project_link_normalization",
+            name="project-link-normalization",
+            version="0.0.1",
+            upload_time_iso_8601="2023-10-01T00:00:00.000000Z",
+        ),
+    ]
+    for project in pypi_projects:
+        respx_mock.get(
+            f"https://pypi.org/pypi/{project['url']}/json",
+            name=f"pypi_{project['url']}",
+        ).respond(
+            json={
+                "info": {"name": project["name"], "version": project["version"]},
+                "urls": [{"upload_time_iso_8601": project["upload_time_iso_8601"]}],
+            }
+        )
+    respx_mock.get(
+        "https://pypi.org/pypi/project_link_failed/json",
+        name="pypi_project_link_failed",
+    ).respond(404)
+    # 商店数据
+    store_path = Path(__file__).parent / "store"
+    respx_mock.get(STORE_ADAPTERS_URL).respond(
+        text=(store_path / "store_adapters.json5").read_text(encoding="utf8")
+    )
+    respx_mock.get(STORE_BOTS_URL).respond(
+        text=(store_path / "store_bots.json5").read_text(encoding="utf8")
+    )
+    respx_mock.get(STORE_DRIVERS_URL).respond(
+        text=(store_path / "store_drivers.json5").read_text(encoding="utf8")
+    )
+    respx_mock.get(STORE_PLUGINS_URL).respond(
+        text=(store_path / "store_plugins.json5").read_text(encoding="utf8")
+    )
+    respx_mock.get(REGISTRY_ADAPTERS_URL).respond(
+        text=(store_path / "registry_adapters.json").read_text(encoding="utf8")
+    )
+    respx_mock.get(REGISTRY_BOTS_URL).respond(
+        text=(store_path / "registry_bots.json").read_text(encoding="utf8")
+    )
+    respx_mock.get(REGISTRY_DRIVERS_URL).respond(
+        text=(store_path / "registry_drivers.json").read_text(encoding="utf8")
+    )
+    respx_mock.get(REGISTRY_PLUGINS_URL).respond(
+        text=(store_path / "registry_plugins.json").read_text(encoding="utf8")
+    )
+    respx_mock.get(REGISTRY_RESULTS_URL).respond(
+        text=(store_path / "registry_results.json").read_text(encoding="utf8")
+    )
+    respx_mock.get(REGISTRY_PLUGIN_CONFIG_URL).respond(
+        text=(store_path / "plugin_configs.json").read_text(encoding="utf8")
+    )
+
     return respx_mock
