@@ -20,7 +20,8 @@ async def test_name_too_long(mocked_api: MockRouter) -> None:
         {
             "module_name": "module_name",
             "project_link": "project_link",
-            "time": "2023-09-01T00:00:00+00:00",
+            "time": "2023-09-01T00:00:00.000000Z",
+            "version": "0.0.1",
             "desc": "desc",
             "author": "author",
             "homepage": "https://nonebot.dev",
@@ -41,5 +42,5 @@ async def test_name_too_long(mocked_api: MockRouter) -> None:
         ]
     )
 
-    assert mocked_api["project_link"].called
+    assert mocked_api["pypi_project_link"].called
     assert mocked_api["homepage"].called

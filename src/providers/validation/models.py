@@ -90,6 +90,10 @@ class PyPIMixin(BaseModel):
     @field_validator("module_name", mode="before")
     @classmethod
     def module_name_validator(cls, v: str) -> str:
+        # NoneBot 内置驱动器都是以 ~ 开头的
+        if issubclass(cls, DriverPublishInfo) and v.startswith("~"):
+            return v
+
         if not PYTHON_MODULE_NAME_REGEX.match(v):
             raise PydanticCustomError("module_name", "包名不符合规范")
         return v
@@ -97,6 +101,12 @@ class PyPIMixin(BaseModel):
     @field_validator("project_link", mode="before")
     @classmethod
     def project_link_validator(cls, v: str) -> str:
+        # NoneBot 内置驱动器需要特殊处理
+        if issubclass(cls, DriverPublishInfo) and (
+            v == "" or v.startswith("nonebot2[")
+        ):
+            return v
+
         if not PYPI_PACKAGE_NAME_PATTERN.match(v):
             raise PydanticCustomError("project_link.name", "PyPI 项目名不符合规范")
 

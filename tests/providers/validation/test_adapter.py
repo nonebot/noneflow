@@ -24,7 +24,8 @@ async def test_adapter_info_validation_success(mocked_api: MockRouter) -> None:
             "homepage": "https://nonebot.dev",
             "tags": '[{"label": "test", "color": "#ffffff"}]',
             "author_id": 1,
-            "time": "2023-09-01T00:00:00+00:00",
+            "time": "2023-09-01T00:00:00.000000Z",
+            "version": "0.0.1",
         }
     )
 
@@ -73,6 +74,12 @@ async def test_adapter_info_validation_failed(mocked_api: MockRouter) -> None:
                     "input": None,
                 },
                 {
+                    "type": "string_type",
+                    "loc": ("version",),
+                    "msg": "值不是合法的字符串",
+                    "input": None,
+                },
+                {
                     "type": "homepage",
                     "loc": ("homepage",),
                     "msg": "项目主页无法访问",
@@ -104,6 +111,7 @@ async def test_adapter_info_validation_failed(mocked_api: MockRouter) -> None:
                 "tags": '[{"label": "test", "color": "#ffffff"}, {"label": "testtoolong", "color": "#fffffff"}]',
                 "author_id": 1,
                 "time": None,
+                "version": None,
             },
             type=PublishType.ADAPTER,
             valid_data={

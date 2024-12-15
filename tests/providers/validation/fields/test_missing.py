@@ -19,7 +19,6 @@ async def test_fields_missing_plugin(mocked_api: MockRouter) -> None:
         metadata=False,
         version=None,
     )
-    data["version"] = None
 
     result = validate_info(PublishType.PLUGIN, data, [])
 
@@ -29,7 +28,7 @@ async def test_fields_missing_plugin(mocked_api: MockRouter) -> None:
         {
             "module_name": "module_name",
             "project_link": "project_link",
-            "time": "2023-09-01T00:00:00+00:00",
+            "time": "2023-09-01T00:00:00.000000Z",
             "author": "author",
             "author_id": 1,
             "tags": [{"label": "test", "color": "#ffffff"}],
@@ -42,6 +41,24 @@ async def test_fields_missing_plugin(mocked_api: MockRouter) -> None:
     assert result.info is None
     assert result.errors == snapshot(
         [
+            {
+                "type": "missing",
+                "loc": ("version",),
+                "msg": "字段不存在",
+                "input": {
+                    "author": "author",
+                    "module_name": "module_name",
+                    "project_link": "project_link",
+                    "tags": '[{"label": "test", "color": "#ffffff"}]',
+                    "supported_adapters": None,
+                    "skip_test": False,
+                    "metadata": False,
+                    "author_id": 1,
+                    "load": False,
+                    "test_output": "error",
+                    "time": "2023-09-01T00:00:00.000000Z",
+                },
+            },
             {
                 "type": "missing",
                 "loc": ("name",),
@@ -57,8 +74,7 @@ async def test_fields_missing_plugin(mocked_api: MockRouter) -> None:
                     "author_id": 1,
                     "load": False,
                     "test_output": "error",
-                    "version": None,
-                    "time": "2023-09-01T00:00:00+00:00",
+                    "time": "2023-09-01T00:00:00.000000Z",
                 },
             },
             {
@@ -76,8 +92,7 @@ async def test_fields_missing_plugin(mocked_api: MockRouter) -> None:
                     "author_id": 1,
                     "load": False,
                     "test_output": "error",
-                    "version": None,
-                    "time": "2023-09-01T00:00:00+00:00",
+                    "time": "2023-09-01T00:00:00.000000Z",
                 },
             },
             {
@@ -95,8 +110,7 @@ async def test_fields_missing_plugin(mocked_api: MockRouter) -> None:
                     "author_id": 1,
                     "load": False,
                     "test_output": "error",
-                    "version": None,
-                    "time": "2023-09-01T00:00:00+00:00",
+                    "time": "2023-09-01T00:00:00.000000Z",
                 },
             },
             {
@@ -114,8 +128,7 @@ async def test_fields_missing_plugin(mocked_api: MockRouter) -> None:
                     "author_id": 1,
                     "load": False,
                     "test_output": "error",
-                    "version": None,
-                    "time": "2023-09-01T00:00:00+00:00",
+                    "time": "2023-09-01T00:00:00.000000Z",
                 },
             },
             {
@@ -125,14 +138,8 @@ async def test_fields_missing_plugin(mocked_api: MockRouter) -> None:
                 "input": False,
                 "ctx": {"output": "error"},
             },
-            {
-                "type": "string_type",
-                "loc": ("version",),
-                "msg": "值不是合法的字符串",
-                "input": None,
-            },
         ]
     )
 
-    assert mocked_api["project_link"].called
+    assert mocked_api["pypi_project_link"].called
     assert not mocked_api["homepage"].called

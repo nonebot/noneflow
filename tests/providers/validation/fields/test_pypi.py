@@ -17,7 +17,8 @@ async def test_project_link_invalid(mocked_api: MockRouter) -> None:
     assert result.valid_data == snapshot(
         {
             "module_name": "module_name",
-            "time": "2023-10-01T00:00:00+00:00",
+            "time": "2023-10-01T00:00:00.000000Z",
+            "version": "0.0.1",
             "name": "name",
             "desc": "desc",
             "author": "author",
@@ -54,7 +55,8 @@ async def test_module_name_invalid(mocked_api: MockRouter) -> None:
     assert result.valid_data == snapshot(
         {
             "project_link": "project_link",
-            "time": "2023-09-01T00:00:00+00:00",
+            "time": "2023-09-01T00:00:00.000000Z",
+            "version": "0.0.1",
             "name": "name",
             "desc": "desc",
             "author": "author",
@@ -75,7 +77,7 @@ async def test_module_name_invalid(mocked_api: MockRouter) -> None:
         )
     ]
 
-    assert mocked_api["project_link"].called
+    assert mocked_api["pypi_project_link"].called
     assert mocked_api["homepage"].called
 
 
@@ -83,14 +85,11 @@ async def test_name_duplication(mocked_api: MockRouter) -> None:
     """测试名称重复的情况"""
     from src.providers.validation import PublishType, validate_info
 
-    data = generate_adapter_data(
-        module_name="module_name1",
-        project_link="project_link1",
-    )
+    data = generate_adapter_data()
     previous_data = [
         {
-            "module_name": "module_name1",
-            "project_link": "project_link1",
+            "module_name": "module_name",
+            "project_link": "project_link",
             "author_id": 1,
             "name": "name",
             "desc": "desc",
@@ -108,23 +107,23 @@ async def test_name_duplication(mocked_api: MockRouter) -> None:
             {
                 "type": "duplication",
                 "loc": (),
-                "msg": "PyPI 项目名 project_link1 加包名 module_name1 的值与商店重复",
+                "msg": "PyPI 项目名 project_link 加包名 module_name 的值与商店重复",
                 "input": {
                     "name": "name",
                     "desc": "desc",
                     "author": "author",
-                    "module_name": "module_name1",
-                    "project_link": "project_link1",
+                    "module_name": "module_name",
+                    "project_link": "project_link",
                     "homepage": "https://nonebot.dev",
                     "tags": '[{"label": "test", "color": "#ffffff"}]',
                     "author_id": 1,
                 },
-                "ctx": {"project_link": "project_link1", "module_name": "module_name1"},
+                "ctx": {"project_link": "project_link", "module_name": "module_name"},
             }
         ]
     )
 
-    assert not mocked_api["project_link1"].called
+    assert not mocked_api["pypi_project_link"].called
     assert not mocked_api["homepage"].called
 
 
@@ -135,9 +134,7 @@ async def test_name_duplication_previos_data_missing(mocked_api: MockRouter) -> 
     """
     from src.providers.validation import PublishType, validate_info
 
-    data = generate_adapter_data(
-        module_name="module_name1", project_link="project_link1"
-    )
+    data = generate_adapter_data()
 
     result = validate_info(PublishType.ADAPTER, data, None)
 
@@ -155,8 +152,8 @@ async def test_name_duplication_previos_data_missing(mocked_api: MockRouter) -> 
                     "name": "name",
                     "desc": "desc",
                     "author": "author",
-                    "module_name": "module_name1",
-                    "project_link": "project_link1",
+                    "module_name": "module_name",
+                    "project_link": "project_link",
                     "homepage": "https://nonebot.dev",
                     "tags": '[{"label": "test", "color": "#ffffff"}]',
                     "author_id": 1,
@@ -165,7 +162,7 @@ async def test_name_duplication_previos_data_missing(mocked_api: MockRouter) -> 
         ]
     )
 
-    assert not mocked_api["project_link1"].called
+    assert not mocked_api["pypi_project_link"].called
     assert not mocked_api["homepage"].called
 
 
@@ -183,7 +180,8 @@ async def test_project_link_normalization(mocked_api: MockRouter) -> None:
         {
             "module_name": "module_name",
             "project_link": "project-link-normalization",
-            "time": "2023-10-01T00:00:00+00:00",
+            "time": "2023-10-01T00:00:00.000000Z",
+            "version": "0.0.1",
             "name": "name",
             "desc": "desc",
             "author": "author",
@@ -196,4 +194,4 @@ async def test_project_link_normalization(mocked_api: MockRouter) -> None:
     assert result.errors == []
 
     assert mocked_api["homepage"].called
-    assert mocked_api["project_link_normalization"].called
+    assert mocked_api["pypi_project_link_normalization"].called

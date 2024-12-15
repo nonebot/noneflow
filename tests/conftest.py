@@ -147,9 +147,9 @@ class PyPIProject(TypedDict):
 @pytest.fixture
 def mocked_api(respx_mock: MockRouter):
     # 主页数据
-    respx_mock.get("exception", name="exception").mock(side_effect=httpx.ConnectError)
     respx_mock.get("https://nonebot.dev/", name="homepage").respond()
     respx_mock.get("https://www.baidu.com", name="homepage_failed").respond(404)
+    respx_mock.get("exception", name="exception").mock(side_effect=httpx.ConnectError)
     # GitHub 数据
     respx_mock.get("https://api.github.com/user/1", name="github_username_1").respond(
         json={"login": "he0119"}
@@ -194,6 +194,12 @@ def mocked_api(respx_mock: MockRouter):
             name="project-link-normalization",
             version="0.0.1",
             upload_time_iso_8601="2023-10-01T00:00:00.000000Z",
+        ),
+        PyPIProject(
+            url="nonebot2",
+            name="nonebot2",
+            version="2.4.0",
+            upload_time_iso_8601="2024-10-31T13:47:14.152851Z",
         ),
     ]
     for project in pypi_projects:
