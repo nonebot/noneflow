@@ -79,7 +79,7 @@ async def test_trigger_registry_update(
                             "type": "application",
                             "supported_adapters": ["nonebot.adapters.onebot.v11"],
                             "valid": True,
-                            "time": "2023-09-01T00:00:00+00:00",
+                            "time": "2023-09-01T00:00:00.000000Z",
                             "version": "1.0.0",
                             "skip_test": False,
                         },
@@ -178,7 +178,7 @@ async def test_trigger_registry_update_skip_test(
                             "type": "application",
                             "supported_adapters": ["nonebot.adapters.onebot.v11"],
                             "valid": True,
-                            "time": "2023-09-01T00:00:00+00:00",
+                            "time": "2023-09-01T00:00:00.000000Z",
                             "version": "0.0.1",
                             "skip_test": True,
                         },
@@ -233,7 +233,7 @@ async def test_trigger_registry_update_bot(
     from src.providers.validation import PublishType
 
     mock_issue = MockIssue(
-        body=MockBody(type="bot", homepage="https://v2.nonebot.dev").generate(),
+        body=MockBody(type="bot").generate(),
         number=1,
     ).as_mock(mocker)
 
@@ -253,7 +253,7 @@ async def test_trigger_registry_update_bot(
                             "name": "name",
                             "desc": "desc",
                             "author": "test",
-                            "homepage": "https://v2.nonebot.dev",
+                            "homepage": "https://nonebot.dev",
                             "tags": [{"label": "test", "color": "#ffffff"}],
                             "is_official": False,
                         },
@@ -272,7 +272,7 @@ async def test_trigger_registry_update_bot(
 
         await trigger_registry_update(handler, PublishType.BOT)
 
-    assert mocked_api["homepage_v2"].called
+    assert mocked_api["homepage"].called
 
 
 async def test_trigger_registry_update_plugins_issue_body_info_missing(
