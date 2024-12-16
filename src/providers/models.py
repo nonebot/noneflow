@@ -8,6 +8,8 @@ from pydantic_extra_types.color import Color
 
 from src.providers.constants import BOT_KEY_TEMPLATE, PYPI_KEY_TEMPLATE
 from src.providers.docker_test import Metadata
+from src.providers.utils import get_author_name
+from src.providers.validation import validate_info
 from src.providers.validation.models import (
     AdapterPublishInfo,
     BotPublishInfo,
@@ -61,6 +63,21 @@ class StoreAdapter(BaseModel):
             is_official=publish_info.is_official,
         )
 
+    def to_registry(self) -> "RegistryAdapter":
+        """将仓库数据转换为注册表数据
+
+        将获取 author 信息，重新验证数据
+        """
+        author = get_author_name(self.author_id)
+        result = validate_info(
+            PublishType.ADAPTER,
+            {**self.model_dump(), "author": author},
+            [],
+        )
+        if result.info is None or not isinstance(result.info, AdapterPublishInfo):
+            raise ValueError(f"数据验证失败: {result.errors}")
+        return RegistryAdapter.from_publish_info(result.info)
+
 
 class StoreBot(BaseModel):
     """NoneBot 仓库中的机器人数据"""
@@ -86,6 +103,21 @@ class StoreBot(BaseModel):
             tags=[Tag(label=tag.label, color=tag.color) for tag in publish_info.tags],
             is_official=publish_info.is_official,
         )
+
+    def to_registry(self) -> "RegistryBot":
+        """将仓库数据转换为注册表数据
+
+        将获取 author 信息，重新验证数据
+        """
+        author = get_author_name(self.author_id)
+        result = validate_info(
+            PublishType.BOT,
+            {**self.model_dump(), "author": author},
+            [],
+        )
+        if result.info is None or not isinstance(result.info, BotPublishInfo):
+            raise ValueError(f"数据验证失败: {result.errors}")
+        return RegistryBot.from_publish_info(result.info)
 
 
 class StoreDriver(BaseModel):
@@ -118,6 +150,21 @@ class StoreDriver(BaseModel):
             tags=[Tag(label=tag.label, color=tag.color) for tag in publish_info.tags],
             is_official=publish_info.is_official,
         )
+
+    def to_registry(self) -> "RegistryDriver":
+        """将仓库数据转换为注册表数据
+
+        将获取 author 信息，重新验证数据
+        """
+        author = get_author_name(self.author_id)
+        result = validate_info(
+            PublishType.DRIVER,
+            {**self.model_dump(), "author": author},
+            [],
+        )
+        if result.info is None or not isinstance(result.info, DriverPublishInfo):
+            raise ValueError(f"数据验证失败: {result.errors}")
+        return RegistryDriver.from_publish_info(result.info)
 
 
 class StorePlugin(BaseModel):
@@ -201,6 +248,12 @@ class RegistryAdapter(BaseModel):
             version=publish_info.version,
         )
 
+    def update(self, store: StoreAdapter) -> "RegistryAdapter":
+        """根据商店数据更新注册表数据"""
+        data = self.model_dump()
+        data.update(store.model_dump())
+        return RegistryAdapter(**data)
+
 
 class RegistryBot(BaseModel):
     """NoneBot 商店机器人数据"""
@@ -226,6 +279,12 @@ class RegistryBot(BaseModel):
             tags=[Tag(label=tag.label, color=tag.color) for tag in publish_info.tags],
             is_official=publish_info.is_official,
         )
+
+    def update(self, store: StoreBot) -> "RegistryBot":
+        """根据商店数据更新注册表数据"""
+        data = self.model_dump()
+        data.update(store.model_dump())
+        return RegistryBot(**data)
 
 
 class RegistryDriver(BaseModel):
@@ -262,6 +321,12 @@ class RegistryDriver(BaseModel):
             time=publish_info.time,
             version=publish_info.version,
         )
+
+    def update(self, store: StoreDriver) -> "RegistryDriver":
+        """根据商店数据更新注册表数据"""
+        data = self.model_dump()
+        data.update(store.model_dump())
+        return RegistryDriver(**data)
 
 
 class RegistryPlugin(BaseModel):
@@ -316,6 +381,10 @@ class RegistryPlugin(BaseModel):
             "type": self.type,
             "supported_adapters": self.supported_adapters,
         }
+
+    def update(self, store: StorePlugin) -> "RegistryPlugin":
+        """根据商店数据更新注册表数据"""
+        return RegistryPlugin(**self.model_dump(), **store.model_dump())
 
 
 RegistryModels: TypeAlias = (

@@ -5,13 +5,13 @@ from typing import Any
 from src.providers.docker_test import DockerPluginTest
 from src.providers.logger import logger
 from src.providers.models import RegistryPlugin, StorePlugin, StoreTestResult
+from src.providers.utils import get_author_name, get_upload_time
 from src.providers.validation import (
     PluginPublishInfo,
     PublishType,
     ValidationDict,
     validate_info,
 )
-from src.providers.validation.utils import get_author_name, get_upload_time
 
 
 async def validate_plugin(

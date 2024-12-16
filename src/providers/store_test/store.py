@@ -33,7 +33,6 @@ from src.providers.utils import (
     get_latest_version,
     load_json_from_web,
 )
-from src.providers.validation.utils import get_author_name
 
 from .constants import (
     ADAPTERS_PATH,
@@ -316,38 +315,26 @@ class StoreTest:
         以商店数据为准，更新商店数据到仓库中，如果仓库中不存在则获取用户名后存储
         """
         for key in self._store_adapters:
-            if key not in self._previous_adapters:
-                author = get_author_name(self._store_adapters[key].author_id)
-                self._previous_adapters[key] = RegistryAdapter(
-                    **self._store_adapters[key].model_dump(), author=author
+            if key in self._previous_adapters:
+                self._previous_adapters[key] = self._previous_adapters[key].update(
+                    self._store_adapters[key]
                 )
             else:
-                self._previous_adapters[key] = RegistryAdapter(
-                    **self._store_adapters[key].model_dump(),
-                    author=self._previous_adapters[key].author,
-                )
+                self._previous_adapters[key] = self._store_adapters[key].to_registry()
         for key in self._store_bots:
-            if key not in self._previous_bots:
-                author = get_author_name(self._store_bots[key].author_id)
-                self._previous_bots[key] = RegistryBot(
-                    **self._store_bots[key].model_dump(), author=author
+            if key in self._previous_bots:
+                self._previous_bots[key] = self._previous_bots[key].update(
+                    self._store_bots[key]
                 )
             else:
-                self._previous_bots[key] = RegistryBot(
-                    **self._store_bots[key].model_dump(),
-                    author=self._previous_bots[key].author,
-                )
+                self._previous_bots[key] = self._store_bots[key].to_registry()
         for key in self._store_drivers:
-            if key not in self._previous_drivers:
-                author = get_author_name(self._store_drivers[key].author_id)
-                self._previous_drivers[key] = RegistryDriver(
-                    **self._store_drivers[key].model_dump(), author=author
+            if key in self._previous_drivers:
+                self._previous_drivers[key] = self._previous_drivers[key].update(
+                    self._store_drivers[key]
                 )
             else:
-                self._previous_drivers[key] = RegistryDriver(
-                    **self._store_drivers[key].model_dump(),
-                    author=self._previous_drivers[key].author,
-                )
+                self._previous_drivers[key] = self._store_drivers[key].to_registry()
         for key in self._store_plugins:
             if key in self._previous_plugins:
                 plugin_data = self._previous_plugins[key].model_dump()
@@ -355,6 +342,7 @@ class StoreTest:
                 # TODO: 如果 author_id 变化，应该重新获取 author
                 plugin_data.update(self._store_plugins[key].model_dump())
                 self._previous_plugins[key] = RegistryPlugin(**plugin_data)
+            # TODO: 如果插件不存在，尝试重新测试获取相关信息验证
 
     def generate_github_summary(self, results: dict[str, StoreTestResult]):
         """生成 GitHub 摘要"""

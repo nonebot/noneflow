@@ -148,6 +148,12 @@ class PyPIProject(TypedDict):
 def mocked_api(respx_mock: MockRouter):
     # 主页数据
     respx_mock.get("https://nonebot.dev/", name="homepage").respond()
+    respx_mock.get(
+        "https://onebot.adapters.nonebot.dev/", name="homepage_onebot"
+    ).respond()
+    respx_mock.get(
+        "https://github.com/cscs181/QQ-GitHub-Bot", name="homepage_qq_github_bot"
+    ).respond()
     respx_mock.get("https://www.baidu.com", name="homepage_failed").respond(404)
     respx_mock.get("exception", name="exception").mock(side_effect=httpx.ConnectError)
     # GitHub 数据
@@ -201,6 +207,12 @@ def mocked_api(respx_mock: MockRouter):
             version="2.4.0",
             upload_time_iso_8601="2024-10-31T13:47:14.152851Z",
         ),
+        PyPIProject(
+            url="nonebot-adapter-onebot",
+            name="nonebot-adapter-onebot",
+            version="2.4.6",
+            upload_time_iso_8601="2024-10-24T07:34:56.115315Z",
+        ),
     ]
     for project in pypi_projects:
         respx_mock.get(
@@ -218,35 +230,34 @@ def mocked_api(respx_mock: MockRouter):
     ).respond(404)
     # 商店数据
     store_path = Path(__file__).parent / "store"
-    respx_mock.get(STORE_ADAPTERS_URL).respond(
+    respx_mock.get(STORE_ADAPTERS_URL, name="store_adapter").respond(
         text=(store_path / "store_adapters.json5").read_text(encoding="utf8")
     )
-    respx_mock.get(STORE_BOTS_URL).respond(
+    respx_mock.get(STORE_BOTS_URL, name="store_bots").respond(
         text=(store_path / "store_bots.json5").read_text(encoding="utf8")
     )
-    respx_mock.get(STORE_DRIVERS_URL).respond(
+    respx_mock.get(STORE_DRIVERS_URL, name="store_drivers").respond(
         text=(store_path / "store_drivers.json5").read_text(encoding="utf8")
     )
-    respx_mock.get(STORE_PLUGINS_URL).respond(
+    respx_mock.get(STORE_PLUGINS_URL, name="store_plugins").respond(
         text=(store_path / "store_plugins.json5").read_text(encoding="utf8")
     )
-    respx_mock.get(REGISTRY_ADAPTERS_URL).respond(
+    respx_mock.get(REGISTRY_ADAPTERS_URL, name="registry_adapters").respond(
         text=(store_path / "registry_adapters.json").read_text(encoding="utf8")
     )
-    respx_mock.get(REGISTRY_BOTS_URL).respond(
+    respx_mock.get(REGISTRY_BOTS_URL, name="registry_bots").respond(
         text=(store_path / "registry_bots.json").read_text(encoding="utf8")
     )
-    respx_mock.get(REGISTRY_DRIVERS_URL).respond(
+    respx_mock.get(REGISTRY_DRIVERS_URL, name="registry_drivers").respond(
         text=(store_path / "registry_drivers.json").read_text(encoding="utf8")
     )
-    respx_mock.get(REGISTRY_PLUGINS_URL).respond(
+    respx_mock.get(REGISTRY_PLUGINS_URL, name="registry_plugins").respond(
         text=(store_path / "registry_plugins.json").read_text(encoding="utf8")
     )
-    respx_mock.get(REGISTRY_RESULTS_URL).respond(
+    respx_mock.get(REGISTRY_RESULTS_URL, name="registry_results").respond(
         text=(store_path / "registry_results.json").read_text(encoding="utf8")
     )
-    respx_mock.get(REGISTRY_PLUGIN_CONFIG_URL).respond(
+    respx_mock.get(REGISTRY_PLUGIN_CONFIG_URL, name="plugin_configs").respond(
         text=(store_path / "plugin_configs.json").read_text(encoding="utf8")
     )
-
     return respx_mock

@@ -9,6 +9,8 @@ from respx import MockRouter
 def mocked_store_data(
     tmp_path: Path, mocker: MockerFixture, mocked_api: MockRouter
 ) -> dict[str, Path]:
+    from src.providers.store_test import store
+
     plugin_test_path = tmp_path / "plugin_test"
     plugin_test_path.mkdir()
 
@@ -21,13 +23,11 @@ def mocked_store_data(
         "plugin_configs": plugin_test_path / "plugin_configs.json",
     }
 
-    mocker.patch("src.providers.store_test.store.RESULTS_PATH", paths["results"])
-    mocker.patch("src.providers.store_test.store.ADAPTERS_PATH", paths["adapters"])
-    mocker.patch("src.providers.store_test.store.BOTS_PATH", paths["bots"])
-    mocker.patch("src.providers.store_test.store.DRIVERS_PATH", paths["drivers"])
-    mocker.patch("src.providers.store_test.store.PLUGINS_PATH", paths["plugins"])
-    mocker.patch(
-        "src.providers.store_test.store.PLUGIN_CONFIG_PATH", paths["plugin_configs"]
-    )
+    mocker.patch.object(store, "RESULTS_PATH", paths["results"])
+    mocker.patch.object(store, "ADAPTERS_PATH", paths["adapters"])
+    mocker.patch.object(store, "BOTS_PATH", paths["bots"])
+    mocker.patch.object(store, "DRIVERS_PATH", paths["drivers"])
+    mocker.patch.object(store, "PLUGINS_PATH", paths["plugins"])
+    mocker.patch.object(store, "PLUGIN_CONFIG_PATH", paths["plugin_configs"])
 
     return paths

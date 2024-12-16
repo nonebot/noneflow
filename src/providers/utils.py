@@ -105,3 +105,10 @@ def add_step_summary(summary: str):
     with open(github_step_summary, "a", encoding="utf-8") as f:
         f.write(summary + "\n")
     logger.debug(f"已添加作业摘要：{summary}")
+
+
+@cache
+def get_author_name(author_id: int) -> str:
+    """通过作者的ID获取作者名字"""
+    url = f"https://api.github.com/user/{author_id}"
+    return load_json_from_web(url)["login"]

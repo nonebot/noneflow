@@ -170,7 +170,8 @@ class PublishInfo(abc.ABC, BaseModel):
     author: str
     author_id: int
     homepage: Annotated[
-        str, StringConstraints(strip_whitespace=True, pattern=r"^https?://.*$")
+        str,
+        StringConstraints(strip_whitespace=True, pattern=r"^(https?://.*|/docs/.*)$"),
     ]
     tags: list[Tag] = Field(max_length=3)
     is_official: bool = Field(default=False)
@@ -199,6 +200,9 @@ class PublishInfo(abc.ABC, BaseModel):
     @classmethod
     def homepage_validator(cls, v: str) -> str:
         if v:
+            # 内置驱动器的主页可以不是网址
+            if issubclass(cls, DriverPublishInfo) and v.startswith("/docs/"):
+                return v
             status_code, msg = check_url(v)
             if status_code != 200:
                 raise PydanticCustomError(

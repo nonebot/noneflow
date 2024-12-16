@@ -34,6 +34,8 @@ async def test_store_sync(
                 "homepage": "https://onebot.adapters.nonebot.dev/",
                 "tags": [{"label": "sync", "color": "#ffffff"}],
                 "is_official": True,
+                "time": "2024-10-24T07:34:56.115315Z",
+                "version": "2.4.6",
             },
             {
                 "module_name": "nonebot.adapters.onebot.v12",
@@ -44,6 +46,8 @@ async def test_store_sync(
                 "homepage": "https://onebot.adapters.nonebot.dev/",
                 "tags": [],
                 "is_official": True,
+                "time": "2024-10-24T07:34:56.115315Z",
+                "version": "2.4.6",
             },
         ]
     )
@@ -78,6 +82,8 @@ async def test_store_sync(
                 "homepage": "/docs/advanced/driver",
                 "tags": [{"label": "sync", "color": "#ffffff"}],
                 "is_official": True,
+                "time": "2024-10-31T13:47:14.152851Z",
+                "version": "2.4.0",
             },
             {
                 "module_name": "~fastapi",
@@ -88,6 +94,8 @@ async def test_store_sync(
                 "homepage": "/docs/advanced/driver",
                 "tags": [],
                 "is_official": True,
+                "time": "2024-10-31T13:47:14.152851Z",
+                "version": "2.4.0",
             },
             {
                 "module_name": "~quart",
@@ -98,6 +106,8 @@ async def test_store_sync(
                 "homepage": "/docs/advanced/driver",
                 "tags": [],
                 "is_official": True,
+                "time": "2024-10-31T13:47:14.152851Z",
+                "version": "2.4.0",
             },
         ]
     )
@@ -115,8 +125,8 @@ async def test_store_sync(
                 "type": "library",
                 "supported_adapters": None,
                 "valid": True,
-                "time": "2023-06-22 11:58:18",
-                "version": "0.0.1",
+                "time": "2024-06-20T07:53:23.524486Z",
+                "version": "1.3.0",
                 "skip_test": False,
             },
             {
@@ -131,8 +141,8 @@ async def test_store_sync(
                 "type": "application",
                 "supported_adapters": None,
                 "valid": True,
-                "time": "2023-06-22 12:10:18",
-                "version": "0.0.1",
+                "time": "2024-07-13T04:41:40.905441Z",
+                "version": "0.5.0",
                 "skip_test": False,
             },
         ]
@@ -142,7 +152,7 @@ async def test_store_sync(
             "nonebot-plugin-datastore:nonebot_plugin_datastore": {
                 "time": "2023-06-26T22:08:18.945584+08:00",
                 "config": "",
-                "version": "1.0.0",
+                "version": "1.3.0",
                 "test_env": None,
                 "results": {"validation": True, "load": True, "metadata": True},
                 "outputs": {

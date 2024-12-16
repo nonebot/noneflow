@@ -69,13 +69,6 @@ def check_url(url: str) -> tuple[int, str]:
         return -1, str(e)
 
 
-@cache
-def get_author_name(author_id: int) -> str:
-    """通过作者的ID获取作者名字"""
-    url = f"https://api.github.com/user/{author_id}"
-    return load_json_from_web(url)["login"]
-
-
 def get_adapters() -> set[str]:
     """获取适配器列表"""
     adapters = load_json_from_web(STORE_ADAPTERS_URL)
