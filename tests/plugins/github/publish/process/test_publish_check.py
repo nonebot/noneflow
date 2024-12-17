@@ -131,7 +131,7 @@ async def test_bot_process_publish_check(
                 "owner": "he0119",
                 "repo": "action-test",
                 "issue_number": 2,
-                "labels": ["Bot"],
+                "labels": ["Publish", "Bot"],
             },
             True,
         )
@@ -328,7 +328,7 @@ async def test_adapter_process_publish_check(
                 "owner": "he0119",
                 "repo": "action-test",
                 "issue_number": 2,
-                "labels": ["Adapter"],
+                "labels": ["Publish", "Adapter"],
             },
             True,
         )
@@ -615,7 +615,7 @@ log_level=DEBUG
                 "owner": "he0119",
                 "repo": "action-test",
                 "issue_number": 2,
-                "labels": ["Plugin"],
+                "labels": ["Publish", "Plugin"],
             },
             True,
         )
@@ -904,7 +904,7 @@ log_level=DEBUG
                 "owner": "he0119",
                 "repo": "action-test",
                 "issue_number": 2,
-                "labels": ["Plugin"],
+                "labels": ["Publish", "Plugin"],
             },
             True,
         )
