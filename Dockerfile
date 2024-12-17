@@ -1,5 +1,5 @@
 FROM python:3.13.1-slim
-COPY --from=ghcr.io/astral-sh/uv:0.5.8 /uv /bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.5.10 /uv /bin/uv
 
 # 设置时区
 ENV TZ=Asia/Shanghai
