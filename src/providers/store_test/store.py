@@ -315,34 +315,55 @@ class StoreTest:
         以商店数据为准，更新商店数据到仓库中，如果仓库中不存在则获取用户名后存储
         """
         for key in self._store_adapters:
-            if key in self._previous_adapters:
-                self._previous_adapters[key] = self._previous_adapters[key].update(
-                    self._store_adapters[key]
-                )
-            else:
-                self._previous_adapters[key] = self._store_adapters[key].to_registry()
+            try:
+                if key in self._previous_adapters:
+                    new_adapter = self._previous_adapters[key].update(
+                        self._store_adapters[key]
+                    )
+                else:
+                    new_adapter = self._store_adapters[key].to_registry()
+            except Exception as e:
+                logger.error(f"适配器 {key} 同步商店数据失败：{e}")
+                continue
+            self._previous_adapters[key] = new_adapter
         for key in self._store_bots:
-            if key in self._previous_bots:
-                self._previous_bots[key] = self._previous_bots[key].update(
-                    self._store_bots[key]
-                )
-            else:
-                self._previous_bots[key] = self._store_bots[key].to_registry()
+            try:
+                if key in self._previous_bots:
+                    new_bot = self._previous_bots[key].update(self._store_bots[key])
+                else:
+                    new_bot = self._store_bots[key].to_registry()
+            except Exception as e:
+                logger.error(f"机器人 {key} 同步商店数据失败：{e}")
+                continue
+
+            self._previous_bots[key] = new_bot
         for key in self._store_drivers:
-            if key in self._previous_drivers:
-                self._previous_drivers[key] = self._previous_drivers[key].update(
-                    self._store_drivers[key]
-                )
-            else:
-                self._previous_drivers[key] = self._store_drivers[key].to_registry()
+            try:
+                if key in self._previous_drivers:
+                    new_driver = self._previous_drivers[key].update(
+                        self._store_drivers[key]
+                    )
+                else:
+                    new_driver = self._store_drivers[key].to_registry()
+            except Exception as e:
+                logger.error(f"驱动器 {key} 同步商店数据失败：{e}")
+                continue
+
+            self._previous_drivers[key] = new_driver
         for key in self._store_plugins:
-            if key in self._previous_plugins:
-                self._previous_plugins[key] = self._previous_plugins[key].update(
-                    self._store_plugins[key]
-                )
-            else:
-                # TODO: 如果插件不存在，尝试重新测试获取相关信息验证
-                pass
+            try:
+                if key in self._previous_plugins:
+                    new_plugin = self._previous_plugins[key].update(
+                        self._store_plugins[key]
+                    )
+                else:
+                    # TODO: 如果插件不存在，尝试重新测试获取相关信息验证
+                    raise NotImplementedError("插件需要重新测试")
+            except Exception as e:
+                logger.error(f"插件 {key} 同步商店数据失败：{e}")
+                continue
+
+            self._previous_plugins[key] = new_plugin
 
     def generate_github_summary(self, results: dict[str, StoreTestResult]):
         """生成 GitHub 摘要"""
