@@ -69,14 +69,20 @@ def dump_json5(path: Path, data: Any) -> None:
 
 
 @cache
-def get_pypi_data(project_link: str) -> dict[str, Any]:
-    """获取 PyPI 数据"""
+def get_url(url: str) -> httpx.Response:
+    """获取网址"""
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
     }
+    return httpx.get(url, follow_redirects=True, headers=headers)
+
+
+def get_pypi_data(project_link: str) -> dict[str, Any]:
+    """获取 PyPI 数据"""
+
     url = f"https://pypi.org/pypi/{project_link}/json"
     try:
-        r = httpx.get(url, headers=headers)
+        r = get_url(url)
     except Exception as e:
         raise ValueError(f"获取 PyPI 数据失败：{e}")
     if r.status_code != 200:

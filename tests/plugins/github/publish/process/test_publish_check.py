@@ -673,17 +673,14 @@ log_level=DEBUG
 
     # 检查文件是否正确
     check_json_data(
-        plugin_config.input_config.adapter_path,
+        plugin_config.input_config.plugin_path,
         [
             snapshot(
                 {
-                    "module_name": "module_name1",
-                    "project_link": "project_link1",
-                    "name": "name",
-                    "desc": "desc",
+                    "module_name": "module_name",
+                    "project_link": "project_link",
                     "author_id": 1,
-                    "homepage": "https://v2.nonebot.dev",
-                    "tags": [],
+                    "tags": [{"label": "test", "color": "#ffffff"}],
                     "is_official": False,
                 }
             )
@@ -965,17 +962,14 @@ log_level=DEBUG
 
     # 检查文件是否正确
     check_json_data(
-        plugin_config.input_config.adapter_path,
+        plugin_config.input_config.plugin_path,
         [
             snapshot(
                 {
-                    "module_name": "module_name1",
-                    "project_link": "project_link1",
-                    "name": "name",
-                    "desc": "desc",
+                    "module_name": "module_name",
+                    "project_link": "project_link",
                     "author_id": 1,
-                    "homepage": "https://v2.nonebot.dev",
-                    "tags": [],
+                    "tags": [{"label": "test", "color": "#ffffff"}],
                     "is_official": False,
                 }
             )

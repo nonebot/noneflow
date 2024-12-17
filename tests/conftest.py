@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 from typing import TypedDict
 
@@ -23,6 +24,8 @@ from src.providers.constants import (
     STORE_DRIVERS_URL,
     STORE_PLUGINS_URL,
 )
+
+STORE_PATH = Path(__file__).parent / "store"
 
 
 def pytest_configure(config: pytest.Config) -> None:
@@ -66,51 +69,13 @@ async def app(
     app: App, tmp_path: Path, mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch
 ):
     from src.plugins.github import plugin_config
-    from src.providers.utils import dump_json5
 
     adapter_path = tmp_path / "adapters.json5"
-    dump_json5(
-        adapter_path,
-        [
-            {
-                "module_name": "module_name1",
-                "project_link": "project_link1",
-                "name": "name",
-                "desc": "desc",
-                "author_id": 1,
-                "homepage": "https://v2.nonebot.dev",
-                "tags": [],
-                "is_official": False,
-            }
-        ],
-    )
+    shutil.copy(STORE_PATH / "store_adapters.json5", adapter_path)
     bot_path = tmp_path / "bots.json5"
-    dump_json5(
-        bot_path,
-        [
-            {
-                "name": "name",
-                "desc": "desc",
-                "author_id": 1,
-                "homepage": "https://v2.nonebot.dev",
-                "tags": [],
-                "is_official": False,
-            }
-        ],
-    )
+    shutil.copy(STORE_PATH / "store_bots.json5", bot_path)
     plugin_path = tmp_path / "plugins.json5"
-    dump_json5(
-        plugin_path,
-        [
-            {
-                "module_name": "module_name1",
-                "project_link": "project_link1",
-                "author_id": 1,
-                "tags": [],
-                "is_official": False,
-            }
-        ],
-    )
+    shutil.copy(STORE_PATH / "store_plugins.json5", plugin_path)
 
     mocker.patch.object(plugin_config.input_config, "adapter_path", adapter_path)
     mocker.patch.object(plugin_config.input_config, "bot_path", bot_path)
@@ -122,17 +87,13 @@ async def app(
     # 以后需要想想办法，如果能通过 nb-cli 启动就好了。
     monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(tmp_path / "step_summary.md"))
 
-    yield app
-
-    from src.providers.utils import get_pypi_data
-
-    get_pypi_data.cache_clear()
+    return app
 
 
 @pytest.fixture(autouse=True)
 def _clear_cache(app: App):
     """每次运行前都清除 cache"""
-    from src.providers.validation.utils import get_url
+    from src.providers.utils import get_url
 
     get_url.cache_clear()
 
@@ -229,35 +190,34 @@ def mocked_api(respx_mock: MockRouter):
         name="pypi_project_link_failed",
     ).respond(404)
     # 商店数据
-    store_path = Path(__file__).parent / "store"
     respx_mock.get(STORE_ADAPTERS_URL, name="store_adapter").respond(
-        text=(store_path / "store_adapters.json5").read_text(encoding="utf8")
+        text=(STORE_PATH / "store_adapters.json5").read_text(encoding="utf8")
     )
     respx_mock.get(STORE_BOTS_URL, name="store_bots").respond(
-        text=(store_path / "store_bots.json5").read_text(encoding="utf8")
+        text=(STORE_PATH / "store_bots.json5").read_text(encoding="utf8")
     )
     respx_mock.get(STORE_DRIVERS_URL, name="store_drivers").respond(
-        text=(store_path / "store_drivers.json5").read_text(encoding="utf8")
+        text=(STORE_PATH / "store_drivers.json5").read_text(encoding="utf8")
     )
     respx_mock.get(STORE_PLUGINS_URL, name="store_plugins").respond(
-        text=(store_path / "store_plugins.json5").read_text(encoding="utf8")
+        text=(STORE_PATH / "store_plugins.json5").read_text(encoding="utf8")
     )
     respx_mock.get(REGISTRY_ADAPTERS_URL, name="registry_adapters").respond(
-        text=(store_path / "registry_adapters.json").read_text(encoding="utf8")
+        text=(STORE_PATH / "registry_adapters.json").read_text(encoding="utf8")
     )
     respx_mock.get(REGISTRY_BOTS_URL, name="registry_bots").respond(
-        text=(store_path / "registry_bots.json").read_text(encoding="utf8")
+        text=(STORE_PATH / "registry_bots.json").read_text(encoding="utf8")
     )
     respx_mock.get(REGISTRY_DRIVERS_URL, name="registry_drivers").respond(
-        text=(store_path / "registry_drivers.json").read_text(encoding="utf8")
+        text=(STORE_PATH / "registry_drivers.json").read_text(encoding="utf8")
     )
     respx_mock.get(REGISTRY_PLUGINS_URL, name="registry_plugins").respond(
-        text=(store_path / "registry_plugins.json").read_text(encoding="utf8")
+        text=(STORE_PATH / "registry_plugins.json").read_text(encoding="utf8")
     )
     respx_mock.get(REGISTRY_RESULTS_URL, name="registry_results").respond(
-        text=(store_path / "registry_results.json").read_text(encoding="utf8")
+        text=(STORE_PATH / "registry_results.json").read_text(encoding="utf8")
     )
     respx_mock.get(REGISTRY_PLUGIN_CONFIG_URL, name="plugin_configs").respond(
-        text=(store_path / "plugin_configs.json").read_text(encoding="utf8")
+        text=(STORE_PATH / "plugin_configs.json").read_text(encoding="utf8")
     )
     return respx_mock

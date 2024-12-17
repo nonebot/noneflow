@@ -1,21 +1,12 @@
-from functools import cache
 from typing import TYPE_CHECKING
 
-import httpx
-
 from src.providers.constants import STORE_ADAPTERS_URL
-from src.providers.utils import load_json_from_web
+from src.providers.utils import get_url, load_json_from_web
 
 from .constants import MESSAGE_TRANSLATIONS
 
 if TYPE_CHECKING:
     from pydantic_core import ErrorDetails
-
-
-@cache
-def get_url(url: str) -> httpx.Response:
-    """获取网址"""
-    return httpx.get(url, follow_redirects=True)
 
 
 def check_pypi(project_link: str) -> bool:

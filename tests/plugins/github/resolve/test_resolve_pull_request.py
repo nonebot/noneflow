@@ -47,13 +47,15 @@ async def test_resolve_pull_request(
     mock_publish_pull.head.ref = "publish/issue100"
     mock_publish_pull.labels = get_pr_labels(["Publish", "Bot"])
     mock_remove_issue = MockIssue(
-        body=generate_issue_body_remove(type="Bot", key="name:https://v2.nonebot.dev"),
+        body=generate_issue_body_remove(
+            type="Bot", key="CoolQBot:https://github.com/he0119/CoolQBot"
+        ),
         number=101,
     ).as_mock(mocker)
     mock_remove_issue_resp = mocker.MagicMock()
     mock_remove_issue_resp.parsed_data = mock_remove_issue
     mock_remove_pull = mocker.MagicMock()
-    mock_remove_pull.title = "Bot: remove test"
+    mock_remove_pull.title = "Bot: remove CoolQBot"
     mock_remove_pull.draft = False
     mock_remove_pull.head.ref = "remove/issue101"
     mock_remove_pull.labels = get_pr_labels(["Remove", "Bot"])
@@ -149,7 +151,7 @@ async def test_resolve_pull_request(
                 "test@users.noreply.github.com",
             ],
             ["git", "add", "-A"],
-            ["git", "commit", "-m", ":hammer: remove name (#101)"],
+            ["git", "commit", "-m", ":hammer: remove CoolQBot (#101)"],
             ["git", "fetch", "origin"],
             ["git", "diff", "origin/remove/issue101", "remove/issue101"],
             ["git", "push", "origin", "remove/issue101", "-f"],

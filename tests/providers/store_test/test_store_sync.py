@@ -21,7 +21,7 @@ async def test_store_sync(
     均增加一个 tag，以测试数据是否正确同步
     """
     from src.providers.store_test.store import StoreTest
-    from src.providers.utils import get_pypi_data
+    from src.providers.utils import get_url
 
     test = StoreTest()
     await test.run(0, 0, False)
@@ -230,7 +230,7 @@ async def test_store_sync(
         )
 
     # 缓存了 PyPI 数据，需要清除缓存
-    get_pypi_data.cache_clear()
+    get_url.cache_clear()
 
     test = StoreTest()
     await test.run(0, 0, False)
