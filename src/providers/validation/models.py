@@ -18,7 +18,12 @@ from pydantic_core import ErrorDetails, PydanticCustomError, to_jsonable_python
 from pydantic_extra_types.color import Color
 from pyjson5 import Json5DecoderException
 
-from src.providers.utils import load_json
+from src.providers.utils import (
+    get_pypi_name,
+    get_pypi_upload_time,
+    get_pypi_version,
+    load_json,
+)
 
 from .constants import (
     NAME_MAX_LENGTH,
@@ -30,9 +35,6 @@ from .utils import (
     check_pypi,
     check_url,
     get_adapters,
-    get_pypi_name,
-    get_pypi_version,
-    get_upload_time,
     resolve_adapter_name,
 )
 
@@ -148,15 +150,17 @@ class PyPIMixin(BaseModel):
 
         # 如果一切正常才记录上传时间和版本号
         if project_link is not None:
+            # ~none 和 ~fastapi 驱动器的项目名一个是空字符串，一个是 nonebot2[fastapi]
+            # 上传时间和版本号均以 nonebot2 为准
             if issubclass(cls, DriverPublishInfo) and (
                 project_link == "" or project_link.startswith("nonebot2[")
             ):
                 project_link = "nonebot2"
 
-            values["time"] = get_upload_time(project_link)
-            # 只有不是插件测试的情况下才获取版本号
-            # 插件测试的时候应该使用从插件测试获取的版本号，也就是传入的版本号
-            if not issubclass(cls, PluginPublishInfo):
+            values["time"] = get_pypi_upload_time(project_link)
+            # 只有不是插件测试并且未提供版本号的情况下才获取版本号
+            # 插件测试的时候应该总是使用从插件测试获取的版本号，也就是传入的版本号
+            if not issubclass(cls, PluginPublishInfo) and "version" not in values:
                 values["version"] = get_pypi_version(project_link)
 
         return values

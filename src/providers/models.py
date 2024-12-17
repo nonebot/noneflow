@@ -8,7 +8,7 @@ from pydantic_extra_types.color import Color
 
 from src.providers.constants import BOT_KEY_TEMPLATE, PYPI_KEY_TEMPLATE
 from src.providers.docker_test import Metadata
-from src.providers.utils import get_author_name
+from src.providers.utils import get_author_name, get_pypi_upload_time, get_pypi_version
 from src.providers.validation import validate_info
 from src.providers.validation.models import (
     AdapterPublishInfo,
@@ -250,8 +250,13 @@ class RegistryAdapter(BaseModel):
 
     def update(self, store: StoreAdapter) -> "RegistryAdapter":
         """根据商店数据更新注册表数据"""
+        version = get_pypi_version(self.project_link)
+        time = get_pypi_upload_time(self.project_link)
+
         data = self.model_dump()
         data.update(store.model_dump())
+        data.update(version=version, time=time)
+
         return RegistryAdapter(**data)
 
 
@@ -324,8 +329,18 @@ class RegistryDriver(BaseModel):
 
     def update(self, store: StoreDriver) -> "RegistryDriver":
         """根据商店数据更新注册表数据"""
+        # ~none 和 ~fastapi 驱动器的项目名一个是空字符串，一个是 nonebot2[fastapi]
+        # 上传时间和版本号均以 nonebot2 为准
+        project_link = self.project_link
+        if project_link == "" or project_link.startswith("nonebot2["):
+            project_link = "nonebot2"
+        version = get_pypi_version(project_link)
+        time = get_pypi_upload_time(project_link)
+
         data = self.model_dump()
         data.update(store.model_dump())
+        data.update(version=version, time=time)
+
         return RegistryDriver(**data)
 
 

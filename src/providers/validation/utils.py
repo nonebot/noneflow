@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 import httpx
 
 from src.providers.constants import STORE_ADAPTERS_URL
-from src.providers.utils import load_json, load_json_from_web
+from src.providers.utils import load_json_from_web
 
 from .constants import MESSAGE_TRANSLATIONS
 
@@ -16,38 +16,6 @@ if TYPE_CHECKING:
 def get_url(url: str) -> httpx.Response:
     """获取网址"""
     return httpx.get(url, follow_redirects=True)
-
-
-def get_pypi_name(project_link: str) -> str:
-    """获取 PyPI 项目名"""
-    url = f"https://pypi.org/pypi/{project_link}/json"
-    r = get_url(url)
-    r.raise_for_status()
-    data = load_json(r.text)
-    return data["info"]["name"]
-
-
-def get_pypi_version(project_link: str) -> str | None:
-    """获取 PyPI 版本"""
-    url = f"https://pypi.org/pypi/{project_link}/json"
-    r = get_url(url)
-    if r.status_code != 200:
-        return None
-    data = load_json(r.text)
-    return data["info"]["version"]
-
-
-def get_upload_time(project_link: str) -> str | None:
-    """获取插件的上传时间"""
-    url = f"https://pypi.org/pypi/{project_link}/json"
-    r = get_url(url)
-    if r.status_code != 200:
-        return None
-    try:
-        data = load_json(r.text)
-    except Exception:
-        return None
-    return data["urls"][0]["upload_time_iso_8601"]
 
 
 def check_pypi(project_link: str) -> bool:

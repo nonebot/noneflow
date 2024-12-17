@@ -5,7 +5,7 @@ from typing import Any
 from src.providers.docker_test import DockerPluginTest
 from src.providers.logger import logger
 from src.providers.models import RegistryPlugin, StorePlugin, StoreTestResult
-from src.providers.utils import get_author_name, get_upload_time
+from src.providers.utils import get_author_name, get_pypi_upload_time
 from src.providers.validation import (
     PluginPublishInfo,
     PublishType,
@@ -32,7 +32,7 @@ async def validate_plugin(
     module_name = store_plugin.module_name
 
     # 从 PyPI 获取信息
-    pypi_time = get_upload_time(project_link)
+    pypi_time = get_pypi_upload_time(project_link)
 
     # 测试插件
     plugin_test_result = await DockerPluginTest(project_link, module_name, config).run(

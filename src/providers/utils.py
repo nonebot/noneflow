@@ -81,18 +81,30 @@ def get_pypi_data(project_link: str) -> dict[str, Any]:
         raise ValueError(f"获取 PyPI 数据失败：{e}")
     if r.status_code != 200:
         raise ValueError(f"获取 PyPI 数据失败：{r.text}")
-    return load_json(r.text)
+    return r.json()
 
 
-def get_latest_version(project_link: str) -> str:
-    """获取插件的最新版本号"""
+def get_pypi_name(project_link: str) -> str:
+    """获取 PyPI 项目名"""
     data = get_pypi_data(project_link)
+    return data["info"]["name"]
+
+
+def get_pypi_version(project_link: str) -> str | None:
+    """获取插件的最新版本号"""
+    try:
+        data = get_pypi_data(project_link)
+    except ValueError:
+        return None
     return data["info"]["version"]
 
 
-def get_upload_time(project_link: str) -> str:
+def get_pypi_upload_time(project_link: str) -> str | None:
     """获取插件的上传时间"""
-    data = get_pypi_data(project_link)
+    try:
+        data = get_pypi_data(project_link)
+    except ValueError:
+        return None
     return data["urls"][0]["upload_time_iso_8601"]
 
 
