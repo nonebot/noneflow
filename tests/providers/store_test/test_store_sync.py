@@ -425,6 +425,13 @@ async def test_store_sync_validation_failed(
     mocked_api.get("https://pypi.org/pypi/nonebot2/json", name="pypi_nonebot2").respond(
         404
     )
+    mocked_api.get(
+        "https://pypi.org/pypi/nonebot-adapter-onebot/json",
+        name="pypi_nonebot-adapter-onebot",
+    ).respond(404)
+    mocked_api.get(
+        "https://github.com/cscs181/QQ-GitHub-Bot", name="homepage_qq_github_bot"
+    ).respond(404)
 
     test = StoreTest()
     await test.run(0, 0, False)
@@ -438,23 +445,11 @@ async def test_store_sync_validation_failed(
                 "desc": "OneBot V11 协议",
                 "author": "yanyongyu",
                 "homepage": "https://onebot.adapters.nonebot.dev/",
-                "tags": [{"label": "sync", "color": "#ffffff"}],
-                "is_official": True,
-                "time": "2024-10-24T07:34:56.115315Z",
-                "version": "2.4.6",
-            },
-            {
-                "module_name": "nonebot.adapters.onebot.v12",
-                "project_link": "nonebot-adapter-onebot",
-                "name": "OneBot V12",
-                "desc": "OneBot V12 协议",
-                "author": "he0119",
-                "homepage": "https://onebot.adapters.nonebot.dev/",
                 "tags": [],
                 "is_official": True,
                 "time": "2024-10-24T07:34:56.115315Z",
                 "version": "2.4.6",
-            },
+            }
         ]
     )
     assert load_json(mocked_store_data["bots"]) == snapshot(
@@ -466,15 +461,7 @@ async def test_store_sync_validation_failed(
                 "homepage": "https://github.com/he0119/CoolQBot",
                 "tags": [{"label": "sync", "color": "#ffffff"}],
                 "is_official": False,
-            },
-            {
-                "name": "Github Bot",
-                "desc": "在QQ获取/处理Github repo/pr/issue",
-                "author": "BigOrangeQWQ",
-                "homepage": "https://github.com/cscs181/QQ-GitHub-Bot",
-                "tags": [],
-                "is_official": False,
-            },
+            }
         ]
     )
     assert load_json(mocked_store_data["drivers"]) == snapshot(
