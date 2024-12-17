@@ -1,43 +1,12 @@
-from functools import cache
 from typing import TYPE_CHECKING
 
-import httpx
-
 from src.providers.constants import STORE_ADAPTERS_URL
-from src.providers.utils import load_json, load_json_from_web
+from src.providers.utils import get_url, load_json_from_web
 
 from .constants import MESSAGE_TRANSLATIONS
 
 if TYPE_CHECKING:
     from pydantic_core import ErrorDetails
-
-
-@cache
-def get_url(url: str) -> httpx.Response:
-    """获取网址"""
-    return httpx.get(url, follow_redirects=True)
-
-
-def get_pypi_name(project_link: str) -> str:
-    """获取 PyPI 项目名"""
-    url = f"https://pypi.org/pypi/{project_link}/json"
-    r = get_url(url)
-    r.raise_for_status()
-    data = load_json(r.text)
-    return data["info"]["name"]
-
-
-def get_upload_time(project_link: str) -> str | None:
-    """获取插件的上传时间"""
-    url = f"https://pypi.org/pypi/{project_link}/json"
-    r = get_url(url)
-    if r.status_code != 200:
-        return None
-    try:
-        data = load_json(r.text)
-    except Exception:
-        return None
-    return data["urls"][0]["upload_time_iso_8601"]
 
 
 def check_pypi(project_link: str) -> bool:
@@ -57,13 +26,6 @@ def check_url(url: str) -> tuple[int, str]:
         return r.status_code, ""
     except Exception as e:
         return -1, str(e)
-
-
-@cache
-def get_author_name(author_id: int) -> str:
-    """通过作者的ID获取作者名字"""
-    url = f"https://api.github.com/user/{author_id}"
-    return load_json_from_web(url)["login"]
 
 
 def get_adapters() -> set[str]:

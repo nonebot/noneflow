@@ -20,7 +20,7 @@ async def test_tags_color_missing(mocked_api: MockRouter) -> None:
         {
             "module_name": "module_name",
             "project_link": "project_link",
-            "time": "2023-09-01T00:00:00+00:00",
+            "time": "2023-09-01T00:00:00.000000Z",
             "name": "name",
             "desc": "desc",
             "author": "author",
@@ -47,7 +47,7 @@ async def test_tags_color_missing(mocked_api: MockRouter) -> None:
         )
     ]
 
-    assert mocked_api["project_link"].called
+    assert mocked_api["pypi_project_link"].called
     assert mocked_api["homepage"].called
 
 
@@ -65,7 +65,7 @@ async def test_tags_color_invalid(mocked_api: MockRouter) -> None:
         {
             "module_name": "module_name",
             "project_link": "project_link",
-            "time": "2023-09-01T00:00:00+00:00",
+            "time": "2023-09-01T00:00:00.000000Z",
             "name": "name",
             "desc": "desc",
             "author": "author",
@@ -92,7 +92,7 @@ async def test_tags_color_invalid(mocked_api: MockRouter) -> None:
         )
     ]
 
-    assert mocked_api["project_link"].called
+    assert mocked_api["pypi_project_link"].called
     assert mocked_api["homepage"].called
 
 
@@ -110,7 +110,7 @@ async def test_tags_label_invalid(mocked_api: MockRouter) -> None:
         {
             "module_name": "module_name",
             "project_link": "project_link",
-            "time": "2023-09-01T00:00:00+00:00",
+            "time": "2023-09-01T00:00:00.000000Z",
             "name": "name",
             "desc": "desc",
             "author": "author",
@@ -138,7 +138,7 @@ async def test_tags_label_invalid(mocked_api: MockRouter) -> None:
         )
     ]
 
-    assert mocked_api["project_link"].called
+    assert mocked_api["pypi_project_link"].called
     assert mocked_api["homepage"].called
 
 
@@ -163,7 +163,7 @@ async def test_tags_number_invalid(mocked_api: MockRouter) -> None:
         {
             "module_name": "module_name",
             "project_link": "project_link",
-            "time": "2023-09-01T00:00:00+00:00",
+            "time": "2023-09-01T00:00:00.000000Z",
             "name": "name",
             "desc": "desc",
             "author": "author",
@@ -196,7 +196,7 @@ async def test_tags_number_invalid(mocked_api: MockRouter) -> None:
         )
     ]
 
-    assert mocked_api["project_link"].called
+    assert mocked_api["pypi_project_link"].called
     assert mocked_api["homepage"].called
 
 
@@ -215,7 +215,7 @@ async def test_tags_json_invalid(mocked_api: MockRouter) -> None:
         {
             "module_name": "module_name",
             "project_link": "project_link",
-            "time": "2023-09-01T00:00:00+00:00",
+            "time": "2023-09-01T00:00:00.000000Z",
             "name": "name",
             "desc": "desc",
             "author": "author",
@@ -242,7 +242,7 @@ async def test_tags_json_invalid(mocked_api: MockRouter) -> None:
         )
     ]
 
-    assert mocked_api["project_link"].called
+    assert mocked_api["pypi_project_link"].called
     assert mocked_api["homepage"].called
 
 
@@ -261,7 +261,7 @@ async def test_tags_json_not_list(mocked_api: MockRouter) -> None:
         {
             "module_name": "module_name",
             "project_link": "project_link",
-            "time": "2023-09-01T00:00:00+00:00",
+            "time": "2023-09-01T00:00:00.000000Z",
             "name": "name",
             "desc": "desc",
             "author": "author",
@@ -288,7 +288,7 @@ async def test_tags_json_not_list(mocked_api: MockRouter) -> None:
         )
     ]
 
-    assert mocked_api["project_link"].called
+    assert mocked_api["pypi_project_link"].called
     assert mocked_api["homepage"].called
 
 
@@ -306,7 +306,7 @@ async def test_tags_json_not_dict(mocked_api: MockRouter) -> None:
         {
             "module_name": "module_name",
             "project_link": "project_link",
-            "time": "2023-09-01T00:00:00+00:00",
+            "time": "2023-09-01T00:00:00.000000Z",
             "name": "name",
             "desc": "desc",
             "author": "author",
@@ -334,5 +334,5 @@ async def test_tags_json_not_dict(mocked_api: MockRouter) -> None:
         )
     ]
 
-    assert mocked_api["project_link"].called
+    assert mocked_api["pypi_project_link"].called
     assert mocked_api["homepage"].called

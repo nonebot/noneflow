@@ -34,14 +34,14 @@ async def test_plugin_supported_adapters_none(mocked_api: MockRouter) -> None:
             "load": True,
             "version": "0.0.1",
             "test_output": "test_output",
-            "time": "2023-09-01T00:00:00+00:00",
+            "time": "2023-09-01T00:00:00.000000Z",
         }
     )
     assert result.valid_data == snapshot(
         {
             "module_name": "module_name",
             "project_link": "project_link",
-            "time": "2023-09-01T00:00:00+00:00",
+            "time": "2023-09-01T00:00:00.000000Z",
             "name": "name",
             "desc": "desc",
             "author": "author",
@@ -75,7 +75,7 @@ async def test_plugin_supported_adapters_set(mocked_api: MockRouter) -> None:
         {
             "module_name": "module_name",
             "project_link": "project_link",
-            "time": "2023-09-01T00:00:00+00:00",
+            "time": "2023-09-01T00:00:00.000000Z",
             "name": "name",
             "desc": "desc",
             "author": "author",
@@ -119,7 +119,7 @@ async def test_plugin_supported_adapters_json(mocked_api: MockRouter) -> None:
         {
             "module_name": "module_name",
             "project_link": "project_link",
-            "time": "2023-09-01T00:00:00+00:00",
+            "time": "2023-09-01T00:00:00.000000Z",
             "name": "name",
             "desc": "desc",
             "author": "author",
@@ -167,7 +167,7 @@ async def test_plugin_supported_adapters_missing_adapters(
         {
             "module_name": "module_name",
             "project_link": "project_link",
-            "time": "2023-09-01T00:00:00+00:00",
+            "time": "2023-09-01T00:00:00.000000Z",
             "name": "name",
             "desc": "desc",
             "author": "author",

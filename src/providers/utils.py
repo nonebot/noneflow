@@ -69,30 +69,48 @@ def dump_json5(path: Path, data: Any) -> None:
 
 
 @cache
-def get_pypi_data(project_link: str) -> dict[str, Any]:
-    """获取 PyPI 数据"""
+def get_url(url: str) -> httpx.Response:
+    """获取网址"""
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
     }
+    return httpx.get(url, follow_redirects=True, headers=headers)
+
+
+def get_pypi_data(project_link: str) -> dict[str, Any]:
+    """获取 PyPI 数据"""
+
     url = f"https://pypi.org/pypi/{project_link}/json"
     try:
-        r = httpx.get(url, headers=headers)
+        r = get_url(url)
     except Exception as e:
         raise ValueError(f"获取 PyPI 数据失败：{e}")
     if r.status_code != 200:
         raise ValueError(f"获取 PyPI 数据失败：{r.text}")
-    return load_json(r.text)
+    return r.json()
 
 
-def get_latest_version(project_link: str) -> str:
-    """获取插件的最新版本号"""
+def get_pypi_name(project_link: str) -> str:
+    """获取 PyPI 项目名"""
     data = get_pypi_data(project_link)
+    return data["info"]["name"]
+
+
+def get_pypi_version(project_link: str) -> str | None:
+    """获取插件的最新版本号"""
+    try:
+        data = get_pypi_data(project_link)
+    except ValueError:
+        return None
     return data["info"]["version"]
 
 
-def get_upload_time(project_link: str) -> str:
+def get_pypi_upload_time(project_link: str) -> str | None:
     """获取插件的上传时间"""
-    data = get_pypi_data(project_link)
+    try:
+        data = get_pypi_data(project_link)
+    except ValueError:
+        return None
     return data["urls"][0]["upload_time_iso_8601"]
 
 
@@ -105,3 +123,10 @@ def add_step_summary(summary: str):
     with open(github_step_summary, "a", encoding="utf-8") as f:
         f.write(summary + "\n")
     logger.debug(f"已添加作业摘要：{summary}")
+
+
+@cache
+def get_author_name(author_id: int) -> str:
+    """通过作者的ID获取作者名字"""
+    url = f"https://api.github.com/user/{author_id}"
+    return load_json_from_web(url)["login"]

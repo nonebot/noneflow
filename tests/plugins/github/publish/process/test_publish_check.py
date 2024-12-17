@@ -281,7 +281,7 @@ async def test_adapter_process_publish_check(
 
 <details>
 <summary>详情</summary>
-<pre><code><li>✅ 项目 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li><li>✅ 插件发布时间：2023-09-01 00:00:00。</li><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 标签: test-#ffffff。</li></code></pre>
+<pre><code><li>✅ 项目 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li><li>✅ 插件发布时间：2023-09-01 00:00:00。</li><li>✅ 插件版本号: 0.0.1。</li><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 标签: test-#ffffff。</li></code></pre>
 </details>
 
 ---
@@ -568,7 +568,7 @@ log_level=DEBUG
 
 <details>
 <summary>详情</summary>
-<pre><code><li>✅ 项目 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li><li>✅ 插件发布时间：2023-09-01 00:00:00。</li><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 标签: test-#ffffff。</li><li>✅ 插件类型: application。</li><li>✅ 插件支持的适配器: 所有。</li><li>✅ 插件版本号: 1.0.0。</li><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 通过。</li></code></pre>
+<pre><code><li>✅ 项目 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li><li>✅ 插件发布时间：2023-09-01 00:00:00。</li><li>✅ 插件版本号: 1.0.0。</li><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 标签: test-#ffffff。</li><li>✅ 插件类型: application。</li><li>✅ 插件支持的适配器: 所有。</li><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 通过。</li></code></pre>
 </details>
 
 ---
@@ -673,17 +673,14 @@ log_level=DEBUG
 
     # 检查文件是否正确
     check_json_data(
-        plugin_config.input_config.adapter_path,
+        plugin_config.input_config.plugin_path,
         [
             snapshot(
                 {
-                    "module_name": "module_name1",
-                    "project_link": "project_link1",
-                    "name": "name",
-                    "desc": "desc",
+                    "module_name": "module_name",
+                    "project_link": "project_link",
                     "author_id": 1,
-                    "homepage": "https://v2.nonebot.dev",
-                    "tags": [],
+                    "tags": [{"label": "test", "color": "#ffffff"}],
                     "is_official": False,
                 }
             )
@@ -860,7 +857,7 @@ log_level=DEBUG
 
 <details>
 <summary>详情</summary>
-<pre><code><li>✅ 项目 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li><li>✅ 插件发布时间：2023-09-01 00:00:00。</li><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 标签: test-#ffffff。</li><li>✅ 插件类型: application。</li><li>✅ 插件支持的适配器: 所有。</li><li>✅ 插件版本号: 1.0.0。</li><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 通过。</li></code></pre>
+<pre><code><li>✅ 项目 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li><li>✅ 插件发布时间：2023-09-01 00:00:00。</li><li>✅ 插件版本号: 1.0.0。</li><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 标签: test-#ffffff。</li><li>✅ 插件类型: application。</li><li>✅ 插件支持的适配器: 所有。</li><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 通过。</li></code></pre>
 </details>
 
 ---
@@ -965,17 +962,14 @@ log_level=DEBUG
 
     # 检查文件是否正确
     check_json_data(
-        plugin_config.input_config.adapter_path,
+        plugin_config.input_config.plugin_path,
         [
             snapshot(
                 {
-                    "module_name": "module_name1",
-                    "project_link": "project_link1",
-                    "name": "name",
-                    "desc": "desc",
+                    "module_name": "module_name",
+                    "project_link": "project_link",
                     "author_id": 1,
-                    "homepage": "https://v2.nonebot.dev",
-                    "tags": [],
+                    "tags": [{"label": "test", "color": "#ffffff"}],
                     "is_official": False,
                 }
             )
@@ -1760,7 +1754,7 @@ log_level=DEBUG
 
 <details>
 <summary>详情</summary>
-<pre><code><li>✅ 项目 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li><li>✅ 插件发布时间：2023-09-01 00:00:00。</li><li>✅ 标签: test-#ffffff。</li><li>✅ 插件版本号: 0.0.1。</li><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 已跳过。</li></code></pre>
+<pre><code><li>✅ 项目 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li><li>✅ 插件发布时间：2023-09-01 00:00:00。</li><li>✅ 插件版本号: 0.0.1。</li><li>✅ 标签: test-#ffffff。</li><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 已跳过。</li></code></pre>
 </details>
 
 ---
@@ -1815,7 +1809,7 @@ log_level=DEBUG
     # 检查文件是否正确
     check_json_data(plugin_config.input_config.plugin_path, [])
 
-    assert mocked_api["project_link"].called
+    assert mocked_api["pypi_project_link"].called
 
 
 async def test_convert_pull_request_to_draft(

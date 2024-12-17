@@ -56,6 +56,30 @@ def generate_bot_data(
     )
 
 
+def generate_driver_data(
+    module_name: str | None = "module_name",
+    project_link: str | None = "project_link",
+    name: str | None = "name",
+    desc: str | None = "desc",
+    author: str | None = "author",
+    homepage: str | None = "https://nonebot.dev",
+    tags: list | None = [{"label": "test", "color": "#ffffff"}],
+    author_id: int | None = 1,
+):
+    return exclude_none(
+        {
+            "module_name": module_name,
+            "project_link": project_link,
+            "name": name,
+            "desc": desc,
+            "author": author,
+            "homepage": homepage,
+            "tags": json.dumps(tags),
+            "author_id": author_id,
+        }
+    )
+
+
 def generate_plugin_data(
     author: str | None = "author",
     module_name: str | None = "module_name",

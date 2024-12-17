@@ -8,6 +8,8 @@ from pydantic_extra_types.color import Color
 
 from src.providers.constants import BOT_KEY_TEMPLATE, PYPI_KEY_TEMPLATE
 from src.providers.docker_test import Metadata
+from src.providers.utils import get_author_name, get_pypi_upload_time, get_pypi_version
+from src.providers.validation import validate_info
 from src.providers.validation.models import (
     AdapterPublishInfo,
     BotPublishInfo,
@@ -61,6 +63,21 @@ class StoreAdapter(BaseModel):
             is_official=publish_info.is_official,
         )
 
+    def to_registry(self) -> "RegistryAdapter":
+        """将仓库数据转换为注册表数据
+
+        将获取 author 信息，重新验证数据
+        """
+        author = get_author_name(self.author_id)
+        result = validate_info(
+            PublishType.ADAPTER,
+            {**self.model_dump(), "author": author},
+            [],
+        )
+        if result.info is None or not isinstance(result.info, AdapterPublishInfo):
+            raise ValueError(f"数据验证失败: {result.errors}")
+        return RegistryAdapter.from_publish_info(result.info)
+
 
 class StoreBot(BaseModel):
     """NoneBot 仓库中的机器人数据"""
@@ -86,6 +103,21 @@ class StoreBot(BaseModel):
             tags=[Tag(label=tag.label, color=tag.color) for tag in publish_info.tags],
             is_official=publish_info.is_official,
         )
+
+    def to_registry(self) -> "RegistryBot":
+        """将仓库数据转换为注册表数据
+
+        将获取 author 信息，重新验证数据
+        """
+        author = get_author_name(self.author_id)
+        result = validate_info(
+            PublishType.BOT,
+            {**self.model_dump(), "author": author},
+            [],
+        )
+        if result.info is None or not isinstance(result.info, BotPublishInfo):
+            raise ValueError(f"数据验证失败: {result.errors}")
+        return RegistryBot.from_publish_info(result.info)
 
 
 class StoreDriver(BaseModel):
@@ -118,6 +150,21 @@ class StoreDriver(BaseModel):
             tags=[Tag(label=tag.label, color=tag.color) for tag in publish_info.tags],
             is_official=publish_info.is_official,
         )
+
+    def to_registry(self) -> "RegistryDriver":
+        """将仓库数据转换为注册表数据
+
+        将获取 author 信息，重新验证数据
+        """
+        author = get_author_name(self.author_id)
+        result = validate_info(
+            PublishType.DRIVER,
+            {**self.model_dump(), "author": author},
+            [],
+        )
+        if result.info is None or not isinstance(result.info, DriverPublishInfo):
+            raise ValueError(f"数据验证失败: {result.errors}")
+        return RegistryDriver.from_publish_info(result.info)
 
 
 class StorePlugin(BaseModel):
@@ -177,6 +224,8 @@ class RegistryAdapter(BaseModel):
     homepage: str
     tags: list[Tag]
     is_official: bool
+    time: str
+    version: str
 
     @property
     def key(self):
@@ -195,7 +244,20 @@ class RegistryAdapter(BaseModel):
             homepage=publish_info.homepage,
             tags=[Tag(label=tag.label, color=tag.color) for tag in publish_info.tags],
             is_official=publish_info.is_official,
+            time=publish_info.time,
+            version=publish_info.version,
         )
+
+    def update(self, store: StoreAdapter) -> "RegistryAdapter":
+        """根据商店数据更新注册表数据"""
+        version = get_pypi_version(self.project_link)
+        time = get_pypi_upload_time(self.project_link)
+
+        data = self.model_dump()
+        data.update(store.model_dump())
+        data.update(version=version, time=time)
+
+        return RegistryAdapter(**data)
 
 
 class RegistryBot(BaseModel):
@@ -223,6 +285,12 @@ class RegistryBot(BaseModel):
             is_official=publish_info.is_official,
         )
 
+    def update(self, store: StoreBot) -> "RegistryBot":
+        """根据商店数据更新注册表数据"""
+        data = self.model_dump()
+        data.update(store.model_dump())
+        return RegistryBot(**data)
+
 
 class RegistryDriver(BaseModel):
     """NoneBot 商店驱动数据"""
@@ -235,6 +303,8 @@ class RegistryDriver(BaseModel):
     homepage: str
     tags: list[Tag]
     is_official: bool
+    time: str
+    version: str
 
     @property
     def key(self):
@@ -253,7 +323,25 @@ class RegistryDriver(BaseModel):
             homepage=publish_info.homepage,
             tags=[Tag(label=tag.label, color=tag.color) for tag in publish_info.tags],
             is_official=publish_info.is_official,
+            time=publish_info.time,
+            version=publish_info.version,
         )
+
+    def update(self, store: StoreDriver) -> "RegistryDriver":
+        """根据商店数据更新注册表数据"""
+        # ~none 和 ~fastapi 驱动器的项目名一个是空字符串，一个是 nonebot2[fastapi]
+        # 上传时间和版本号均以 nonebot2 为准
+        project_link = self.project_link
+        if project_link == "" or project_link.startswith("nonebot2["):
+            project_link = "nonebot2"
+        version = get_pypi_version(project_link)
+        time = get_pypi_upload_time(project_link)
+
+        data = self.model_dump()
+        data.update(store.model_dump())
+        data.update(version=version, time=time)
+
+        return RegistryDriver(**data)
 
 
 class RegistryPlugin(BaseModel):
@@ -282,9 +370,6 @@ class RegistryPlugin(BaseModel):
 
     @classmethod
     def from_publish_info(cls, publish_info: PluginPublishInfo) -> Self:
-        if publish_info.time is None:
-            raise ValueError("上传时间不能为空")
-
         return cls(
             module_name=publish_info.module_name,
             project_link=publish_info.project_link,
@@ -311,6 +396,13 @@ class RegistryPlugin(BaseModel):
             "type": self.type,
             "supported_adapters": self.supported_adapters,
         }
+
+    def update(self, store: StorePlugin) -> "RegistryPlugin":
+        """根据商店数据更新注册表数据"""
+        # TODO: 如果 author_id 变化，应该重新获取 author
+        data = self.model_dump()
+        data.update(store.model_dump())
+        return RegistryPlugin(**data)
 
 
 RegistryModels: TypeAlias = (

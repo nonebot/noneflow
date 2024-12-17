@@ -9,7 +9,7 @@ from src.plugins.github.handlers import IssueHandler
 from src.plugins.github.models import AuthorInfo
 from src.plugins.github.utils import extract_issue_info_from_issue
 from src.providers.docker_test import DockerPluginTest, Metadata
-from src.providers.utils import get_latest_version, load_json_from_file
+from src.providers.utils import get_pypi_version, load_json_from_file
 from src.providers.validation import PublishType, ValidationDict, validate_info
 
 from .constants import (
@@ -101,7 +101,7 @@ async def validate_plugin_info_from_issue(
         raw_data.update(metadata)
 
         # 跳过测试的时候只能从 pypi 获取版本号
-        raw_data["version"] = get_latest_version(project_link)
+        raw_data["version"] = get_pypi_version(project_link)
         raw_data["load"] = False
         raw_data["test_output"] = "插件未进行测试"
         raw_data["metadata"] = bool(metadata)

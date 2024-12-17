@@ -64,9 +64,9 @@ async def test_homepage_failed_empty_homepage(mocked_api: MockRouter) -> None:
             {
                 "type": "string_pattern_mismatch",
                 "loc": ("homepage",),
-                "msg": "字符串应满足格式 '^https?://.*$'",
+                "msg": "字符串应满足格式 '^(https?://.*|/docs/.*)$'",
                 "input": "",
-                "ctx": {"pattern": "^https?://.*$"},
+                "ctx": {"pattern": "^(https?://.*|/docs/.*)$"},
             }
         ]
     )

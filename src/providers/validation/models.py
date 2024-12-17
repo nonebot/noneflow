@@ -18,7 +18,12 @@ from pydantic_core import ErrorDetails, PydanticCustomError, to_jsonable_python
 from pydantic_extra_types.color import Color
 from pyjson5 import Json5DecoderException
 
-from src.providers.utils import load_json
+from src.providers.utils import (
+    get_pypi_name,
+    get_pypi_upload_time,
+    get_pypi_version,
+    load_json,
+)
 
 from .constants import (
     NAME_MAX_LENGTH,
@@ -30,8 +35,6 @@ from .utils import (
     check_pypi,
     check_url,
     get_adapters,
-    get_pypi_name,
-    get_upload_time,
     resolve_adapter_name,
 )
 
@@ -80,10 +83,19 @@ class PyPIMixin(BaseModel):
 
     从 PyPI 获取最新版本的上传时间
     """
+    version: str
+    """版本号
+
+    从 PyPI 获取最新版本号或者由插件测试提供
+    """
 
     @field_validator("module_name", mode="before")
     @classmethod
     def module_name_validator(cls, v: str) -> str:
+        # NoneBot 内置驱动器都是以 ~ 开头的
+        if issubclass(cls, DriverPublishInfo) and v.startswith("~"):
+            return v
+
         if not PYTHON_MODULE_NAME_REGEX.match(v):
             raise PydanticCustomError("module_name", "包名不符合规范")
         return v
@@ -91,6 +103,12 @@ class PyPIMixin(BaseModel):
     @field_validator("project_link", mode="before")
     @classmethod
     def project_link_validator(cls, v: str) -> str:
+        # NoneBot 内置驱动器需要特殊处理
+        if issubclass(cls, DriverPublishInfo) and (
+            v == "" or v.startswith("nonebot2[")
+        ):
+            return v
+
         if not PYPI_PACKAGE_NAME_PATTERN.match(v):
             raise PydanticCustomError("project_link.name", "PyPI 项目名不符合规范")
 
@@ -130,9 +148,20 @@ class PyPIMixin(BaseModel):
                 {"project_link": project_link, "module_name": module_name},
             )
 
-        # 如果一切正常才记录上传时间
-        if project_link:
-            values["time"] = get_upload_time(project_link)
+        # 如果一切正常才记录上传时间和版本号
+        if project_link is not None:
+            # ~none 和 ~fastapi 驱动器的项目名一个是空字符串，一个是 nonebot2[fastapi]
+            # 上传时间和版本号均以 nonebot2 为准
+            if issubclass(cls, DriverPublishInfo) and (
+                project_link == "" or project_link.startswith("nonebot2[")
+            ):
+                project_link = "nonebot2"
+
+            values["time"] = get_pypi_upload_time(project_link)
+            # 只有不是插件测试并且未提供版本号的情况下才获取版本号
+            # 插件测试的时候应该总是使用从插件测试获取的版本号，也就是传入的版本号
+            if not issubclass(cls, PluginPublishInfo) and "version" not in values:
+                values["version"] = get_pypi_version(project_link)
 
         return values
 
@@ -145,7 +174,8 @@ class PublishInfo(abc.ABC, BaseModel):
     author: str
     author_id: int
     homepage: Annotated[
-        str, StringConstraints(strip_whitespace=True, pattern=r"^https?://.*$")
+        str,
+        StringConstraints(strip_whitespace=True, pattern=r"^(https?://.*|/docs/.*)$"),
     ]
     tags: list[Tag] = Field(max_length=3)
     is_official: bool = Field(default=False)
@@ -174,6 +204,9 @@ class PublishInfo(abc.ABC, BaseModel):
     @classmethod
     def homepage_validator(cls, v: str) -> str:
         if v:
+            # 内置驱动器的主页可以不是网址
+            if issubclass(cls, DriverPublishInfo) and v.startswith("/docs/"):
+                return v
             status_code, msg = check_url(v)
             if status_code != 200:
                 raise PydanticCustomError(
@@ -209,8 +242,6 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
     """插件测试元数据"""
     skip_test: bool
     """是否跳过插件测试"""
-    version: str
-    """插件版本号"""
     test_config: str = ""
     """插件测试配置"""
     test_output: str = ""
