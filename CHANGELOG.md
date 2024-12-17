@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - 插件测试中使用 uv 来控制 Python 版本并与本体共享依赖
 - 适配器和驱动器添加版本号和时间
 
+### Fixed
+
+- 修复拉取请求缺少发布标签的问题
+
 ## [4.1.4] - 2024-12-08
 
 ### Fixed

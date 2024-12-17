@@ -4,7 +4,11 @@ from githubkit.exception import RequestFailed
 from nonebot import logger
 
 from src.plugins.github import plugin_config
-from src.plugins.github.constants import ISSUE_FIELD_PATTERN, ISSUE_FIELD_TEMPLATE
+from src.plugins.github.constants import (
+    ISSUE_FIELD_PATTERN,
+    ISSUE_FIELD_TEMPLATE,
+    PUBLISH_LABEL,
+)
 from src.plugins.github.depends.utils import get_type_by_labels
 from src.plugins.github.handlers import GithubHandler, IssueHandler
 from src.plugins.github.typing import PullRequestList
@@ -221,7 +225,7 @@ async def process_pull_request(
                 title,
                 branch_name,
             )
-            await handler.add_labels(pull_number, result.type.value)
+            await handler.add_labels(pull_number, [PUBLISH_LABEL, result.type.value])
         except RequestFailed:
             # 如果之前已经创建了拉取请求，则将其转换为草稿
             logger.info("该分支的拉取请求已创建，请前往查看")
