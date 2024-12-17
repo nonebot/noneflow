@@ -399,7 +399,10 @@ class RegistryPlugin(BaseModel):
 
     def update(self, store: StorePlugin) -> "RegistryPlugin":
         """根据商店数据更新注册表数据"""
-        return RegistryPlugin(**self.model_dump(), **store.model_dump())
+        # TODO: 如果 author_id 变化，应该重新获取 author
+        data = self.model_dump()
+        data.update(store.model_dump())
+        return RegistryPlugin(**data)
 
 
 RegistryModels: TypeAlias = (

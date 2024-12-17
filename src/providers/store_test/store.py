@@ -337,12 +337,12 @@ class StoreTest:
                 self._previous_drivers[key] = self._store_drivers[key].to_registry()
         for key in self._store_plugins:
             if key in self._previous_plugins:
-                plugin_data = self._previous_plugins[key].model_dump()
-                # 更新插件数据，假设商店数据的数据没有问题的
-                # TODO: 如果 author_id 变化，应该重新获取 author
-                plugin_data.update(self._store_plugins[key].model_dump())
-                self._previous_plugins[key] = RegistryPlugin(**plugin_data)
-            # TODO: 如果插件不存在，尝试重新测试获取相关信息验证
+                self._previous_plugins[key] = self._previous_plugins[key].update(
+                    self._store_plugins[key]
+                )
+            else:
+                # TODO: 如果插件不存在，尝试重新测试获取相关信息验证
+                pass
 
     def generate_github_summary(self, results: dict[str, StoreTestResult]):
         """生成 GitHub 摘要"""
