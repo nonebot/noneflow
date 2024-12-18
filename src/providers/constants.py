@@ -1,4 +1,8 @@
 import os
+from zoneinfo import ZoneInfo
+
+TIME_ZONE = ZoneInfo("Asia/Shanghai")
+""" NoneFlow 统一的时区 """
 
 BOT_KEY_TEMPLATE = "{name}:{homepage}"
 """ 机器人键名模板 """

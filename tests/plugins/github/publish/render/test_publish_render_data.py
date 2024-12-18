@@ -134,7 +134,7 @@ async def test_render_data_adapter(app: App):
 
 <details>
 <summary>详情</summary>
-<pre><code><li>✅ 项目 <a href="https://pypi.org/project/nonebot-adapter-villa/">nonebot-adapter-villa</a> 已发布至 PyPI。</li><li>✅ 项目 <a href="https://github.com/CMHopeSunshine/nonebot-adapter-villa">主页</a> 返回状态码 200。</li><li>✅ 标签: 米哈游-#e10909。</li></code></pre>
+<pre><code><li>✅ 项目 <a href="https://github.com/CMHopeSunshine/nonebot-adapter-villa">主页</a> 返回状态码 200。</li><li>✅ 标签: 米哈游-#e10909。</li><li>✅ 项目 <a href="https://pypi.org/project/nonebot-adapter-villa/">nonebot-adapter-villa</a> 已发布至 PyPI。</li></code></pre>
 </details>
 
 ---
@@ -168,6 +168,8 @@ async def test_render_data_plugin(app: App, mocker: MockFixture):
         "supported_adapters": None,
         "load": True,
         "skip_test": False,
+        "time": "2024-07-13T04:41:40.905441Z",
+        "version": "0.5.0",
     }
     result = ValidationDict(
         type=PublishType.PLUGIN,
@@ -189,7 +191,7 @@ async def test_render_data_plugin(app: App, mocker: MockFixture):
 
 <details>
 <summary>详情</summary>
-<pre><code><li>✅ 项目 <a href="https://pypi.org/project/nonebot-plugin-treehelp/">nonebot-plugin-treehelp</a> 已发布至 PyPI。</li><li>✅ 项目 <a href="https://github.com/he0119/nonebot-plugin-treehelp">主页</a> 返回状态码 200。</li><li>✅ 插件类型: application。</li><li>✅ 插件支持的适配器: 所有。</li><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 通过。</li></code></pre>
+<pre><code><li>✅ 项目 <a href="https://github.com/he0119/nonebot-plugin-treehelp">主页</a> 返回状态码 200。</li><li>✅ 项目 <a href="https://pypi.org/project/nonebot-plugin-treehelp/">nonebot-plugin-treehelp</a> 已发布至 PyPI。</li><li>✅ 插件类型: application。</li><li>✅ 插件支持的适配器: 所有。</li><li>✅ 插件发布时间：2024-07-13 12:41:40 CST。</li><li>✅ 插件版本号: 0.5.0。</li><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 通过。</li></code></pre>
 </details>
 
 ---

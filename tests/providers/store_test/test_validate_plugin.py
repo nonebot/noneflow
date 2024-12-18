@@ -1,7 +1,6 @@
 import json
 from datetime import datetime
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 from inline_snapshot import snapshot
 from pytest_mock import MockerFixture
@@ -26,12 +25,13 @@ def mock_docker_result(path: Path, mocker: MockerFixture):
 
 async def test_validate_plugin(mocked_api: MockRouter, mocker: MockerFixture) -> None:
     """验证插件信息"""
+    from src.providers.constants import TIME_ZONE
     from src.providers.models import RegistryPlugin, StorePlugin, StoreTestResult
     from src.providers.store_test.validation import validate_plugin
 
     mock_datetime = mocker.patch("src.providers.models.datetime")
     mock_datetime.now.return_value = datetime(
-        2023, 8, 23, 9, 22, 14, 836035, tzinfo=ZoneInfo("Asia/Shanghai")
+        2023, 8, 23, 9, 22, 14, 836035, tzinfo=TIME_ZONE
     )
 
     output_path = Path(__file__).parent / "output.json"
@@ -103,12 +103,13 @@ async def test_validate_plugin_with_previous(
 
     需要能够正常更新 author_id, tags 和 is_official 等信息
     """
+    from src.providers.constants import TIME_ZONE
     from src.providers.models import Color, RegistryPlugin, StoreTestResult, Tag
     from src.providers.store_test.validation import StorePlugin, validate_plugin
 
     mock_datetime = mocker.patch("src.providers.models.datetime")
     mock_datetime.now.return_value = datetime(
-        2023, 8, 23, 9, 22, 14, 836035, tzinfo=ZoneInfo("Asia/Shanghai")
+        2023, 8, 23, 9, 22, 14, 836035, tzinfo=TIME_ZONE
     )
 
     output_path = Path(__file__).parent / "output.json"
@@ -200,12 +201,13 @@ async def test_validate_plugin_skip_test(
 
     如果插件之前是跳过测试的，如果插件测试成功，应将 skip_test 设置为 False。
     """
+    from src.providers.constants import TIME_ZONE
     from src.providers.models import RegistryPlugin, StoreTestResult
     from src.providers.store_test.validation import StorePlugin, validate_plugin
 
     mock_datetime = mocker.patch("src.providers.models.datetime")
     mock_datetime.now.return_value = datetime(
-        2023, 8, 23, 9, 22, 14, 836035, tzinfo=ZoneInfo("Asia/Shanghai")
+        2023, 8, 23, 9, 22, 14, 836035, tzinfo=TIME_ZONE
     )
 
     output_path = Path(__file__).parent / "output.json"
@@ -277,12 +279,13 @@ async def test_validate_plugin_skip_test_plugin_test_failed(
 
     如果插件之前是跳过测试的，如果插件测试失败，应不改变 skip_test 的值。
     """
+    from src.providers.constants import TIME_ZONE
     from src.providers.models import RegistryPlugin, StoreTestResult
     from src.providers.store_test.validation import StorePlugin, validate_plugin
 
     mock_datetime = mocker.patch("src.providers.models.datetime")
     mock_datetime.now.return_value = datetime(
-        2023, 8, 23, 9, 22, 14, 836035, tzinfo=ZoneInfo("Asia/Shanghai")
+        2023, 8, 23, 9, 22, 14, 836035, tzinfo=TIME_ZONE
     )
 
     output_path = Path(__file__).parent / "output_failed.json"
@@ -362,12 +365,13 @@ async def test_validate_plugin_failed_with_previous(
 
     需要能够正常更新 author_id, tags 和 is_official 等信息
     """
+    from src.providers.constants import TIME_ZONE
     from src.providers.models import RegistryPlugin, StoreTestResult
     from src.providers.store_test.validation import StorePlugin, validate_plugin
 
     mock_datetime = mocker.patch("src.providers.models.datetime")
     mock_datetime.now.return_value = datetime(
-        2023, 8, 23, 9, 22, 14, 836035, tzinfo=ZoneInfo("Asia/Shanghai")
+        2023, 8, 23, 9, 22, 14, 836035, tzinfo=TIME_ZONE
     )
 
     output_path = Path(__file__).parent / "output_failed.json"

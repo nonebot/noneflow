@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 统一数据显示顺序并且时间添加时区
+
 ## [4.2.0] - 2024-12-18
 
 ### Added

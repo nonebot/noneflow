@@ -1,6 +1,5 @@
 from datetime import datetime
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 from inline_snapshot import snapshot
 from pytest_mock import MockerFixture
@@ -11,12 +10,13 @@ async def test_step_summary(
     mocked_store_data: dict[str, Path], mocked_api: MockRouter, mocker: MockerFixture
 ) -> None:
     """验证插件信息"""
+    from src.providers.constants import TIME_ZONE
     from src.providers.models import StoreTestResult
     from src.providers.store_test.store import StoreTest
 
     mock_datetime = mocker.patch("src.providers.store_test.store.datetime")
     mock_datetime.now.return_value = datetime(
-        2023, 8, 23, 9, 22, 14, 836035, tzinfo=ZoneInfo("Asia/Shanghai")
+        2023, 8, 23, 9, 22, 14, 836035, tzinfo=TIME_ZONE
     )
 
     store_test = {
@@ -66,7 +66,7 @@ async def test_step_summary(
         """\
 # 📃 商店测试结果
 
-> 📅 2023-08-23 09:22:14
+> 📅 2023-08-23 09:22:14 CST
 > ♻️ 共测试 2 个插件
 > ✅ 更新成功：1 个
 > ❌ 更新失败：1 个
