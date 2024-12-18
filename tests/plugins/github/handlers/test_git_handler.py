@@ -1,14 +1,16 @@
 from unittest.mock import _Call, call
 
+import pytest
 from pytest_mock import MockerFixture
 
 
-async def test_checkout_branch(mocker: MockerFixture):
-    from src.plugins.github.handlers.git import GitHandler
+@pytest.fixture
+def mock_run_shell_command(mocker: MockerFixture):
+    return mocker.patch("src.plugins.github.handlers.git.run_shell_command")
 
-    mock_run_shell_command = mocker.patch(
-        "src.plugins.github.handlers.git.run_shell_command"
-    )
+
+async def test_checkout_branch(mock_run_shell_command):
+    from src.plugins.github.handlers.git import GitHandler
 
     git_handler = GitHandler()
     git_handler.checkout_branch("main")
@@ -20,12 +22,8 @@ async def test_checkout_branch(mocker: MockerFixture):
     )
 
 
-async def test_checkout_remote_branch(mocker: MockerFixture):
+async def test_checkout_remote_branch(mock_run_shell_command):
     from src.plugins.github.handlers.git import GitHandler
-
-    mock_run_shell_command = mocker.patch(
-        "src.plugins.github.handlers.git.run_shell_command"
-    )
 
     git_handler = GitHandler()
     git_handler.checkout_remote_branch("main")
@@ -38,12 +36,8 @@ async def test_checkout_remote_branch(mocker: MockerFixture):
     )
 
 
-async def test_commit_and_push(mocker: MockerFixture):
+async def test_commit_and_push(mock_run_shell_command):
     from src.plugins.github.handlers.git import GitHandler
-
-    mock_run_shell_command = mocker.patch(
-        "src.plugins.github.handlers.git.run_shell_command"
-    )
 
     git_handler = GitHandler()
     git_handler.commit_and_push("commit message", "main", "author")
@@ -70,12 +64,38 @@ async def test_commit_and_push(mocker: MockerFixture):
     )
 
 
-async def test_delete_origin_branch(mocker: MockerFixture):
+async def test_commit_and_push_diff_no_change(mock_run_shell_command):
+    """本地分支与远程分支一致，跳过推送的情况"""
     from src.plugins.github.handlers.git import GitHandler
 
-    mock_run_shell_command = mocker.patch(
-        "src.plugins.github.handlers.git.run_shell_command"
+    # 本地分支与远程分支一致时 git diff 应该返回空字符串
+    mock_run_shell_command.return_value.stdout = ""
+
+    git_handler = GitHandler()
+    git_handler.commit_and_push("commit message", "main", "author")
+
+    mock_run_shell_command.assert_has_calls(
+        [
+            call(["git", "config", "--global", "user.name", "author"]),
+            call(
+                [
+                    "git",
+                    "config",
+                    "--global",
+                    "user.email",
+                    "author@users.noreply.github.com",
+                ]
+            ),
+            call(["git", "add", "-A"]),
+            call(["git", "commit", "-m", "commit message"]),
+            call(["git", "fetch", "origin"]),
+            call(["git", "diff", "origin/main", "main"]),
+        ],
     )
+
+
+async def test_delete_origin_branch(mock_run_shell_command):
+    from src.plugins.github.handlers.git import GitHandler
 
     git_handler = GitHandler()
     git_handler.delete_origin_branch("main")
@@ -87,12 +107,8 @@ async def test_delete_origin_branch(mocker: MockerFixture):
     )
 
 
-async def test_switch_branch(mocker: MockerFixture):
+async def test_switch_branch(mock_run_shell_command):
     from src.plugins.github.handlers.git import GitHandler
-
-    mock_run_shell_command = mocker.patch(
-        "src.plugins.github.handlers.git.run_shell_command"
-    )
 
     git_handler = GitHandler()
     git_handler.switch_branch("main")
