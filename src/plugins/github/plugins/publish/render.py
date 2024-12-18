@@ -1,6 +1,5 @@
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 import jinja2
 
@@ -70,9 +69,6 @@ async def render_comment(result: ValidationDict, reuse: bool = False) -> str:
     """将验证结果转换为评论内容"""
     title = f"{result.type}: {result.name}"
 
-    # 将 data 字段拷贝一份，避免修改原数据
-    valid_data: dict[str, Any] = result.valid_data.copy()
-
     # 仅显示必要字段
     display_keys = [
         "homepage",
@@ -85,7 +81,9 @@ async def render_comment(result: ValidationDict, reuse: bool = False) -> str:
     ]
 
     # 按照 display_keys 顺序展示数据
-    data = {key: valid_data[key] for key in display_keys if key in valid_data}
+    data = {
+        key: result.valid_data[key] for key in display_keys if key in result.valid_data
+    }
 
     if not data.get("tags"):
         data.pop("tags", None)
