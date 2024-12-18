@@ -6,6 +6,7 @@ from unittest.mock import _Call, call
 
 import pyjson5
 from githubkit.rest import Issue
+from nonebug.mixin.call_api import ApiContext
 from nonebug.mixin.process import MatcherContext
 from pytest_mock import MockFixture, MockType
 
@@ -17,7 +18,7 @@ class GitHubApi(TypedDict):
 
 
 def should_call_apis(
-    ctx: MatcherContext, apis: list[GitHubApi], data: list[Any]
+    ctx: MatcherContext | ApiContext, apis: list[GitHubApi], data: list[Any]
 ) -> None:
     for n, api in enumerate(apis):
         ctx.should_call_api(**api, data=data[n])
