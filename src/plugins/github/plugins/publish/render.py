@@ -1,11 +1,11 @@
 from datetime import datetime
 from pathlib import Path
 from typing import Any
-from zoneinfo import ZoneInfo
 
 import jinja2
 
 from src.plugins.github import plugin_config
+from src.providers.constants import TIME_ZONE
 from src.providers.docker_test import DockerTestResult
 from src.providers.utils import dumps_json
 from src.providers.validation import ValidationDict
@@ -47,7 +47,7 @@ def format_time(time: str) -> str:
     """格式化时间"""
     dt = datetime.fromisoformat(time)
     # 转换为中国时区，方便阅读
-    dt = dt.astimezone(tz=ZoneInfo("Asia/Shanghai"))
+    dt = dt.astimezone(tz=TIME_ZONE)
     return dt.strftime("%Y-%m-%d %H:%M:%S %Z")
 
 

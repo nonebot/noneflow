@@ -13,6 +13,7 @@ from src.providers.constants import (
     STORE_BOTS_URL,
     STORE_DRIVERS_URL,
     STORE_PLUGINS_URL,
+    TIME_ZONE,
 )
 from src.providers.logger import logger
 from src.providers.models import (
@@ -379,7 +380,7 @@ class StoreTest:
         ]
         summary = f"""# 📃 商店测试结果
 
-> 📅 {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+> 📅 {datetime.now(TIME_ZONE).strftime("%Y-%m-%d %H:%M:%S %Z")}
 > ♻️ 共测试 {len(results)} 个插件
 > ✅ 更新成功：{len(valid_plugins)} 个
 > ❌ 更新失败：{len(invalid_plugins)} 个

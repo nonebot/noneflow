@@ -1,7 +1,6 @@
 import os
 from datetime import datetime
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 from inline_snapshot import snapshot
 from nonebot.adapters.github import IssuesOpened
@@ -32,6 +31,7 @@ async def test_process_config_check(
     mock_results: dict[str, Path],
 ) -> None:
     """测试发布检查不通过"""
+    from src.providers.constants import TIME_ZONE
     from src.providers.docker_test import Metadata
 
     # 更改当前工作目录为临时目录
@@ -39,7 +39,7 @@ async def test_process_config_check(
 
     mock_datetime = mocker.patch("src.providers.models.datetime")
     mock_datetime.now.return_value = datetime(
-        2023, 8, 23, 9, 22, 14, 836035, tzinfo=ZoneInfo("Asia/Shanghai")
+        2023, 8, 23, 9, 22, 14, 836035, tzinfo=TIME_ZONE
     )
 
     mock_subprocess_run = mocker.patch(
