@@ -46,7 +46,7 @@ def resolve_adapter_name(name: str) -> str:
 
 def translate_errors(errors: list["ErrorDetails"]) -> list["ErrorDetails"]:
     """翻译 Pydantic 错误信息"""
-    new_errors: list["ErrorDetails"] = []
+    new_errors: list[ErrorDetails] = []
     for error in errors:
         translation = MESSAGE_TRANSLATIONS.get(error["type"])
         if translation:
