@@ -1,9 +1,8 @@
 """验证数据是否符合规范"""
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pydantic import ValidationError
-from pydantic_core import ErrorDetails
 
 from .models import (
     AdapterPublishInfo,
@@ -15,6 +14,9 @@ from .models import PublishInfoModels as PublishInfoModels
 from .models import PublishType as PublishType
 from .models import ValidationDict as ValidationDict
 from .utils import translate_errors
+
+if TYPE_CHECKING:
+    from pydantic_core import ErrorDetails
 
 validation_model_map: dict[PublishType, type[PublishInfoModels]] = {
     PublishType.BOT: BotPublishInfo,
