@@ -1,6 +1,7 @@
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import jinja2
 
@@ -45,7 +46,9 @@ def key_to_name(key: str) -> str:
 def format_time(time: str) -> str:
     """格式化时间"""
     dt = datetime.fromisoformat(time)
-    return dt.strftime("%Y-%m-%d %H:%M:%S")
+    # 转换为中国时区，方便阅读
+    dt = dt.astimezone(tz=ZoneInfo("Asia/Shanghai"))
+    return dt.strftime("%Y-%m-%d %H:%M:%S %Z")
 
 
 env = jinja2.Environment(
@@ -69,7 +72,7 @@ async def render_comment(result: ValidationDict, reuse: bool = False) -> str:
     title = f"{result.type}: {result.name}"
 
     # 将 data 字段拷贝一份，避免修改原数据
-    data: dict[str, Any] = result.valid_data.copy()
+    valid_data: dict[str, Any] = result.valid_data.copy()
 
     # 仅显示必要字段
     display_keys = [
@@ -82,9 +85,8 @@ async def render_comment(result: ValidationDict, reuse: bool = False) -> str:
         "version",
     ]
 
-    for key in data.copy():
-        if key not in display_keys:
-            data.pop(key)
+    # 按照 display_keys 顺序展示数据
+    data = {key: valid_data[key] for key in display_keys if key in valid_data}
 
     if not data.get("tags"):
         data.pop("tags", None)

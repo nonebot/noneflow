@@ -72,6 +72,7 @@ select = [
   "PT",    # flake8-pytest-style
   "Q",     # flake8-quotes
   "TC",    # flake8-type-checking
+  "DTZ",   # flake8-datetimez
   "RUF",   # Ruff-specific rules
   "I",     # isort
 ]
