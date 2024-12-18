@@ -46,7 +46,6 @@ def key_to_name(key: str) -> str:
 def format_time(time: str) -> str:
     """格式化时间"""
     dt = datetime.fromisoformat(time)
-    # 转换为中国时区，方便阅读
     dt = dt.astimezone(tz=TIME_ZONE)
     return dt.strftime("%Y-%m-%d %H:%M:%S %Z")
 
