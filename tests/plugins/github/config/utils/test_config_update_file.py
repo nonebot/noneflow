@@ -1,7 +1,6 @@
 import os
 from datetime import datetime
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 from inline_snapshot import snapshot
 from nonebug import App
@@ -17,6 +16,7 @@ async def test_update_file(
     mock_results: dict[str, Path],
 ) -> None:
     from src.plugins.github.plugins.config.utils import update_file
+    from src.providers.constants import TIME_ZONE
     from src.providers.validation.models import (
         PluginPublishInfo,
         PublishType,
@@ -28,7 +28,7 @@ async def test_update_file(
 
     mock_datetime = mocker.patch("src.providers.models.datetime")
     mock_datetime.now.return_value = datetime(
-        2023, 8, 23, 9, 22, 14, 836035, tzinfo=ZoneInfo("Asia/Shanghai")
+        2023, 8, 23, 9, 22, 14, 836035, tzinfo=TIME_ZONE
     )
 
     raw_data = {
