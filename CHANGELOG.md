@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 重新调整数据显示顺序和文本
+
 ## [4.2.1] - 2024-12-20
 
 ### Fixed

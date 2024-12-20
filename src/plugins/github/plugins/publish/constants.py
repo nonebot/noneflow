@@ -59,6 +59,6 @@ LOC_NAME_MAP = {
     "supported_adapters": "插件支持的适配器",
     "metadata": "插件测试元数据",
     "load": "插件是否成功加载",
-    "version": "插件版本号",
-    "time": "插件发布时间",
+    "version": "版本号",
+    "time": "发布时间",
 }
