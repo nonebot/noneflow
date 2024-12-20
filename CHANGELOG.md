@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [4.2.2] - 2024-12-20
+
 ### Fixed
 
 - 重新调整数据显示顺序和文本
@@ -609,7 +611,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.2.1...HEAD
+[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.2.2...HEAD
+[4.2.2]: https://github.com/nonebot/noneflow/compare/v4.2.1...v4.2.2
 [4.2.1]: https://github.com/nonebot/noneflow/compare/v4.2.0...v4.2.1
 [4.2.0]: https://github.com/nonebot/noneflow/compare/v4.1.4...v4.2.0
 [4.1.4]: https://github.com/nonebot/noneflow/compare/v4.1.3...v4.1.4
