@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [4.2.1] - 2024-12-20
+
 ### Fixed
 
 - 统一数据显示顺序并且时间添加时区
@@ -603,7 +605,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.2.0...HEAD
+[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.2.1...HEAD
+[4.2.1]: https://github.com/nonebot/noneflow/compare/v4.2.0...v4.2.1
 [4.2.0]: https://github.com/nonebot/noneflow/compare/v4.1.4...v4.2.0
 [4.1.4]: https://github.com/nonebot/noneflow/compare/v4.1.3...v4.1.4
 [4.1.3]: https://github.com/nonebot/noneflow/compare/v4.1.2...v4.1.3
