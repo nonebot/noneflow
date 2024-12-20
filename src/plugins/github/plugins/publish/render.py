@@ -69,33 +69,34 @@ async def render_comment(result: ValidationDict, reuse: bool = False) -> str:
     """将验证结果转换为评论内容"""
     title = f"{result.type}: {result.name}"
 
-    # 仅显示必要字段
-    display_keys = [
-        "homepage",
-        "tags",
-        "project_link",
-        "type",
-        "supported_adapters",
-        "time",
-        "version",
-    ]
-
-    # 按照 display_keys 顺序展示数据
-    data = {
-        key: result.valid_data[key] for key in display_keys if key in result.valid_data
-    }
-
-    if not data.get("tags"):
-        data.pop("tags", None)
+    valid_data = result.valid_data.copy()
 
     if result.type == PublishType.PLUGIN:
         # https://github.com/he0119/action-test/actions/runs/4469672520
         # 仅在测试通过或跳过测试时显示
         # 如果 load 为 False 的时候 valid_data 里面没有 load 字段，所以直接用 raw_data
         if result.raw_data["load"] or result.raw_data["skip_test"]:
-            data["action_url"] = (
+            valid_data["action_url"] = (
                 f"https://github.com/{plugin_config.github_repository}/actions/runs/{plugin_config.github_run_id}"
             )
+    # 如果 tags 字段为空则不显示
+    if not valid_data.get("tags"):
+        valid_data.pop("tags", None)
+
+    # 仅显示必要字段
+    display_keys = [
+        "homepage",
+        "project_link",
+        "tags",
+        "type",
+        "supported_adapters",
+        "action_url",
+        "version",
+        "time",
+    ]
+
+    # 按照 display_keys 顺序展示数据
+    data = {key: valid_data[key] for key in display_keys if key in valid_data}
 
     template = env.get_template("comment.md.jinja")
     return await template.render_async(

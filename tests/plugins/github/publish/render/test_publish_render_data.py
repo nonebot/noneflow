@@ -113,6 +113,8 @@ async def test_render_data_adapter(app: App):
         "homepage": "https://github.com/CMHopeSunshine/nonebot-adapter-villa",
         "tags": [{"label": "米哈游", "color": "#e10909"}],
         "is_official": False,
+        "time": "2023-12-21T06:57:44.318894Z",
+        "version": "1.4.2",
     }
     result = ValidationDict(
         type=PublishType.ADAPTER,
@@ -134,7 +136,7 @@ async def test_render_data_adapter(app: App):
 
 <details>
 <summary>详情</summary>
-<pre><code><li>✅ 项目 <a href="https://github.com/CMHopeSunshine/nonebot-adapter-villa">主页</a> 返回状态码 200。</li><li>✅ 标签: 米哈游-#e10909。</li><li>✅ 项目 <a href="https://pypi.org/project/nonebot-adapter-villa/">nonebot-adapter-villa</a> 已发布至 PyPI。</li></code></pre>
+<pre><code><li>✅ 项目 <a href="https://github.com/CMHopeSunshine/nonebot-adapter-villa">主页</a> 返回状态码 200。</li><li>✅ 项目 <a href="https://pypi.org/project/nonebot-adapter-villa/">nonebot-adapter-villa</a> 已发布至 PyPI。</li><li>✅ 标签: 米哈游-#e10909。</li><li>✅ 版本号: 1.4.2。</li><li>✅ 发布时间：2023-12-21 14:57:44 CST。</li></code></pre>
 </details>
 
 ---
@@ -162,7 +164,7 @@ async def test_render_data_plugin(app: App, mocker: MockFixture):
         "author": "he0119",
         "author_id": 1,
         "homepage": "https://github.com/he0119/nonebot-plugin-treehelp",
-        "tags": [],
+        "tags": [{"label": "render", "color": "#ffffff"}],
         "is_official": False,
         "type": "application",
         "supported_adapters": None,
@@ -191,7 +193,7 @@ async def test_render_data_plugin(app: App, mocker: MockFixture):
 
 <details>
 <summary>详情</summary>
-<pre><code><li>✅ 项目 <a href="https://github.com/he0119/nonebot-plugin-treehelp">主页</a> 返回状态码 200。</li><li>✅ 项目 <a href="https://pypi.org/project/nonebot-plugin-treehelp/">nonebot-plugin-treehelp</a> 已发布至 PyPI。</li><li>✅ 插件类型: application。</li><li>✅ 插件支持的适配器: 所有。</li><li>✅ 插件发布时间：2024-07-13 12:41:40 CST。</li><li>✅ 插件版本号: 0.5.0。</li><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 通过。</li></code></pre>
+<pre><code><li>✅ 项目 <a href="https://github.com/he0119/nonebot-plugin-treehelp">主页</a> 返回状态码 200。</li><li>✅ 项目 <a href="https://pypi.org/project/nonebot-plugin-treehelp/">nonebot-plugin-treehelp</a> 已发布至 PyPI。</li><li>✅ 标签: render-#ffffff。</li><li>✅ 插件类型: application。</li><li>✅ 插件支持的适配器: 所有。</li><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 通过。</li><li>✅ 版本号: 0.5.0。</li><li>✅ 发布时间：2024-07-13 12:41:40 CST。</li></code></pre>
 </details>
 
 ---
