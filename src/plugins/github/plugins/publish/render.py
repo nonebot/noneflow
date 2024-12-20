@@ -1,10 +1,10 @@
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 import jinja2
 
 from src.plugins.github import plugin_config
+from src.providers.constants import TIME_ZONE
 from src.providers.docker_test import DockerTestResult
 from src.providers.utils import dumps_json
 from src.providers.validation import ValidationDict
@@ -45,7 +45,8 @@ def key_to_name(key: str) -> str:
 def format_time(time: str) -> str:
     """格式化时间"""
     dt = datetime.fromisoformat(time)
-    return dt.strftime("%Y-%m-%d %H:%M:%S")
+    dt = dt.astimezone(tz=TIME_ZONE)
+    return dt.strftime("%Y-%m-%d %H:%M:%S %Z")
 
 
 env = jinja2.Environment(
@@ -68,9 +69,6 @@ async def render_comment(result: ValidationDict, reuse: bool = False) -> str:
     """将验证结果转换为评论内容"""
     title = f"{result.type}: {result.name}"
 
-    # 将 data 字段拷贝一份，避免修改原数据
-    data: dict[str, Any] = result.valid_data.copy()
-
     # 仅显示必要字段
     display_keys = [
         "homepage",
@@ -82,9 +80,10 @@ async def render_comment(result: ValidationDict, reuse: bool = False) -> str:
         "version",
     ]
 
-    for key in data.copy():
-        if key not in display_keys:
-            data.pop(key)
+    # 按照 display_keys 顺序展示数据
+    data = {
+        key: result.valid_data[key] for key in display_keys if key in result.valid_data
+    }
 
     if not data.get("tags"):
         data.pop("tags", None)

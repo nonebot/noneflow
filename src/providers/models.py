@@ -1,12 +1,11 @@
 # ruff: noqa: UP040
 from datetime import datetime
 from typing import Any, Literal, Self, TypeAlias
-from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, Field, field_serializer, field_validator
 from pydantic_extra_types.color import Color
 
-from src.providers.constants import BOT_KEY_TEMPLATE, PYPI_KEY_TEMPLATE
+from src.providers.constants import BOT_KEY_TEMPLATE, PYPI_KEY_TEMPLATE, TIME_ZONE
 from src.providers.docker_test import Metadata
 from src.providers.utils import get_author_name, get_pypi_upload_time, get_pypi_version
 from src.providers.validation import validate_info
@@ -412,9 +411,7 @@ RegistryModels: TypeAlias = (
 
 
 class StoreTestResult(BaseModel):
-    time: str = Field(
-        default_factory=lambda: datetime.now(ZoneInfo("Asia/Shanghai")).isoformat()
-    )
+    time: str = Field(default_factory=lambda: datetime.now(TIME_ZONE).isoformat())
     """测试时间"""
     config: str = ""
     """测试插件的配置"""
