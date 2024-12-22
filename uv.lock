@@ -193,14 +193,14 @@ wheels = [
 
 [[package]]
 name = "click"
-version = "8.1.7"
+version = "8.1.8"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "platform_system == 'Windows'" },
+    { name = "colorama", marker = "sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/96/d3/f04c7bfcf5c1862a2a5b845c6b2b360488cf47af55dfa79c98f6a6bf98b5/click-8.1.7.tar.gz", hash = "sha256:ca9853ad459e787e2192211578cc907e7594e294c7ccc834310722b41b9ca6de", size = 336121 }
+sdist = { url = "https://files.pythonhosted.org/packages/b9/2e/0090cbf739cee7d23781ad4b89a9894a41538e4fcf4c31dcdd705b78eb8b/click-8.1.8.tar.gz", hash = "sha256:ed53c9d8990d83c2a27deae68e4ee337473f6330c040a31d4225c9574d16096a", size = 226593 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/00/2e/d53fa4befbf2cfa713304affc7ca780ce4fc1fd8710527771b58311a3229/click-8.1.7-py3-none-any.whl", hash = "sha256:ae74fb96c20a0277a1d615f1e4d73c8414f5a98db8b799a7931d1582f3390c28", size = 97941 },
+    { url = "https://files.pythonhosted.org/packages/7e/d4/7ebdbd03970677812aac39c869717059dbb71a4cfc033ca6e5221787892c/click-8.1.8-py3-none-any.whl", hash = "sha256:63c132bbbed01578a06712a2d1f497bb62d9c1c0d329b7903a866228027263b2", size = 98188 },
 ]
 
 [[package]]
@@ -322,17 +322,18 @@ wheels = [
 
 [[package]]
 name = "githubkit"
-version = "0.11.14"
+version = "0.12.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
+    { name = "anyio" },
     { name = "hishel" },
     { name = "httpx" },
     { name = "pydantic" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/11/2d/e9f390a716bb479529b14a926502bdad34eed59fac425935860d9f211758/githubkit-0.11.14.tar.gz", hash = "sha256:a62af8a9e3c98e202c6fd2d56ea106f238aebf03a8282c34b757eba6eaeab72c", size = 1928635 }
+sdist = { url = "https://files.pythonhosted.org/packages/5d/8a/44b09f7a35b5693b1c8a45c835990766cecd11b52ab4360b9e5459c1e797/githubkit-0.12.2.tar.gz", hash = "sha256:d83f5f2418b0ead3e2a13d7e2a2a3a58f2a3e54eb6e7703a09c0161aad66ef58", size = 1922433 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6c/04/97a2af76ee09f5dfae1a12bc63feaca8afd3883a26a84b3429d822449cca/githubkit-0.11.14-py3-none-any.whl", hash = "sha256:780f346515f68f9f27db1b486f83fd64fe4142ad42a75b79423064d3e99ece97", size = 5154740 },
+    { url = "https://files.pythonhosted.org/packages/e1/d9/41f5469e994a55fe109a4432595497c743202b19ad030ba9be8c9262352a/githubkit-0.12.2-py3-none-any.whl", hash = "sha256:be37fb2258311362c8398fd26eb7c0370b475cc413237de791dc9e510062a67d", size = 5207493 },
 ]
 
 [package.optional-dependencies]
@@ -428,14 +429,14 @@ wheels = [
 
 [[package]]
 name = "jinja2"
-version = "3.1.4"
+version = "3.1.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "markupsafe" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ed/55/39036716d19cab0747a5020fc7e907f362fbf48c984b14e62127f7e68e5d/jinja2-3.1.4.tar.gz", hash = "sha256:4a3aee7acbbe7303aede8e9648d13b8bf88a429282aa6122a993f0ac800cb369", size = 240245 }
+sdist = { url = "https://files.pythonhosted.org/packages/af/92/b3130cbbf5591acf9ade8708c365f3238046ac7cb8ccba6e81abccb0ccff/jinja2-3.1.5.tar.gz", hash = "sha256:8fefff8dc3034e27bb80d67c671eb8a9bc424c0ef4c0826edbff304cceff43bb", size = 244674 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/31/80/3a54838c3fb461f6fec263ebf3a3a41771bd05190238de3486aae8540c36/jinja2-3.1.4-py3-none-any.whl", hash = "sha256:bc5dd2abb727a5319567b7a813e6a2e7318c39f4f487cfe6c89c6f9c7d25197d", size = 133271 },
+    { url = "https://files.pythonhosted.org/packages/bd/0f/2ba5fbcd631e3e88689309dbe978c5769e883e4b84ebfe7da30b43275c5a/jinja2-3.1.5-py3-none-any.whl", hash = "sha256:aba0f4dc9ed8013c424088f68a5c226f7d6097ed89b246d7749c2ec4175c6adb", size = 134596 },
 ]
 
 [[package]]
@@ -560,16 +561,16 @@ wheels = [
 
 [[package]]
 name = "nonebot-adapter-github"
-version = "0.4.1"
+version = "0.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "githubkit", extra = ["auth-app"] },
     { name = "nonebot2" },
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8d/e5/d6983ff7fe2b9700b012261a52bfbc62670c19768a7d52f2350da4b2225f/nonebot_adapter_github-0.4.1.tar.gz", hash = "sha256:c515413457cb2b7477e7e4ed8622aa208ce0d9b65054fd57673d37e91940789f", size = 32502 }
+sdist = { url = "https://files.pythonhosted.org/packages/83/18/f482d679e30f5cf4707e5ad28a95d371af10de0bffffdde633a322e4b750/nonebot_adapter_github-0.5.0.tar.gz", hash = "sha256:03ad011eea89b269ec1ce881458f1c143ee3f8d3c74d7c573d28bd35c907f26a", size = 33324 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f2/de/4c484e3aa0df2602b1b458242d9e8349753004832b61fdb50e9aa5b5cdc6/nonebot_adapter_github-0.4.1-py3-none-any.whl", hash = "sha256:c740149bee51f01c318fd117ec52ebc55a7edf3cdaffb78b985ee9860a76ea89", size = 107931 },
+    { url = "https://files.pythonhosted.org/packages/c8/c5/54b5042e5eac4988c610543320ee24278da23bf7e0a754bdedf965cddb45/nonebot_adapter_github-0.5.0-py3-none-any.whl", hash = "sha256:b7ec4ad910adf55309ce8212762370680998e6c8bce6a2312e855e858f83bfe1", size = 110848 },
 ]
 
 [[package]]
@@ -638,13 +639,13 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "click", specifier = ">=8.1.7" },
+    { name = "click", specifier = ">=8.1.8" },
     { name = "docker", specifier = ">=7.1.0" },
-    { name = "githubkit", specifier = ">=0.11.14" },
-    { name = "jinja2", specifier = ">=3.1.4" },
-    { name = "nonebot-adapter-github", specifier = ">=0.4.1" },
+    { name = "githubkit", specifier = ">=0.12.2" },
+    { name = "jinja2", specifier = ">=3.1.5" },
+    { name = "nonebot-adapter-github", specifier = ">=0.5.0" },
     { name = "nonebot2", specifier = ">=2.4.0" },
-    { name = "pydantic-extra-types", specifier = ">=2.10.0" },
+    { name = "pydantic-extra-types", specifier = ">=2.10.1" },
     { name = "pyjson5", specifier = ">=1.6.7" },
     { name = "tzdata", specifier = ">=2024.2" },
 ]
@@ -833,15 +834,15 @@ wheels = [
 
 [[package]]
 name = "pydantic-extra-types"
-version = "2.10.0"
+version = "2.10.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f4/92/8542f406466d11bf348b795d498906034f9bb9016f09e906ff7fee6444be/pydantic_extra_types-2.10.0.tar.gz", hash = "sha256:552c47dd18fe1d00cfed75d9981162a2f3203cf7e77e55a3d3e70936f59587b9", size = 44559 }
+sdist = { url = "https://files.pythonhosted.org/packages/c3/12/844a4796dbbc814ef0a706f403cb0f3029bf324c2bca2bf0681f4f7d8618/pydantic_extra_types-2.10.1.tar.gz", hash = "sha256:e4f937af34a754b8f1fa228a2fac867091a51f56ed0e8a61d5b3a6719b13c923", size = 85694 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/38/41/0b0cc8b59c31a04bdfde2ae71fccbb13c11fadafc8bd41a2af3e76db7e44/pydantic_extra_types-2.10.0-py3-none-any.whl", hash = "sha256:b19943914e6286548254f5079d1da094e9c0583ee91a8e611e9df24bfd07dbcd", size = 34185 },
+    { url = "https://files.pythonhosted.org/packages/a8/f1/92f7b4711d3d0d08981c2677ec9cdde6cb114205a69814bf803e0be5ae9b/pydantic_extra_types-2.10.1-py3-none-any.whl", hash = "sha256:db2c86c04a837bbac0d2d79bbd6f5d46c4c9253db11ca3fdd36a2b282575f1e2", size = 35155 },
 ]
 
 [[package]]
