@@ -93,7 +93,7 @@ wheels = [
 
 [[package]]
 name = "bump-my-version"
-version = "0.28.3"
+version = "0.29.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
@@ -105,9 +105,9 @@ dependencies = [
     { name = "tomlkit" },
     { name = "wcmatch" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9f/8b/0c53a031c3ec706900ae4a52733d1ece3fe24dbcc9ad4073e69fbb4c80ce/bump_my_version-0.28.3.tar.gz", hash = "sha256:37086aaae3e1a0ffcfa82111cf271850d5ffbe1997a17b1630f2437d8a9a5160", size = 1013463 }
+sdist = { url = "https://files.pythonhosted.org/packages/a1/53/277e3748f0e45758210e971ed2c54c93f1f768a5bc9c66f8cb58a604a415/bump_my_version-0.29.0.tar.gz", hash = "sha256:e4149ed63b4772f5868b3fcabb8fa5e1191b8abae6d35effd0be980d4b0f55e3", size = 1013425 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6a/c5/6ba8d3764373d7896c313b70fa519df07e8aa314134096521ca277990516/bump_my_version-0.28.3-py3-none-any.whl", hash = "sha256:d853bf0e92bf83beed88e129b9cb7e20eeacc87617bf4a7c2d78f6154cf2ba16", size = 52054 },
+    { url = "https://files.pythonhosted.org/packages/00/59/0c78849320b0dbe17f7e67a125b6c4adcbba069c4993bf4064aea42add13/bump_my_version-0.29.0-py3-none-any.whl", hash = "sha256:6566ab25bd3eeeec109f4ac7e4464227a3ac1fd57f847d259a24800423cd9037", size = 52132 },
 ]
 
 [[package]]
@@ -412,7 +412,7 @@ wheels = [
 
 [[package]]
 name = "inline-snapshot"
-version = "0.17.1"
+version = "0.18.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "asttokens" },
@@ -422,9 +422,9 @@ dependencies = [
     { name = "rich" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/67/0d/b87b1bab2dd1cac466ffc54399cd2d55eef98bbf2f9cf535a39cf8c212d5/inline_snapshot-0.17.1.tar.gz", hash = "sha256:7759c05a1a0ff6d6c115ddb9df362e354e6ae81161a395080454f8a6604a92a1", size = 223166 }
+sdist = { url = "https://files.pythonhosted.org/packages/00/0b/543d37223e3b77cb853b48f062adbef406ce3a22a8e0435d1a7f909df4d9/inline_snapshot-0.18.1.tar.gz", hash = "sha256:a93bcf0aec68edf27323fa8dfc902354ef9a730050ab8939a4b174419828db6b", size = 225403 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/81/14/4e9271724977f1ed340f2d41758baa3416732f137e8ab056ea1317f02a6f/inline_snapshot-0.17.1-py3-none-any.whl", hash = "sha256:037755296d91d6abd9794634d05de3b0fc4198c7995b074480bee4015fb737d0", size = 41375 },
+    { url = "https://files.pythonhosted.org/packages/df/17/27bb53c8c9bc9fdb5f43cc98babd4ad629b5460fd20f33c752912e92ef31/inline_snapshot-0.18.1-py3-none-any.whl", hash = "sha256:6751b95c10ae940879bec429c160d58c376ad449fcf6e213db7735d91ae40209", size = 42381 },
 ]
 
 [[package]]
@@ -652,15 +652,15 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "bump-my-version", specifier = ">=0.28.3" },
-    { name = "inline-snapshot", specifier = ">=0.17.1" },
+    { name = "bump-my-version", specifier = ">=0.29.0" },
+    { name = "inline-snapshot", specifier = ">=0.18.1" },
     { name = "nonebug", specifier = ">=0.4.3" },
     { name = "poethepoet", specifier = ">=0.31.1" },
     { name = "pytest-asyncio", specifier = ">=0.25.0" },
     { name = "pytest-cov", specifier = ">=6.0.0" },
     { name = "pytest-mock", specifier = ">=3.14.0" },
     { name = "pytest-xdist", specifier = ">=3.6.1" },
-    { name = "respx", specifier = ">=0.21.1" },
+    { name = "respx", specifier = ">=0.22.0" },
 ]
 
 [[package]]
@@ -1074,14 +1074,14 @@ wheels = [
 
 [[package]]
 name = "respx"
-version = "0.21.1"
+version = "0.22.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fd/72/979e475ade69bcbb18288604aacbdc77b44b3bd1133e2c16660282a9f4b8/respx-0.21.1.tar.gz", hash = "sha256:0bd7fe21bfaa52106caa1223ce61224cf30786985f17c63c5d71eff0307ee8af", size = 28306 }
+sdist = { url = "https://files.pythonhosted.org/packages/f4/7c/96bd0bc759cf009675ad1ee1f96535edcb11e9666b985717eb8c87192a95/respx-0.22.0.tar.gz", hash = "sha256:3c8924caa2a50bd71aefc07aa812f2466ff489f1848c96e954a5362d17095d91", size = 28439 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a5/5c/428523509b26c243c1e93aa2ae385def597ef1fbdbbd47978430ba19037d/respx-0.21.1-py2.py3-none-any.whl", hash = "sha256:05f45de23f0c785862a2c92a3e173916e8ca88e4caad715dd5f68584d6053c20", size = 25130 },
+    { url = "https://files.pythonhosted.org/packages/8e/67/afbb0978d5399bc9ea200f1d4489a23c9a1dad4eee6376242b8182389c79/respx-0.22.0-py2.py3-none-any.whl", hash = "sha256:631128d4c9aba15e56903fb5f66fb1eff412ce28dd387ca3a81339e52dbd3ad0", size = 25127 },
 ]
 
 [[package]]
