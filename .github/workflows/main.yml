@@ -67,6 +67,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: ./docker/noneflow.dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
@@ -105,7 +106,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./src/providers/docker_test/Dockerfile
+          file: ./docker/nonetest.dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
