@@ -11,9 +11,13 @@ RUN apt-get update \
   && apt-get purge -y --auto-remove \
   && rm -rf /var/lib/apt/lists/*
 
+# 设置 uv
+ENV UV_NO_CACHE=1
+ENV UV_COMPILE_BYTECODE=1
+
 # Python 依赖
 COPY pyproject.toml uv.lock /app/
-RUN uv sync --project /app/ --no-dev --frozen --compile-bytecode
+RUN uv sync --project /app/ --no-dev --frozen
 
 COPY bot.py .env /app/
 COPY src /app/src/
