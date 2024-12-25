@@ -20,10 +20,11 @@ RUN uv tool install poetry
 # 设置 uv
 ENV UV_NO_CACHE=1
 ENV UV_COMPILE_BYTECODE=1
+ENV UV_FROZEN=1
 
 # Python 依赖
 COPY pyproject.toml uv.lock /app/
-RUN uv sync --project /app/ --no-dev --frozen
+RUN uv sync --project /app/ --no-dev
 
 COPY src /app/src/
 
