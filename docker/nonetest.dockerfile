@@ -31,6 +31,9 @@ COPY pyproject.toml uv.lock /app/
 RUN --mount=type=cache,target=/root/.cache/uv \
   uv sync --project /app/ --no-dev
 
+# 将可执行文件放在环境的路径前面
+ENV PATH="/app/.venv/bin:$PATH"
+
 # NoneFlow 本体
 COPY src /app/src/
 
