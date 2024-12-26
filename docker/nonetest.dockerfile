@@ -1,31 +1,35 @@
-FROM python:3.13.1
-COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /bin/uv
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
 
 WORKDIR /app
 
 # 设置时区
 ENV TZ=Asia/Shanghai
 
+# 启用字节码编译，加速 NoneFlow 启动
+ENV UV_COMPILE_BYTECODE=1
+
+# 从缓存中复制而不是链接，因为缓存是挂载的
+ENV UV_LINK_MODE=copy
+
 # OpenCV 所需的依赖
-RUN apt-get update \
-  && apt-get -y upgrade \
-  && apt-get install ffmpeg libsm6 libxext6 -y \
-  && apt-get purge -y --auto-remove \
-  && rm -rf /var/lib/apt/lists/*
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked \
+  apt update && apt-get install -y ffmpeg libsm6 libxext6
 
 # 插件测试需要 Poetry
 ENV PATH="${PATH}:/root/.local/bin"
-RUN uv tool install poetry
-
-# 设置 uv
-ENV UV_NO_CACHE=1
-ENV UV_COMPILE_BYTECODE=1
-ENV UV_FROZEN=1
+RUN --mount=type=cache,target=/root/.cache/uv \
+  uv tool install poetry
 
 # Python 依赖
 COPY pyproject.toml uv.lock /app/
-RUN uv sync --project /app/ --no-dev
+RUN --mount=type=cache,target=/root/.cache/uv \
+  uv sync --project /app/ --no-dev
 
+# NoneFlow 本体
 COPY src /app/src/
+
+# 重置入口点，避免调用 uv
+ENTRYPOINT []
 
 CMD ["uv", "run", "--project", "/app/", "--no-dev", "-m", "src.providers.docker_test"]
