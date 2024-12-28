@@ -63,6 +63,27 @@ jobs:
             type=semver,pattern={{version}}
             type=ref,event=branch
 
+      - name: Cache buildkit
+        uses: actions/cache@v4
+        id: cache
+        with:
+          path: |
+            var-cache-apt
+            var-lib-apt
+            root-cache-uv
+          key: cache-${{ hashFiles('.github/workflows/test/Dockerfile') }}
+
+      - name: Inject cache into docker
+        uses: reproducible-containers/buildkit-cache-dance@v3.1.2
+        with:
+          cache-map: |
+            {
+              "var-cache-apt": "/var/cache/apt",
+              "var-lib-apt": "/var/lib/apt",
+              "root-cache-uv": "/root/.cache/uv"
+            }
+          skip-extraction: ${{ steps.cache.outputs.cache-hit }}
+
       - name: Build and Publish
         uses: docker/build-push-action@v6
         with:
@@ -101,6 +122,27 @@ jobs:
           tags: |
             type=semver,pattern={{version}}
             type=ref,event=branch
+
+      - name: Cache buildkit
+        uses: actions/cache@v4
+        id: cache
+        with:
+          path: |
+            var-cache-apt
+            var-lib-apt
+            root-cache-uv
+          key: cache-${{ hashFiles('.github/workflows/test/Dockerfile') }}
+
+      - name: Inject cache into docker
+        uses: reproducible-containers/buildkit-cache-dance@v3.1.2
+        with:
+          cache-map: |
+            {
+              "var-cache-apt": "/var/cache/apt",
+              "var-lib-apt": "/var/lib/apt",
+              "root-cache-uv": "/root/.cache/uv"
+            }
+          skip-extraction: ${{ steps.cache.outputs.cache-hit }}
 
       - name: Build and Publish
         uses: docker/build-push-action@v6
