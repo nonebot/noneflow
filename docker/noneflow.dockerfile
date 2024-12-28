@@ -31,7 +31,4 @@ ENV PATH="/app/.venv/bin:$PATH"
 COPY bot.py .env /app/
 COPY src /app/src/
 
-# 重置入口点，避免调用 uv
-ENTRYPOINT []
-
 CMD ["uv", "run", "--project", "/app/", "--no-dev", "/app/bot.py"]

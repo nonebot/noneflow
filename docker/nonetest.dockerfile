@@ -37,7 +37,4 @@ ENV PATH="/app/.venv/bin:$PATH"
 # NoneFlow 本体
 COPY src /app/src/
 
-# 重置入口点，避免调用 uv
-ENTRYPOINT []
-
 CMD ["uv", "run", "--project", "/app/", "--no-dev", "-m", "src.providers.docker_test"]
