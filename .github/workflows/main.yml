@@ -63,10 +63,32 @@ jobs:
             type=semver,pattern={{version}}
             type=ref,event=branch
 
+      - name: Cache buildkit
+        uses: actions/cache@v4
+        id: cache
+        with:
+          path: |
+            var-cache-apt
+            var-lib-apt
+            root-cache-uv
+          key: cache-${{ hashFiles('docker/noneflow.dockerfile') }}
+
+      - name: Inject cache into docker
+        uses: reproducible-containers/buildkit-cache-dance@v3.1.2
+        with:
+          cache-map: |
+            {
+              "var-cache-apt": "/var/cache/apt",
+              "var-lib-apt": "/var/lib/apt",
+              "root-cache-uv": "/root/.cache/uv"
+            }
+          skip-extraction: ${{ steps.cache.outputs.cache-hit }}
+
       - name: Build and Publish
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: ./docker/noneflow.dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
@@ -101,11 +123,32 @@ jobs:
             type=semver,pattern={{version}}
             type=ref,event=branch
 
+      - name: Cache buildkit
+        uses: actions/cache@v4
+        id: cache
+        with:
+          path: |
+            var-cache-apt
+            var-lib-apt
+            root-cache-uv
+          key: cache-${{ hashFiles('docker/nonetest.dockerfile') }}
+
+      - name: Inject cache into docker
+        uses: reproducible-containers/buildkit-cache-dance@v3.1.2
+        with:
+          cache-map: |
+            {
+              "var-cache-apt": "/var/cache/apt",
+              "var-lib-apt": "/var/lib/apt",
+              "root-cache-uv": "/root/.cache/uv"
+            }
+          skip-extraction: ${{ steps.cache.outputs.cache-hit }}
+
       - name: Build and Publish
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./src/providers/docker_test/Dockerfile
+          file: ./docker/nonetest.dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
