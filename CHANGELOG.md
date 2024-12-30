@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [4.2.3] - 2024-12-30
+
 ### Added
 
 - 更新 GitHub 适配器至 0.5.0
@@ -615,7 +617,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.2.2...HEAD
+[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.2.3...HEAD
+[4.2.3]: https://github.com/nonebot/noneflow/compare/v4.2.2...v4.2.3
 [4.2.2]: https://github.com/nonebot/noneflow/compare/v4.2.1...v4.2.2
 [4.2.1]: https://github.com/nonebot/noneflow/compare/v4.2.0...v4.2.1
 [4.2.0]: https://github.com/nonebot/noneflow/compare/v4.1.4...v4.2.0
