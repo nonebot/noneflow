@@ -48,14 +48,7 @@ def mock_subprocess_run_with_side_effect(
 def assert_subprocess_run_calls(mock: MockType, commands: list[list[str]]):
     calls = []
     for command in commands:
-        # command_str = " ".join(command)
-
         calls.append(call(command, check=True, capture_output=True))
-        # 暂时不考虑报错的情况，仅涉及到 stdout
-        # calls.append(call().stdout.decode())
-        # calls.append(_Call(("().stdout.decode().__str__", (), {})))
-        # if command_str.startswith("git diff"):
-        #     calls.append(_Call(("().stdout.__bool__", (), {})))
 
     mock.assert_has_calls(calls)
 
