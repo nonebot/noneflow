@@ -14,10 +14,12 @@ from tests.plugins.github.event import get_mock_event
 from tests.plugins.github.utils import (
     MockBody,
     MockIssue,
+    assert_subprocess_run_calls,
     check_json_data,
     generate_issue_body_bot,
     get_github_bot,
     get_issue_labels,
+    mock_subprocess_run_with_side_effect,
 )
 
 
@@ -31,9 +33,7 @@ async def test_bot_process_publish_check(
     """测试机器人的发布流程"""
     from src.plugins.github import plugin_config
 
-    mock_subprocess_run = mocker.patch(
-        "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
-    )
+    mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     mock_issue = MockIssue(body=MockBody(type="bot", name="test").generate()).as_mock(
         mocker
@@ -139,52 +139,26 @@ async def test_bot_process_publish_check(
         ctx.receive_event(bot, event)
 
     # 测试 git 命令
-    mock_subprocess_run.assert_has_calls(
+    assert_subprocess_run_calls(
+        mock_subprocess_run,
         [
-            mocker.call(
-                ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "switch", "-C", "publish/issue80"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "config", "--global", "user.name", "test"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                [
-                    "git",
-                    "config",
-                    "--global",
-                    "user.email",
-                    "test@users.noreply.github.com",
-                ],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(["git", "add", "-A"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "commit", "-m", ":beers: publish bot test (#80)"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(["git", "fetch", "origin"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "diff", "origin/publish/issue80", "publish/issue80"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "push", "origin", "publish/issue80", "-f"],
-                check=True,
-                capture_output=True,
-            ),
-        ]  # type: ignore
+            ["git", "config", "--global", "safe.directory", "*"],
+            ["git", "switch", "-C", "publish/issue80"],
+            ["git", "ls-remote", "--heads", "origin", "publish/issue80"],
+            ["git", "config", "--global", "user.name", "test"],
+            [
+                "git",
+                "config",
+                "--global",
+                "user.email",
+                "test@users.noreply.github.com",
+            ],
+            ["git", "add", "-A"],
+            ["git", "commit", "-m", ":beers: publish bot test (#80)"],
+            ["git", "fetch", "origin"],
+            ["git", "diff", "origin/publish/issue80", "publish/issue80"],
+            ["git", "push", "origin", "publish/issue80", "-f"],
+        ],
     )
 
     # 检查文件是否正确
@@ -215,9 +189,7 @@ async def test_adapter_process_publish_check(
     """测试适配器的发布流程"""
     from src.plugins.github import plugin_config
 
-    mock_subprocess_run = mocker.patch(
-        "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
-    )
+    mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     mock_issue = MockIssue(
         body=MockBody(type="adapter", name="test").generate()
@@ -336,52 +308,26 @@ async def test_adapter_process_publish_check(
         ctx.receive_event(bot, event)
 
     # 测试 git 命令
-    mock_subprocess_run.assert_has_calls(
+    assert_subprocess_run_calls(
+        mock_subprocess_run,
         [
-            mocker.call(
-                ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "switch", "-C", "publish/issue80"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "config", "--global", "user.name", "test"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                [
-                    "git",
-                    "config",
-                    "--global",
-                    "user.email",
-                    "test@users.noreply.github.com",
-                ],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(["git", "add", "-A"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "commit", "-m", snapshot(":beers: publish adapter test (#80)")],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(["git", "fetch", "origin"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "diff", "origin/publish/issue80", "publish/issue80"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "push", "origin", "publish/issue80", "-f"],
-                check=True,
-                capture_output=True,
-            ),
-        ]  # type: ignore
+            ["git", "config", "--global", "safe.directory", "*"],
+            ["git", "switch", "-C", "publish/issue80"],
+            ["git", "ls-remote", "--heads", "origin", "publish/issue80"],
+            ["git", "config", "--global", "user.name", "test"],
+            [
+                "git",
+                "config",
+                "--global",
+                "user.email",
+                "test@users.noreply.github.com",
+            ],
+            ["git", "add", "-A"],
+            ["git", "commit", "-m", ":beers: publish adapter test (#80)"],
+            ["git", "fetch", "origin"],
+            ["git", "diff", "origin/publish/issue80", "publish/issue80"],
+            ["git", "push", "origin", "publish/issue80", "-f"],
+        ],
     )
 
     # 检查文件是否正确
@@ -417,9 +363,7 @@ async def test_plugin_process_publish_check(
     from src.plugins.github import plugin_config
     from src.providers.docker_test import Metadata
 
-    mock_subprocess_run = mocker.patch(
-        "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
-    )
+    mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     mock_issue = MockIssue(body=MockBody(type="plugin").generate()).as_mock(mocker)
 
@@ -623,52 +567,26 @@ log_level=DEBUG
         ctx.receive_event(bot, event)
 
     # 测试 git 命令
-    mock_subprocess_run.assert_has_calls(
+    assert_subprocess_run_calls(
+        mock_subprocess_run,
         [
-            mocker.call(
-                ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "switch", "-C", "publish/issue80"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "config", "--global", "user.name", "test"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                [
-                    "git",
-                    "config",
-                    "--global",
-                    "user.email",
-                    "test@users.noreply.github.com",
-                ],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(["git", "add", "-A"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "commit", "-m", ":beers: publish plugin name (#80)"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(["git", "fetch", "origin"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "diff", "origin/publish/issue80", "publish/issue80"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "push", "origin", "publish/issue80", "-f"],
-                check=True,
-                capture_output=True,
-            ),
-        ]  # type: ignore
+            ["git", "config", "--global", "safe.directory", "*"],
+            ["git", "switch", "-C", "publish/issue80"],
+            ["git", "ls-remote", "--heads", "origin", "publish/issue80"],
+            ["git", "config", "--global", "user.name", "test"],
+            [
+                "git",
+                "config",
+                "--global",
+                "user.email",
+                "test@users.noreply.github.com",
+            ],
+            ["git", "add", "-A"],
+            ["git", "commit", "-m", ":beers: publish plugin name (#80)"],
+            ["git", "fetch", "origin"],
+            ["git", "diff", "origin/publish/issue80", "publish/issue80"],
+            ["git", "push", "origin", "publish/issue80", "-f"],
+        ],
     )
 
     # 检查文件是否正确
@@ -702,9 +620,7 @@ async def test_plugin_process_publish_check_re_run(
     from src.plugins.github import plugin_config
     from src.providers.docker_test import Metadata
 
-    mock_subprocess_run = mocker.patch(
-        "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
-    )
+    mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     # 这次运行时，议题内容已经包含了插件测试按钮
     mock_issue = MockIssue(
@@ -912,52 +828,26 @@ log_level=DEBUG
         ctx.receive_event(bot, event)
 
     # 测试 git 命令
-    mock_subprocess_run.assert_has_calls(
+    assert_subprocess_run_calls(
+        mock_subprocess_run,
         [
-            mocker.call(
-                ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "switch", "-C", "publish/issue80"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "config", "--global", "user.name", "test"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                [
-                    "git",
-                    "config",
-                    "--global",
-                    "user.email",
-                    "test@users.noreply.github.com",
-                ],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(["git", "add", "-A"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "commit", "-m", ":beers: publish plugin name (#80)"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(["git", "fetch", "origin"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "diff", "origin/publish/issue80", "publish/issue80"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "push", "origin", "publish/issue80", "-f"],
-                check=True,
-                capture_output=True,
-            ),
-        ]  # type: ignore
+            ["git", "config", "--global", "safe.directory", "*"],
+            ["git", "switch", "-C", "publish/issue80"],
+            ["git", "ls-remote", "--heads", "origin", "publish/issue80"],
+            ["git", "config", "--global", "user.name", "test"],
+            [
+                "git",
+                "config",
+                "--global",
+                "user.email",
+                "test@users.noreply.github.com",
+            ],
+            ["git", "add", "-A"],
+            ["git", "commit", "-m", ":beers: publish plugin name (#80)"],
+            ["git", "fetch", "origin"],
+            ["git", "diff", "origin/publish/issue80", "publish/issue80"],
+            ["git", "push", "origin", "publish/issue80", "-f"],
+        ],
     )
 
     # 检查文件是否正确
@@ -993,9 +883,7 @@ async def test_edit_title(
     """
     from src.plugins.github import plugin_config
 
-    mock_subprocess_run = mocker.patch(
-        "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
-    )
+    mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     mock_issue = MockIssue(body=MockBody(type="bot", name="test1").generate()).as_mock(
         mocker
@@ -1128,52 +1016,26 @@ async def test_edit_title(
         ctx.receive_event(bot, event)
 
     # 测试 git 命令
-    mock_subprocess_run.assert_has_calls(
+    assert_subprocess_run_calls(
+        mock_subprocess_run,
         [
-            mocker.call(
-                ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "switch", "-C", "publish/issue80"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "config", "--global", "user.name", "test"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                [
-                    "git",
-                    "config",
-                    "--global",
-                    "user.email",
-                    "test@users.noreply.github.com",
-                ],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(["git", "add", "-A"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "commit", "-m", ":beers: publish bot test1 (#80)"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(["git", "fetch", "origin"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "diff", "origin/publish/issue80", "publish/issue80"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "push", "origin", "publish/issue80", "-f"],
-                check=True,
-                capture_output=True,
-            ),
-        ]  # type: ignore
+            ["git", "config", "--global", "safe.directory", "*"],
+            ["git", "switch", "-C", "publish/issue80"],
+            ["git", "ls-remote", "--heads", "origin", "publish/issue80"],
+            ["git", "config", "--global", "user.name", "test"],
+            [
+                "git",
+                "config",
+                "--global",
+                "user.email",
+                "test@users.noreply.github.com",
+            ],
+            ["git", "add", "-A"],
+            ["git", "commit", "-m", ":beers: publish bot test1 (#80)"],
+            ["git", "fetch", "origin"],
+            ["git", "diff", "origin/publish/issue80", "publish/issue80"],
+            ["git", "push", "origin", "publish/issue80", "-f"],
+        ],
     )
 
     # 检查文件是否正确
@@ -1955,9 +1817,7 @@ async def test_process_publish_check_ready_for_review(
     """当之前失败后再次通过测试时，应该将拉取请求标记为 ready for review"""
     from src.plugins.github import plugin_config
 
-    mock_subprocess_run = mocker.patch(
-        "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
-    )
+    mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     mock_issue = MockIssue(body=MockBody(type="bot", name="test").generate()).as_mock(
         mocker
@@ -2087,52 +1947,176 @@ mutation markPullRequestReadyForReview($pullRequestId: ID!) {
         ctx.receive_event(bot, event)
 
     # 测试 git 命令
-    mock_subprocess_run.assert_has_calls(
+    assert_subprocess_run_calls(
+        mock_subprocess_run,
         [
-            mocker.call(
-                ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "switch", "-C", "publish/issue80"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "config", "--global", "user.name", "test"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                [
-                    "git",
-                    "config",
-                    "--global",
-                    "user.email",
-                    "test@users.noreply.github.com",
-                ],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(["git", "add", "-A"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "commit", "-m", ":beers: publish bot test (#80)"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(["git", "fetch", "origin"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "diff", "origin/publish/issue80", "publish/issue80"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "push", "origin", "publish/issue80", "-f"],
-                check=True,
-                capture_output=True,
-            ),
-        ]  # type: ignore
+            ["git", "config", "--global", "safe.directory", "*"],
+            ["git", "switch", "-C", "publish/issue80"],
+            ["git", "ls-remote", "--heads", "origin", "publish/issue80"],
+            ["git", "config", "--global", "user.name", "test"],
+            [
+                "git",
+                "config",
+                "--global",
+                "user.email",
+                "test@users.noreply.github.com",
+            ],
+            ["git", "add", "-A"],
+            ["git", "commit", "-m", ":beers: publish bot test (#80)"],
+            ["git", "fetch", "origin"],
+            ["git", "diff", "origin/publish/issue80", "publish/issue80"],
+            ["git", "push", "origin", "publish/issue80", "-f"],
+        ],
+    )
+
+    # 检查文件是否正确
+    check_json_data(
+        plugin_config.input_config.bot_path,
+        [
+            {
+                "name": "test",
+                "desc": "desc",
+                "author_id": 1,
+                "homepage": "https://nonebot.dev",
+                "tags": [{"label": "test", "color": "#ffffff"}],
+                "is_official": False,
+            }
+        ],
+    )
+
+    assert mocked_api["homepage"].called
+
+
+async def test_comment_immediate_after_pull_request_closed(
+    app: App,
+    mocker: MockerFixture,
+    mocked_api: MockRouter,
+    tmp_path: Path,
+    mock_installation,
+) -> None:
+    """测试在拉取请求关闭后立即评论
+
+    此时分支还没有被删除，不应该再次创建拉取请求
+    """
+    from src.plugins.github import plugin_config
+
+    mock_subprocess_run = mock_subprocess_run_with_side_effect(
+        mocker,
+        {"git ls-remote --heads origin publish/issue80": "refs/heads/publish/issue80"},
+    )
+
+    mock_issue = MockIssue(body=MockBody(type="bot", name="test").generate()).as_mock(
+        mocker
+    )
+
+    mock_event = mocker.MagicMock()
+    mock_event.issue = mock_issue
+
+    mock_issues_resp = mocker.MagicMock()
+    mock_issues_resp.parsed_data = mock_issue
+
+    mock_comment = mocker.MagicMock()
+    mock_comment.body = "Bot: test"
+    mock_list_comments_resp = mocker.MagicMock()
+    mock_list_comments_resp.parsed_data = [mock_comment]
+
+    mock_pull = mocker.MagicMock()
+    mock_pull.title = "Bot: test"
+    mock_pull.draft = False
+    mock_pulls_resp = mocker.MagicMock()
+    mock_pulls_resp.parsed_data = [mock_pull]
+
+    with open(tmp_path / "bots.json5", "w") as f:
+        json.dump([], f)
+
+    check_json_data(plugin_config.input_config.bot_path, [])
+
+    async with app.test_matcher() as ctx:
+        adapter, bot = get_github_bot(ctx)
+        event = get_mock_event(IssuesOpened)
+
+        ctx.should_call_api(
+            "rest.apps.async_get_repo_installation",
+            {"owner": "he0119", "repo": "action-test"},
+            mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+            mock_issues_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_create_comment",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 80,
+                "body": snapshot(
+                    """\
+# 📃 商店发布检查结果
+
+> Bot: test
+
+**✅ 所有测试通过，一切准备就绪！**
+
+
+<details>
+<summary>详情</summary>
+<pre><code><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 标签: test-#ffffff。</li></code></pre>
+</details>
+
+---
+
+💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
+💡 当插件加载测试失败时，请发布新版本后勾选插件测试勾选框重新运行插件测试。
+
+♻️ 评论已更新至最新检查结果
+
+💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
+<!-- NONEFLOW -->
+"""
+                ),
+            },
+            True,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_list",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "head": "he0119:publish/issue80",
+            },
+            mock_pulls_resp,
+        )
+
+        ctx.receive_event(bot, event)
+
+    # 测试 git 命令
+    assert_subprocess_run_calls(
+        mock_subprocess_run,
+        [
+            ["git", "config", "--global", "safe.directory", "*"],
+            ["git", "switch", "-C", "publish/issue80"],
+            ["git", "ls-remote", "--heads", "origin", "publish/issue80"],
+            ["git", "config", "--global", "user.name", "test"],
+            [
+                "git",
+                "config",
+                "--global",
+                "user.email",
+                "test@users.noreply.github.com",
+            ],
+            ["git", "add", "-A"],
+            ["git", "commit", "-m", ":beers: publish bot test (#80)"],
+            ["git", "fetch", "origin"],
+            ["git", "diff", "origin/publish/issue80", "publish/issue80"],
+            ["git", "push", "origin", "publish/issue80", "-f"],
+        ],
     )
 
     # 检查文件是否正确

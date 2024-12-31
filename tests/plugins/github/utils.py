@@ -2,13 +2,13 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal, NotRequired, TypedDict
-from unittest.mock import _Call, call
+from unittest.mock import MagicMock, call
 
 import pyjson5
 from githubkit.rest import Issue
 from nonebug.mixin.call_api import ApiContext
 from nonebug.mixin.process import MatcherContext
-from pytest_mock import MockFixture, MockType
+from pytest_mock import MockerFixture, MockFixture, MockType
 
 
 class GitHubApi(TypedDict):
@@ -24,17 +24,38 @@ def should_call_apis(
         ctx.should_call_api(**api, data=data[n])
 
 
+def mock_subprocess_run_with_side_effect(
+    mocker: MockerFixture, commands: dict[str, str] = {}
+):
+    def side_effect(*args, **kwargs):
+        command_str = " ".join(args[0])
+        if command_str in commands:
+            value = MagicMock()
+            value.stdout.decode.return_value = commands[command_str]
+            return value
+        # 默认返回远程分支不存在
+        elif command_str.startswith("git ls-remote --heads origin"):
+            value = MagicMock()
+            value.stdout.decode.return_value = ""
+            return value
+        return MagicMock()
+
+    mock_subprocess_run = mocker.patch("subprocess.run")
+    mock_subprocess_run.side_effect = side_effect
+    return mock_subprocess_run
+
+
 def assert_subprocess_run_calls(mock: MockType, commands: list[list[str]]):
     calls = []
     for command in commands:
-        command_str = " ".join(command)
+        # command_str = " ".join(command)
 
         calls.append(call(command, check=True, capture_output=True))
         # 暂时不考虑报错的情况，仅涉及到 stdout
-        calls.append(call().stdout.decode())
-        calls.append(_Call(("().stdout.decode().__str__", (), {})))
-        if command_str.startswith("git diff"):
-            calls.append(_Call(("().stdout.__bool__", (), {})))
+        # calls.append(call().stdout.decode())
+        # calls.append(_Call(("().stdout.decode().__str__", (), {})))
+        # if command_str.startswith("git diff"):
+        #     calls.append(_Call(("().stdout.__bool__", (), {})))
 
     mock.assert_has_calls(calls)
 

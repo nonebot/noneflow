@@ -15,6 +15,7 @@ from tests.plugins.github.utils import (
     generate_issue_body_bot,
     generate_issue_body_remove,
     get_github_bot,
+    mock_subprocess_run_with_side_effect,
     should_call_apis,
 )
 
@@ -28,7 +29,7 @@ async def test_resolve_pull_request(
     """测试能正确处理拉取请求关闭后其他拉取请求的冲突问题"""
     from src.plugins.github.plugins.resolve import pr_close_matcher
 
-    mock_subprocess_run = mocker.patch("subprocess.run")
+    mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     mock_issue = MockIssue(
         body=generate_issue_body_remove(type="Bot"), number=76

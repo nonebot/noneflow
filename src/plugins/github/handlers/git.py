@@ -39,13 +39,10 @@ class GitHandler(BaseModel):
 
     def remote_branch_exists(self, branch_name: str) -> bool:
         """检查远程分支是否存在"""
-        try:
-            result = run_shell_command(
-                ["git", "ls-remote", "--heads", "origin", branch_name]
-            )
-            return bool(result.stdout.strip())
-        except Exception:
-            return False
+        result = run_shell_command(
+            ["git", "ls-remote", "--heads", "origin", branch_name]
+        )
+        return bool(result.stdout.decode().strip())
 
     def delete_remote_branch(self, branch_name: str):
         """删除远程分支"""
