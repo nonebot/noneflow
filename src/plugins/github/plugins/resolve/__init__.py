@@ -72,7 +72,7 @@ async def handle_pr_close(
         logger.info(f"议题 #{handler.issue.number} 已关闭")
 
         try:
-            handler.delete_origin_branch(event.payload.pull_request.head.ref)
+            handler.delete_remote_branch(event.payload.pull_request.head.ref)
             logger.info("已删除对应分支")
         except Exception:
             logger.info("对应分支不存在或已删除")

@@ -98,7 +98,7 @@ async def test_delete_origin_branch(mock_run_shell_command):
     from src.plugins.github.handlers.git import GitHandler
 
     git_handler = GitHandler()
-    git_handler.delete_origin_branch("main")
+    git_handler.delete_remote_branch("main")
 
     mock_run_shell_command.assert_has_calls(
         [

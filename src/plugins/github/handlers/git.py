@@ -37,7 +37,17 @@ class GitHandler(BaseModel):
             logger.info("检测到本地分支与远程分支不一致，尝试强制推送")
             run_shell_command(["git", "push", "origin", branch_name, "-f"])
 
-    def delete_origin_branch(self, branch_name: str):
+    def remote_branch_exists(self, branch_name: str) -> bool:
+        """检查远程分支是否存在"""
+        try:
+            result = run_shell_command(
+                ["git", "ls-remote", "--heads", "origin", branch_name]
+            )
+            return bool(result.stdout.strip())
+        except Exception:
+            return False
+
+    def delete_remote_branch(self, branch_name: str):
         """删除远程分支"""
 
         run_shell_command(["git", "push", "origin", "--delete", branch_name])
