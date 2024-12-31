@@ -208,16 +208,24 @@ async def ensure_issue_plugin_test_button_in_progress(handler: IssueHandler):
 async def process_pull_request(
     handler: IssueHandler, result: ValidationDict, branch_name: str, title: str
 ):
-    """
-    根据发布信息合法性创建拉取请求或将请求改为草稿
-    """
-    if result.valid:
-        commit_message = f"{COMMIT_MESSAGE_PREFIX} {result.type.value.lower()} {result.name} (#{handler.issue_number})"
+    """根据发布信息合法性创建拉取请求或将请求改为草稿"""
+    if not result.valid:
+        # 如果之前已经创建了拉取请求，则将其转换为草稿
+        await handler.draft_pull_request(branch_name)
+        return
 
-        handler.switch_branch(branch_name)
-        # 更新文件
-        update_file(result)
-        handler.commit_and_push(commit_message, branch_name, handler.author)
+    # 更新文件
+    handler.switch_branch(branch_name)
+    update_file(result)
+
+    # 只有当远程分支不存在时才创建拉取请求
+    # 需要在 commit_and_push 前判断，否则远程一定存在
+    remote_branch_exists = handler.remote_branch_exists(branch_name)
+
+    commit_message = f"{COMMIT_MESSAGE_PREFIX} {result.type.value.lower()} {result.name} (#{handler.issue_number})"
+    handler.commit_and_push(commit_message, branch_name, handler.author)
+
+    if not remote_branch_exists:
         # 创建拉取请求
         try:
             pull_number = await handler.create_pull_request(
@@ -226,13 +234,14 @@ async def process_pull_request(
                 branch_name,
             )
             await handler.add_labels(pull_number, [PUBLISH_LABEL, result.type.value])
+            return
         except RequestFailed:
-            # 如果之前已经创建了拉取请求，则将其转换为草稿
             logger.info("该分支的拉取请求已创建，请前往查看")
-            await handler.update_pull_request_status(title, branch_name)
     else:
-        # 如果之前已经创建了拉取请求，则将其转换为草稿
-        await handler.draft_pull_request(branch_name)
+        logger.info("远程分支已存在，跳过创建拉取请求")
+
+    # 如果之前已经创建了拉取请求，则将其转换为可评审
+    await handler.update_pull_request_status(title, branch_name)
 
 
 async def trigger_registry_update(handler: IssueHandler, publish_type: PublishType):

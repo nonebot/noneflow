@@ -162,6 +162,9 @@ class GithubHandler(GitHandler):
     async def update_pull_request_status(self, title: str, branch_name: str):
         """拉取请求若为草稿状态则标记为可评审，若标题不符则修改标题"""
         pull = await self.get_pull_request_by_branch(branch_name)
+        # 若拉取请求已关闭，则不进行任何操作
+        if pull.state == "closed":
+            return
         if pull.title != title:
             await self.update_pull_request_title(title, pull.number)
         if pull.draft:
