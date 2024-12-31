@@ -208,9 +208,7 @@ async def ensure_issue_plugin_test_button_in_progress(handler: IssueHandler):
 async def process_pull_request(
     handler: IssueHandler, result: ValidationDict, branch_name: str, title: str
 ):
-    """
-    根据发布信息合法性创建拉取请求或将请求改为草稿
-    """
+    """根据发布信息合法性创建拉取请求或将请求改为草稿"""
     if not result.valid:
         # 如果之前已经创建了拉取请求，则将其转换为草稿
         await handler.draft_pull_request(branch_name)
@@ -238,10 +236,11 @@ async def process_pull_request(
             await handler.add_labels(pull_number, [PUBLISH_LABEL, result.type.value])
             return
         except RequestFailed:
-            # 如果之前已经创建了拉取请求，则将其转换为可评审
             logger.info("该分支的拉取请求已创建，请前往查看")
     else:
         logger.info("远程分支已存在，跳过创建拉取请求")
+
+    # 如果之前已经创建了拉取请求，则将其转换为可评审
     await handler.update_pull_request_status(title, branch_name)
 
 

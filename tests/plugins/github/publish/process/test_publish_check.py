@@ -2021,8 +2021,7 @@ async def test_comment_immediate_after_pull_request_closed(
     mock_list_comments_resp.parsed_data = [mock_comment]
 
     mock_pull = mocker.MagicMock()
-    mock_pull.title = "Bot: test"
-    mock_pull.draft = False
+    mock_pull.state = "closed"
     mock_pulls_resp = mocker.MagicMock()
     mock_pulls_resp.parsed_data = [mock_pull]
 
