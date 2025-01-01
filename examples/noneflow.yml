@@ -3,10 +3,10 @@ name: NoneFlow
 on:
   issues:
     types: [opened, reopened, edited]
-  pull_request_target:
-    types: [closed]
   issue_comment:
     types: [created]
+  pull_request_target:
+    types: [closed]
   pull_request_review:
     types: [submitted]
 
