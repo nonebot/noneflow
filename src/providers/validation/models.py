@@ -317,7 +317,7 @@ class PluginPublishInfo(PublishInfo, PyPIMixin):
         if context is None:
             raise PydanticCustomError("validation_context", "未获取到验证上下文")
 
-        if v is None:
+        if not v:
             raise PydanticCustomError(
                 "plugin.metadata",
                 "插件无法获取到元数据",
@@ -383,7 +383,7 @@ class ValidationDict(BaseModel):
 
     @property
     def valid(self) -> bool:
-        return not self.errors
+        return self.info is not None
 
     @property
     def name(self) -> str:

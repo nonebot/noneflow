@@ -155,7 +155,14 @@ async def test_plugin_info_validation_plugin_load_failed(
                     "msg": "插件无法正常加载",
                     "input": False,
                     "ctx": {"output": "test_output"},
-                }
+                },
+                {
+                    "type": "plugin.metadata",
+                    "loc": ("metadata",),
+                    "msg": "无法获取到插件元数据",
+                    "input": False,
+                    "ctx": {"load": None},
+                },
             ],
             info=None,
             raw_data={
@@ -189,7 +196,6 @@ async def test_plugin_info_validation_plugin_load_failed(
                 "tags": [{"label": "test", "color": "#ffffff"}],
                 "type": "application",
                 "supported_adapters": None,
-                "metadata": False,
                 "skip_test": False,
                 "version": "0.0.1",
                 "test_output": "test_output",
