@@ -204,8 +204,11 @@ class MockIssue:
     pull_request: Any = None
     user: MockUser = field(default_factory=MockUser)
 
-    def as_mock(self, mocker: MockFixture):
-        mocker_issue = mocker.MagicMock(spec=Issue)
+    def as_mock(self, mocker: MockFixture | None = None):
+        if mocker is None:
+            mocker_issue = MagicMock(spec=Issue)
+        else:
+            mocker_issue = mocker.MagicMock(spec=Issue)
         mocker_issue.configure_mock(**self.__dict__)
 
         return mocker_issue
