@@ -1,15 +1,18 @@
 from inline_snapshot import snapshot
 from nonebug import App
 
+from tests.providers.validation.utils import generate_bot_data
+
 
 async def test_render_empty(app: App):
     """测试没有数据和错误时的输出"""
     from src.plugins.github.plugins.publish.render import render_comment
-    from src.providers.validation import PublishType, ValidationDict
+    from src.providers.validation import BotPublishInfo, PublishType, ValidationDict
 
     result = ValidationDict(
         type=PublishType.BOT,
         raw_data={"name": "name"},
+        info=BotPublishInfo.model_construct(**generate_bot_data()),
     )
 
     comment = await render_comment(result)
@@ -38,11 +41,12 @@ async def test_render_empty(app: App):
 async def test_render_reuse(app: App):
     """复用评论"""
     from src.plugins.github.plugins.publish.render import render_comment
-    from src.providers.validation import PublishType, ValidationDict
+    from src.providers.validation import BotPublishInfo, PublishType, ValidationDict
 
     result = ValidationDict(
         type=PublishType.BOT,
         raw_data={"name": "name"},
+        info=BotPublishInfo.model_construct(**generate_bot_data()),
     )
 
     comment = await render_comment(result, True)

@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ### Fixed
 
 - 修复在评论议题后立即关闭拉取请求，拉取请求会被再次创建的问题
+- 修复插件元数据缺失时不报错的问题
 
 ## [4.2.3] - 2024-12-30
 
