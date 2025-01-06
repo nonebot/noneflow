@@ -33,7 +33,6 @@ async def test_fields_missing_plugin(mocked_api: MockRouter) -> None:
             "author_id": 1,
             "tags": [{"label": "test", "color": "#ffffff"}],
             "supported_adapters": None,
-            "metadata": False,
             "skip_test": False,
             "test_output": "error",
         }
@@ -137,6 +136,13 @@ async def test_fields_missing_plugin(mocked_api: MockRouter) -> None:
                 "msg": "插件无法正常加载",
                 "input": False,
                 "ctx": {"output": "error"},
+            },
+            {
+                "type": "plugin.metadata",
+                "loc": ("metadata",),
+                "msg": "无法获取到插件元数据",
+                "input": False,
+                "ctx": {"load": None},
             },
         ]
     )

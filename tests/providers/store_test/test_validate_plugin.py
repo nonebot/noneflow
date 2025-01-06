@@ -324,14 +324,45 @@ async def test_validate_plugin_skip_test_plugin_test_failed(
         StoreTestResult(
             config="",
             outputs={
-                "validation": None,
+                "validation": {
+                    "data": {
+                        "module_name": "nonebot_plugin_treehelp",
+                        "project_link": "nonebot-plugin-treehelp",
+                        "time": "2024-07-13T04:41:40.905441Z",
+                        "version": "0.3.9",
+                        "name": "帮助",
+                        "desc": "获取插件帮助信息",
+                        "author": "he0119",
+                        "author_id": 1,
+                        "homepage": "https://nonebot.dev/",
+                        "tags": [],
+                        "is_official": False,
+                        "type": "application",
+                        "supported_adapters": None,
+                        "load": True,
+                        "skip_test": True,
+                        "test_output": """\
+创建测试目录 plugin_test
+        For further information visit https://errors.pydantic.dev/2.9/v/model_type\x1b[0m\
+""",
+                    },
+                    "errors": [
+                        {
+                            "type": "plugin.metadata",
+                            "loc": ("metadata",),
+                            "msg": "无法获取到插件元数据",
+                            "input": False,
+                            "ctx": {"load": None},
+                        }
+                    ],
+                },
                 "load": """\
 创建测试目录 plugin_test
         For further information visit https://errors.pydantic.dev/2.9/v/model_type\x1b[0m\
 """,
                 "metadata": None,
             },
-            results={"validation": True, "load": False, "metadata": False},
+            results={"validation": False, "load": False, "metadata": False},
             test_env={"python==3.12.7": True},
             version="0.3.9",
         )
@@ -350,7 +381,7 @@ async def test_validate_plugin_skip_test_plugin_test_failed(
             tags=[],
             time="2024-07-13T04:41:40.905441Z",
             type="application",
-            valid=True,
+            valid=False,
             version="0.3.9",
         )
     )
@@ -424,7 +455,6 @@ async def test_validate_plugin_failed_with_previous(
                         "is_official": True,
                         "type": "application",
                         "supported_adapters": None,
-                        "metadata": False,
                         "skip_test": False,
                         "version": "0.3.9",
                         "test_output": """\
@@ -444,7 +474,14 @@ async def test_validate_plugin_failed_with_previous(
         For further information visit https://errors.pydantic.dev/2.9/v/model_type\x1b[0m\
 """
                             },
-                        }
+                        },
+                        {
+                            "type": "plugin.metadata",
+                            "loc": ("metadata",),
+                            "msg": "无法获取到插件元数据",
+                            "input": False,
+                            "ctx": {"load": None},
+                        },
                     ],
                 },
                 "load": """\

@@ -2,6 +2,8 @@ from inline_snapshot import snapshot
 from nonebug import App
 from pytest_mock import MockFixture
 
+from tests.providers.validation.utils import generate_plugin_data
+
 
 async def test_render_data_bot(app: App):
     """机器人验证数据"""
@@ -211,7 +213,7 @@ async def test_render_data_plugin(app: App, mocker: MockFixture):
 async def test_render_data_plugin_supported_adapters(app: App, mocker: MockFixture):
     """插件支持的适配器"""
     from src.plugins.github.plugins.publish.render import render_comment
-    from src.providers.validation import PublishType, ValidationDict
+    from src.providers.validation import PluginPublishInfo, PublishType, ValidationDict
 
     result = ValidationDict(
         type=PublishType.PLUGIN,
@@ -228,7 +230,7 @@ async def test_render_data_plugin_supported_adapters(app: App, mocker: MockFixtu
             "load": True,
             "skip_test": False,
         },
-        info=None,
+        info=PluginPublishInfo.model_construct(**generate_plugin_data()),
         errors=[],
     )
 
