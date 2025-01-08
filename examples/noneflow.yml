@@ -3,16 +3,16 @@ name: NoneFlow
 on:
   issues:
     types: [opened, reopened, edited]
-  pull_request_target:
-    types: [closed]
   issue_comment:
     types: [created]
+  pull_request_target:
+    types: [closed]
   pull_request_review:
     types: [submitted]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.issue.number || github.run_id }}
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.event.issue.number && format('publish/issue{0}', github.event.issue.number) || github.head_ref || github.run_id }}
+  cancel-in-progress: ${{ startsWith(github.head_ref, 'publish/issue')}}
 
 jobs:
   noneflow:
