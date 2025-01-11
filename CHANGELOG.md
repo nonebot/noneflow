@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 修复获取依赖失败的问题
+
 ## [4.2.4] - 2025-01-06
 
 ### Fixed
