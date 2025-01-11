@@ -24,7 +24,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 # 插件测试需要 Poetry
 ENV PATH="${PATH}:/root/.local/bin"
 RUN --mount=type=cache,target=/root/.cache/uv \
-  uv tool install poetry
+  uv tool install "poetry<2.0.0"
 
 # Python 依赖
 COPY pyproject.toml uv.lock /app/
