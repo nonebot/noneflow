@@ -112,7 +112,7 @@ async def test_resolve_conflict_pull_requests_bot(
             ),
             mocker.call(["git", "add", "-A"], check=True, capture_output=True),
             mocker.call(
-                ["git", "commit", "-m", ":hammer: remove CoolQBot (#1)"],
+                ["git", "commit", "-m", ":pencil2: remove CoolQBot (#1)"],
                 check=True,
                 capture_output=True,
             ),
@@ -221,7 +221,12 @@ async def test_resolve_conflict_pull_requests_plugin(
             ),
             mocker.call(["git", "add", "-A"], check=True, capture_output=True),
             mocker.call(
-                ["git", "commit", "-m", ":hammer: remove nonebot_plugin_treehelp (#1)"],
+                [
+                    "git",
+                    "commit",
+                    "-m",
+                    ":pencil2: remove nonebot_plugin_treehelp (#1)",
+                ],
                 check=True,
                 capture_output=True,
             ),

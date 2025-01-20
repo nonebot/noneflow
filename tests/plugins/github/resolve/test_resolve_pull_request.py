@@ -152,7 +152,7 @@ async def test_resolve_pull_request(
                 "test@users.noreply.github.com",
             ],
             ["git", "add", "-A"],
-            ["git", "commit", "-m", ":hammer: remove CoolQBot (#101)"],
+            ["git", "commit", "-m", ":pencil2: remove CoolQBot (#101)"],
             ["git", "fetch", "origin"],
             ["git", "diff", "origin/remove/issue101", "remove/issue101"],
             ["git", "push", "origin", "remove/issue101", "-f"],
