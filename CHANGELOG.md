@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 修改 remove 插件的提交信息前缀
+- 修复删除插件流程无法正常运行的问题
+
 ## [4.2.5] - 2025-01-11
 
 ### Fixed
