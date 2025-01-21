@@ -197,7 +197,7 @@ async def test_process_remove_bot_check(
             ),
             mocker.call(["git", "add", "-A"], check=True, capture_output=True),
             mocker.call(
-                ["git", "commit", "-m", snapshot(":hammer: remove TESTBOT (#80)")],
+                ["git", "commit", "-m", snapshot(":pencil2: remove TESTBOT (#80)")],
                 check=True,
                 capture_output=True,
             ),
@@ -395,7 +395,7 @@ async def test_process_remove_plugin_check(
             ),
             mocker.call(["git", "add", "-A"], check=True, capture_output=True),
             mocker.call(
-                ["git", "commit", "-m", snapshot(":hammer: remove test (#80)")],
+                ["git", "commit", "-m", snapshot(":pencil2: remove test (#80)")],
                 check=True,
                 capture_output=True,
             ),
