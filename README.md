@@ -38,6 +38,8 @@ _✨ NoneBot 工作流管理机器人 ✨_
 
 - [自动处理商店发布议题和测试插件](examples/noneflow.yml)
 - [定时测试商店内插件](examples/store-test.yml)
+- [自动处理商店信息修改/删除议题](examples/noneflow-registry.yml)
+- [自动合并插件配置修改](examples/noneflow-results.yml)
 
 ## 测试
 
