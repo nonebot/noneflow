@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [4.2.6] - 2025-01-22
+
 ### Fixed
 
 - 修改 remove 插件的提交信息前缀
@@ -635,7 +637,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.2.5...HEAD
+[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.2.6...HEAD
+[4.2.6]: https://github.com/nonebot/noneflow/compare/v4.2.5...v4.2.6
 [4.2.5]: https://github.com/nonebot/noneflow/compare/v4.2.4...v4.2.5
 [4.2.4]: https://github.com/nonebot/noneflow/compare/v4.2.3...v4.2.4
 [4.2.3]: https://github.com/nonebot/noneflow/compare/v4.2.2...v4.2.3
