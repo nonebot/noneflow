@@ -24,6 +24,8 @@ from src.providers.constants import (
     STORE_DRIVERS_URL,
     STORE_PLUGINS_URL,
 )
+from tests.constant import PROJECT_SOURCE_PATH
+from tests.utils import find_datetime_loc
 
 STORE_PATH = Path(__file__).parent / "store"
 
@@ -221,3 +223,38 @@ def mocked_api(respx_mock: MockRouter):
         text=(STORE_PATH / "plugin_configs.json").read_text(encoding="utf8")
     )
     return respx_mock
+
+
+@pytest.fixture(scope="session", autouse=True)
+def datetime_modules_loc() -> list[str]:
+    return find_datetime_loc(PROJECT_SOURCE_PATH)
+
+
+@pytest.fixture
+def mock_datetime(mocker: MockerFixture, datetime_modules_loc: list[str]):
+    """
+    将所有模块中的 datetime.now() 方法返回值固定
+    """
+    from datetime import datetime
+    from importlib import import_module
+
+    from src.providers.constants import TIME_ZONE
+
+    fixed_time = datetime(2023, 8, 23, 9, 22, 14, 836035, tzinfo=TIME_ZONE)
+
+    for module_path in datetime_modules_loc:
+        try:
+            module = import_module(module_path)
+            original_datetime = module.datetime
+
+            class MockDateTime(original_datetime):
+                @classmethod
+                def now(cls, tz=None):
+                    return fixed_time
+
+            mocker.patch.object(module, "datetime", new=MockDateTime)
+
+        except (ImportError, AttributeError):
+            continue
+
+    return fixed_time

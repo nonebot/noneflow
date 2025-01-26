@@ -29,18 +29,13 @@ async def test_process_config_check(
     tmp_path: Path,
     mock_installation,
     mock_results: dict[str, Path],
+    mock_datetime,
 ) -> None:
     """测试发布检查不通过"""
-    from src.providers.constants import TIME_ZONE
     from src.providers.docker_test import Metadata
 
     # 更改当前工作目录为临时目录
     os.chdir(tmp_path)
-
-    mock_datetime = mocker.patch("src.providers.models.datetime")
-    mock_datetime.now.return_value = datetime(
-        2023, 8, 23, 9, 22, 14, 836035, tzinfo=TIME_ZONE
-    )
 
     mock_subprocess_run = mocker.patch(
         "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()

@@ -7,17 +7,14 @@ from respx import MockRouter
 
 
 async def test_step_summary(
-    mocked_store_data: dict[str, Path], mocked_api: MockRouter, mocker: MockerFixture
+    mocked_store_data: dict[str, Path],
+    mocked_api: MockRouter,
+    mocker: MockerFixture,
+    mock_datetime,
 ) -> None:
     """验证插件信息"""
-    from src.providers.constants import TIME_ZONE
     from src.providers.models import StoreTestResult
     from src.providers.store_test.store import StoreTest
-
-    mock_datetime = mocker.patch("src.providers.store_test.store.datetime")
-    mock_datetime.now.return_value = datetime(
-        2023, 8, 23, 9, 22, 14, 836035, tzinfo=TIME_ZONE
-    )
 
     store_test = {
         "NOT_AC": StoreTestResult(
