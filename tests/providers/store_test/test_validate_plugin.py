@@ -1,5 +1,4 @@
 import json
-from datetime import datetime
 from pathlib import Path
 
 from inline_snapshot import snapshot
@@ -99,7 +98,6 @@ async def test_validate_plugin_with_previous(
 
     需要能够正常更新 author_id, tags 和 is_official 等信息
     """
-    from src.providers.constants import TIME_ZONE
     from src.providers.models import Color, RegistryPlugin, StoreTestResult, Tag
     from src.providers.store_test.validation import StorePlugin, validate_plugin
 
@@ -192,7 +190,6 @@ async def test_validate_plugin_skip_test(
 
     如果插件之前是跳过测试的，如果插件测试成功，应将 skip_test 设置为 False。
     """
-    from src.providers.constants import TIME_ZONE
     from src.providers.models import RegistryPlugin, StoreTestResult
     from src.providers.store_test.validation import StorePlugin, validate_plugin
 
@@ -265,7 +262,6 @@ async def test_validate_plugin_skip_test_plugin_test_failed(
 
     如果插件之前是跳过测试的，如果插件测试失败，应不改变 skip_test 的值。
     """
-    from src.providers.constants import TIME_ZONE
     from src.providers.models import RegistryPlugin, StoreTestResult
     from src.providers.store_test.validation import StorePlugin, validate_plugin
 
