@@ -15,7 +15,7 @@ def find_datetime_loc(path: Path) -> list[str]:
         return ".".join(parts)
 
     for p in path.rglob("*.py"):
-        content = p.read_text()
+        content = p.read_text("utf-8")
         if "from datetime import datetime" in content:
             result.append(to_module_path(p))
     return result

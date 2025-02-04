@@ -513,8 +513,8 @@ async def test_process_remove_not_found_check(
                 ["git", "config", "--global", "safe.directory", "*"],
                 check=True,
                 capture_output=True,
-            ),
-        ]  # type: ignore
+            ),  # type: ignore
+        ]
     )
 
 
@@ -629,8 +629,8 @@ async def test_process_remove_author_info_not_eq(
                 ["git", "config", "--global", "safe.directory", "*"],
                 check=True,
                 capture_output=True,
-            ),
-        ]  # type: ignore
+            ),  # type: ignore
+        ]
     )
 
 
@@ -743,8 +743,8 @@ async def test_process_remove_issue_info_not_found(
                 ["git", "config", "--global", "safe.directory", "*"],
                 check=True,
                 capture_output=True,
-            ),
-        ]  # type: ignore
+            ),  # type: ignore
+        ]
     )
 
 
@@ -838,8 +838,8 @@ async def test_process_remove_driver(
                 ["git", "config", "--global", "safe.directory", "*"],
                 check=True,
                 capture_output=True,
-            ),
-        ]  # type: ignore
+            ),  # type: ignore
+        ]
     )
 
 
