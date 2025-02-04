@@ -1,5 +1,4 @@
 import os
-from datetime import datetime
 from pathlib import Path
 
 from inline_snapshot import snapshot
@@ -14,9 +13,9 @@ async def test_update_file(
     mocker: MockerFixture,
     tmp_path: Path,
     mock_results: dict[str, Path],
+    mock_datetime,
 ) -> None:
     from src.plugins.github.plugins.config.utils import update_file
-    from src.providers.constants import TIME_ZONE
     from src.providers.validation.models import (
         PluginPublishInfo,
         PublishType,
@@ -25,11 +24,6 @@ async def test_update_file(
 
     # 更改当前工作目录为临时目录
     os.chdir(tmp_path)
-
-    mock_datetime = mocker.patch("src.providers.models.datetime")
-    mock_datetime.now.return_value = datetime(
-        2023, 8, 23, 9, 22, 14, 836035, tzinfo=TIME_ZONE
-    )
 
     raw_data = {
         "module_name": "nonebot_plugin_treehelp",
