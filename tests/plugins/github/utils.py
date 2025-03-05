@@ -101,7 +101,7 @@ def generate_issue_body_plugin_skip_test(
 def generate_issue_body_plugin_test_button(body: str, selected: bool):
     from src.plugins.github.plugins.publish.constants import PLUGIN_TEST_BUTTON_TIPS
 
-    return f"""{body}\n\n### 插件测试\n\n- [{'x' if selected else ' '}] {PLUGIN_TEST_BUTTON_TIPS}"""
+    return f"""{body}\n\n### 插件测试\n\n- [{"x" if selected else " "}] {PLUGIN_TEST_BUTTON_TIPS}"""
 
 
 def generate_issue_body_remove(
@@ -200,6 +200,7 @@ class MockIssue:
     number: int = 80
     title: str = "Bot: test"
     state: Literal["open", "closed"] = "open"
+    state_reason: None | Literal["completed", "reopened", "not_planned"] = None
     body: str = field(default_factory=lambda: MockBody("bot").generate())
     pull_request: Any = None
     user: MockUser = field(default_factory=MockUser)

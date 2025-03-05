@@ -66,8 +66,8 @@ async def handle_pr_close(
     handler: IssueHandler = Depends(get_related_issue_handler),
 ) -> None:
     async with bot.as_installation(installation_id):
-        if handler.issue.state == "open":
-            reason = "completed" if event.payload.pull_request.merged else "not_planned"
+        reason = "completed" if event.payload.pull_request.merged else "not_planned"
+        if handler.issue.state == "open" or handler.issue.state_reason != reason:
             await handler.close_issue(reason)
         logger.info(f"议题 #{handler.issue.number} 已关闭")
 
