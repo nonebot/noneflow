@@ -69,7 +69,9 @@ class IssueHandler(GithubHandler):
         if issue_number is None:
             issue_number = self.issue_number
 
-        if self.issue and self.issue.state == "open":
+        if (
+            self.issue and self.issue.state == "open"
+        ) or self.issue.state_reason != reason:
             await super().close_issue(reason, issue_number)
 
     async def create_pull_request(

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 修复议题已经被关闭时无法正确设置为 not_planned 的问题
+
 ## [4.2.6] - 2025-01-22
 
 ### Fixed
