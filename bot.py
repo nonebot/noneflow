@@ -24,7 +24,7 @@ def ensure_cwd(cwd: Path):
 
 async def handle_github_action_event():
     """处理 GitHub Action 事件"""
-    driver = cast(Driver, nonebot.get_driver())
+    driver = cast("Driver", nonebot.get_driver())
     try:
         config = driver.config
         # 从环境变量中获取事件信息
@@ -50,7 +50,7 @@ class Adapter(GITHUBAdapter):
         self.driver.on_startup(self._startup)
 
     async def _startup(self):
-        driver = cast(Driver, self.driver)
+        driver = cast("Driver", self.driver)
         try:
             await super()._startup()
         except Exception:

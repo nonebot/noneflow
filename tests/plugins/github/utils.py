@@ -228,7 +228,7 @@ def get_github_bot(ctx):
         adapter=adapter,
         self_id=GitHubApp(app_id="1", private_key="1"),  # type: ignore
     )
-    bot = cast(GitHubBot, bot)
+    bot = cast("GitHubBot", bot)
     return adapter, bot
 
 

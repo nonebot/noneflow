@@ -15,7 +15,7 @@ from .constants import LOC_NAME_MAP
 
 def tags_to_str(tags: list[dict[str, str]]) -> str:
     """将标签列表转换为字符串"""
-    return ", ".join([f"{tag["label"]}-{tag["color"]}" for tag in tags])
+    return ", ".join([f"{tag['label']}-{tag['color']}" for tag in tags])
 
 
 def supported_adapters_to_str(supported_adapters: list[str] | None) -> str:
