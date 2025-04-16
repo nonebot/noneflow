@@ -231,7 +231,7 @@ async def test_render_error_plugin(app: App, mocker: MockFixture):
 
 > Plugin: 帮助
 
-[![主页](https://img.shields.io/badge/HOMEPAGE-https://github.com/he0119/nonebot-plugin-treehelp-green?style=for-the-badge)](https://github.com/he0119/nonebot-plugin-treehelp) [![测试结果](https://img.shields.io/badge/RESULT-ERROR-red?style=for-the-badge)](https://github.com/owner/repo/actions/runs/123456)
+[![主页](https://img.shields.io/badge/HOMEPAGE-200-green?style=for-the-badge)](https://github.com/he0119/nonebot-plugin-treehelp) [![测试结果](https://img.shields.io/badge/RESULT-ERROR-red?style=for-the-badge)](https://github.com/owner/repo/actions/runs/123456)
 
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
@@ -300,7 +300,7 @@ async def test_render_error_plugin_load_test(app: App):
 
 > Plugin: 帮助
 
-[![主页](https://img.shields.io/badge/HOMEPAGE-https://github.com/he0119/nonebot-plugin-treehelp-green?style=for-the-badge)](https://github.com/he0119/nonebot-plugin-treehelp)
+[![主页](https://img.shields.io/badge/HOMEPAGE-200-green?style=for-the-badge)](https://github.com/he0119/nonebot-plugin-treehelp)
 
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 

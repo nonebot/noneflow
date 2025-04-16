@@ -104,7 +104,7 @@ async def render_comment(result: ValidationDict, reuse: bool = False) -> str:
             COMMENT_CARD_TEMPLATE.format(
                 name="主页",
                 head="HOMEPAGE",
-                content=homepage,
+                content="200",
                 color="green",
                 url=homepage,
             )
