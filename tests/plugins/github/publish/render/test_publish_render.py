@@ -22,7 +22,6 @@ async def test_render_empty(app: App):
 
 > Bot: name
 
-
 **✅ 所有测试通过，一切准备就绪！**
 
 
@@ -56,7 +55,6 @@ async def test_render_reuse(app: App):
 # 📃 商店发布检查结果
 
 > Bot: name
-
 
 **✅ 所有测试通过，一切准备就绪！**
 

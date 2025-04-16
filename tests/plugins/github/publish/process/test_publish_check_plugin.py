@@ -700,7 +700,6 @@ log_level=DEBUG
 
 > Plugin: project_link
 
-
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
 <pre><code><li>⚠️ 无法获取到插件元数据。<dt>请确保插件正常加载。</dt></li></code></pre>
@@ -953,7 +952,6 @@ log_level=DEBUG
 # 📃 商店发布检查结果
 
 > Plugin: project_link
-
 
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
