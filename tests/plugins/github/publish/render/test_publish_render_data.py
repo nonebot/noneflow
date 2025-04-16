@@ -249,7 +249,6 @@ async def test_render_data_plugin_supported_adapters(app: App, mocker: MockFixtu
 
 > Plugin: 帮助
 
-
 **✅ 所有测试通过，一切准备就绪！**
 
 

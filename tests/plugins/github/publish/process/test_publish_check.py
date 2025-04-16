@@ -749,7 +749,6 @@ async def test_process_publish_check_not_pass(
 
 > Bot: test
 
-
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
 <pre><code><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保你的项目主页可访问。</dt></li></code></pre>
@@ -976,7 +975,6 @@ async def test_convert_pull_request_to_draft(
 # 📃 商店发布检查结果
 
 > Bot: test
-
 
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
