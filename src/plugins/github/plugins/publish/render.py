@@ -100,21 +100,25 @@ async def render_comment(result: ValidationDict, reuse: bool = False) -> str:
 
     card: list[str] = []
     if homepage := data.get("homepage"):
-        card.append(COMMENT_CARD_TEMPLATE.format(
-            name="主页",
-            head="HOMEPAGE",
-            content=homepage,
-            color="green",
-            url=homepage,
-        ))
+        card.append(
+            COMMENT_CARD_TEMPLATE.format(
+                name="主页",
+                head="HOMEPAGE",
+                content=homepage,
+                color="green",
+                url=homepage,
+            )
+        )
     if action_url := data.get("action_url"):
-        card.append(COMMENT_CARD_TEMPLATE.format(
-            name="测试结果",
-            head="RESULT",
-            content="OK" if result.valid else "ERROR",
-            color="green" if result.valid else "red",
-            url=action_url,
-        ))
+        card.append(
+            COMMENT_CARD_TEMPLATE.format(
+                name="测试结果",
+                head="RESULT",
+                content="OK" if result.valid else "ERROR",
+                color="green" if result.valid else "red",
+                url=action_url,
+            )
+        )
 
     template = env.get_template("comment.md.jinja")
     return await template.render_async(
