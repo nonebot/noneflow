@@ -192,6 +192,8 @@ log_level=DEBUG
 
 > Plugin: name
 
+[![主页](https://img.shields.io/badge/HOMEPAGE-200-green?style=for-the-badge)](https://nonebot.dev)
+
 **✅ 所有测试通过，一切准备就绪！**
 
 
@@ -452,6 +454,8 @@ log_level=DEBUG
 
 > Plugin: name
 
+[![主页](https://img.shields.io/badge/HOMEPAGE-200-green?style=for-the-badge)](https://nonebot.dev)
+
 **✅ 所有测试通过，一切准备就绪！**
 
 
@@ -695,6 +699,7 @@ log_level=DEBUG
 # 📃 商店发布检查结果
 
 > Plugin: project_link
+
 
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
@@ -948,6 +953,7 @@ log_level=DEBUG
 # 📃 商店发布检查结果
 
 > Plugin: project_link
+
 
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 

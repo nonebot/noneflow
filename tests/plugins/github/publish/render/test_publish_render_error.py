@@ -54,6 +54,7 @@ async def test_render_error_bot(app: App):
 
 > Bot: CoolQBot
 
+
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
 <pre><code><li>⚠️ 名称: 字符过多。<dt>请确保其不超过 50 个字符。</dt></li><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保你的项目主页可访问。</dt></li><li>⚠️ 第 2 个标签名称过长。<dt>请确保标签名称不超过 10 个字符。</dt></li><li>⚠️ 第 2 个标签颜色错误。<dt>请确保标签颜色符合十六进制颜色码规则。</dt></li></code></pre>
@@ -136,6 +137,7 @@ async def test_render_error_adapter(app: App):
 # 📃 商店发布检查结果
 
 > Adapter: 大别野
+
 
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
@@ -231,6 +233,8 @@ async def test_render_error_plugin(app: App, mocker: MockFixture):
 
 > Plugin: 帮助
 
+[![主页](https://img.shields.io/badge/HOMEPAGE-200-green?style=for-the-badge)](https://github.com/he0119/nonebot-plugin-treehelp)
+
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
 <pre><code><li>⚠️ PyPI 项目名 project_link 加包名 module_name 的值与商店重复。<dt>请确保没有重复发布。</dt></li><li>⚠️ 名称: 字符过多。<dt>请确保其不超过 50 个字符。</dt></li><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保你的项目主页可访问。</dt></li><li>⚠️ 第 2 个标签名称过长。<dt>请确保标签名称不超过 10 个字符。</dt></li><li>⚠️ 第 2 个标签颜色错误。<dt>请确保标签颜色符合十六进制颜色码规则。</dt></li><li>⚠️ 插件类型: 无法匹配到数据。<dt>请确保填写该数据项。</dt></li></code></pre>
@@ -298,6 +302,8 @@ async def test_render_error_plugin_load_test(app: App):
 
 > Plugin: 帮助
 
+[![主页](https://img.shields.io/badge/HOMEPAGE-200-green?style=for-the-badge)](https://github.com/he0119/nonebot-plugin-treehelp)
+
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
 <pre><code><li>⚠️ 插件测试元数据: 无法获取到插件元数据。</li><li>⚠️ 插件加载测试未通过。<details><summary>测试输出</summary>output</details></li></code></pre>
@@ -354,6 +360,7 @@ async def test_render_error_plugin_metadata(app: App, mocker: MockFixture):
 # 📃 商店发布检查结果
 
 > Plugin: 帮助
+
 
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
@@ -422,6 +429,7 @@ async def test_render_error_tags_invalid(app: App, mocker: MockFixture):
 # 📃 商店发布检查结果
 
 > Plugin: 帮助
+
 
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
@@ -492,6 +500,7 @@ async def test_render_type_error(app: App, mocker: MockFixture):
 
 > Plugin: 帮助
 
+
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
 <pre><code><li>⚠️ 插件类型 invalid 不符合规范。<dt>请确保插件类型正确，当前仅支持 application 与 library。</dt></li><li>⚠️ 适配器 missing 不存在。<dt>请确保适配器模块名称正确。</dt></li><li>⚠️ 插件支持的适配器: 格式错误。<dt>请确保其为集合。</dt></li></code></pre>
@@ -547,6 +556,7 @@ async def test_render_unknown_error(app: App, mocker: MockFixture):
 # 📃 商店发布检查结果
 
 > Plugin: 帮助
+
 
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
@@ -614,6 +624,7 @@ async def test_render_http_error(app: App, mocker: MockFixture):
 # 📃 商店发布检查结果
 
 > Plugin: 帮助
+
 
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 

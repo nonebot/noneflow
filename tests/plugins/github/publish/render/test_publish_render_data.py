@@ -34,6 +34,8 @@ async def test_render_data_bot(app: App):
 
 > Bot: CoolQBot
 
+[![主页](https://img.shields.io/badge/HOMEPAGE-200-green?style=for-the-badge)](https://github.com/he0119/CoolQBot)
+
 **✅ 所有测试通过，一切准备就绪！**
 
 
@@ -79,6 +81,8 @@ async def test_render_data_bot(app: App):
 # 📃 商店发布检查结果
 
 > Bot: March7th
+
+[![主页](https://img.shields.io/badge/HOMEPAGE-200-green?style=for-the-badge)](https://github.com/Mar-7th/March7th)
 
 **✅ 所有测试通过，一切准备就绪！**
 
@@ -132,6 +136,8 @@ async def test_render_data_adapter(app: App):
 # 📃 商店发布检查结果
 
 > Adapter: 大别野
+
+[![主页](https://img.shields.io/badge/HOMEPAGE-200-green?style=for-the-badge)](https://github.com/CMHopeSunshine/nonebot-adapter-villa)
 
 **✅ 所有测试通过，一切准备就绪！**
 
@@ -190,6 +196,8 @@ async def test_render_data_plugin(app: App, mocker: MockFixture):
 
 > Plugin: 帮助
 
+[![主页](https://img.shields.io/badge/HOMEPAGE-200-green?style=for-the-badge)](https://github.com/he0119/nonebot-plugin-treehelp)
+
 **✅ 所有测试通过，一切准备就绪！**
 
 
@@ -240,6 +248,7 @@ async def test_render_data_plugin_supported_adapters(app: App, mocker: MockFixtu
 # 📃 商店发布检查结果
 
 > Plugin: 帮助
+
 
 **✅ 所有测试通过，一切准备就绪！**
 
