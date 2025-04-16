@@ -98,8 +98,12 @@ async def render_comment(result: ValidationDict, reuse: bool = False) -> str:
     # 按照 display_keys 顺序展示数据
     data = {key: valid_data[key] for key in display_keys if key in valid_data}
 
+    # homepage 字段单独处理，提供快捷插件审核入口
+    homepage: str | None = data.get("homepage")
+
     template = env.get_template("comment.md.jinja")
     return await template.render_async(
+        homepage=homepage,
         reuse=reuse,
         title=title,
         valid=result.valid,
