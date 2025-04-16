@@ -91,7 +91,7 @@ async def test_bot_process_publish_check(
 
 > Bot: test
 
-[![主页](https://img.shields.io/badge/HOMEPAGE-200-green?style=for-the-badge)](https://nonebot.dev)
+[![主页](https://img.shields.io/badge/HOMEPAGE-https://nonebot.dev-green?style=for-the-badge)](https://nonebot.dev)
 
 **✅ 所有测试通过，一切准备就绪！**
 
@@ -250,7 +250,7 @@ async def test_adapter_process_publish_check(
 
 > Adapter: test
 
-[![主页](https://img.shields.io/badge/HOMEPAGE-200-green?style=for-the-badge)](https://nonebot.dev)
+[![主页](https://img.shields.io/badge/HOMEPAGE-https://nonebot.dev-green?style=for-the-badge)](https://nonebot.dev)
 
 **✅ 所有测试通过，一切准备就绪！**
 
@@ -428,7 +428,7 @@ async def test_edit_title(
 
 > Bot: test1
 
-[![主页](https://img.shields.io/badge/HOMEPAGE-200-green?style=for-the-badge)](https://nonebot.dev)
+[![主页](https://img.shields.io/badge/HOMEPAGE-https://nonebot.dev-green?style=for-the-badge)](https://nonebot.dev)
 
 **✅ 所有测试通过，一切准备就绪！**
 
@@ -617,7 +617,7 @@ async def test_edit_title_too_long(
 
 > Bot: looooooooooooooooooooooooooooooooooooooooooooooooooooooong
 
-[![主页](https://img.shields.io/badge/HOMEPAGE-200-green?style=for-the-badge)](https://nonebot.dev)
+[![主页](https://img.shields.io/badge/HOMEPAGE-https://nonebot.dev-green?style=for-the-badge)](https://nonebot.dev)
 
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
@@ -1108,7 +1108,7 @@ async def test_process_publish_check_ready_for_review(
 
 > Bot: test
 
-[![主页](https://img.shields.io/badge/HOMEPAGE-200-green?style=for-the-badge)](https://nonebot.dev)
+[![主页](https://img.shields.io/badge/HOMEPAGE-https://nonebot.dev-green?style=for-the-badge)](https://nonebot.dev)
 
 **✅ 所有测试通过，一切准备就绪！**
 
@@ -1293,7 +1293,7 @@ async def test_comment_immediate_after_pull_request_closed(
 
 > Bot: test
 
-[![主页](https://img.shields.io/badge/HOMEPAGE-200-green?style=for-the-badge)](https://nonebot.dev)
+[![主页](https://img.shields.io/badge/HOMEPAGE-https://nonebot.dev-green?style=for-the-badge)](https://nonebot.dev)
 
 **✅ 所有测试通过，一切准备就绪！**
 

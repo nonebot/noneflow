@@ -10,7 +10,7 @@ from src.providers.utils import dumps_json
 from src.providers.validation import ValidationDict
 from src.providers.validation.models import PublishType
 
-from .constants import LOC_NAME_MAP
+from .constants import COMMENT_CARD_TEMPLATE, LOC_NAME_MAP
 
 
 def tags_to_str(tags: list[dict[str, str]]) -> str:
@@ -98,12 +98,28 @@ async def render_comment(result: ValidationDict, reuse: bool = False) -> str:
     # 按照 display_keys 顺序展示数据
     data = {key: valid_data[key] for key in display_keys if key in valid_data}
 
-    # homepage 字段单独处理，提供快捷插件审核入口
-    homepage: str | None = data.get("homepage")
+    card: list[str] = []
+    if homepage := data.get("homepage"):
+        card.append(COMMENT_CARD_TEMPLATE.format(
+            name="主页",
+            head="HOMEPAGE",
+            content=homepage,
+            color="green",
+            url=homepage,
+        ))
+    if action_url := data.get("action_url"):
+        card.append(COMMENT_CARD_TEMPLATE.format(
+            name="测试结果",
+            head="RESULT",
+            content="OK" if result.valid else "ERROR",
+            color="green" if result.valid else "red",
+            url=action_url,
+        ))
 
     template = env.get_template("comment.md.jinja")
     return await template.render_async(
-        homepage=homepage,
+        card=" ".join(card),
+        action_url=action_url,
         reuse=reuse,
         title=title,
         valid=result.valid,
