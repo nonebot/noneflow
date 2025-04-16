@@ -119,7 +119,6 @@ async def render_comment(result: ValidationDict, reuse: bool = False) -> str:
     template = env.get_template("comment.md.jinja")
     return await template.render_async(
         card=" ".join(card),
-        action_url=action_url,
         reuse=reuse,
         title=title,
         valid=result.valid,
