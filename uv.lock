@@ -70,7 +70,7 @@ wheels = [
 
 [[package]]
 name = "bump-my-version"
-version = "1.0.1"
+version = "1.1.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
@@ -83,9 +83,9 @@ dependencies = [
     { name = "tomlkit" },
     { name = "wcmatch" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5a/bb/b44a279103af555aad46a238dd39880bb6fda9684c27142c062e87112ebc/bump_my_version-1.0.1.tar.gz", hash = "sha256:2bc399b2133a1bd27e0d180cd6a445b42cae25c2dde6698ca8d9971eeb258eaf", size = 1101376 }
+sdist = { url = "https://files.pythonhosted.org/packages/13/0a/544e8eb6d46baa99bf16d180b4ddb4509631fa8476e686c8e6c47681afb4/bump_my_version-1.1.2.tar.gz", hash = "sha256:0122845a78502b5a5a635ca17c1efb3e1ec05e77d72d13b2314186b9806882fb", size = 1120309 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/90/b3/6f3db4bb92bad5a83ed1af5d0c7f4140bb3ed69602c3089d2d2dd8eb4a5d/bump_my_version-1.0.1-py3-none-any.whl", hash = "sha256:6f52157f5e4966e7a94f4fa9ff56429f7292d6b5743c616558eec25f7c3270a1", size = 58561 },
+    { url = "https://files.pythonhosted.org/packages/dc/a9/026894e86ce2838d029af1344c71fd57560d1b6e2ce6513c340cbf8e00cb/bump_my_version-1.1.2-py3-none-any.whl", hash = "sha256:71a2a8c3940c87749c4cc404b2ada2fafbeab4e478e0ef54537686905ae58e0d", size = 59495 },
 ]
 
 [[package]]
@@ -291,11 +291,11 @@ wheels = [
 
 [[package]]
 name = "executing"
-version = "2.1.0"
+version = "2.2.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/8c/e3/7d45f492c2c4a0e8e0fad57d081a7c8a0286cdd86372b070cca1ec0caa1e/executing-2.1.0.tar.gz", hash = "sha256:8ea27ddd260da8150fa5a708269c4a10e76161e2496ec3e587da9e3c0fe4b9ab", size = 977485 }
+sdist = { url = "https://files.pythonhosted.org/packages/91/50/a9d80c47ff289c611ff12e63f7c5d13942c65d68125160cefd768c73e6e4/executing-2.2.0.tar.gz", hash = "sha256:5d108c028108fe2551d1a7b2e8b713341e2cb4fc0aa7dcf966fa4327a5226755", size = 978693 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b5/fd/afcd0496feca3276f509df3dbd5dae726fcc756f1a08d9e25abe1733f962/executing-2.1.0-py2.py3-none-any.whl", hash = "sha256:8d63781349375b5ebccc3142f4b30350c0cd9c79f921cde38be2be4637e98eaf", size = 25805 },
+    { url = "https://files.pythonhosted.org/packages/7b/8f/c4d9bafc34ad7ad5d8dc16dd1347ee0e507a52c3adb6bfa8887e1c6a26ba/executing-2.2.0-py2.py3-none-any.whl", hash = "sha256:11387150cad388d62750327a53d3339fad4888b39a6fe233c3afbb54ecffd3aa", size = 26702 },
 ]
 
 [[package]]
@@ -389,16 +389,17 @@ wheels = [
 
 [[package]]
 name = "inline-snapshot"
-version = "0.19.3"
+version = "0.22.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "asttokens" },
     { name = "executing" },
+    { name = "pytest" },
     { name = "rich" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/42/bc/bbba2efb2ab0c8cf3d43fb0a7a1d3dfd8533d3bf18df9662ee4c09af7cac/inline_snapshot-0.19.3.tar.gz", hash = "sha256:1e40f34da64fe2406c6bba3f473905e22386da43e16c85060610692325aa94d7", size = 88636 }
+sdist = { url = "https://files.pythonhosted.org/packages/f9/a9/f5c35bdf19f4a93adc281a89cd6cbc19114db649fee5d509257712c6c5b2/inline_snapshot-0.22.3.tar.gz", hash = "sha256:34c02a8567dafc88bb720872edde792ff5e665c8726f6af3bfc5fa85dd0016be", size = 259515 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fd/fc/d99b8983af46c0adbe10ad369ab929eb35cb32635526a9de4fe06ffd612f/inline_snapshot-0.19.3-py3-none-any.whl", hash = "sha256:81ed10eedb593aee630d2fc0cfe5d10a843c4bd507c2d96ea058c28413985452", size = 43627 },
+    { url = "https://files.pythonhosted.org/packages/d8/35/dde6c4fcc46ba87cfe8521ac909174d51d46f1c2490673e0077c3bb0091d/inline_snapshot-0.22.3-py3-none-any.whl", hash = "sha256:2e3f076664a61742a615aa769d30f560acf37c640340a93caf0fe410b4ab8495", size = 50291 },
 ]
 
 [[package]]
@@ -617,12 +618,12 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "bump-my-version", specifier = ">=1.0.1" },
-    { name = "inline-snapshot", specifier = ">=0.19.3" },
+    { name = "bump-my-version", specifier = ">=1.1.2" },
+    { name = "inline-snapshot", specifier = ">=0.22.3" },
     { name = "nonebug", specifier = ">=0.4.3" },
-    { name = "poethepoet", specifier = ">=0.32.1" },
-    { name = "pytest-asyncio", specifier = ">=0.25.2" },
-    { name = "pytest-cov", specifier = ">=6.0.0" },
+    { name = "poethepoet", specifier = ">=0.33.1" },
+    { name = "pytest-asyncio", specifier = ">=0.26.0" },
+    { name = "pytest-cov", specifier = ">=6.1.1" },
     { name = "pytest-mock", specifier = ">=3.14.0" },
     { name = "pytest-xdist", specifier = ">=3.6.1" },
     { name = "respx", specifier = ">=0.22.0" },
@@ -657,15 +658,15 @@ wheels = [
 
 [[package]]
 name = "poethepoet"
-version = "0.32.1"
+version = "0.33.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pastel" },
     { name = "pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d1/10/11f929bad564b2dbc5c119ecf0f37456ac24538bb4a70c76f140a2aa695a/poethepoet-0.32.1.tar.gz", hash = "sha256:471e1a025812dcd3d2997e30989681be5ab0a49232ee5fba94859629671c9584", size = 61391 }
+sdist = { url = "https://files.pythonhosted.org/packages/cd/1d/ec87271390cc5fafdd5996137331ad3a7ce99b715e4ee68db554d202817f/poethepoet-0.33.1.tar.gz", hash = "sha256:8775e09b64f773278b5483659ff238a708723491efadeedd1c2cbf773558cb4c", size = 62536 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/85/a5/fc26dd508f33809bdd3823a0170e492fe44ad7e097c32c4a52e16cf3ecb0/poethepoet-0.32.1-py3-none-any.whl", hash = "sha256:d1e0a52a2f677870fac17dfb26bfe4910242756ac821443ef31f90ad26227c2d", size = 81729 },
+    { url = "https://files.pythonhosted.org/packages/34/ea/c476bfec360eb6831ce46df2719f76d1132b9a87da11c302081a9def5fce/poethepoet-0.33.1-py3-none-any.whl", hash = "sha256:b86d80a81b2ca4e4ce8e8f716cc6004a1a1cdead027778bc07d1c26cb3664770", size = 83512 },
 ]
 
 [[package]]
@@ -883,7 +884,7 @@ crypto = [
 
 [[package]]
 name = "pytest"
-version = "8.3.3"
+version = "8.3.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorama", marker = "sys_platform == 'win32'" },
@@ -891,34 +892,34 @@ dependencies = [
     { name = "packaging" },
     { name = "pluggy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8b/6c/62bbd536103af674e227c41a8f3dcd022d591f6eed5facb5a0f31ee33bbc/pytest-8.3.3.tar.gz", hash = "sha256:70b98107bd648308a7952b06e6ca9a50bc660be218d53c257cc1fc94fda10181", size = 1442487 }
+sdist = { url = "https://files.pythonhosted.org/packages/ae/3c/c9d525a414d506893f0cd8a8d0de7706446213181570cdbd766691164e40/pytest-8.3.5.tar.gz", hash = "sha256:f4efe70cc14e511565ac476b57c279e12a855b11f48f212af1080ef2263d3845", size = 1450891 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6b/77/7440a06a8ead44c7757a64362dd22df5760f9b12dc5f11b6188cd2fc27a0/pytest-8.3.3-py3-none-any.whl", hash = "sha256:a6853c7375b2663155079443d2e45de913a911a11d669df02a50814944db57b2", size = 342341 },
+    { url = "https://files.pythonhosted.org/packages/30/3d/64ad57c803f1fa1e963a7946b6e0fea4a70df53c1a7fed304586539c2bac/pytest-8.3.5-py3-none-any.whl", hash = "sha256:c69214aa47deac29fad6c2a4f590b9c4a9fdb16a403176fe154b79c0b4d4d820", size = 343634 },
 ]
 
 [[package]]
 name = "pytest-asyncio"
-version = "0.25.2"
+version = "0.26.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pytest" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/72/df/adcc0d60f1053d74717d21d58c0048479e9cab51464ce0d2965b086bd0e2/pytest_asyncio-0.25.2.tar.gz", hash = "sha256:3f8ef9a98f45948ea91a0ed3dc4268b5326c0e7bce73892acc654df4262ad45f", size = 53950 }
+sdist = { url = "https://files.pythonhosted.org/packages/8e/c4/453c52c659521066969523e87d85d54139bbd17b78f09532fb8eb8cdb58e/pytest_asyncio-0.26.0.tar.gz", hash = "sha256:c4df2a697648241ff39e7f0e4a73050b03f123f760673956cf0d72a4990e312f", size = 54156 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/61/d8/defa05ae50dcd6019a95527200d3b3980043df5aa445d40cb0ef9f7f98ab/pytest_asyncio-0.25.2-py3-none-any.whl", hash = "sha256:0d0bb693f7b99da304a0634afc0a4b19e49d5e0de2d670f38dc4bfa5727c5075", size = 19400 },
+    { url = "https://files.pythonhosted.org/packages/20/7f/338843f449ace853647ace35870874f69a764d251872ed1b4de9f234822c/pytest_asyncio-0.26.0-py3-none-any.whl", hash = "sha256:7b51ed894f4fbea1340262bdae5135797ebbe21d8638978e35d31c6d19f72fb0", size = 19694 },
 ]
 
 [[package]]
 name = "pytest-cov"
-version = "6.0.0"
+version = "6.1.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "coverage" },
     { name = "pytest" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/be/45/9b538de8cef30e17c7b45ef42f538a94889ed6a16f2387a6c89e73220651/pytest-cov-6.0.0.tar.gz", hash = "sha256:fde0b595ca248bb8e2d76f020b465f3b107c9632e6a1d1705f17834c89dcadc0", size = 66945 }
+sdist = { url = "https://files.pythonhosted.org/packages/25/69/5f1e57f6c5a39f81411b550027bf72842c4567ff5fd572bed1edc9e4b5d9/pytest_cov-6.1.1.tar.gz", hash = "sha256:46935f7aaefba760e716c2ebfbe1c216240b9592966e7da99ea8292d4d3e2a0a", size = 66857 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/36/3b/48e79f2cd6a61dbbd4807b4ed46cb564b4fd50a76166b1c4ea5c1d9e2371/pytest_cov-6.0.0-py3-none-any.whl", hash = "sha256:eee6f1b9e61008bd34975a4d5bab25801eb31898b032dd55addc93e96fcaaa35", size = 22949 },
+    { url = "https://files.pythonhosted.org/packages/28/d0/def53b4a790cfb21483016430ed828f64830dd981ebe1089971cd10cab25/pytest_cov-6.1.1-py3-none-any.whl", hash = "sha256:bddf29ed2d0ab6f4df17b4c55b0a657287db8684af9c42ea546b21b1041b3dde", size = 23841 },
 ]
 
 [[package]]
