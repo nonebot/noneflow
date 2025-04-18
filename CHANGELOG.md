@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [4.3.0] - 2025-04-18
+
 ## [4.2.7] - 2025-03-08
 
 ### Fixed
@@ -643,7 +645,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.2.7...HEAD
+[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.3.0...HEAD
+[4.3.0]: https://github.com/nonebot/noneflow/compare/v4.2.7...v4.3.0
 [4.2.7]: https://github.com/nonebot/noneflow/compare/v4.2.6...v4.2.7
 [4.2.6]: https://github.com/nonebot/noneflow/compare/v4.2.5...v4.2.6
 [4.2.5]: https://github.com/nonebot/noneflow/compare/v4.2.4...v4.2.5
