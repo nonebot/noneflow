@@ -300,7 +300,7 @@ wheels = [
 
 [[package]]
 name = "githubkit"
-version = "0.12.5"
+version = "0.12.10"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -309,9 +309,9 @@ dependencies = [
     { name = "pydantic" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d3/b6/9df221e07fbfe1f5fd66ed1d1d8bbbdd1679cf37953e248c69e1e559425a/githubkit-0.12.5.tar.gz", hash = "sha256:d465a8a117c51e53213a6cffca2208f00596c889c3feacd8ad66842ba652ba2d", size = 1842691 }
+sdist = { url = "https://files.pythonhosted.org/packages/09/0b/4fb64aebad1af540193bdad64140515847089711eb4716be6c76b70927a2/githubkit-0.12.10.tar.gz", hash = "sha256:9c4407a65823da13f5603feecfdaeabe70c02dc286eb74a2310930dd2da470b5", size = 1887520 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/79/ce/a23d4cd771c546379a9e13f2f9db7215a1f8846bc174cf142cb04116a270/githubkit-0.12.5-py3-none-any.whl", hash = "sha256:9a5c00591a4218ae311ad5797b215143fbd6a34079f1c8aa6d4db7a80e5b530f", size = 5266887 },
+    { url = "https://files.pythonhosted.org/packages/c6/7b/1dffec909efb5fcd603e9fc4eca63b1f9f5a1168ef0f9c1049443bb55c35/githubkit-0.12.10-py3-none-any.whl", hash = "sha256:3dec36d177c029fbde82747f60bb3278152b90922a021fcee5e4287ef0073cdd", size = 5467703 },
 ]
 
 [package.optional-dependencies]
@@ -404,14 +404,14 @@ wheels = [
 
 [[package]]
 name = "jinja2"
-version = "3.1.5"
+version = "3.1.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "markupsafe" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/af/92/b3130cbbf5591acf9ade8708c365f3238046ac7cb8ccba6e81abccb0ccff/jinja2-3.1.5.tar.gz", hash = "sha256:8fefff8dc3034e27bb80d67c671eb8a9bc424c0ef4c0826edbff304cceff43bb", size = 244674 }
+sdist = { url = "https://files.pythonhosted.org/packages/df/bf/f7da0350254c0ed7c72f3e33cef02e048281fec7ecec5f032d4aac52226b/jinja2-3.1.6.tar.gz", hash = "sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d", size = 245115 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bd/0f/2ba5fbcd631e3e88689309dbe978c5769e883e4b84ebfe7da30b43275c5a/jinja2-3.1.5-py3-none-any.whl", hash = "sha256:aba0f4dc9ed8013c424088f68a5c226f7d6097ed89b246d7749c2ec4175c6adb", size = 134596 },
+    { url = "https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl", hash = "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67", size = 134899 },
 ]
 
 [[package]]
@@ -541,7 +541,7 @@ wheels = [
 
 [[package]]
 name = "nonebot2"
-version = "2.4.1"
+version = "2.4.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -553,9 +553,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "yarl" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/58/ae/b56153fb5726183bd2708fb5b000ae5cbab61aa706ad2754d1350a38ccc5/nonebot2-2.4.1.tar.gz", hash = "sha256:8fea364318501ed79721403a8ecd76587bc884d58c356260f691a8bbda9b05e6", size = 96396 }
+sdist = { url = "https://files.pythonhosted.org/packages/1c/06/754d4aea53d1a6622956c9d9a261760b15df03f95d7540666b85ba48d653/nonebot2-2.4.2.tar.gz", hash = "sha256:cf72d5920503ff373ba1d7963f3ddf573db913eb504e3b68ee347efb937db27d", size = 94868 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/97/3d/f27209daac042575b46f586eedde852d29b29f24e42ba4bd2bc8e68e6dd9/nonebot2-2.4.1-py3-none-any.whl", hash = "sha256:fec95f075efc89dbe9ce148618b413b02f46ba284200367749b035e794695111", size = 114703 },
+    { url = "https://files.pythonhosted.org/packages/26/a8/18b79572cb6178a18bc2da76a041fc6b9f6308c5d376f5c7cbd84f4acf2d/nonebot2-2.4.2-py3-none-any.whl", hash = "sha256:ed3e970cdb6c885fb23349b65a045c08cf3ac7f43e28564ae0c72d3671ecda74", size = 115183 },
 ]
 
 [[package]]
@@ -607,13 +607,13 @@ dev = [
 requires-dist = [
     { name = "click", specifier = ">=8.1.8" },
     { name = "docker", specifier = ">=7.1.0" },
-    { name = "githubkit", specifier = ">=0.12.5" },
-    { name = "jinja2", specifier = ">=3.1.5" },
+    { name = "githubkit", specifier = ">=0.12.10" },
+    { name = "jinja2", specifier = ">=3.1.6" },
     { name = "nonebot-adapter-github", specifier = ">=0.5.0" },
-    { name = "nonebot2", specifier = ">=2.4.1" },
-    { name = "pydantic-extra-types", specifier = ">=2.10.2" },
+    { name = "nonebot2", specifier = ">=2.4.2" },
+    { name = "pydantic-extra-types", specifier = ">=2.10.3" },
     { name = "pyjson5", specifier = ">=1.6.8" },
-    { name = "tzdata", specifier = ">=2025.1" },
+    { name = "tzdata", specifier = ">=2025.2" },
 ]
 
 [package.metadata.requires-dev]
@@ -782,15 +782,15 @@ wheels = [
 
 [[package]]
 name = "pydantic-extra-types"
-version = "2.10.2"
+version = "2.10.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/23/ed/69f3f3de12c02ebd58b2f66ffb73d0f5a1b10b322227897499753cebe818/pydantic_extra_types-2.10.2.tar.gz", hash = "sha256:934d59ab7a02ff788759c3a97bc896f5cfdc91e62e4f88ea4669067a73f14b98", size = 86893 }
+sdist = { url = "https://files.pythonhosted.org/packages/53/fa/6b268a47839f8af46ffeb5bb6aee7bded44fbad54e6bf826c11f17aef91a/pydantic_extra_types-2.10.3.tar.gz", hash = "sha256:dcc0a7b90ac9ef1b58876c9b8fdede17fbdde15420de9d571a9fccde2ae175bb", size = 95128 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/08/da/86bc9addde8a24348ac15f8f7dcb853f78e9573c7667800dd9bc60558678/pydantic_extra_types-2.10.2-py3-none-any.whl", hash = "sha256:9eccd55a2b7935cea25f0a67f6ff763d55d80c41d86b887d88915412ccf5b7fa", size = 35473 },
+    { url = "https://files.pythonhosted.org/packages/38/0a/f6f8e5f79d188e2f3fa9ecfccfa72538b685985dd5c7c2886c67af70e685/pydantic_extra_types-2.10.3-py3-none-any.whl", hash = "sha256:e8b372752b49019cd8249cc192c62a820d8019f5382a8789d0f887338a59c0f3", size = 37175 },
 ]
 
 [[package]]
@@ -1099,11 +1099,11 @@ wheels = [
 
 [[package]]
 name = "tzdata"
-version = "2025.1"
+version = "2025.2"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/43/0f/fa4723f22942480be4ca9527bbde8d43f6c3f2fe8412f00e7f5f6746bc8b/tzdata-2025.1.tar.gz", hash = "sha256:24894909e88cdb28bd1636c6887801df64cb485bd593f2fd83ef29075a81d694", size = 194950 }
+sdist = { url = "https://files.pythonhosted.org/packages/95/32/1a225d6164441be760d75c2c42e2780dc0873fe382da3e98a2e1e48361e5/tzdata-2025.2.tar.gz", hash = "sha256:b60a638fcc0daffadf82fe0f57e53d06bdec2f36c4df66280ae79bce6bd6f2b9", size = 196380 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0f/dd/84f10e23edd882c6f968c21c2434fe67bd4a528967067515feca9e611e5e/tzdata-2025.1-py2.py3-none-any.whl", hash = "sha256:7e127113816800496f027041c570f50bcd464a020098a3b6b199517772303639", size = 346762 },
+    { url = "https://files.pythonhosted.org/packages/5c/23/c7abc0ca0a1526a0774eca151daeb8de62ec457e77262b66b359c3c7679e/tzdata-2025.2-py2.py3-none-any.whl", hash = "sha256:1a403fada01ff9221ca8044d701868fa132215d84beb92242d9acd2147f667a8", size = 347839 },
 ]
 
 [[package]]
