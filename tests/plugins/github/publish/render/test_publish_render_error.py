@@ -231,7 +231,7 @@ async def test_render_error_plugin(app: App, mocker: MockFixture):
 
 > Plugin: 帮助
 
-[![主页](https://img.shields.io/badge/HOMEPAGE-200-green?style=for-the-badge)](https://github.com/he0119/nonebot-plugin-treehelp)
+[![主页](https://img.shields.io/badge/HOMEPAGE-200-green?style=for-the-badge)](https://github.com/he0119/nonebot-plugin-treehelp) [![测试结果](https://img.shields.io/badge/RESULT-ERROR-red?style=for-the-badge)](https://github.com/owner/repo/actions/runs/123456)
 
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
@@ -359,6 +359,8 @@ async def test_render_error_plugin_metadata(app: App, mocker: MockFixture):
 
 > Plugin: 帮助
 
+[![测试结果](https://img.shields.io/badge/RESULT-ERROR-red?style=for-the-badge)](https://github.com/owner/repo/actions/runs/123456)
+
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
 <pre><code><li>⚠️ 插件测试元数据: 无法获取到插件元数据。</li></code></pre>
@@ -426,6 +428,8 @@ async def test_render_error_tags_invalid(app: App, mocker: MockFixture):
 # 📃 商店发布检查结果
 
 > Plugin: 帮助
+
+[![测试结果](https://img.shields.io/badge/RESULT-ERROR-red?style=for-the-badge)](https://github.com/owner/repo/actions/runs/123456)
 
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
@@ -496,6 +500,8 @@ async def test_render_type_error(app: App, mocker: MockFixture):
 
 > Plugin: 帮助
 
+[![测试结果](https://img.shields.io/badge/RESULT-ERROR-red?style=for-the-badge)](https://github.com/owner/repo/actions/runs/123456)
+
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
 <pre><code><li>⚠️ 插件类型 invalid 不符合规范。<dt>请确保插件类型正确，当前仅支持 application 与 library。</dt></li><li>⚠️ 适配器 missing 不存在。<dt>请确保适配器模块名称正确。</dt></li><li>⚠️ 插件支持的适配器: 格式错误。<dt>请确保其为集合。</dt></li></code></pre>
@@ -551,6 +557,8 @@ async def test_render_unknown_error(app: App, mocker: MockFixture):
 # 📃 商店发布检查结果
 
 > Plugin: 帮助
+
+[![测试结果](https://img.shields.io/badge/RESULT-ERROR-red?style=for-the-badge)](https://github.com/owner/repo/actions/runs/123456)
 
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
@@ -618,6 +626,8 @@ async def test_render_http_error(app: App, mocker: MockFixture):
 # 📃 商店发布检查结果
 
 > Plugin: 帮助
+
+[![测试结果](https://img.shields.io/badge/RESULT-ERROR-red?style=for-the-badge)](https://github.com/owner/repo/actions/runs/123456)
 
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 

@@ -6,7 +6,6 @@ COMMIT_MESSAGE_PREFIX = ":beers: publish"
 
 BRANCH_NAME_PREFIX = "publish/issue"
 
-
 # 基本信息
 PROJECT_LINK_PATTERN = re.compile(ISSUE_PATTERN.format("PyPI 项目名"))
 TAGS_PATTERN = re.compile(ISSUE_PATTERN.format("标签"))
@@ -46,6 +45,9 @@ ADAPTER_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("适配器名称"))
 ADAPTER_DESC_PATTERN = re.compile(ISSUE_PATTERN.format("适配器描述"))
 ADAPTER_MODULE_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("适配器 import 包名"))
 ADAPTER_HOMEPAGE_PATTERN = re.compile(ISSUE_PATTERN.format("适配器项目仓库/主页链接"))
+
+# 评论卡片模板
+COMMENT_CARD_TEMPLATE = """[![{name}](https://img.shields.io/badge/{head}-{content}-{color}?style=for-the-badge)]({url})"""
 
 # 发布信息项对应的中文名
 LOC_NAME_MAP = {

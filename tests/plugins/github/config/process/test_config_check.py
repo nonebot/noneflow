@@ -137,7 +137,7 @@ log_level=DEBUG
 
 > Plugin: name
 
-[![主页](https://img.shields.io/badge/HOMEPAGE-200-green?style=for-the-badge)](https://nonebot.dev)
+[![主页](https://img.shields.io/badge/HOMEPAGE-200-green?style=for-the-badge)](https://nonebot.dev) [![测试结果](https://img.shields.io/badge/RESULT-OK-green?style=for-the-badge)](https://github.com/owner/repo/actions/runs/123456)
 
 **✅ 所有测试通过，一切准备就绪！**
 

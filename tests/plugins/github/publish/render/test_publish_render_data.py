@@ -196,7 +196,7 @@ async def test_render_data_plugin(app: App, mocker: MockFixture):
 
 > Plugin: 帮助
 
-[![主页](https://img.shields.io/badge/HOMEPAGE-200-green?style=for-the-badge)](https://github.com/he0119/nonebot-plugin-treehelp)
+[![主页](https://img.shields.io/badge/HOMEPAGE-200-green?style=for-the-badge)](https://github.com/he0119/nonebot-plugin-treehelp) [![测试结果](https://img.shields.io/badge/RESULT-OK-green?style=for-the-badge)](https://github.com/owner/repo/actions/runs/123456)
 
 **✅ 所有测试通过，一切准备就绪！**
 
@@ -248,6 +248,8 @@ async def test_render_data_plugin_supported_adapters(app: App, mocker: MockFixtu
 # 📃 商店发布检查结果
 
 > Plugin: 帮助
+
+[![测试结果](https://img.shields.io/badge/RESULT-OK-green?style=for-the-badge)](https://github.com/owner/repo/actions/runs/123456)
 
 **✅ 所有测试通过，一切准备就绪！**
 
