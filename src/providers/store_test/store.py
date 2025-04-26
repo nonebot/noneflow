@@ -387,10 +387,10 @@ class StoreTest:
 
 ## 通过测试插件列表
 
-{'\n'.join([f'- {name}' for name in valid_plugins])}
+{"\n".join([f"- {name}" for name in valid_plugins])}
 
 ## 未通过测试插件列表
 
-{'\n'.join([f'- {name}' for name in invalid_plugins])}
+{"\n".join([f"- {name}" for name in invalid_plugins])}
 """
         return summary
