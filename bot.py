@@ -2,14 +2,16 @@ import asyncio
 import os
 from contextlib import contextmanager
 from pathlib import Path
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 import nonebot
 from nonebot import logger
 from nonebot.adapters.github import Adapter as GITHUBAdapter
 from nonebot.adapters.github import Event
-from nonebot.drivers.none import Driver
 from nonebot.message import handle_event
+
+if TYPE_CHECKING:
+    from nonebot.drivers.none import Driver
 
 
 @contextmanager
