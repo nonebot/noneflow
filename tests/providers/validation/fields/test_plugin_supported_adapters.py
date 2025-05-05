@@ -199,3 +199,47 @@ async def test_plugin_supported_adapters_missing_adapters(
     )
 
     assert mocked_api["homepage"].called
+
+
+async def test_plugin_supported_adapters_not_all_str(mocked_api: MockRouter) -> None:
+    """列表中有非字符串的情况"""
+    from src.providers.validation import PublishType, validate_info
+
+    data = generate_plugin_data(supported_adapters={None, "~qq"}, skip_test=True)
+
+    result = validate_info(PublishType.PLUGIN, data, [])
+
+    assert not result.valid
+    assert result.type == PublishType.PLUGIN
+    assert result.valid_data == snapshot(
+        {
+            "module_name": "module_name",
+            "project_link": "project_link",
+            "time": "2023-09-01T00:00:00.000000Z",
+            "name": "name",
+            "desc": "desc",
+            "author": "author",
+            "author_id": 1,
+            "homepage": "https://nonebot.dev",
+            "tags": [{"label": "test", "color": "#ffffff"}],
+            "type": "application",
+            "load": True,
+            "metadata": True,
+            "skip_test": True,
+            "version": "0.0.1",
+            "test_output": "test_output",
+        }
+    )
+    assert result.info is None
+    assert result.errors == snapshot(
+        [
+            {
+                "type": "set_type",
+                "loc": ("supported_adapters",),
+                "msg": "值不是合法的集合",
+                "input": {"~qq", None},
+            }
+        ]
+    )
+
+    assert mocked_api["homepage"].called

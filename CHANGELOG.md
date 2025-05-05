@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 修复插件元数据适配器中存在非字符串报错的问题
+
 ## [4.3.0] - 2025-04-18
 
 ### Added
