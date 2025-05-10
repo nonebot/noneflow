@@ -12,6 +12,11 @@ class GitHandler(BaseModel):
 
         run_shell_command(["git", "checkout", branch_name])
 
+    def update_branch(self, branch_name: str):
+        """更新本地分支"""
+
+        run_shell_command(["git", "pull", "origin", branch_name])
+
     def checkout_remote_branch(self, branch_name: str):
         """检出远程分支"""
 

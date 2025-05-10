@@ -117,6 +117,7 @@ async def resolve_conflict_pull_requests(
                 logger.error(f"验证结果: {result}")
                 continue
 
+            handler.update_branch(plugin_config.input_config.base)
             # 每次切换前都要确保回到主分支
             handler.checkout_branch(plugin_config.input_config.base)
             # 切换到对应分支
