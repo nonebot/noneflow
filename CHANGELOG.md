@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ### Fixed
 
 - 修复插件元数据适配器中存在非字符串报错的问题
+- 修复解决拉取请求冲突时未更新主分支的问题
 
 ## [4.3.0] - 2025-04-18
 
