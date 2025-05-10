@@ -44,7 +44,6 @@ async def test_validate_plugin(
 
     assert result == snapshot(
         StoreTestResult(
-            config="",
             outputs={
                 "validation": None,
                 "load": """\
@@ -79,7 +78,6 @@ async def test_validate_plugin(
             name="TREEHELP",
             project_link="project_link",
             skip_test=False,
-            supported_adapters=None,
             tags=[],
             time="2023-09-01T00:00:00.000000Z",
             type="application",
@@ -135,7 +133,6 @@ async def test_validate_plugin_with_previous(
 
     assert result == snapshot(
         StoreTestResult(
-            config="",
             outputs={
                 "validation": None,
                 "load": """\
@@ -208,7 +205,6 @@ async def test_validate_plugin_skip_test(
 
     assert result == snapshot(
         StoreTestResult(
-            config="",
             outputs={
                 "validation": None,
                 "load": """\
@@ -243,7 +239,6 @@ async def test_validate_plugin_skip_test(
             name="TREEHELP",
             project_link="project_link",
             skip_test=False,
-            supported_adapters=None,
             tags=[],
             time="2023-09-01T00:00:00.000000Z",
             type="application",
@@ -299,7 +294,6 @@ async def test_validate_plugin_skip_test_plugin_test_failed(
 
     assert result == snapshot(
         StoreTestResult(
-            config="",
             outputs={
                 "validation": {
                     "data": {
@@ -354,7 +348,6 @@ async def test_validate_plugin_skip_test_plugin_test_failed(
             name="帮助",
             project_link="nonebot-plugin-treehelp",
             skip_test=True,
-            supported_adapters=None,
             tags=[],
             time="2024-07-13T04:41:40.905441Z",
             type="application",
@@ -410,7 +403,6 @@ async def test_validate_plugin_failed_with_previous(
 
     assert result == snapshot(
         StoreTestResult(
-            config="",
             outputs={
                 "validation": {
                     "data": {
@@ -477,7 +469,6 @@ async def test_validate_plugin_failed_with_previous(
             name="name",
             project_link="project_link",
             skip_test=False,
-            supported_adapters=None,
             tags=[],
             time="2023-09-01T00:00:00.000000Z",
             type="application",
