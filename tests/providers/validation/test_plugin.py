@@ -96,7 +96,6 @@ async def test_plugin_info_validation_failed(mocked_api: MockRouter) -> None:
                     },
                 },
             ],
-            info=None,
             raw_data={
                 "author": "author",
                 "module_name": "module_name",
@@ -164,7 +163,6 @@ async def test_plugin_info_validation_plugin_load_failed(
                     "ctx": {"load": None},
                 },
             ],
-            info=None,
             raw_data={
                 "author": "author",
                 "module_name": "module_name",
@@ -246,7 +244,6 @@ async def test_plugin_info_validation_plugin_invalid_metadata(
                     "input": {},
                 },
             ],
-            info=None,
             raw_data={
                 "author": "author",
                 "module_name": "module_name",

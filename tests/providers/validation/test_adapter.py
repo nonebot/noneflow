@@ -100,7 +100,6 @@ async def test_adapter_info_validation_failed(mocked_api: MockRouter) -> None:
                     "input": "#fffffff",
                 },
             ],
-            info=None,
             raw_data={
                 "name": "name",
                 "desc": "desc",

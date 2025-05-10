@@ -130,7 +130,7 @@ pydantic==2.10.0 ; python_version >= "3.9" and python_version < "4.0"
         Implementation: CPython
         Path:           NA
         Executable:     NA
-    
+    \n\
         Base
         Platform:   linux
         OS:         posix
@@ -138,12 +138,12 @@ pydantic==2.10.0 ; python_version >= "3.9" and python_version < "4.0"
         Path:       /usr/local
         Executable: /usr/local/bin/python3.12
         Using version ^0.5.0 for nonebot-plugin-treehelp
-    
+    \n\
         Updating dependencies
         Resolving dependencies...
-    
+    \n\
         Package operations: 16 installs, 0 updates, 0 removals
-    
+    \n\
           - Installing typing-extensions (4.12.2)
           - Installing annotated-types (0.7.0)
           - Installing idna (3.10)
@@ -160,17 +160,17 @@ pydantic==2.10.0 ; python_version >= "3.9" and python_version < "4.0"
           - Installing yarl (1.17.2)
           - Installing nonebot2 (2.4.0)
           - Installing nonebot-plugin-treehelp (0.5.0)
-    
+    \n\
         Writing lock file
 插件 project_link 的信息如下：
     name         : nonebot-plugin-treehelp
          version      : 0.5.0
          description  : 适用于 Nonebot2 的树形帮助插件
-    
+    \n\
         dependencies
          - nonebot2 >=2.2.0
 插件 project_link 依赖的插件如下：
-    
+    \n\
 插件 module_name 加载正常：\
 """,  # noqa: W293
             "load": True,

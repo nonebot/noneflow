@@ -30,7 +30,6 @@ async def test_docker_plugin_test(mocked_api: MockRouter, mocker: MockerFixture)
 
     assert result == snapshot(
         DockerTestResult(
-            config="",
             load=True,
             metadata=None,
             output="test",

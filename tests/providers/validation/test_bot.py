@@ -76,7 +76,6 @@ async def test_bot_info_validation_failed(mocked_api: MockRouter) -> None:
                     "input": "#fffffff",
                 },
             ],
-            info=None,
             raw_data={
                 "name": "tooooooooooooooooooooooooooooooooooooooooooooooooog",
                 "desc": "desc",
@@ -125,7 +124,6 @@ async def test_bot_name_duplication(mocked_api: MockRouter) -> None:
                     "ctx": {"name": "name", "homepage": "https://nonebot.dev"},
                 }
             ],
-            info=None,
             raw_data={
                 "name": "name",
                 "desc": "desc",
@@ -135,7 +133,6 @@ async def test_bot_name_duplication(mocked_api: MockRouter) -> None:
                 "author_id": 1,
             },
             type=PublishType.BOT,
-            valid_data={},
         )
     )
 
@@ -167,7 +164,6 @@ async def test_bot_previos_data_missing(mocked_api: MockRouter) -> None:
                     },
                 }
             ],
-            info=None,
             raw_data={
                 "name": "name",
                 "desc": "desc",
