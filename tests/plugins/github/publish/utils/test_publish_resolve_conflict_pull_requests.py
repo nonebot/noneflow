@@ -10,6 +10,7 @@ from tests.plugins.github.utils import (
     MockBody,
     MockIssue,
     MockUser,
+    assert_subprocess_run_calls,
     check_json_data,
     get_github_bot,
 )
@@ -78,49 +79,28 @@ async def test_resolve_conflict_pull_requests_adapter(
         )
 
         await resolve_conflict_pull_requests(handler, [mock_pull])
+
     # 测试 git 命令
-    mock_subprocess_run.assert_has_calls(
+    assert_subprocess_run_calls(
+        mock_subprocess_run,
         [
-            mocker.call(["git", "checkout", "master"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "switch", "-C", "publish/issue1"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "config", "--global", "user.name", "he0119"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                [
-                    "git",
-                    "config",
-                    "--global",
-                    "user.email",
-                    "he0119@users.noreply.github.com",
-                ],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(["git", "add", "-A"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "commit", "-m", ":beers: publish adapter name (#1)"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(["git", "fetch", "origin"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "diff", "origin/publish/issue1", "publish/issue1"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "push", "origin", "publish/issue1", "-f"],
-                check=True,
-                capture_output=True,
-            ),
-        ]  # type: ignore
+            ["git", "checkout", "master"],
+            ["git", "pull"],
+            ["git", "switch", "-C", "publish/issue1"],
+            ["git", "config", "--global", "user.name", "he0119"],
+            [
+                "git",
+                "config",
+                "--global",
+                "user.email",
+                "he0119@users.noreply.github.com",
+            ],
+            ["git", "add", "-A"],
+            ["git", "commit", "-m", ":beers: publish adapter name (#1)"],
+            ["git", "fetch", "origin"],
+            ["git", "diff", "origin/publish/issue1", "publish/issue1"],
+            ["git", "push", "origin", "publish/issue1", "-f"],
+        ],
     )
 
     # 检查文件是否正确
@@ -209,48 +189,26 @@ async def test_resolve_conflict_pull_requests_bot(
         await resolve_conflict_pull_requests(handler, [mock_pull])
 
     # 测试 git 命令
-    mock_subprocess_run.assert_has_calls(
+    assert_subprocess_run_calls(
+        mock_subprocess_run,
         [
-            mocker.call(["git", "checkout", "master"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "switch", "-C", "publish/issue1"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "config", "--global", "user.name", "he0119"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                [
-                    "git",
-                    "config",
-                    "--global",
-                    "user.email",
-                    "he0119@users.noreply.github.com",
-                ],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(["git", "add", "-A"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "commit", "-m", ":beers: publish bot name (#1)"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(["git", "fetch", "origin"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "diff", "origin/publish/issue1", "publish/issue1"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "push", "origin", "publish/issue1", "-f"],
-                check=True,
-                capture_output=True,
-            ),
-        ]  # type: ignore
+            ["git", "checkout", "master"],
+            ["git", "pull"],
+            ["git", "switch", "-C", "publish/issue1"],
+            ["git", "config", "--global", "user.name", "he0119"],
+            [
+                "git",
+                "config",
+                "--global",
+                "user.email",
+                "he0119@users.noreply.github.com",
+            ],
+            ["git", "add", "-A"],
+            ["git", "commit", "-m", ":beers: publish bot name (#1)"],
+            ["git", "fetch", "origin"],
+            ["git", "diff", "origin/publish/issue1", "publish/issue1"],
+            ["git", "push", "origin", "publish/issue1", "-f"],
+        ],
     )
 
     # 检查文件是否正确
@@ -359,48 +317,26 @@ async def test_resolve_conflict_pull_requests_plugin(
         await resolve_conflict_pull_requests(handler, [mock_pull])
 
     # 测试 git 命令
-    mock_subprocess_run.assert_has_calls(
+    assert_subprocess_run_calls(
+        mock_subprocess_run,
         [
-            mocker.call(["git", "checkout", "master"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "switch", "-C", "publish/issue1"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "config", "--global", "user.name", "he0119"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                [
-                    "git",
-                    "config",
-                    "--global",
-                    "user.email",
-                    "he0119@users.noreply.github.com",
-                ],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(["git", "add", "-A"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "commit", "-m", ":beers: publish plugin name (#1)"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(["git", "fetch", "origin"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "diff", "origin/publish/issue1", "publish/issue1"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "push", "origin", "publish/issue1", "-f"],
-                check=True,
-                capture_output=True,
-            ),
-        ]  # type: ignore
+            ["git", "checkout", "master"],
+            ["git", "pull"],
+            ["git", "switch", "-C", "publish/issue1"],
+            ["git", "config", "--global", "user.name", "he0119"],
+            [
+                "git",
+                "config",
+                "--global",
+                "user.email",
+                "he0119@users.noreply.github.com",
+            ],
+            ["git", "add", "-A"],
+            ["git", "commit", "-m", ":beers: publish plugin name (#1)"],
+            ["git", "fetch", "origin"],
+            ["git", "diff", "origin/publish/issue1", "publish/issue1"],
+            ["git", "push", "origin", "publish/issue1", "-f"],
+        ],
     )
 
     # 检查文件是否正确

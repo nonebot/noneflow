@@ -7,15 +7,12 @@ from src.plugins.github.utils import run_shell_command
 class GitHandler(BaseModel):
     """Git 操作"""
 
-    def checkout_branch(self, branch_name: str):
+    def checkout_branch(self, branch_name: str, update: bool = False):
         """检出分支"""
 
         run_shell_command(["git", "checkout", branch_name])
-
-    def update_branch(self, branch_name: str):
-        """更新本地分支"""
-
-        run_shell_command(["git", "pull", "origin", branch_name])
+        if update:
+            run_shell_command(["git", "pull"])
 
     def checkout_remote_branch(self, branch_name: str):
         """检出远程分支"""

@@ -22,6 +22,20 @@ async def test_checkout_branch(mock_run_shell_command):
     )
 
 
+async def test_checkout_branch_with_update(mock_run_shell_command):
+    from src.plugins.github.handlers.git import GitHandler
+
+    git_handler = GitHandler()
+    git_handler.checkout_branch("main", update=True)
+
+    mock_run_shell_command.assert_has_calls(
+        [
+            call(["git", "checkout", "main"]),
+            call(["git", "pull"]),
+        ]
+    )
+
+
 async def test_checkout_remote_branch(mock_run_shell_command):
     from src.plugins.github.handlers.git import GitHandler
 
