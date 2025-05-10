@@ -118,7 +118,7 @@ async def resolve_conflict_pull_requests(
                 continue
 
             # 每次切换前都要确保回到主分支
-            handler.checkout_branch(plugin_config.input_config.base)
+            handler.checkout_branch(plugin_config.input_config.base, update=True)
             # 切换到对应分支
             handler.switch_branch(pull.head.ref)
             # 更新文件

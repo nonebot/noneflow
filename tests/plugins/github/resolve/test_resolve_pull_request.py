@@ -126,6 +126,7 @@ async def test_resolve_pull_request(
             ["git", "push", "origin", "--delete", "publish/issue76"],
             # 处理发布
             ["git", "checkout", "master"],
+            ["git", "pull"],
             ["git", "switch", "-C", "publish/issue100"],
             ["git", "config", "--global", "user.name", "test"],
             [
@@ -142,6 +143,7 @@ async def test_resolve_pull_request(
             ["git", "push", "origin", "publish/issue100", "-f"],
             # 处理移除
             ["git", "checkout", "master"],
+            ["git", "pull"],
             ["git", "switch", "-C", "remove/issue101"],
             ["git", "config", "--global", "user.name", "test"],
             [
