@@ -172,7 +172,7 @@ pydantic==2.10.0 ; python_version >= "3.9" and python_version < "4.0"
 插件 project_link 依赖的插件如下：
     \n\
 插件 module_name 加载正常：\
-""",  # noqa: W293
+""",
             "load": True,
             "run": True,
             "version": "0.5.0",
