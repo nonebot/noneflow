@@ -150,7 +150,7 @@ log_level=DEBUG
 
 ### 插件测试
 
-- [x] 🔥插件测试中，请稍后\
+- [x] 🔥插件测试中，请稍候\
 """,
                     },
                     3: {"owner": "he0119", "repo": "action-test", "issue_number": 80},
@@ -412,7 +412,7 @@ log_level=DEBUG
 
 ### 插件测试
 
-- [x] 🔥插件测试中，请稍后\
+- [x] 🔥插件测试中，请稍候\
 """,
                     },
                     3: {"owner": "he0119", "repo": "action-test", "issue_number": 80},
@@ -658,7 +658,7 @@ log_level=DEBUG
 
 ### 插件测试
 
-- [x] 🔥插件测试中，请稍后\
+- [x] 🔥插件测试中，请稍候\
 """,
                     },
                     3: {"owner": "he0119", "repo": "action-test", "issue_number": 80},
@@ -865,7 +865,7 @@ log_level=DEBUG
 
 ### 插件测试
 
-- [x] 🔥插件测试中，请稍后\
+- [x] 🔥插件测试中，请稍候\
 """,
                     },
                     3: {"owner": "he0119", "repo": "action-test", "issue_number": 70},
@@ -904,7 +904,7 @@ log_level=DEBUG
 
 ### 插件测试
 
-- [x] 🔥插件测试中，请稍后\
+- [x] 🔥插件测试中，请稍候\
 """,
                     },
                     5: {
