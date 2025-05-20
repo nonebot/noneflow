@@ -260,7 +260,7 @@ async def trigger_registry_update(handler: IssueHandler):
         return
 
     # TODO: 获取评论对应的 workflow_run_id
-    run_id = int(comment.body)  # type: ignore
+    run_id = 12
 
     artifacts = await handler.list_workflow_run_artifacts(run_id)
     for artifact in artifacts.artifacts:
