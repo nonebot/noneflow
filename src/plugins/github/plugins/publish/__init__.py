@@ -205,13 +205,12 @@ async def handle_pr_close(
     event: PullRequestClosed,
     bot: GitHubBot,
     installation_id: int = Depends(get_installation_id),
-    publish_type: PublishType = Depends(get_type_by_labels_name),
     handler: IssueHandler = Depends(get_related_issue_handler),
 ) -> None:
     async with bot.as_installation(installation_id):
         # 如果商店更新则触发 registry 更新
         if event.payload.pull_request.merged:
-            await trigger_registry_update(handler, publish_type)
+            await trigger_registry_update(handler)
         else:
             logger.info("拉取请求未合并，跳过触发商店列表更新")
 

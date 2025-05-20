@@ -5,6 +5,7 @@ from typing import Any, Literal, Self, TypeAlias
 from pydantic import BaseModel, Field, field_serializer, field_validator
 from pydantic_extra_types.color import Color
 
+from src.plugins.github.models import RepoInfo
 from src.providers.constants import BOT_KEY_TEMPLATE, PYPI_KEY_TEMPLATE, TIME_ZONE
 from src.providers.docker_test import Metadata
 from src.providers.utils import get_author_name, get_pypi_upload_time, get_pypi_version
@@ -464,28 +465,10 @@ class StoreTestResult(BaseModel):
 
 
 class RegistryUpdatePayload(BaseModel):
-    type: PublishType
-    registry: RegistryModels
-    result: StoreTestResult | None = None
+    """注册表更新数据
 
-    @classmethod
-    def from_info(cls, info: PublishInfoModels) -> Self:
-        match info:
-            case AdapterPublishInfo():
-                type = PublishType.ADAPTER
-                registry = RegistryAdapter.from_publish_info(info)
-                result = None
-            case BotPublishInfo():
-                type = PublishType.BOT
-                registry = RegistryBot.from_publish_info(info)
-                result = None
-            case DriverPublishInfo():
-                type = PublishType.DRIVER
-                registry = RegistryDriver.from_publish_info(info)
-                result = None
-            case PluginPublishInfo():
-                type = PublishType.PLUGIN
-                registry = RegistryPlugin.from_publish_info(info)
-                result = StoreTestResult.from_info(info)
+    通过 GitHub Action Artifact 传递数据
+    """
 
-        return cls(type=type, registry=registry, result=result)
+    repo_info: RepoInfo
+    artifact_id: int

@@ -290,23 +290,24 @@ class StoreTest:
 
         直接利用 payload 中的数据更新商店数据
         """
-        key = payload.registry.key
-        match payload.registry:
-            case RegistryAdapter():
-                if key not in self._previous_adapters:
-                    self._previous_adapters[key] = payload.registry
-            case RegistryBot():
-                if key not in self._previous_bots:
-                    self._previous_bots[key] = payload.registry
-            case RegistryDriver():
-                if key not in self._previous_drivers:
-                    self._previous_drivers[key] = payload.registry
-            case RegistryPlugin():
-                if key not in self._previous_plugins:
-                    self._previous_plugins[key] = payload.registry
-                if key not in self._previous_results and payload.result:
-                    self._previous_results[key] = payload.result
-                    self._plugin_configs[key] = payload.result.config
+        # TODO: 从 artifact 中获取数据
+        # key = payload.registry.key
+        # match payload.registry:
+        #     case RegistryAdapter():
+        #         if key not in self._previous_adapters:
+        #             self._previous_adapters[key] = payload.registry
+        #     case RegistryBot():
+        #         if key not in self._previous_bots:
+        #             self._previous_bots[key] = payload.registry
+        #     case RegistryDriver():
+        #         if key not in self._previous_drivers:
+        #             self._previous_drivers[key] = payload.registry
+        #     case RegistryPlugin():
+        #         if key not in self._previous_plugins:
+        #             self._previous_plugins[key] = payload.registry
+        #         if key not in self._previous_results and payload.result:
+        #             self._previous_results[key] = payload.result
+        #             self._plugin_configs[key] = payload.result.config
 
         self.dump_data()
 
