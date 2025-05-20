@@ -63,3 +63,11 @@ jobs:
         env:
           APP_ID: ${{ secrets.APP_ID }}
           PRIVATE_KEY: ${{ secrets.APP_KEY }}
+
+      # TODO: 也许应该根据 noneflow 的输出来决定上传的文件
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: noneflow
+          path: |
+            registry_data.json
