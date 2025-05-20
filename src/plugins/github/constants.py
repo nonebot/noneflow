@@ -16,3 +16,7 @@ SKIP_COMMENT = "/skip"
 PUBLISH_LABEL = "Publish"
 REMOVE_LABEL = "Remove"
 CONFIG_LABEL = "Config"
+
+
+REGISTRY_DATA_NAME = "registry_data.json"
+"""通过 Artifact 传递数据的文件名"""

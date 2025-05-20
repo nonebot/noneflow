@@ -9,6 +9,7 @@ from githubkit import AppAuthStrategy, GitHub
 from pydantic import BaseModel, Field, field_serializer, field_validator
 from pydantic_extra_types.color import Color
 
+from plugins.github.constants import REGISTRY_DATA_NAME
 from src.plugins.github.models import RepoInfo
 from src.providers.constants import BOT_KEY_TEMPLATE, PYPI_KEY_TEMPLATE, TIME_ZONE
 from src.providers.docker_test import Metadata
@@ -197,8 +198,10 @@ class StorePlugin(BaseModel):
         )
 
 
-def to_store(info: PublishInfoModels) -> dict[str, Any]:
-    store = None
+StoreModels: TypeAlias = StoreAdapter | StoreBot | StoreDriver | StorePlugin
+
+
+def to_store(info: PublishInfoModels) -> StoreModels:
     match info:
         case AdapterPublishInfo():
             store = StoreAdapter.from_publish_info(info)
@@ -209,10 +212,9 @@ def to_store(info: PublishInfoModels) -> dict[str, Any]:
         case PluginPublishInfo():
             store = StorePlugin.from_publish_info(info)
 
-    return store.model_dump()
+    return store
 
 
-StoreModels: TypeAlias = StoreAdapter | StoreBot | StoreDriver | StorePlugin
 # endregion
 
 
@@ -412,6 +414,22 @@ class RegistryPlugin(BaseModel):
 RegistryModels: TypeAlias = (
     RegistryAdapter | RegistryBot | RegistryDriver | RegistryPlugin
 )
+
+
+def to_registry(info: PublishInfoModels) -> RegistryModels:
+    match info:
+        case AdapterPublishInfo():
+            registry = RegistryAdapter.from_publish_info(info)
+        case BotPublishInfo():
+            registry = RegistryBot.from_publish_info(info)
+        case DriverPublishInfo():
+            registry = RegistryDriver.from_publish_info(info)
+        case PluginPublishInfo():
+            registry = RegistryPlugin.from_publish_info(info)
+
+    return registry
+
+
 # endregion
 
 
@@ -475,7 +493,20 @@ class RegistryArtifactData(BaseModel):
     """
 
     registry: RegistryModels
-    result: StoreTestResult
+    result: StoreTestResult | None
+
+    @classmethod
+    def from_info(cls, info: PublishInfoModels) -> Self:
+        return cls(
+            registry=to_registry(info),
+            result=StoreTestResult.from_info(info)
+            if isinstance(info, PluginPublishInfo)
+            else None,
+        )
+
+    def save(self) -> None:
+        with open(REGISTRY_DATA_NAME, "w", encoding="utf-8") as f:
+            f.write(self.model_dump_json(indent=2, exclude_none=True))
 
 
 class RegistryUpdatePayload(BaseModel):
@@ -516,6 +547,6 @@ class RegistryUpdatePayload(BaseModel):
 
         zip_buffer = io.BytesIO(resp.content)
         with zipfile.ZipFile(zip_buffer) as zip_file:
-            with zip_file.open("registry_data.json") as json_file:
+            with zip_file.open(REGISTRY_DATA_NAME) as json_file:
                 json_data = json_file.read()
                 return RegistryArtifactData.model_validate_json(json_data)

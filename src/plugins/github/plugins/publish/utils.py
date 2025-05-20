@@ -15,7 +15,7 @@ from src.plugins.github.handlers import GithubHandler, IssueHandler
 from src.plugins.github.typing import PullRequestList
 from src.plugins.github.utils import commit_message as _commit_message
 from src.providers.constants import TIME_ZONE
-from src.providers.models import RegistryUpdatePayload, to_store
+from src.providers.models import RegistryArtifactData, RegistryUpdatePayload, to_store
 from src.providers.utils import dump_json5, load_json_from_file
 from src.providers.validation import PublishType, ValidationDict
 
@@ -138,9 +138,7 @@ def update_file(result: ValidationDict) -> None:
     assert result.valid
     assert result.info
 
-    # TODO: 还应该把 registry_update 用到的文件也保存一下
-
-    new_data = to_store(result.info)
+    new_data = to_store(result.info).model_dump()
 
     match result.type:
         case PublishType.ADAPTER:
@@ -157,6 +155,10 @@ def update_file(result: ValidationDict) -> None:
     data = load_json_from_file(path)
     data.append(new_data)
     dump_json5(path, data)
+
+    # 保存 registry_update 所需的文件
+    # 之后会上传至 Artifact，并通过 artifact_id 访问
+    RegistryArtifactData.from_info(result.info).save()
 
     logger.info("文件更新完成")
 
@@ -252,7 +254,7 @@ async def process_pull_request(
 
 async def trigger_registry_update(handler: IssueHandler):
     """通过 repository_dispatch 触发商店列表更新"""
-    comment = await handler.get_reusable_comment()
+    comment = await handler.get_self_comment()
     if not comment:
         logger.error("获取评论失败，无法触发商店列表更新")
         return
@@ -262,7 +264,7 @@ async def trigger_registry_update(handler: IssueHandler):
 
     artifacts = await handler.list_workflow_run_artifacts(run_id)
     for artifact in artifacts.artifacts:
-        if artifact.name == "registry_data":
+        if artifact.name == "noneflow":
             # 触发商店列表更新
             await handler.create_dispatch_event(
                 event_type="registry_update",
