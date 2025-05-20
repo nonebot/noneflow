@@ -1,7 +1,11 @@
 # ruff: noqa: UP040
+import io
+import os
+import zipfile
 from datetime import datetime
 from typing import Any, Literal, Self, TypeAlias
 
+from githubkit import AppAuthStrategy, GitHub
 from pydantic import BaseModel, Field, field_serializer, field_validator
 from pydantic_extra_types.color import Color
 
@@ -464,6 +468,16 @@ class StoreTestResult(BaseModel):
         return v
 
 
+class RegistryArtifactData(BaseModel):
+    """注册表数据
+
+    通过 GitHub Action Artifact 传递数据
+    """
+
+    registry: RegistryModels
+    result: StoreTestResult
+
+
 class RegistryUpdatePayload(BaseModel):
     """注册表更新数据
 
@@ -472,3 +486,36 @@ class RegistryUpdatePayload(BaseModel):
 
     repo_info: RepoInfo
     artifact_id: int
+
+    def get_artifact_data(self) -> RegistryArtifactData:
+        """获取注册表数据"""
+
+        app_id = os.getenv("APP_ID")
+        private_key = os.getenv("PRIVATE_KEY")
+
+        if app_id is None or private_key is None:
+            raise ValueError("APP_ID 或 PRIVATE_KEY 未设置")
+
+        github = GitHub(AppAuthStrategy(app_id=app_id, private_key=private_key))
+
+        resp = github.rest.apps.get_repo_installation(
+            self.repo_info.owner, self.repo_info.repo
+        )
+        repo_installation = resp.parsed_data
+
+        installation_github = github.with_auth(
+            github.auth.as_installation(repo_installation.id)
+        )
+
+        resp = installation_github.rest.actions.download_artifact(
+            owner=self.repo_info.owner,
+            repo=self.repo_info.repo,
+            artifact_id=self.artifact_id,
+            archive_format="zip",
+        )
+
+        zip_buffer = io.BytesIO(resp.content)
+        with zipfile.ZipFile(zip_buffer) as zip_file:
+            with zip_file.open("registry_data.json") as json_file:
+                json_data = json_file.read()
+                return RegistryArtifactData.model_validate_json(json_data)
