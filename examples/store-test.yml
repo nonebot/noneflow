@@ -52,6 +52,8 @@ jobs:
         run: uv run --no-dev -m src.providers.store_test registry-update
         env:
           REGISTRY_UPDATE_PAYLOAD: ${{ toJson(github.event.client_payload) }}
+          APP_ID: ${{ secrets.APP_ID }}
+          PRIVATE_KEY: ${{ secrets.APP_KEY }}
 
       - name: Upload results
         uses: actions/upload-artifact@v4

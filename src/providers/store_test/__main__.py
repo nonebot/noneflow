@@ -25,9 +25,10 @@ def registry_update():
         return
 
     payload = RegistryUpdatePayload.model_validate_json(payload)
+    data = payload.get_artifact_data()
 
     test = StoreTest()
-    asyncio.run(test.registry_update(payload))
+    asyncio.run(test.registry_update(data))
 
 
 @cli.command()
