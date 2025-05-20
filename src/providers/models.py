@@ -9,7 +9,7 @@ from githubkit import AppAuthStrategy, GitHub
 from pydantic import BaseModel, Field, field_serializer, field_validator
 from pydantic_extra_types.color import Color
 
-from plugins.github.constants import REGISTRY_DATA_NAME
+from src.plugins.github.constants import REGISTRY_DATA_NAME
 from src.plugins.github.models import RepoInfo
 from src.providers.constants import BOT_KEY_TEMPLATE, PYPI_KEY_TEMPLATE, TIME_ZONE
 from src.providers.docker_test import Metadata
