@@ -44,8 +44,8 @@ async def validate_info_from_issue(handler: IssueHandler) -> ValidationDict:
     # 更新作者信息
     raw_data.update(AuthorInfo.from_issue(handler.issue).model_dump())
 
-    module_name: str = raw_data.get("module_name", None)
-    project_link: str = raw_data.get("project_link", None)
+    module_name: str = raw_data.get("module_name", "")
+    project_link: str = raw_data.get("project_link", "")
     test_config: str = raw_data.get("test_config", "")
 
     # 因为修改插件重新测试，所以上次的数据不需要加载，不然会报错重复

@@ -69,17 +69,24 @@ class GithubHandler(GitHandler):
             **self.repo_info.model_dump(), comment_id=comment_id, body=comment
         )
 
+    async def get_reusable_comment(self, issue_number: int):
+        """获取可复用的评论
+
+        通过判断评论内容是否包含 NONEFLOW_MARKER 来判断是否可复用
+        """
+        comments = await self.list_comments(issue_number=issue_number)
+        return next(
+            filter(lambda x: NONEFLOW_MARKER in (x.body if x.body else ""), comments),
+            None,
+        )
+
     async def comment_issue(self, comment: str, issue_number: int):
         """发布评论，若之前已评论过，则会进行复用"""
         logger.info("开始发布评论")
 
         # 重复利用评论
         # 如果发现之前评论过，直接修改之前的评论
-        comments = await self.list_comments(issue_number=issue_number)
-        reusable_comment = next(
-            filter(lambda x: NONEFLOW_MARKER in (x.body if x.body else ""), comments),
-            None,
-        )
+        reusable_comment = await self.get_reusable_comment(issue_number=issue_number)
 
         if reusable_comment:
             logger.info(f"发现已有评论 {reusable_comment.id}，正在修改")
@@ -259,3 +266,14 @@ class GithubHandler(GitHandler):
         issue = await self.get_issue(issue_number)
 
         return IssueHandler(bot=self.bot, repo_info=self.repo_info, issue=issue)
+
+    async def list_workflow_run_artifacts(self, run_id: int):
+        """获取工作流运行的所有工件"""
+        artifacts = (
+            await self.bot.rest.actions.async_list_workflow_run_artifacts(
+                **self.repo_info.model_dump(),
+                run_id=run_id,
+            )
+        ).parsed_data
+
+        return artifacts

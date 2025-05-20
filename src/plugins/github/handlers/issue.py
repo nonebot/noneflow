@@ -105,6 +105,13 @@ class IssueHandler(GithubHandler):
 
         return await super().list_comments(issue_number)
 
+    async def get_reusable_comment(self, issue_number: int | None = None):
+        """获取可复用的评论"""
+        if issue_number is None:
+            issue_number = self.issue_number
+
+        return await super().get_reusable_comment(issue_number)
+
     async def comment_issue(self, comment: str, issue_number: int | None = None):
         """发布评论，若之前已评论过，则会进行复用"""
         if issue_number is None:
