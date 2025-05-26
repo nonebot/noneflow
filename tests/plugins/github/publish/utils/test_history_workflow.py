@@ -8,7 +8,6 @@ async def test_history_workflow(app: App, mock_datetime):
     )
     from src.providers.constants import TIME_ZONE
 
-
     CONTENT = """
 # 📃 商店发布检查结果
 
