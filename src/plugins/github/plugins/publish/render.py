@@ -70,11 +70,13 @@ env.filters["format_time"] = format_time
 env.filters["format_datetime"] = format_datetime
 
 
-async def render_comment(result: ValidationDict, reuse: bool = False, history: list[tuple[bool, str, datetime]] = list()) -> str:
+async def render_comment(result: ValidationDict, reuse: bool = False, history: list[tuple[bool, str, datetime]] | None = None) -> str:
     """将验证结果转换为评论内容"""
     title = f"{result.type}: {result.name}"
 
     valid_data = result.valid_data.copy()
+    
+    history = history or []
 
     if result.type == PublishType.PLUGIN:
         # https://github.com/he0119/action-test/actions/runs/4469672520

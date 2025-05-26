@@ -43,10 +43,6 @@ async def test_render_data_bot(app: App):
 <summary>详情</summary>
 <pre><code><li>✅ 项目 <a href="https://github.com/he0119/CoolQBot">主页</a> 返回状态码 200。</li></code></pre>
 </details>
-<details>
-<summary>历史测试</summary>
-<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
-</details>
 
 ---
 
@@ -94,10 +90,6 @@ async def test_render_data_bot(app: App):
 <details>
 <summary>详情</summary>
 <pre><code><li>✅ 项目 <a href="https://github.com/Mar-7th/March7th">主页</a> 返回状态码 200。</li><li>✅ 标签: StarRail-#5a8ccc, 星穹铁道-#6faec6。</li></code></pre>
-</details>
-<details>
-<summary>历史测试</summary>
-<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
 </details>
 
 ---
@@ -153,10 +145,6 @@ async def test_render_data_adapter(app: App):
 <details>
 <summary>详情</summary>
 <pre><code><li>✅ 项目 <a href="https://github.com/CMHopeSunshine/nonebot-adapter-villa">主页</a> 返回状态码 200。</li><li>✅ 项目 <a href="https://pypi.org/project/nonebot-adapter-villa/">nonebot-adapter-villa</a> 已发布至 PyPI。</li><li>✅ 标签: 米哈游-#e10909。</li><li>✅ 版本号: 1.4.2。</li><li>✅ 发布时间：2023-12-21 14:57:44 CST。</li></code></pre>
-</details>
-<details>
-<summary>历史测试</summary>
-<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
 </details>
 
 ---
@@ -219,7 +207,7 @@ async def test_render_data_plugin(app: App, mocker: MockFixture):
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
+<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
 </details>
 
 ---
@@ -276,7 +264,7 @@ async def test_render_data_plugin_supported_adapters(app: App, mocker: MockFixtu
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
+<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
 </details>
 
 ---

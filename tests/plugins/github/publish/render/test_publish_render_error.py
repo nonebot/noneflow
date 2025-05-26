@@ -58,10 +58,6 @@ async def test_render_error_bot(app: App):
 
 <pre><code><li>⚠️ 名称: 字符过多。<dt>请确保其不超过 50 个字符。</dt></li><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保你的项目主页可访问。</dt></li><li>⚠️ 第 2 个标签名称过长。<dt>请确保标签名称不超过 10 个字符。</dt></li><li>⚠️ 第 2 个标签颜色错误。<dt>请确保标签颜色符合十六进制颜色码规则。</dt></li></code></pre>
 
-<details>
-<summary>历史测试</summary>
-<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
-</details>
 
 ---
 
@@ -148,10 +144,6 @@ async def test_render_error_adapter(app: App):
 <details>
 <summary>详情</summary>
 <pre><code><li>✅ 项目 <a href="https://pypi.org/project/nonebot-adapter-villa/">nonebot-adapter-villa</a> 已发布至 PyPI。</li></code></pre>
-</details>
-<details>
-<summary>历史测试</summary>
-<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
 </details>
 
 ---
@@ -251,7 +243,7 @@ async def test_render_error_plugin(app: App, mocker: MockFixture, mock_datetime)
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
+<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
 </details>
 
 ---
@@ -322,10 +314,6 @@ async def test_render_error_plugin_load_test(app: App):
 <summary>详情</summary>
 <pre><code><li>✅ 项目 <a href="https://github.com/he0119/nonebot-plugin-treehelp">主页</a> 返回状态码 200。</li></code></pre>
 </details>
-<details>
-<summary>历史测试</summary>
-<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
-</details>
 
 ---
 
@@ -389,7 +377,7 @@ async def test_render_error_plugin_metadata(
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
+<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
 </details>
 
 ---
@@ -463,7 +451,7 @@ async def test_render_error_tags_invalid(app: App, mocker: MockFixture, mock_dat
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
+<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
 </details>
 
 ---
@@ -538,7 +526,7 @@ async def test_render_type_error(app: App, mocker: MockFixture, mock_datetime):
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
+<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
 </details>
 
 ---
@@ -600,7 +588,7 @@ async def test_render_unknown_error(app: App, mocker: MockFixture, mock_datetime
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
+<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
 </details>
 
 ---
@@ -677,7 +665,7 @@ async def test_render_http_error(
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
+<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
 </details>
 
 ---
