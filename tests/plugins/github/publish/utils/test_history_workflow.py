@@ -6,6 +6,8 @@ async def test_history_workflow(app: App, mock_datetime):
     from src.plugins.github.plugins.publish.utils import (
         get_history_workflow_from_comment,
     )
+    from src.providers.constants import TIME_ZONE
+
 
     CONTENT = """
 # 📃 商店发布检查结果
@@ -38,7 +40,7 @@ async def test_history_workflow(app: App, mock_datetime):
 <!-- NONEFLOW -->
 """
     history = [
-        (valid, url, time.strftime("%Y-%m-%d %H:%M:%S %Z"))
+        (valid, url, time.astimezone(TIME_ZONE).strftime("%Y-%m-%d %H:%M:%S %Z"))
         for valid, url, time in await get_history_workflow_from_comment(CONTENT)
     ]
     assert history == snapshot(
