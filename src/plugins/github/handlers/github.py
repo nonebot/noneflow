@@ -72,7 +72,9 @@ class GithubHandler(GitHandler):
 
     async def get_self_comment(self, issue_number: int):
         """获取自己的评论"""
-        comments: list[IssueComment] = await self.list_comments(issue_number=issue_number)
+        comments: list[IssueComment] = await self.list_comments(
+            issue_number=issue_number
+        )
         return next(
             filter(lambda x: NONEFLOW_MARKER in (x.body if x.body else ""), comments),
             None,
@@ -86,7 +88,9 @@ class GithubHandler(GitHandler):
         self_comment = await self.get_self_comment(issue_number=issue_number)
         await self.comment_issue(comment, issue_number, self_comment)
 
-    async def comment_issue(self, comment: str, issue_number: int, self_comment: IssueComment | None = None):
+    async def comment_issue(
+        self, comment: str, issue_number: int, self_comment: IssueComment | None = None
+    ):
         """发布评论"""
         logger.info("开始发布评论")
 

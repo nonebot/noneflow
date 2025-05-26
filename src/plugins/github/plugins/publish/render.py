@@ -48,10 +48,12 @@ def format_time(time: str) -> str:
     dt = dt.astimezone(tz=TIME_ZONE)
     return dt.strftime("%Y-%m-%d %H:%M:%S %Z")
 
+
 def format_datetime(dt: datetime) -> str:
     """格式化 datetime 对象为字符串"""
     dt = dt.astimezone(tz=TIME_ZONE)
     return dt.strftime("%Y-%m-%d %H:%M:%S %Z")
+
 
 env = jinja2.Environment(
     loader=jinja2.FileSystemLoader(Path(__file__).parent / "templates"),
@@ -70,12 +72,16 @@ env.filters["format_time"] = format_time
 env.filters["format_datetime"] = format_datetime
 
 
-async def render_comment(result: ValidationDict, reuse: bool = False, history: list[tuple[bool, str, datetime]] | None = None) -> str:
+async def render_comment(
+    result: ValidationDict,
+    reuse: bool = False,
+    history: list[tuple[bool, str, datetime]] | None = None,
+) -> str:
     """将验证结果转换为评论内容"""
     title = f"{result.type}: {result.name}"
 
     valid_data = result.valid_data.copy()
-    
+
     history = history or []
 
     if result.type == PublishType.PLUGIN:

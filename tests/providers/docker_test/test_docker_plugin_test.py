@@ -163,7 +163,7 @@ async def test_docker_plugin_test_metadata_some_fields_invalid(
     mocked_api: MockRouter, mocker: MockerFixture
 ):
     """测试 metadata 的部分字段不符合规范"""
-    from src.providers.docker_test import DockerPluginTest, DockerTestResult, Metadata
+    from src.providers.docker_test import DockerPluginTest, DockerTestResult
 
     mocked_run = mocker.Mock()
     mocked_run.return_value = json.dumps(

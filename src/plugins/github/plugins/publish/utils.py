@@ -1,4 +1,3 @@
-
 import re
 from datetime import datetime
 
@@ -191,6 +190,7 @@ async def ensure_issue_plugin_test_button(handler: IssueHandler):
 
     await handler.update_issue_body(new_content)
 
+
 async def ensure_issue_plugin_test_button_in_progress(handler: IssueHandler):
     """确保议题内容中包含插件测试进行中的提示"""
     issue_body = handler.issue.body or ""
@@ -280,6 +280,7 @@ async def trigger_registry_update(handler: IssueHandler, publish_type: PublishTy
         repo=plugin_config.input_config.registry_repository,
     )
     logger.info("已触发商店列表更新")
+
 
 async def get_history_workflow_from_comment(
     comment: str,

@@ -241,6 +241,7 @@ async def test_comment_issue(app: App, mocker: MockerFixture) -> None:
         )
         await github_handler.resuable_comment_issue("new comment", 76)
 
+
 async def test_comment_issue_reuse(app: App, mocker: MockerFixture) -> None:
     """测试发布评论，复用的情况"""
     from src.plugins.github.handlers.github import GithubHandler
