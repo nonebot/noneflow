@@ -1,5 +1,4 @@
-from datetime import datetime
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 from nonebot import logger, on_type
 from nonebot.adapters.github import (
@@ -49,6 +48,9 @@ from .validation import (
     validate_bot_info_from_issue,
     validate_plugin_info_from_issue,
 )
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 async def check_rule(
