@@ -290,7 +290,7 @@ async def get_history_workflow_from_comment(
         (
             status == "✅",
             action_url,
-            datetime.strptime(time, "%Y-%m-%d %H:%M:%S CST").astimezone(TIME_ZONE),
+            datetime.strptime(time, "%Y-%m-%d %H:%M:%S CST").replace(tzinfo=TIME_ZONE),
         )
         for status, action_url, time in WORKFLOW_HISTORY_PATTERN.findall(comment)
     ]
