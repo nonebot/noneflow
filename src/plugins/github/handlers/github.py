@@ -3,6 +3,7 @@ from typing import Literal
 from githubkit.rest import PullRequestSimple
 from githubkit.typing import Missing
 from githubkit.utils import UNSET
+from githubkit.versions.latest.models import IssueComment
 from nonebot import logger
 from nonebot.adapters.github import Bot
 from pydantic import ConfigDict
@@ -69,22 +70,30 @@ class GithubHandler(GitHandler):
             **self.repo_info.model_dump(), comment_id=comment_id, body=comment
         )
 
-    async def comment_issue(self, comment: str, issue_number: int):
-        """发布评论，若之前已评论过，则会进行复用"""
-        logger.info("开始发布评论")
-
-        # 重复利用评论
-        # 如果发现之前评论过，直接修改之前的评论
-        comments = await self.list_comments(issue_number=issue_number)
-        reusable_comment = next(
+    async def get_self_comment(self, issue_number: int):
+        """获取自己的评论"""
+        comments: list[IssueComment] = await self.list_comments(issue_number=issue_number)
+        return next(
             filter(lambda x: NONEFLOW_MARKER in (x.body if x.body else ""), comments),
             None,
         )
 
-        if reusable_comment:
-            logger.info(f"发现已有评论 {reusable_comment.id}，正在修改")
-            if reusable_comment.body != comment:
-                await self.update_comment(reusable_comment.id, comment)
+    async def resuable_comment_issue(
+        self, comment: str, issue_number: int
+    ) -> IssueComment | None:
+        """复用评论，若之前已评论过，则会进行复用"""
+        logger.info("查询已有评论")
+        self_comment = await self.get_self_comment(issue_number=issue_number)
+        await self.comment_issue(comment, issue_number, self_comment)
+
+    async def comment_issue(self, comment: str, issue_number: int, self_comment: IssueComment | None = None):
+        """发布评论"""
+        logger.info("开始发布评论")
+
+        if self_comment:
+            logger.info(f"发现已有评论 {self_comment.id}，正在修改")
+            if self_comment.body != comment:
+                await self.update_comment(self_comment.id, comment)
                 logger.info("评论修改完成")
             else:
                 logger.info("评论内容无变化，跳过修改")

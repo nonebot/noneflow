@@ -239,8 +239,7 @@ async def test_comment_issue(app: App, mocker: MockerFixture) -> None:
                 }
             ),
         )
-        await github_handler.comment_issue("new comment", 76)
-
+        await github_handler.resuable_comment_issue("new comment", 76)
 
 async def test_comment_issue_reuse(app: App, mocker: MockerFixture) -> None:
     """测试发布评论，复用的情况"""
@@ -281,7 +280,7 @@ async def test_comment_issue_reuse(app: App, mocker: MockerFixture) -> None:
                 }
             ),
         )
-        await github_handler.comment_issue("new comment", 76)
+        await github_handler.resuable_comment_issue("new comment", 76)
 
 
 async def test_comment_issue_reuse_no_change(app: App, mocker: MockerFixture) -> None:
@@ -316,7 +315,7 @@ async def test_comment_issue_reuse_no_change(app: App, mocker: MockerFixture) ->
                 }
             ),
         )
-        await github_handler.comment_issue("comment\n<!-- NONEFLOW -->", 76)
+        await github_handler.resuable_comment_issue("comment\n<!-- NONEFLOW -->", 76)
 
 
 async def test_get_pull_requests_by_label(app: App, mocker: MockerFixture) -> None:

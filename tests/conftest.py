@@ -230,7 +230,7 @@ def datetime_modules_loc() -> list[str]:
     return find_datetime_loc(PROJECT_SOURCE_PATH)
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def mock_datetime(mocker: MockerFixture, datetime_modules_loc: list[str]):
     """
     将所有模块中的 datetime.now() 方法返回值固定

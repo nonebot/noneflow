@@ -279,7 +279,7 @@ async def test_comment_issue(app: App, mocker: MockerFixture) -> None:
                 }
             ),
         )
-        await issue_handler.comment_issue("new comment")
+        await issue_handler.resuable_comment_issue("new comment")
 
 
 async def test_should_skip_test(app: App, mocker: MockerFixture) -> None:

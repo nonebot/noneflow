@@ -81,7 +81,7 @@ async def handle_remove_check(
         comment = await render_comment(result, True)
 
         # 对议题评论
-        await handler.comment_issue(comment)
+        await handler.resuable_comment_issue(comment)
 
         branch_name = f"{BRANCH_NAME_PREFIX}{handler.issue_number}"
 

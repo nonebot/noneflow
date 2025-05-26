@@ -46,6 +46,13 @@ ADAPTER_DESC_PATTERN = re.compile(ISSUE_PATTERN.format("适配器描述"))
 ADAPTER_MODULE_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("适配器 import 包名"))
 ADAPTER_HOMEPAGE_PATTERN = re.compile(ISSUE_PATTERN.format("适配器项目仓库/主页链接"))
 
+
+WORKFLOW_HISTORY_PATTERN = re.compile(
+    r'<li>(⚠️|✅)\s*<a href="(https://github\.com/nonebot/nonebot2/actions/runs/\d+)">([^<]+?CST)</a>。</li>'
+)
+
+WORKFLOW_HISTORY_TEMPLATE = """<li>{status} <a href="{url}">{time}</a>。</li>"""
+
 # 评论卡片模板
 COMMENT_CARD_TEMPLATE = """[![{name}](https://img.shields.io/badge/{head}-{content}-{color}?style=for-the-badge)]({url})"""
 

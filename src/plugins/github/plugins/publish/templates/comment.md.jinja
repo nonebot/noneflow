@@ -31,6 +31,17 @@
 </details>
 {% endif %}
 
+{%- if history %}
+<details>
+<summary>历史测试</summary>
+<pre><code>
+{%- for status, action_url, time in history%}
+<li>{{"✅" if status else "⚠️"}} <a href={{action_url}}>{{time|format_datetime}}</li>
+{%- endfor %}
+</code></pre>
+</details>
+{% endif %}
+
 ---
 
 💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。

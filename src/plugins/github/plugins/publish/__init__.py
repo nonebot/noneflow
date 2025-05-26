@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Literal
 
 from nonebot import logger, on_type
@@ -39,6 +40,7 @@ from .utils import (
     ensure_issue_content,
     ensure_issue_plugin_test_button,
     ensure_issue_plugin_test_button_in_progress,
+    get_history_workflow_from_comment,
     process_pull_request,
     trigger_registry_update,
 )
@@ -153,11 +155,17 @@ async def handle_pull_request_and_update_issue(
     installation_id: int = Depends(get_installation_id),
 ) -> None:
     async with bot.as_installation(installation_id):
+
+        self_comment = await handler.get_self_comment(handler.issue_number)
+        history: list[tuple[bool, str, datetime]] = []
+        if self_comment and self_comment.body:
+            history = await get_history_workflow_from_comment(self_comment.body)
+
         # 渲染评论信息
-        comment = await render_comment(validation, True)
+        comment = await render_comment(validation,  True, history)
 
         # 对议题评论
-        await handler.comment_issue(comment)
+        await handler.comment_issue(comment, issue_number=None, self_comment=self_comment)
 
         # 设置拉取请求与议题的标题
         # 限制标题长度，过长的标题不好看

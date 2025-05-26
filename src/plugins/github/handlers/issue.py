@@ -105,12 +105,28 @@ class IssueHandler(GithubHandler):
 
         return await super().list_comments(issue_number)
 
-    async def comment_issue(self, comment: str, issue_number: int | None = None):
+    async def get_self_comment(self, issue_number: int | None = None):
+        """获取自己的评论"""
+        if issue_number is None:
+            issue_number = self.issue_number
+
+        await super().get_self_comment(issue_number)
+
+    async def comment_issue(self, comment: str, issue_number: int | None = None, self_comment = None):
+        """发布评论"""
+        if issue_number is None:
+            issue_number = self.issue_number
+
+        await super().comment_issue(comment, issue_number, self_comment)
+
+    async def resuable_comment_issue(self, comment: str, issue_number: int | None = None):
         """发布评论，若之前已评论过，则会进行复用"""
         if issue_number is None:
             issue_number = self.issue_number
 
-        await super().comment_issue(comment, issue_number)
+        self_comment = await self.get_self_comment(issue_number)
+        await self.comment_issue(comment, issue_number, self_comment)
+
 
     def commit_and_push(
         self,
