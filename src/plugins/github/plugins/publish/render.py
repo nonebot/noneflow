@@ -140,6 +140,11 @@ async def render_comment(
             )
         )
 
+    # 测试历史应该时间倒序排列
+    history.sort(key=lambda x: x[2], reverse=True)
+    # 限制最多显示 10 条历史
+    history = history[:10]
+
     template = env.get_template("comment.md.jinja")
     return await template.render_async(
         card=" ".join(card),
