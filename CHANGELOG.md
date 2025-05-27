@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Added
+
+- 在 Noneflow 工作流评论处增设 Noneflow 运行历史
+
 ## [4.3.1] - 2025-05-10
 
 ### Fixed
