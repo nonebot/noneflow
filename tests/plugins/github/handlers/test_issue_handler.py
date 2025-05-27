@@ -486,7 +486,7 @@ async def test_get_self_comment(app: App, mocker: MockerFixture) -> None:
                 }
             ),
         )
-        comment = await issue_handler.get_self_comment(76)
+        comment = await issue_handler.get_self_comment()
         assert comment == mock_comment_bot
 
 
@@ -526,7 +526,7 @@ async def test_get_self_comment_not_found(app: App, mocker: MockerFixture) -> No
                 }
             ),
         )
-        comment = await issue_handler.get_self_comment(76)
+        comment = await issue_handler.get_self_comment()
         assert comment is None
 
 
