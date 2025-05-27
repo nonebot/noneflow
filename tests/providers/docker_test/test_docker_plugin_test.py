@@ -200,7 +200,7 @@ async def test_docker_plugin_test_metadata_some_fields_invalid(
                 "homepage": 12,
                 "type": True,
                 "supported_adapters": {},
-            },
+            },  # type: ignore
             output="test",
             run=True,
             test_env="python==3.12",
