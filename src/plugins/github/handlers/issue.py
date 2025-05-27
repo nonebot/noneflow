@@ -110,7 +110,7 @@ class IssueHandler(GithubHandler):
         if issue_number is None:
             issue_number = self.issue_number
 
-        await super().get_self_comment(issue_number)
+        return await super().get_self_comment(issue_number)
 
     async def comment_issue(
         self, comment: str, issue_number: int | None = None, self_comment=None

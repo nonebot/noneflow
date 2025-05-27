@@ -973,3 +973,177 @@ async def test_to_issue_handler(app: App, mocker: MockerFixture) -> None:
         issue_handler = await github_handler.to_issue_handler(123)
         assert isinstance(issue_handler, IssueHandler)
         assert issue_handler.issue == mock_issue
+
+
+async def test_get_self_comment(app: App, mocker: MockerFixture) -> None:
+    """测试获取自己的评论"""
+    from src.plugins.github.handlers.github import GithubHandler
+    from src.plugins.github.models import RepoInfo
+
+    mock_comment_bot = mocker.MagicMock()
+    mock_comment_bot.body = "bot comment\n<!-- NONEFLOW -->"
+    mock_comment_bot.id = 123
+
+    mock_comment_user = mocker.MagicMock()
+    mock_comment_user.body = "user comment"
+    mock_comment_user.id = 456
+
+    mock_comments_resp = mocker.MagicMock()
+    mock_comments_resp.parsed_data = [mock_comment_user, mock_comment_bot]
+
+    async with app.test_api() as ctx:
+        _, bot = get_github_bot(ctx)
+
+        github_handler = GithubHandler(
+            bot=bot,
+            repo_info=RepoInfo(owner="owner", repo="repo"),
+        )
+
+        should_call_apis(
+            ctx,
+            [
+                GitHubApi(
+                    api="rest.issues.async_list_comments", result=mock_comments_resp
+                ),
+            ],
+            snapshot(
+                {
+                    0: {
+                        "owner": "owner",
+                        "repo": "repo",
+                        "issue_number": 76,
+                    },
+                }
+            ),
+        )
+        comment = await github_handler.get_self_comment(76)
+        assert comment == mock_comment_bot
+
+
+async def test_get_self_comment_not_found(app: App, mocker: MockerFixture) -> None:
+    """测试获取自己的评论，未找到的情况"""
+    from src.plugins.github.handlers.github import GithubHandler
+    from src.plugins.github.models import RepoInfo
+
+    mock_comment_user = mocker.MagicMock()
+    mock_comment_user.body = "user comment"
+    mock_comment_user.id = 456
+
+    mock_comments_resp = mocker.MagicMock()
+    mock_comments_resp.parsed_data = [mock_comment_user]
+
+    async with app.test_api() as ctx:
+        _, bot = get_github_bot(ctx)
+
+        github_handler = GithubHandler(
+            bot=bot,
+            repo_info=RepoInfo(owner="owner", repo="repo"),
+        )
+
+        should_call_apis(
+            ctx,
+            [
+                GitHubApi(
+                    api="rest.issues.async_list_comments", result=mock_comments_resp
+                ),
+            ],
+            snapshot(
+                {
+                    0: {
+                        "owner": "owner",
+                        "repo": "repo",
+                        "issue_number": 76,
+                    },
+                }
+            ),
+        )
+        comment = await github_handler.get_self_comment(76)
+        assert comment is None
+
+
+async def test_comment_issue_new(app: App, mocker: MockerFixture) -> None:
+    """测试发布评论，新建评论的情况"""
+    from src.plugins.github.handlers.github import GithubHandler
+    from src.plugins.github.models import RepoInfo
+
+    async with app.test_api() as ctx:
+        _, bot = get_github_bot(ctx)
+
+        github_handler = GithubHandler(
+            bot=bot,
+            repo_info=RepoInfo(owner="owner", repo="repo"),
+        )
+
+        should_call_apis(
+            ctx,
+            [
+                GitHubApi(api="rest.issues.async_create_comment", result=True),
+            ],
+            snapshot(
+                {
+                    0: {
+                        "owner": "owner",
+                        "repo": "repo",
+                        "issue_number": 76,
+                        "body": "new comment",
+                    },
+                }
+            ),
+        )
+        await github_handler.comment_issue("new comment", 76)
+
+
+async def test_comment_issue_update(app: App, mocker: MockerFixture) -> None:
+    """测试发布评论，更新已有评论的情况"""
+    from src.plugins.github.handlers.github import GithubHandler
+    from src.plugins.github.models import RepoInfo
+
+    mock_comment = mocker.MagicMock()
+    mock_comment.body = "old comment\n<!-- NONEFLOW -->"
+    mock_comment.id = 123
+
+    async with app.test_api() as ctx:
+        _, bot = get_github_bot(ctx)
+
+        github_handler = GithubHandler(
+            bot=bot,
+            repo_info=RepoInfo(owner="owner", repo="repo"),
+        )
+
+        should_call_apis(
+            ctx,
+            [
+                GitHubApi(api="rest.issues.async_update_comment", result=True),
+            ],
+            snapshot(
+                {
+                    0: {
+                        "owner": "owner",
+                        "repo": "repo",
+                        "comment_id": 123,
+                        "body": "new comment",
+                    },
+                }
+            ),
+        )
+        await github_handler.comment_issue("new comment", 76, mock_comment)
+
+
+async def test_comment_issue_no_change(app: App, mocker: MockerFixture) -> None:
+    """测试发布评论，评论内容无变化的情况"""
+    from src.plugins.github.handlers.github import GithubHandler
+    from src.plugins.github.models import RepoInfo
+
+    mock_comment = mocker.MagicMock()
+    mock_comment.body = "same comment"
+    mock_comment.id = 123
+
+    async with app.test_api() as ctx:
+        _, bot = get_github_bot(ctx)
+
+        github_handler = GithubHandler(
+            bot=bot,
+            repo_info=RepoInfo(owner="owner", repo="repo"),
+        )
+
+        await github_handler.comment_issue("same comment", 76, mock_comment)
