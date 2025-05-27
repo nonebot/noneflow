@@ -54,6 +54,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+junit.xml
 
 # Translations
 *.mo
@@ -175,6 +176,7 @@ pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/python
 
-junit.xml
-plugin_test/
 .vscode/
+
+plugin_test/
+artifact/

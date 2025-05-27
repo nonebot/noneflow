@@ -9,7 +9,7 @@ from githubkit import AppAuthStrategy, GitHub
 from pydantic import BaseModel, Field, field_serializer, field_validator
 from pydantic_extra_types.color import Color
 
-from src.plugins.github.constants import REGISTRY_DATA_NAME
+from src.plugins.github.constants import REGISTRY_DATA_NAME, REGISTRY_DATA_PATH
 from src.plugins.github.models import RepoInfo
 from src.providers.constants import BOT_KEY_TEMPLATE, PYPI_KEY_TEMPLATE, TIME_ZONE
 from src.providers.docker_test import Metadata
@@ -505,7 +505,7 @@ class RegistryArtifactData(BaseModel):
         )
 
     def save(self) -> None:
-        with open(REGISTRY_DATA_NAME, "w", encoding="utf-8") as f:
+        with open(REGISTRY_DATA_PATH, "w", encoding="utf-8") as f:
             f.write(self.model_dump_json(indent=2, exclude_none=True))
 
 
