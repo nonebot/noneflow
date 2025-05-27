@@ -24,7 +24,14 @@ async def test_trigger_registry_update(app: App, mocker: MockerFixture):
     mock_comment = mocker.MagicMock()
     mock_comment.body = "Bot: test"
     mock_bot_comment = mocker.MagicMock()
-    mock_bot_comment.body = f"{NONEFLOW_MARKER}"
+    mock_bot_comment.body = f"""
+<details>\n<summary>历史测试</summary>
+<pre><code>
+<li>⚠️ <a href="https://github.com/nonebot/nonebot2/actions/runs/1">2025-03-28 02:21:18 CST</a>。</li><li>✅ <a href="https://github.com/nonebot/nonebot2/actions/runs/2">2025-03-28 02:21:18 CST</a>。</li><li>✅ <a href="https://github.com/nonebot/nonebot2/actions/runs/3">2025-03-28 02:22:18 CST</a>。</li><li>⚠️ <a href="https://github.com/nonebot/nonebot2/actions/runs/4">2025-03-28 02:22:18 CST</a>。</li>
+</code></pre>
+</details>
+{NONEFLOW_MARKER}
+"""
 
     mock_list_comments_resp = mocker.MagicMock()
     mock_list_comments_resp.parsed_data = [mock_comment, mock_bot_comment]
@@ -61,7 +68,7 @@ async def test_trigger_registry_update(app: App, mocker: MockerFixture):
             ],
             [
                 {"owner": "owner", "repo": "registry", "issue_number": 1},
-                {"owner": "owner", "repo": "registry", "run_id": 12},
+                {"owner": "owner", "repo": "registry", "run_id": 3},
                 snapshot(
                     {
                         "repo": "registry",
@@ -142,7 +149,14 @@ async def test_trigger_registry_update_missing_artifact(
     mock_comment = mocker.MagicMock()
     mock_comment.body = "Bot: test"
     mock_bot_comment = mocker.MagicMock()
-    mock_bot_comment.body = f"{NONEFLOW_MARKER}"
+    mock_bot_comment.body = f"""
+<details>\n<summary>历史测试</summary>
+<pre><code>
+<li>⚠️ <a href="https://github.com/nonebot/nonebot2/actions/runs/1">2025-03-28 02:21:18 CST</a>。</li><li>✅ <a href="https://github.com/nonebot/nonebot2/actions/runs/2">2025-03-28 02:21:18 CST</a>。</li><li>✅ <a href="https://github.com/nonebot/nonebot2/actions/runs/3">2025-03-28 02:22:18 CST</a>。</li><li>⚠️ <a href="https://github.com/nonebot/nonebot2/actions/runs/4">2025-03-28 02:22:18 CST</a>。</li>
+</code></pre>
+</details>
+{NONEFLOW_MARKER}
+"""
 
     mock_list_comments_resp = mocker.MagicMock()
     mock_list_comments_resp.parsed_data = [mock_comment, mock_bot_comment]
@@ -175,7 +189,7 @@ async def test_trigger_registry_update_missing_artifact(
             ],
             [
                 {"owner": "owner", "repo": "registry", "issue_number": 1},
-                {"owner": "owner", "repo": "registry", "run_id": 12},
+                {"owner": "owner", "repo": "registry", "run_id": 3},
             ],
         )
 

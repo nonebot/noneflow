@@ -255,14 +255,23 @@ async def process_pull_request(
 async def trigger_registry_update(handler: IssueHandler):
     """通过 repository_dispatch 触发商店列表更新"""
     comment = await handler.get_self_comment()
-    if not comment:
+    if not comment or not comment.body:
         logger.error("获取评论失败，无法触发商店列表更新")
         return
 
-    # TODO: 获取评论对应的 workflow_run_id
-    run_id = 12
+    history = await get_history_workflow_from_comment(comment.body)
+    if not history:
+        logger.error("无法从评论中获取历史工作流信息")
+        return
 
-    artifacts = await handler.list_workflow_run_artifacts(run_id)
+    # 获取最新的工作流运行
+    latest_run = max(filter(lambda x: x[0], history), key=lambda x: x[2])
+    run_id = latest_run[1].split("/")[-1]  # 提取 run_id
+    if not run_id or not run_id.isdigit():
+        logger.error("无法从评论中获取最新工作流运行 ID")
+        return
+
+    artifacts = await handler.list_workflow_run_artifacts(int(run_id))
     for artifact in artifacts.artifacts:
         if artifact.name == "noneflow":
             # 触发商店列表更新
