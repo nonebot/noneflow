@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 
 from githubkit.exception import RequestFailed
 from nonebot import logger
@@ -13,6 +14,7 @@ from src.plugins.github.depends.utils import get_type_by_labels
 from src.plugins.github.handlers import GithubHandler, IssueHandler
 from src.plugins.github.typing import PullRequestList
 from src.plugins.github.utils import commit_message as _commit_message
+from src.providers.constants import TIME_ZONE
 from src.providers.models import RegistryUpdatePayload, to_store
 from src.providers.utils import dump_json5, load_json_from_file
 from src.providers.validation import PublishType, ValidationDict
@@ -25,6 +27,7 @@ from .constants import (
     PLUGIN_TEST_BUTTON_STRING,
     PLUGIN_TEST_PATTERN,
     PLUGIN_TEST_STRING,
+    WORKFLOW_HISTORY_PATTERN,
 )
 from .validation import (
     validate_adapter_info_from_issue,
@@ -277,3 +280,17 @@ async def trigger_registry_update(handler: IssueHandler, publish_type: PublishTy
         repo=plugin_config.input_config.registry_repository,
     )
     logger.info("已触发商店列表更新")
+
+
+async def get_history_workflow_from_comment(
+    comment: str,
+) -> list[tuple[bool, str, datetime]]:
+    """获取历史工作流"""
+    return [
+        (
+            status == "✅",
+            action_url,
+            datetime.strptime(time, "%Y-%m-%d %H:%M:%S CST").replace(tzinfo=TIME_ZONE),
+        )
+        for status, action_url, time in WORKFLOW_HISTORY_PATTERN.findall(comment)
+    ]

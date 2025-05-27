@@ -241,6 +241,10 @@ async def test_render_error_plugin(app: App, mocker: MockFixture):
 <summary>详情</summary>
 <pre><code><li>✅ 项目 <a href="https://github.com/he0119/nonebot-plugin-treehelp">主页</a> 返回状态码 200。</li><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 通过。</li></code></pre>
 </details>
+<details>
+<summary>历史测试</summary>
+<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
+</details>
 
 ---
 
@@ -369,6 +373,10 @@ async def test_render_error_plugin_metadata(app: App, mocker: MockFixture):
 <summary>详情</summary>
 <pre><code><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 通过。</li></code></pre>
 </details>
+<details>
+<summary>历史测试</summary>
+<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
+</details>
 
 ---
 
@@ -438,6 +446,10 @@ async def test_render_error_tags_invalid(app: App, mocker: MockFixture):
 <details>
 <summary>详情</summary>
 <pre><code><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 通过。</li></code></pre>
+</details>
+<details>
+<summary>历史测试</summary>
+<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
 </details>
 
 ---
@@ -510,6 +522,10 @@ async def test_render_type_error(app: App, mocker: MockFixture):
 <summary>详情</summary>
 <pre><code><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 通过。</li></code></pre>
 </details>
+<details>
+<summary>历史测试</summary>
+<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
+</details>
 
 ---
 
@@ -567,6 +583,10 @@ async def test_render_unknown_error(app: App, mocker: MockFixture):
 <details>
 <summary>详情</summary>
 <pre><code><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 通过。</li></code></pre>
+</details>
+<details>
+<summary>历史测试</summary>
+<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
 </details>
 
 ---
@@ -636,6 +656,10 @@ async def test_render_http_error(app: App, mocker: MockFixture):
 <details>
 <summary>详情</summary>
 <pre><code><li>✅ 插件 <a href="https://github.com/owner/repo/actions/runs/123456">加载测试</a> 通过。</li></code></pre>
+</details>
+<details>
+<summary>历史测试</summary>
+<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
 </details>
 
 ---

@@ -49,6 +49,12 @@ def format_time(time: str) -> str:
     return dt.strftime("%Y-%m-%d %H:%M:%S %Z")
 
 
+def format_datetime(dt: datetime) -> str:
+    """格式化 datetime 对象为字符串"""
+    dt = dt.astimezone(tz=TIME_ZONE)
+    return dt.strftime("%Y-%m-%d %H:%M:%S %Z")
+
+
 env = jinja2.Environment(
     loader=jinja2.FileSystemLoader(Path(__file__).parent / "templates"),
     enable_async=True,
@@ -63,13 +69,20 @@ env.filters["supported_adapters_to_str"] = supported_adapters_to_str
 env.filters["loc_to_name"] = loc_to_name
 env.filters["key_to_name"] = key_to_name
 env.filters["format_time"] = format_time
+env.filters["format_datetime"] = format_datetime
 
 
-async def render_comment(result: ValidationDict, reuse: bool = False) -> str:
+async def render_comment(
+    result: ValidationDict,
+    reuse: bool = False,
+    history: list[tuple[bool, str, datetime]] | None = None,
+) -> str:
     """将验证结果转换为评论内容"""
     title = f"{result.type}: {result.name}"
 
     valid_data = result.valid_data.copy()
+
+    history = history or []
 
     if result.type == PublishType.PLUGIN:
         # https://github.com/he0119/action-test/actions/runs/4469672520
@@ -119,6 +132,18 @@ async def render_comment(result: ValidationDict, reuse: bool = False) -> str:
                 url=action_url,
             )
         )
+        history.append(
+            (
+                result.valid,
+                action_url,
+                datetime.now(tz=TIME_ZONE),
+            )
+        )
+
+    # 测试历史应该时间倒序排列
+    history.sort(key=lambda x: x[2], reverse=True)
+    # 限制最多显示 10 条历史
+    history = history[:10]
 
     template = env.get_template("comment.md.jinja")
     return await template.render_async(
@@ -127,6 +152,7 @@ async def render_comment(result: ValidationDict, reuse: bool = False) -> str:
         title=title,
         valid=result.valid,
         data=data,
+        history=history,
         errors=result.errors,
         skip_test=result.skip_test,
     )

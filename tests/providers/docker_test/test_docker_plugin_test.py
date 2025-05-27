@@ -31,7 +31,6 @@ async def test_docker_plugin_test(mocked_api: MockRouter, mocker: MockerFixture)
     assert result == snapshot(
         DockerTestResult(
             load=True,
-            metadata=None,
             output="test",
             run=True,
             test_env="python==3.12",
@@ -75,7 +74,6 @@ async def test_docker_plugin_test_exception(
         DockerTestResult(
             run=False,
             load=False,
-            metadata=None,
             output="Docker failed",
         )
     )
@@ -130,7 +128,6 @@ async def test_docker_plugin_test_metadata_some_fields_empty(
 
     assert result == snapshot(
         DockerTestResult(
-            config="",
             load=True,
             metadata={
                 "name": "name",
@@ -166,7 +163,7 @@ async def test_docker_plugin_test_metadata_some_fields_invalid(
     mocked_api: MockRouter, mocker: MockerFixture
 ):
     """测试 metadata 的部分字段不符合规范"""
-    from src.providers.docker_test import DockerPluginTest, DockerTestResult, Metadata
+    from src.providers.docker_test import DockerPluginTest, DockerTestResult
 
     mocked_run = mocker.Mock()
     mocked_run.return_value = json.dumps(
@@ -196,15 +193,14 @@ async def test_docker_plugin_test_metadata_some_fields_invalid(
 
     assert result == snapshot(
         DockerTestResult(
-            config="",
             load=True,
-            metadata=Metadata(
-                name="name",
-                desc="desc",
-                homepage=12,  # type: ignore
-                type=True,  # type: ignore
-                supported_adapters={},  # type: ignore
-            ),
+            metadata={
+                "name": "name",
+                "desc": "desc",
+                "homepage": 12,
+                "type": True,
+                "supported_adapters": {},
+            },  # type: ignore
             output="test",
             run=True,
             test_env="python==3.12",

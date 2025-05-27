@@ -86,7 +86,7 @@ async def handle_remove_check(
             result = await validate_author_info(handler.issue, publish_type)
         except PydanticCustomError as err:
             logger.error(f"信息验证失败: {err}")
-            await handler.comment_issue(await render_error(err))
+            await handler.resuable_comment_issue(await render_error(err))
             await remove_check_matcher.finish()
 
         title = f"{result.publish_type}: Remove {result.name or 'Unknown'}"[
@@ -113,7 +113,7 @@ async def handle_remove_check(
             result,
             f"{plugin_config.input_config.store_repository}#{pull_number}",
         )
-        await handler.comment_issue(comment)
+        await handler.resuable_comment_issue(comment)
 
 
 async def review_submitted_rule(

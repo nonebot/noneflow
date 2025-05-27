@@ -36,7 +36,7 @@ async def test_comment_issue(app: App, mocker: MockerFixture):
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
-        await handler.comment_issue(render_comment, 1)
+        await handler.resuable_comment_issue(render_comment, 1)
 
 
 async def test_comment_issue_reuse(app: App, mocker: MockerFixture):
@@ -73,7 +73,7 @@ async def test_comment_issue_reuse(app: App, mocker: MockerFixture):
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
-        await handler.comment_issue(render_comment, 1)
+        await handler.resuable_comment_issue(render_comment, 1)
 
 
 async def test_comment_issue_reuse_same(app: App, mocker: MockerFixture):
@@ -101,4 +101,4 @@ async def test_comment_issue_reuse_same(app: App, mocker: MockerFixture):
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
-        await handler.comment_issue(render_comment, 1)
+        await handler.resuable_comment_issue(render_comment, 1)
