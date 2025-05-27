@@ -22,9 +22,7 @@ def mock_docker_result(path: Path, mocker: MockerFixture):
     return mock_plugin_test
 
 
-async def test_validate_plugin(
-    mocked_api: MockRouter, mocker: MockerFixture, mock_datetime
-) -> None:
+async def test_validate_plugin(mocked_api: MockRouter, mocker: MockerFixture) -> None:
     """验证插件信息"""
     from src.providers.models import RegistryPlugin, StorePlugin, StoreTestResult
     from src.providers.store_test.validation import validate_plugin
@@ -90,7 +88,7 @@ async def test_validate_plugin(
 
 
 async def test_validate_plugin_with_previous(
-    mocked_api: MockRouter, mocker: MockerFixture, mock_datetime
+    mocked_api: MockRouter, mocker: MockerFixture
 ) -> None:
     """插件验证通过，但提供了之前插件信息的情况
 
@@ -181,7 +179,7 @@ async def test_validate_plugin_with_previous(
 
 
 async def test_validate_plugin_skip_test(
-    mocked_api: MockRouter, mocker: MockerFixture, mock_datetime
+    mocked_api: MockRouter, mocker: MockerFixture
 ) -> None:
     """跳过插件测试的情况
 
@@ -251,7 +249,7 @@ async def test_validate_plugin_skip_test(
 
 
 async def test_validate_plugin_skip_test_plugin_test_failed(
-    mocked_api: MockRouter, mocker: MockerFixture, mock_datetime
+    mocked_api: MockRouter, mocker: MockerFixture
 ) -> None:
     """跳过插件测试的情况
 
@@ -360,7 +358,7 @@ async def test_validate_plugin_skip_test_plugin_test_failed(
 
 
 async def test_validate_plugin_failed_with_previous(
-    mocked_api: MockRouter, mocker: MockerFixture, mock_datetime
+    mocked_api: MockRouter, mocker: MockerFixture
 ) -> None:
     """插件验证失败，但提供了之前插件信息的情况
 

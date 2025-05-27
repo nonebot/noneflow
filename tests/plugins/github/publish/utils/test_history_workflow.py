@@ -2,7 +2,7 @@ from inline_snapshot import snapshot
 from nonebug import App
 
 
-async def test_history_workflow(app: App, mock_datetime):
+async def test_history_workflow(app: App):
     from src.plugins.github.plugins.publish.utils import (
         get_history_workflow_from_comment,
     )

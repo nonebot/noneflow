@@ -9,11 +9,7 @@ from tests.plugins.github.utils import check_json_data
 
 
 async def test_update_file(
-    app: App,
-    mocker: MockerFixture,
-    tmp_path: Path,
-    mock_results: dict[str, Path],
-    mock_datetime,
+    app: App, mocker: MockerFixture, tmp_path: Path, mock_results: dict[str, Path]
 ) -> None:
     from src.plugins.github.plugins.config.utils import update_file
     from src.providers.validation.models import (

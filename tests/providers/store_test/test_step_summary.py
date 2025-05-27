@@ -6,10 +6,7 @@ from respx import MockRouter
 
 
 async def test_step_summary(
-    mocked_store_data: dict[str, Path],
-    mocked_api: MockRouter,
-    mocker: MockerFixture,
-    mock_datetime,
+    mocked_store_data: dict[str, Path], mocked_api: MockRouter, mocker: MockerFixture
 ) -> None:
     """验证插件信息"""
     from src.providers.models import StoreTestResult

@@ -158,7 +158,7 @@ async def test_render_error_adapter(app: App):
     )
 
 
-async def test_render_error_plugin(app: App, mocker: MockFixture, mock_datetime):
+async def test_render_error_plugin(app: App, mocker: MockFixture):
     """插件数据"""
     from src.plugins.github.plugins.publish.render import render_comment
     from src.providers.validation import PublishType, ValidationDict
@@ -327,9 +327,7 @@ async def test_render_error_plugin_load_test(app: App):
     )
 
 
-async def test_render_error_plugin_metadata(
-    app: App, mocker: MockFixture, mock_datetime
-):
+async def test_render_error_plugin_metadata(app: App, mocker: MockFixture):
     """插件加载成功，但缺少元数据的情况"""
     from src.plugins.github.plugins.publish.render import render_comment
     from src.providers.validation import PublishType, ValidationDict
@@ -392,7 +390,7 @@ async def test_render_error_plugin_metadata(
     )
 
 
-async def test_render_error_tags_invalid(app: App, mocker: MockFixture, mock_datetime):
+async def test_render_error_tags_invalid(app: App, mocker: MockFixture):
     """标签不合法的情况"""
     from src.plugins.github.plugins.publish.render import render_comment
     from src.providers.validation import PublishType, ValidationDict
@@ -466,7 +464,7 @@ async def test_render_error_tags_invalid(app: App, mocker: MockFixture, mock_dat
     )
 
 
-async def test_render_type_error(app: App, mocker: MockFixture, mock_datetime):
+async def test_render_type_error(app: App, mocker: MockFixture):
     """插件类型与适配器错误"""
     from src.plugins.github.plugins.publish.render import render_comment
     from src.providers.validation import PublishType, ValidationDict
@@ -541,7 +539,7 @@ async def test_render_type_error(app: App, mocker: MockFixture, mock_datetime):
     )
 
 
-async def test_render_unknown_error(app: App, mocker: MockFixture, mock_datetime):
+async def test_render_unknown_error(app: App, mocker: MockFixture):
     """未知错误"""
     from src.plugins.github.plugins.publish.render import render_comment
     from src.providers.validation import PublishType, ValidationDict
@@ -603,11 +601,7 @@ async def test_render_unknown_error(app: App, mocker: MockFixture, mock_datetime
     )
 
 
-async def test_render_http_error(
-    app: App,
-    mocker: MockFixture,
-    mock_datetime,
-):
+async def test_render_http_error(app: App, mocker: MockFixture):
     """网络请求报错"""
     from src.plugins.github.plugins.publish.render import render_comment
     from src.providers.validation import PublishType, ValidationDict

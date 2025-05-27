@@ -28,7 +28,6 @@ async def test_process_config_check(
     tmp_path: Path,
     mock_installation,
     mock_results: dict[str, Path],
-    mock_datetime,
 ) -> None:
     """测试发布检查不通过"""
     from src.providers.docker_test import Metadata
