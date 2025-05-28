@@ -16,6 +16,10 @@ class PublishConfig(BaseModel):
     store_repository: RepoInfo = Field(
         default=RepoInfo(owner="nonebot", repo="nonebot2")
     )
+    artifact_path: Path = Field(
+        default=Path("artifact"),
+        description="Artifact 存储路径，默认是 `artifact` 目录",
+    )
 
     @field_validator("registry_repository", "store_repository", mode="before")
     @classmethod

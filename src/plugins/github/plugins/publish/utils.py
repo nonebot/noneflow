@@ -158,7 +158,9 @@ def update_file(result: ValidationDict) -> None:
 
     # 保存 registry_update 所需的文件
     # 之后会上传至 Artifact，并通过 artifact_id 访问
-    RegistryArtifactData.from_info(result.info).save()
+    RegistryArtifactData.from_info(result.info).save(
+        plugin_config.input_config.artifact_path
+    )
 
     logger.info("文件更新完成")
 

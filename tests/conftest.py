@@ -88,6 +88,9 @@ async def app(
     # NOTE: 由于 providers 中没有初始化 nonebot，所以不能使用插件中的配置，只能直接使用环境变量。
     # 以后需要想想办法，如果能通过 nb-cli 启动就好了。
     monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(tmp_path / "step_summary.md"))
+    # Artifact 数据
+    artifact_path = tmp_path / "artifact"
+    mocker.patch.object(plugin_config.input_config, "artifact_path", artifact_path)
 
     return app
 

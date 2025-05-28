@@ -3,15 +3,19 @@ import io
 import os
 import zipfile
 from datetime import datetime
-from typing import Any, Literal, Self, TypeAlias
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Literal, Self, TypeAlias
 
 from githubkit import AppAuthStrategy, GitHub
 from pydantic import BaseModel, Field, field_serializer, field_validator
 from pydantic_extra_types.color import Color
 
-from src.plugins.github.constants import REGISTRY_DATA_NAME, REGISTRY_DATA_PATH
-from src.plugins.github.models import RepoInfo
-from src.providers.constants import BOT_KEY_TEMPLATE, PYPI_KEY_TEMPLATE, TIME_ZONE
+from src.providers.constants import (
+    BOT_KEY_TEMPLATE,
+    PYPI_KEY_TEMPLATE,
+    REGISTRY_DATA_NAME,
+    TIME_ZONE,
+)
 from src.providers.docker_test import Metadata
 from src.providers.utils import get_author_name, get_pypi_upload_time, get_pypi_version
 from src.providers.validation import validate_info
@@ -23,6 +27,9 @@ from src.providers.validation.models import (
     PublishInfoModels,
     PublishType,
 )
+
+if TYPE_CHECKING:
+    from src.plugins.github.models import RepoInfo
 
 
 class Tag(BaseModel):
@@ -504,8 +511,15 @@ class RegistryArtifactData(BaseModel):
             else None,
         )
 
-    def save(self) -> None:
-        with open(REGISTRY_DATA_PATH, "w", encoding="utf-8") as f:
+    def save(self, path: Path) -> None:
+        """将注册表数据保存到指定路径"""
+        if not path.exists():
+            path.mkdir(parents=True, exist_ok=True)
+        if not path.is_dir():
+            raise ValueError(f"路径 {path} 不是一个目录")
+
+        file_path = path / REGISTRY_DATA_NAME
+        with open(file_path, "w", encoding="utf-8") as f:
             f.write(self.model_dump_json(indent=2, exclude_none=True))
 
 
@@ -515,7 +529,7 @@ class RegistryUpdatePayload(BaseModel):
     通过 GitHub Action Artifact 传递数据
     """
 
-    repo_info: RepoInfo
+    repo_info: "RepoInfo"
     artifact_id: int
 
     def get_artifact_data(self) -> RegistryArtifactData:
