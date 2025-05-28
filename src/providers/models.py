@@ -547,8 +547,7 @@ class RegistryArtifactData(BaseModel):
         if not path.is_dir():
             raise ValueError(f"路径 {path} 不是一个目录")
 
-        file_path = path / REGISTRY_DATA_NAME
-        with open(file_path, "w", encoding="utf-8") as f:
+        with open(path / REGISTRY_DATA_NAME, "w", encoding="utf-8") as f:
             f.write(self.model_dump_json(indent=2))
 
 
