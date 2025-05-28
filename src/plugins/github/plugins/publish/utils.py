@@ -286,6 +286,7 @@ async def trigger_registry_update(handler: IssueHandler):
                 repo=plugin_config.input_config.registry_repository,
             )
             logger.info("已触发商店列表更新")
+            break
 
 
 async def get_history_workflow_from_comment(
