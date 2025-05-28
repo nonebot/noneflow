@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 在 Noneflow 工作流评论处增设 Noneflow 运行历史
 
+### Fixed
+
+- 通过 artifact 将数据传递给 registry
+
 ## [4.3.1] - 2025-05-10
 
 ### Fixed
