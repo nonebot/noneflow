@@ -9,7 +9,7 @@ from nonebot.adapters.github import Bot
 from pydantic import ConfigDict
 
 from src.plugins.github.constants import NONEFLOW_MARKER
-from src.plugins.github.models import RepoInfo
+from src.providers.models import RepoInfo
 
 from .git import GitHandler
 

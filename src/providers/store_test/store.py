@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from src.providers.constants import (
     BOT_KEY_TEMPLATE,
@@ -18,7 +19,6 @@ from src.providers.constants import (
 from src.providers.logger import logger
 from src.providers.models import (
     RegistryAdapter,
-    RegistryArtifactData,
     RegistryBot,
     RegistryDriver,
     RegistryPlugin,
@@ -44,6 +44,9 @@ from .constants import (
     RESULTS_PATH,
 )
 from .validation import validate_plugin
+
+if TYPE_CHECKING:
+    from src.providers.models import RegistryArtifactData
 
 
 class StoreTest:
@@ -285,7 +288,7 @@ class StoreTest:
 
         self.dump_data()
 
-    async def registry_update(self, data: RegistryArtifactData):
+    async def registry_update(self, data: "RegistryArtifactData"):
         """商店更新
 
         直接利用 artifact 中的数据更新商店数据

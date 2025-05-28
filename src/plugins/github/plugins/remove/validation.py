@@ -3,9 +3,9 @@ from pydantic import BaseModel
 from pydantic_core import PydanticCustomError
 
 from src.plugins.github import plugin_config
-from src.plugins.github.models import AuthorInfo
 from src.plugins.github.utils import extract_issue_info_from_issue
 from src.providers.constants import BOT_KEY_TEMPLATE, PYPI_KEY_TEMPLATE
+from src.providers.models import AuthorInfo
 from src.providers.utils import load_json_from_file
 from src.providers.validation.models import PublishType
 

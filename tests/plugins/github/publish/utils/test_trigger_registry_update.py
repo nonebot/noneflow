@@ -13,8 +13,8 @@ from tests.plugins.github.utils import (
 async def test_trigger_registry_update(app: App, mocker: MockerFixture):
     from src.plugins.github.constants import NONEFLOW_MARKER
     from src.plugins.github.handlers import IssueHandler
-    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import trigger_registry_update
+    from src.providers.models import RepoInfo
 
     mock_issue = MockIssue(
         body=MockBody(type="plugin").generate(),
@@ -94,8 +94,8 @@ async def test_trigger_registry_update(app: App, mocker: MockerFixture):
 async def test_trigger_registry_update_missing_comment(app: App, mocker: MockerFixture):
     """如果没有找到对应的评论，则不触发更新"""
     from src.plugins.github.handlers import IssueHandler
-    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import trigger_registry_update
+    from src.providers.models import RepoInfo
 
     mock_issue = MockIssue(
         body=MockBody(type="plugin").generate(),
@@ -138,8 +138,8 @@ async def test_trigger_registry_update_missing_artifact(
     """如果没有找到对应的 artifact，则不触发更新"""
     from src.plugins.github.constants import NONEFLOW_MARKER
     from src.plugins.github.handlers import IssueHandler
-    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import trigger_registry_update
+    from src.providers.models import RepoInfo
 
     mock_issue = MockIssue(
         body=MockBody(type="plugin").generate(),

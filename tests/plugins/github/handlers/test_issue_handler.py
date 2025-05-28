@@ -11,7 +11,7 @@ from tests.plugins.github.utils import GitHubApi, get_github_bot, should_call_ap
 async def test_issue_property(app: App, mocker: MockerFixture) -> None:
     """测试获取 IssueHandler 的属性"""
     from src.plugins.github.handlers.issue import IssueHandler
-    from src.plugins.github.models import AuthorInfo, RepoInfo
+    from src.providers.models import AuthorInfo, RepoInfo
 
     mock_issue = mocker.MagicMock(spec=Issue)
     mock_issue.number = 111
@@ -41,7 +41,7 @@ async def test_issue_property(app: App, mocker: MockerFixture) -> None:
 async def test_update_issue_title(app: App, mocker: MockerFixture) -> None:
     """测试修改议题标题"""
     from src.plugins.github.handlers.issue import IssueHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_issue = mocker.MagicMock(spec=Issue)
     mock_issue.number = 76
@@ -81,7 +81,7 @@ async def test_update_issue_title(app: App, mocker: MockerFixture) -> None:
 async def test_update_issue_body(app: App, mocker: MockerFixture) -> None:
     """测试更新议题内容"""
     from src.plugins.github.handlers.issue import IssueHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_issue = mocker.MagicMock(spec=Issue)
     mock_issue.number = 76
@@ -121,7 +121,7 @@ async def test_update_issue_body(app: App, mocker: MockerFixture) -> None:
 async def test_close_issue(app: App, mocker: MockerFixture) -> None:
     """测试关闭议题"""
     from src.plugins.github.handlers.issue import IssueHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_issue = mocker.MagicMock(spec=Issue)
     mock_issue.number = 123
@@ -159,7 +159,7 @@ async def test_close_issue(app: App, mocker: MockerFixture) -> None:
 async def test_create_pull_request(app: App, mocker: MockerFixture) -> None:
     """测试创建拉取请求"""
     from src.plugins.github.handlers.issue import IssueHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_pull = mocker.MagicMock()
     mock_pull.number = 123
@@ -202,7 +202,7 @@ async def test_create_pull_request(app: App, mocker: MockerFixture) -> None:
 async def test_list_comments(app: App, mocker: MockerFixture) -> None:
     """测试拉取所有评论"""
     from src.plugins.github.handlers.issue import IssueHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_comments_resp = mocker.MagicMock()
     mock_comments_resp.parsed_data = []
@@ -242,7 +242,7 @@ async def test_list_comments(app: App, mocker: MockerFixture) -> None:
 async def test_comment_issue(app: App, mocker: MockerFixture) -> None:
     """测试发布评论"""
     from src.plugins.github.handlers.issue import IssueHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_comments_resp = mocker.MagicMock()
     mock_comments_resp.parsed_data = []
@@ -285,7 +285,7 @@ async def test_comment_issue(app: App, mocker: MockerFixture) -> None:
 async def test_should_skip_test(app: App, mocker: MockerFixture) -> None:
     """测试是否应该跳过测试"""
     from src.plugins.github.handlers.issue import IssueHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_issue = mocker.MagicMock(spec=Issue)
     mock_issue.number = 76
@@ -321,7 +321,7 @@ async def test_should_skip_test(app: App, mocker: MockerFixture) -> None:
 async def test_should_skip_test_true(app: App, mocker: MockerFixture) -> None:
     """测试是否应该跳过测试，应该跳过"""
     from src.plugins.github.handlers.issue import IssueHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_issue = mocker.MagicMock(spec=Issue)
     mock_issue.number = 76
@@ -361,7 +361,7 @@ async def test_should_skip_test_true(app: App, mocker: MockerFixture) -> None:
 async def test_should_skip_test_not_admin(app: App, mocker: MockerFixture) -> None:
     """测试是否应该跳过测试，只是贡献者"""
     from src.plugins.github.handlers.issue import IssueHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_issue = mocker.MagicMock(spec=Issue)
     mock_issue.number = 76
@@ -401,7 +401,7 @@ async def test_should_skip_test_not_admin(app: App, mocker: MockerFixture) -> No
 async def test_commit_and_push(app: App, mocker: MockerFixture) -> None:
     """测试提交并推送"""
     from src.plugins.github.handlers.issue import IssueHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_run_shell_command = mocker.patch(
         "src.plugins.github.handlers.git.run_shell_command"
@@ -448,7 +448,7 @@ async def test_commit_and_push(app: App, mocker: MockerFixture) -> None:
 async def test_get_self_comment(app: App, mocker: MockerFixture) -> None:
     """测试获取自己的评论"""
     from src.plugins.github.handlers.issue import IssueHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_comment_bot = mocker.MagicMock()
     mock_comment_bot.body = "bot comment\n<!-- NONEFLOW -->"
@@ -493,7 +493,7 @@ async def test_get_self_comment(app: App, mocker: MockerFixture) -> None:
 async def test_get_self_comment_not_found(app: App, mocker: MockerFixture) -> None:
     """测试获取自己的评论，未找到的情况"""
     from src.plugins.github.handlers.issue import IssueHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_comment_user = mocker.MagicMock()
     mock_comment_user.id = 123
@@ -533,7 +533,7 @@ async def test_get_self_comment_not_found(app: App, mocker: MockerFixture) -> No
 async def test_comment_issue_new(app: App, mocker: MockerFixture) -> None:
     """测试发布新评论"""
     from src.plugins.github.handlers.issue import IssueHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_issue = mocker.MagicMock(spec=Issue)
     mock_issue.number = 76
@@ -569,7 +569,7 @@ async def test_comment_issue_new(app: App, mocker: MockerFixture) -> None:
 async def test_comment_issue_update_existing(app: App, mocker: MockerFixture) -> None:
     """测试更新已存在的评论"""
     from src.plugins.github.handlers.issue import IssueHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_comment = mocker.MagicMock()
     mock_comment.id = 123

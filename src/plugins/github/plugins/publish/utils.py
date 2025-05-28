@@ -12,14 +12,10 @@ from src.plugins.github.constants import (
 )
 from src.plugins.github.depends.utils import get_type_by_labels
 from src.plugins.github.handlers import GithubHandler, IssueHandler
-from src.plugins.github.models import (
-    RegistryArtifactData,
-    RegistryUpdatePayload,
-)
 from src.plugins.github.typing import PullRequestList
 from src.plugins.github.utils import commit_message as _commit_message
 from src.providers.constants import TIME_ZONE
-from src.providers.models import to_store
+from src.providers.models import RegistryArtifactData, RegistryUpdatePayload, to_store
 from src.providers.utils import dump_json5, load_json_from_file
 from src.providers.validation import PublishType, ValidationDict
 

@@ -52,11 +52,11 @@ async def test_validate_info_from_issue_plugin(
 ):
     from src.plugins.github import plugin_config
     from src.plugins.github.handlers import IssueHandler
-    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.validation import (
         validate_plugin_info_from_issue,
     )
     from src.providers.docker_test import Metadata
+    from src.providers.models import RepoInfo
 
     mock_user = mocker.MagicMock()
     mock_user.login = "test"
@@ -136,10 +136,10 @@ async def test_validate_info_from_issue_plugin_skip_test(
 ):
     """跳过插件测试的情况"""
     from src.plugins.github.handlers import IssueHandler
-    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.validation import (
         validate_plugin_info_from_issue,
     )
+    from src.providers.models import RepoInfo
 
     mock_user = mocker.MagicMock()
     mock_user.login = "test"

@@ -3,7 +3,6 @@ from typing import Any
 from nonebot import logger
 
 from src.plugins.github.handlers import IssueHandler
-from src.plugins.github.models import AuthorInfo
 from src.plugins.github.plugins.publish.constants import (
     PLUGIN_CONFIG_PATTERN,
     PLUGIN_MODULE_NAME_PATTERN,
@@ -14,7 +13,7 @@ from src.plugins.github.plugins.publish.validation import add_step_summary, stri
 from src.plugins.github.utils import extract_issue_info_from_issue
 from src.providers.constants import PYPI_KEY_TEMPLATE
 from src.providers.docker_test import DockerPluginTest, Metadata
-from src.providers.models import RegistryPlugin, StoreTestResult
+from src.providers.models import AuthorInfo, RegistryPlugin, StoreTestResult
 from src.providers.utils import dump_json, load_json_from_file
 from src.providers.validation import PublishType, ValidationDict, validate_info
 from src.providers.validation.models import PluginPublishInfo
