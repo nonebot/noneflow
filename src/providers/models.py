@@ -549,7 +549,7 @@ class RegistryArtifactData(BaseModel):
 
         file_path = path / REGISTRY_DATA_NAME
         with open(file_path, "w", encoding="utf-8") as f:
-            f.write(self.model_dump_json(indent=2, exclude_none=True))
+            f.write(self.model_dump_json(indent=2))
 
 
 class RegistryUpdatePayload(BaseModel):

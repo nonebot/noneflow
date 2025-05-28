@@ -91,6 +91,9 @@ async def app(
     # Artifact 数据
     artifact_path = tmp_path / "artifact"
     mocker.patch.object(plugin_config.input_config, "artifact_path", artifact_path)
+    # GitHub App
+    monkeypatch.setenv("APP_ID", "123456")
+    monkeypatch.setenv("PRIVATE_KEY", "private_key")
 
     return app
 
