@@ -8,9 +8,10 @@ from tests.plugins.github.event import get_mock_event
 from tests.plugins.github.utils import (
     MockBody,
     MockIssue,
-    MockUser,
-    generate_issue_body_plugin_skip_test,
+    assert_subprocess_run_calls,
     get_github_bot,
+    mock_subprocess_run_with_side_effect,
+    should_call_apis,
 )
 
 
@@ -20,15 +21,7 @@ async def test_process_pull_request(
     mock_installation,
     mocked_api: MockRouter,
 ) -> None:
-    from src.providers.docker_test import Metadata
-    from src.providers.validation import PublishType
-
-    mock_time = mocker.patch("src.providers.models.datetime")
-    mock_now = mocker.MagicMock()
-    mock_now.isoformat.return_value = "2023-09-01T00:00:00+00:00Z"
-    mock_time.now.return_value = mock_now
-
-    mock_subprocess_run = mocker.patch("subprocess.run")
+    mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     mock_issue = MockIssue(body=MockBody("plugin").generate()).as_mock(mocker)
 
@@ -38,140 +31,115 @@ async def test_process_pull_request(
     mock_pulls_resp = mocker.MagicMock()
     mock_pulls_resp.parsed_data = []
 
-    mock_comment = mocker.MagicMock()
-    mock_comment.body = "Bot: test"
-    mock_list_comments_resp = mocker.MagicMock()
-    mock_list_comments_resp.parsed_data = [mock_comment]
+    mock_comment_bot = mocker.MagicMock()
+    mock_comment_bot.body = """
+<details>\n<summary>历史测试</summary>
+<pre><code>
+<li>⚠️ <a href="https://github.com/nonebot/nonebot2/actions/runs/1">2025-03-28 02:21:18 CST</a>。</li><li>✅ <a href="https://github.com/nonebot/nonebot2/actions/runs/2">2025-03-28 02:21:18 CST</a>。</li><li>✅ <a href="https://github.com/nonebot/nonebot2/actions/runs/3">2025-03-28 02:22:18 CST</a>。</li><li>⚠️ <a href="https://github.com/nonebot/nonebot2/actions/runs/4">2025-03-28 02:22:18 CST</a>。</li>
+</code></pre>
+</details>
+<!-- NONEFLOW -->
+"""
+    mock_comment_bot.id = 123
 
-    mock_test_result = mocker.MagicMock()
-    mock_test_result.metadata = Metadata(
-        name="name",
-        desc="desc",
-        homepage="https://nonebot.dev",
-        type="application",
-        supported_adapters=["~onebot.v11"],
-    )
-    mock_test_result.load = True
-    mock_test_result.version = "1.0.0"
-    mock_test_result.output = ""
-    mock_docker = mocker.patch("src.providers.docker_test.DockerPluginTest.run")
-    mock_docker.return_value = mock_test_result
+    mock_comment_user = mocker.MagicMock()
+    mock_comment_user.body = "user comment"
+    mock_comment_user.id = 456
+
+    mock_list_comments_resp = mocker.MagicMock()
+    mock_list_comments_resp.parsed_data = [mock_comment_bot, mock_comment_user]
+
+    mock_artifact = mocker.MagicMock()
+    mock_artifact.name = "noneflow"
+    mock_artifact.id = 233
+
+    mock_list_artifacts_data = mocker.MagicMock()
+    mock_list_artifacts_data.total_count = 1
+    mock_list_artifacts_data.artifacts = [mock_artifact]
+
+    mock_list_artifacts_resp = mocker.MagicMock()
+    mock_list_artifacts_resp.parsed_data = mock_list_artifacts_data
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
         event = get_mock_event(PullRequestClosed)
         event.payload.pull_request.merged = True
 
-        ctx.should_call_api(
-            "rest.apps.async_get_repo_installation",
-            {"owner": "he0119", "repo": "action-test"},
-            mock_installation,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_get",
-            {"owner": "he0119", "repo": "action-test", "issue_number": 76},
-            mock_issues_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_list_comments",
-            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-            mock_list_comments_resp,
-        )
-        ctx.should_call_api(
-            "rest.repos.async_create_dispatch_event",
+        should_call_apis(
+            ctx,
+            [
+                {
+                    "api": "rest.apps.async_get_repo_installation",
+                    "result": mock_installation,
+                },
+                {
+                    "api": "rest.issues.async_get",
+                    "result": mock_issues_resp,
+                },
+                {
+                    "api": "rest.issues.async_list_comments",
+                    "result": mock_list_comments_resp,
+                },
+                {
+                    "api": "rest.actions.async_list_workflow_run_artifacts",
+                    "result": mock_list_artifacts_resp,
+                },
+                {
+                    "api": "rest.repos.async_create_dispatch_event",
+                    "result": None,
+                },
+                {
+                    "api": "rest.issues.async_update",
+                    "result": None,
+                },
+                {
+                    "api": "rest.pulls.async_list",
+                    "result": mock_pulls_resp,
+                },
+            ],
             snapshot(
                 {
-                    "repo": "registry",
-                    "owner": "owner",
-                    "event_type": "registry_update",
-                    "client_payload": {
-                        "type": PublishType.PLUGIN,
-                        "registry": {
-                            "module_name": "module_name",
-                            "project_link": "project_link",
-                            "name": "name",
-                            "desc": "desc",
-                            "author": "test",
-                            "homepage": "https://nonebot.dev",
-                            "tags": [{"label": "test", "color": "#ffffff"}],
-                            "is_official": False,
-                            "type": "application",
-                            "supported_adapters": ["nonebot.adapters.onebot.v11"],
-                            "valid": True,
-                            "time": "2023-09-01T00:00:00.000000Z",
-                            "version": "1.0.0",
-                            "skip_test": False,
-                        },
-                        "result": {
-                            "time": "2023-09-01T00:00:00+00:00Z",
-                            "config": "log_level=DEBUG",
-                            "version": "1.0.0",
-                            "test_env": {"python==3.12": True},
-                            "results": {
-                                "validation": True,
-                                "load": True,
-                                "metadata": True,
-                            },
-                            "outputs": {
-                                "validation": None,
-                                "load": "",
-                                "metadata": {
-                                    "name": "name",
-                                    "description": "desc",
-                                    "homepage": "https://nonebot.dev",
-                                    "type": "application",
-                                    "supported_adapters": [
-                                        "nonebot.adapters.onebot.v11"
-                                    ],
-                                },
-                            },
+                    0: {"owner": "he0119", "repo": "action-test"},
+                    1: {"owner": "he0119", "repo": "action-test", "issue_number": 76},
+                    2: {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+                    3: {"owner": "he0119", "repo": "action-test", "run_id": 3},
+                    4: {
+                        "owner": "owner",
+                        "repo": "registry",
+                        "event_type": "registry_update",
+                        "client_payload": {
+                            "repo_info": {"owner": "he0119", "repo": "action-test"},
+                            "artifact_id": 233,
                         },
                     },
+                    5: {
+                        "owner": "he0119",
+                        "repo": "action-test",
+                        "issue_number": 80,
+                        "state": "closed",
+                        "state_reason": "completed",
+                    },
+                    6: {"owner": "he0119", "repo": "action-test", "state": "open"},
                 }
             ),
-            True,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_update",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "issue_number": 80,
-                "state": "closed",
-                "state_reason": "completed",
-            },
-            True,
-        )
-        ctx.should_call_api(
-            "rest.pulls.async_list",
-            {"owner": "he0119", "repo": "action-test", "state": "open"},
-            mock_pulls_resp,
         )
 
         ctx.receive_event(bot, event)
 
     # 测试 git 命令
-    mock_subprocess_run.assert_has_calls(
+    assert_subprocess_run_calls(
+        mock_subprocess_run,
         [
-            mocker.call(
-                ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "push", "origin", "--delete", "publish/issue76"],
-                check=True,
-                capture_output=True,
-            ),
-        ],  # type: ignore
-        any_order=True,
+            ["git", "config", "--global", "safe.directory", "*"],
+            ["git", "push", "origin", "--delete", "publish/issue76"],
+        ],
     )
 
 
 async def test_process_pull_request_not_merged(
     app: App, mocker: MockerFixture, mock_installation
 ) -> None:
-    mock_subprocess_run = mocker.patch("subprocess.run")
+    mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     mock_issue = MockIssue().as_mock(mocker)
 
@@ -183,190 +151,50 @@ async def test_process_pull_request_not_merged(
         event = get_mock_event(PullRequestClosed)
         assert isinstance(event, PullRequestClosed)
 
-        ctx.should_call_api(
-            "rest.apps.async_get_repo_installation",
-            {"owner": "he0119", "repo": "action-test"},
-            mock_installation,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_get",
-            {"owner": "he0119", "repo": "action-test", "issue_number": 76},
-            mock_issues_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_update",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "issue_number": 80,
-                "state": "closed",
-                "state_reason": "not_planned",
-            },
-            True,
-        )
-
-        ctx.receive_event(bot, event)
-
-    # 测试 git 命令
-    mock_subprocess_run.assert_has_calls(
-        [
-            mocker.call(
-                ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "push", "origin", "--delete", "publish/issue76"],
-                check=True,
-                capture_output=True,
-            ),
-        ],  # type: ignore
-        any_order=True,
-    )
-
-
-async def test_process_pull_request_skip_plugin_test(
-    app: App, mocker: MockerFixture, mocked_api: MockRouter, mock_installation
-) -> None:
-    """跳过测试的插件合并时的情况"""
-    from src.providers.validation import PublishType
-
-    mock_time = mocker.patch("src.providers.models.datetime")
-    mock_now = mocker.MagicMock()
-    mock_now.isoformat.return_value = "2023-09-01T00:00:00+00:00Z"
-    mock_time.now.return_value = mock_now
-
-    mock_subprocess_run = mocker.patch("subprocess.run")
-
-    mock_issue = MockIssue(
-        body=generate_issue_body_plugin_skip_test(), user=MockUser(login="user", id=1)
-    ).as_mock(mocker)
-
-    mock_issues_resp = mocker.MagicMock()
-    mock_issues_resp.parsed_data = mock_issue
-
-    mock_pulls_resp = mocker.MagicMock()
-    mock_pulls_resp.parsed_data = []
-
-    mock_comment = mocker.MagicMock()
-    mock_comment.body = "/skip"
-    mock_comment.author_association = "OWNER"
-    mock_list_comments_resp = mocker.MagicMock()
-    mock_list_comments_resp.parsed_data = [mock_comment]
-
-    async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
-        event = get_mock_event(PullRequestClosed)
-        event.payload.pull_request.merged = True
-
-        ctx.should_call_api(
-            "rest.apps.async_get_repo_installation",
-            {"owner": "he0119", "repo": "action-test"},
-            mock_installation,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_get",
-            {"owner": "he0119", "repo": "action-test", "issue_number": 76},
-            mock_issues_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_list_comments",
-            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-            mock_list_comments_resp,
-        )
-        ctx.should_call_api(
-            "rest.repos.async_create_dispatch_event",
-            snapshot(
+        should_call_apis(
+            ctx,
+            [
                 {
-                    "repo": "registry",
-                    "owner": "owner",
-                    "event_type": "registry_update",
-                    "client_payload": {
-                        "type": PublishType.PLUGIN,
-                        "registry": {
-                            "module_name": "module_name",
-                            "project_link": "project_link",
-                            "name": "name",
-                            "desc": "desc",
-                            "author": "user",
-                            "homepage": "https://nonebot.dev",
-                            "tags": [{"label": "test", "color": "#ffffff"}],
-                            "is_official": False,
-                            "type": "application",
-                            "supported_adapters": ["nonebot.adapters.onebot.v11"],
-                            "valid": True,
-                            "time": "2023-09-01T00:00:00.000000Z",
-                            "version": "0.0.1",
-                            "skip_test": True,
-                        },
-                        "result": {
-                            "time": "2023-09-01T00:00:00+00:00Z",
-                            "config": "log_level=DEBUG",
-                            "version": "0.0.1",
-                            "test_env": {"python==3.12": True},
-                            "results": {
-                                "validation": True,
-                                "load": True,
-                                "metadata": True,
-                            },
-                            "outputs": {
-                                "validation": None,
-                                "load": "插件未进行测试",
-                                "metadata": {
-                                    "name": "name",
-                                    "description": "desc",
-                                    "homepage": "https://nonebot.dev",
-                                    "type": "application",
-                                    "supported_adapters": [
-                                        "nonebot.adapters.onebot.v11"
-                                    ],
-                                },
-                            },
-                        },
-                    },
-                }
-            ),
-            True,
+                    "api": "rest.apps.async_get_repo_installation",
+                    "result": mock_installation,
+                },
+                {
+                    "api": "rest.issues.async_get",
+                    "result": mock_issues_resp,
+                },
+                {
+                    "api": "rest.issues.async_update",
+                    "result": True,
+                },
+            ],
+            [
+                {"owner": "he0119", "repo": "action-test"},
+                {"owner": "he0119", "repo": "action-test", "issue_number": 76},
+                {
+                    "owner": "he0119",
+                    "repo": "action-test",
+                    "issue_number": 80,
+                    "state": "closed",
+                    "state_reason": "not_planned",
+                },
+            ],
         )
-        ctx.should_call_api(
-            "rest.issues.async_update",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "issue_number": 80,
-                "state": "closed",
-                "state_reason": "completed",
-            },
-            True,
-        )
-        ctx.should_call_api(
-            "rest.pulls.async_list",
-            {"owner": "he0119", "repo": "action-test", "state": "open"},
-            mock_pulls_resp,
-        )
+
         ctx.receive_event(bot, event)
 
     # 测试 git 命令
-    mock_subprocess_run.assert_has_calls(
+    assert_subprocess_run_calls(
+        mock_subprocess_run,
         [
-            mocker.call(
-                ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "push", "origin", "--delete", "publish/issue76"],
-                check=True,
-                capture_output=True,
-            ),
-        ],  # type: ignore
-        any_order=True,
+            ["git", "config", "--global", "safe.directory", "*"],
+            ["git", "push", "origin", "--delete", "publish/issue76"],
+        ],
     )
 
 
 async def test_not_publish(app: App, mocker: MockerFixture) -> None:
     """测试与发布无关的拉取请求"""
-    mock_subprocess_run = mocker.patch("subprocess.run")
+    mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)
@@ -384,7 +212,7 @@ async def test_extract_issue_number_from_ref_failed(
 ) -> None:
     """测试从分支名中提取议题号失败"""
 
-    mock_subprocess_run = mocker.patch("subprocess.run")
+    mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     async with app.test_matcher() as ctx:
         adapter, bot = get_github_bot(ctx)

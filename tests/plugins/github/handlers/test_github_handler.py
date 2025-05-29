@@ -10,7 +10,7 @@ from tests.plugins.github.utils import GitHubApi, get_github_bot, should_call_ap
 async def test_update_issue_title(app: App) -> None:
     """测试修改议题标题"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     async with app.test_api() as ctx:
         _, bot = get_github_bot(ctx)
@@ -42,7 +42,7 @@ async def test_update_issue_title(app: App) -> None:
 async def test_update_issue_body(app: App) -> None:
     """测试更新议题内容"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     async with app.test_api() as ctx:
         _, bot = get_github_bot(ctx)
@@ -74,7 +74,7 @@ async def test_update_issue_body(app: App) -> None:
 async def test_create_dispatch_event(app: App) -> None:
     """测试创建触发事件"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     async with app.test_api() as ctx:
         _, bot = get_github_bot(ctx)
@@ -106,7 +106,7 @@ async def test_create_dispatch_event(app: App) -> None:
 async def test_list_comments(app: App, mocker: MockerFixture) -> None:
     """测试拉取所有评论"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_comments_resp = mocker.MagicMock()
     mock_comments_resp.parsed_data = []
@@ -142,7 +142,7 @@ async def test_list_comments(app: App, mocker: MockerFixture) -> None:
 async def test_create_comment(app: App) -> None:
     """测试发布评论"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     async with app.test_api() as ctx:
         _, bot = get_github_bot(ctx)
@@ -174,7 +174,7 @@ async def test_create_comment(app: App) -> None:
 async def test_update_comment(app: App) -> None:
     """测试修改评论"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     async with app.test_api() as ctx:
         _, bot = get_github_bot(ctx)
@@ -206,7 +206,7 @@ async def test_update_comment(app: App) -> None:
 async def test_comment_issue(app: App, mocker: MockerFixture) -> None:
     """测试发布评论"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_comments_resp = mocker.MagicMock()
     mock_comments_resp.parsed_data = []
@@ -245,7 +245,7 @@ async def test_comment_issue(app: App, mocker: MockerFixture) -> None:
 async def test_comment_issue_reuse(app: App, mocker: MockerFixture) -> None:
     """测试发布评论，复用的情况"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_comment = mocker.MagicMock()
     mock_comment.body = "old comment\n<!-- NONEFLOW -->"
@@ -287,7 +287,7 @@ async def test_comment_issue_reuse(app: App, mocker: MockerFixture) -> None:
 async def test_comment_issue_reuse_no_change(app: App, mocker: MockerFixture) -> None:
     """测试发布评论，复用且无变化的情况"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_comment = mocker.MagicMock()
     mock_comment.body = "comment\n<!-- NONEFLOW -->"
@@ -322,7 +322,7 @@ async def test_comment_issue_reuse_no_change(app: App, mocker: MockerFixture) ->
 async def test_get_pull_requests_by_label(app: App, mocker: MockerFixture) -> None:
     """测试获取指定标签下的所有 PR"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_label_plugin = mocker.MagicMock()
     mock_label_plugin.name = "Plugin"
@@ -363,7 +363,7 @@ async def test_get_pull_requests_by_label(app: App, mocker: MockerFixture) -> No
 async def test_get_pull_request_by_branch(app: App, mocker: MockerFixture) -> None:
     """测试根据分支名称获取拉取请求"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_pull = mocker.MagicMock()
     mock_pulls_resp = mocker.MagicMock()
@@ -397,7 +397,7 @@ async def test_get_pull_request_by_branch_empty(
 ) -> None:
     """测试根据分支名称获取拉取请求，为空的情况"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_pulls_resp = mocker.MagicMock()
     mock_pulls_resp.parsed_data = []
@@ -428,7 +428,7 @@ async def test_get_pull_request_by_branch_empty(
 async def test_get_pull_request(app: App, mocker: MockerFixture) -> None:
     """测试获取拉取请求"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_pull = mocker.MagicMock()
     mock_pull_resp = mocker.MagicMock()
@@ -463,7 +463,7 @@ async def test_get_pull_request(app: App, mocker: MockerFixture) -> None:
 async def test_draft_pull_request(app: App, mocker: MockerFixture) -> None:
     """测试将拉取请求标记为草稿"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_pull = mocker.MagicMock()
     mock_pull.draft = False
@@ -512,7 +512,7 @@ mutation convertPullRequestToDraft($pullRequestId: ID!) {
 async def test_draft_pull_request_no_pr(app: App, mocker: MockerFixture) -> None:
     """测试将拉取请求标记为草稿，但是没有对应的拉取请求"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_pulls_resp = mocker.MagicMock()
     mock_pulls_resp.parsed_data = []
@@ -545,7 +545,7 @@ async def test_draft_pull_request_no_pr(app: App, mocker: MockerFixture) -> None
 async def test_draft_pull_request_drafted(app: App, mocker: MockerFixture) -> None:
     """测试将拉取请求标记为草稿，但已经是草稿的情况"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_pull = mocker.MagicMock()
     mock_pull.draft = True
@@ -580,7 +580,7 @@ async def test_draft_pull_request_drafted(app: App, mocker: MockerFixture) -> No
 async def test_merge_pull_request(app: App, mocker: MockerFixture) -> None:
     """测试合并拉取请求"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_pull = mocker.MagicMock()
     mock_pull_resp = mocker.MagicMock()
@@ -619,7 +619,7 @@ async def test_merge_pull_request(app: App, mocker: MockerFixture) -> None:
 async def test_update_pull_request_status(app: App, mocker: MockerFixture) -> None:
     """测试更新拉取请求状态"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_pull = mocker.MagicMock()
     mock_pull.title = "old title"
@@ -672,7 +672,7 @@ mutation markPullRequestReadyForReview($pullRequestId: ID!) {
 async def test_create_pull_request(app: App, mocker: MockerFixture) -> None:
     """测试创建拉取请求"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_pull = mocker.MagicMock()
     mock_pull.number = 123
@@ -713,7 +713,7 @@ async def test_create_pull_request(app: App, mocker: MockerFixture) -> None:
 async def test_add_labels(app: App) -> None:
     """测试添加标签"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     async with app.test_api() as ctx:
         _, bot = get_github_bot(ctx)
@@ -745,7 +745,7 @@ async def test_add_labels(app: App) -> None:
 async def test_ready_pull_request(app: App) -> None:
     """测试标记拉取请求为可评审"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     async with app.test_api() as ctx:
         _, bot = get_github_bot(ctx)
@@ -781,7 +781,7 @@ mutation markPullRequestReadyForReview($pullRequestId: ID!) {
 async def test_update_pull_request_title(app: App) -> None:
     """测试修改拉取请求标题"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     async with app.test_api() as ctx:
         _, bot = get_github_bot(ctx)
@@ -813,7 +813,7 @@ async def test_update_pull_request_title(app: App) -> None:
 async def test_get_user_name(app: App, mocker: MockerFixture) -> None:
     """测试获取用户名"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_user = mocker.MagicMock()
     mock_user.login = "name"
@@ -845,7 +845,7 @@ async def test_get_user_name(app: App, mocker: MockerFixture) -> None:
 async def test_get_user_id(app: App, mocker: MockerFixture) -> None:
     """测试获取用户 ID"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_user = mocker.MagicMock()
     mock_user.id = "1"
@@ -879,7 +879,7 @@ async def test_get_user_id(app: App, mocker: MockerFixture) -> None:
 async def test_get_issue(app: App, mocker: MockerFixture) -> None:
     """测试获取议题"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_issue = mocker.MagicMock()
     mock_issue_resp = mocker.MagicMock()
@@ -911,7 +911,7 @@ async def test_get_issue(app: App, mocker: MockerFixture) -> None:
 async def test_close_issue(app: App) -> None:
     """测试关闭议题"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     async with app.test_api() as ctx:
         _, bot = get_github_bot(ctx)
@@ -945,7 +945,7 @@ async def test_to_issue_handler(app: App, mocker: MockerFixture) -> None:
     """测试获取议题处理器"""
     from src.plugins.github.handlers.github import GithubHandler
     from src.plugins.github.handlers.issue import IssueHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_issue = mocker.MagicMock(spec=Issue)
     mock_issue_resp = mocker.MagicMock()
@@ -978,7 +978,7 @@ async def test_to_issue_handler(app: App, mocker: MockerFixture) -> None:
 async def test_get_self_comment(app: App, mocker: MockerFixture) -> None:
     """测试获取自己的评论"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_comment_bot = mocker.MagicMock()
     mock_comment_bot.body = "bot comment\n<!-- NONEFLOW -->"
@@ -1023,7 +1023,7 @@ async def test_get_self_comment(app: App, mocker: MockerFixture) -> None:
 async def test_get_self_comment_not_found(app: App, mocker: MockerFixture) -> None:
     """测试获取自己的评论，未找到的情况"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_comment_user = mocker.MagicMock()
     mock_comment_user.body = "user comment"
@@ -1064,7 +1064,7 @@ async def test_get_self_comment_not_found(app: App, mocker: MockerFixture) -> No
 async def test_comment_issue_new(app: App, mocker: MockerFixture) -> None:
     """测试发布评论，新建评论的情况"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     async with app.test_api() as ctx:
         _, bot = get_github_bot(ctx)
@@ -1096,7 +1096,7 @@ async def test_comment_issue_new(app: App, mocker: MockerFixture) -> None:
 async def test_comment_issue_update(app: App, mocker: MockerFixture) -> None:
     """测试发布评论，更新已有评论的情况"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_comment = mocker.MagicMock()
     mock_comment.body = "old comment\n<!-- NONEFLOW -->"
@@ -1132,7 +1132,7 @@ async def test_comment_issue_update(app: App, mocker: MockerFixture) -> None:
 async def test_comment_issue_no_change(app: App, mocker: MockerFixture) -> None:
     """测试发布评论，评论内容无变化的情况"""
     from src.plugins.github.handlers.github import GithubHandler
-    from src.plugins.github.models import RepoInfo
+    from src.providers.models import RepoInfo
 
     mock_comment = mocker.MagicMock()
     mock_comment.body = "same comment"

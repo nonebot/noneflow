@@ -6,9 +6,9 @@ from nonebot import logger
 
 from src.plugins.github import plugin_config
 from src.plugins.github.handlers import IssueHandler
-from src.plugins.github.models import AuthorInfo
 from src.plugins.github.utils import extract_issue_info_from_issue
 from src.providers.docker_test import DockerPluginTest, Metadata
+from src.providers.models import AuthorInfo
 from src.providers.utils import get_pypi_version, load_json_from_file
 from src.providers.validation import PublishType, ValidationDict, validate_info
 
@@ -68,8 +68,8 @@ async def validate_plugin_info_from_issue(
     # 更新作者信息
     raw_data.update(AuthorInfo.from_issue(handler.issue).model_dump())
 
-    module_name: str = raw_data.get("module_name", None)
-    project_link: str = raw_data.get("project_link", None)
+    module_name: str = raw_data.get("module_name", "")
+    project_link: str = raw_data.get("project_link", "")
     test_config: str = raw_data.get("test_config", "")
 
     # 获取插件上次的数据

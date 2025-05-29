@@ -9,7 +9,7 @@ from nonebot.adapters.github import Bot
 from pydantic import ConfigDict
 
 from src.plugins.github.constants import NONEFLOW_MARKER
-from src.plugins.github.models import RepoInfo
+from src.providers.models import RepoInfo
 
 from .git import GitHandler
 
@@ -272,3 +272,14 @@ class GithubHandler(GitHandler):
         issue = await self.get_issue(issue_number)
 
         return IssueHandler(bot=self.bot, repo_info=self.repo_info, issue=issue)
+
+    async def list_workflow_run_artifacts(self, run_id: int):
+        """获取工作流运行的所有工件"""
+        artifacts = (
+            await self.bot.rest.actions.async_list_workflow_run_artifacts(
+                **self.repo_info.model_dump(),
+                run_id=run_id,
+            )
+        ).parsed_data
+
+        return artifacts

@@ -15,7 +15,7 @@ from src.plugins.github.handlers import GithubHandler, IssueHandler
 from src.plugins.github.typing import PullRequestList
 from src.plugins.github.utils import commit_message as _commit_message
 from src.providers.constants import TIME_ZONE
-from src.providers.models import RegistryUpdatePayload, to_store
+from src.providers.models import RegistryArtifactData, RegistryUpdatePayload, to_store
 from src.providers.utils import dump_json5, load_json_from_file
 from src.providers.validation import PublishType, ValidationDict
 
@@ -137,7 +137,8 @@ def update_file(result: ValidationDict) -> None:
     """更新文件"""
     assert result.valid
     assert result.info
-    new_data = to_store(result.info)
+
+    new_data = to_store(result.info).model_dump()
 
     match result.type:
         case PublishType.ADAPTER:
@@ -154,6 +155,12 @@ def update_file(result: ValidationDict) -> None:
     data = load_json_from_file(path)
     data.append(new_data)
     dump_json5(path, data)
+
+    # 保存 registry_update 所需的文件
+    # 之后会上传至 Artifact，并通过 artifact_id 访问
+    RegistryArtifactData.from_info(result.info).save(
+        plugin_config.input_config.artifact_path
+    )
 
     logger.info("文件更新完成")
 
@@ -247,39 +254,39 @@ async def process_pull_request(
     await handler.update_pull_request_status(title, branch_name)
 
 
-async def trigger_registry_update(handler: IssueHandler, publish_type: PublishType):
+async def trigger_registry_update(handler: IssueHandler):
     """通过 repository_dispatch 触发商店列表更新"""
-    issue = handler.issue
-
-    # 重新验证信息
-    # 这个时候已经合并了发布信息，如果还加载之前的数据则会报错重复
-    # 所以这里不能加载之前的数据
-    match publish_type:
-        case PublishType.ADAPTER:
-            result = await validate_adapter_info_from_issue(
-                issue, load_previous_data=False
-            )
-        case PublishType.BOT:
-            result = await validate_bot_info_from_issue(issue, load_previous_data=False)
-        case PublishType.PLUGIN:
-            result = await validate_plugin_info_from_issue(
-                handler, load_previous_data=False
-            )
-        case _:
-            raise ValueError("暂不支持的发布类型")
-
-    if not result.valid or not result.info:
-        logger.error("信息验证失败，跳过触发商店列表更新")
-        logger.debug(f"验证结果: {result}")
+    comment = await handler.get_self_comment()
+    if not comment or not comment.body:
+        logger.error("获取评论失败，无法触发商店列表更新")
         return
 
-    # 触发商店列表更新
-    await handler.create_dispatch_event(
-        event_type="registry_update",
-        client_payload=RegistryUpdatePayload.from_info(result.info).model_dump(),
-        repo=plugin_config.input_config.registry_repository,
-    )
-    logger.info("已触发商店列表更新")
+    history = await get_history_workflow_from_comment(comment.body)
+    if not history:
+        logger.error("无法从评论中获取历史工作流信息")
+        return
+
+    # 获取最新的工作流运行
+    latest_run = max(filter(lambda x: x[0], history), key=lambda x: x[2])
+    run_id = latest_run[1].split("/")[-1]  # 提取 run_id
+    if not run_id or not run_id.isdigit():
+        logger.error("无法从评论中获取最新工作流运行 ID")
+        return
+
+    artifacts = await handler.list_workflow_run_artifacts(int(run_id))
+    for artifact in artifacts.artifacts:
+        if artifact.name == "noneflow":
+            # 触发商店列表更新
+            await handler.create_dispatch_event(
+                event_type="registry_update",
+                client_payload=RegistryUpdatePayload(
+                    repo_info=handler.repo_info,
+                    artifact_id=artifact.id,
+                ).model_dump(),
+                repo=plugin_config.input_config.registry_repository,
+            )
+            logger.info("已触发商店列表更新")
+            break
 
 
 async def get_history_workflow_from_comment(

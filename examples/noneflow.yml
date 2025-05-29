@@ -58,8 +58,15 @@ jobs:
               "plugin_path": "assets/plugins.json5",
               "bot_path": "assets/bots.json5",
               "adapter_path": "assets/adapters.json5",
-              "registry_repository": "nonebot/registry"
+              "registry_repository": "nonebot/registry",
+              "artifact_path": "artifact"
             }
         env:
           APP_ID: ${{ secrets.APP_ID }}
           PRIVATE_KEY: ${{ secrets.APP_KEY }}
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: noneflow
+          path: artifact/*

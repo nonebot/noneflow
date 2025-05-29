@@ -38,3 +38,7 @@ STORE_PLUGINS_URL = f"{STORE_BASE_URL}/plugins.json5"
 # https://github.com/orgs/nonebot/packages/container/package/nonetest
 DOCKER_IMAGES_VERSION = os.environ.get("DOCKER_IMAGES_VERSION") or "latest"
 DOCKER_IMAGES = f"ghcr.io/nonebot/nonetest:{DOCKER_IMAGES_VERSION}"
+
+# Artifact 相关常量
+REGISTRY_DATA_NAME = "registry_data.json"
+"""传递给 Registry 的数据文件名，会上传至 Artifact 存储"""

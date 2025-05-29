@@ -7,8 +7,8 @@ from src.plugins.github.depends import (
     get_repo_info,
     get_type_by_labels_name,
 )
-from src.plugins.github.models import RepoInfo
 from src.plugins.github.plugins.publish import utils
+from src.providers.models import RepoInfo
 from src.providers.validation.models import PublishType
 
 

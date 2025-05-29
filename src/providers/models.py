@@ -1,20 +1,30 @@
 # ruff: noqa: UP040
+import io
+import os
+import zipfile
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Literal, Self, TypeAlias
 
+from githubkit import AppAuthStrategy, GitHub
+from githubkit.rest import Issue
 from pydantic import BaseModel, Field, field_serializer, field_validator
 from pydantic_extra_types.color import Color
 
-from src.providers.constants import BOT_KEY_TEMPLATE, PYPI_KEY_TEMPLATE, TIME_ZONE
+from src.providers.constants import (
+    BOT_KEY_TEMPLATE,
+    PYPI_KEY_TEMPLATE,
+    REGISTRY_DATA_NAME,
+    TIME_ZONE,
+)
 from src.providers.docker_test import Metadata
 from src.providers.utils import get_author_name, get_pypi_upload_time, get_pypi_version
-from src.providers.validation import validate_info
+from src.providers.validation import PublishInfoModels, validate_info
 from src.providers.validation.models import (
     AdapterPublishInfo,
     BotPublishInfo,
     DriverPublishInfo,
     PluginPublishInfo,
-    PublishInfoModels,
     PublishType,
 )
 
@@ -192,8 +202,10 @@ class StorePlugin(BaseModel):
         )
 
 
-def to_store(info: PublishInfoModels) -> dict[str, Any]:
-    store = None
+StoreModels: TypeAlias = StoreAdapter | StoreBot | StoreDriver | StorePlugin
+
+
+def to_store(info: PublishInfoModels) -> StoreModels:
     match info:
         case AdapterPublishInfo():
             store = StoreAdapter.from_publish_info(info)
@@ -204,10 +216,9 @@ def to_store(info: PublishInfoModels) -> dict[str, Any]:
         case PluginPublishInfo():
             store = StorePlugin.from_publish_info(info)
 
-    return store.model_dump()
+    return store
 
 
-StoreModels: TypeAlias = StoreAdapter | StoreBot | StoreDriver | StorePlugin
 # endregion
 
 
@@ -407,6 +418,22 @@ class RegistryPlugin(BaseModel):
 RegistryModels: TypeAlias = (
     RegistryAdapter | RegistryBot | RegistryDriver | RegistryPlugin
 )
+
+
+def to_registry(info: PublishInfoModels) -> RegistryModels:
+    match info:
+        case AdapterPublishInfo():
+            registry = RegistryAdapter.from_publish_info(info)
+        case BotPublishInfo():
+            registry = RegistryBot.from_publish_info(info)
+        case DriverPublishInfo():
+            registry = RegistryDriver.from_publish_info(info)
+        case PluginPublishInfo():
+            registry = RegistryPlugin.from_publish_info(info)
+
+    return registry
+
+
 # endregion
 
 
@@ -463,29 +490,105 @@ class StoreTestResult(BaseModel):
         return v
 
 
-class RegistryUpdatePayload(BaseModel):
-    type: PublishType
+class RepoInfo(BaseModel):
+    """仓库信息"""
+
+    owner: str
+    repo: str
+
+    @classmethod
+    def from_issue(cls, issue: Issue) -> "RepoInfo":
+        assert issue.repository
+        return RepoInfo(
+            owner=issue.repository.owner.login,
+            repo=issue.repository.name,
+        )
+
+    def __str__(self) -> str:
+        return f"{self.owner}/{self.repo}"
+
+
+class AuthorInfo(BaseModel):
+    """作者信息"""
+
+    author: str = ""
+    author_id: int = 0
+
+    @classmethod
+    def from_issue(cls, issue: Issue) -> "AuthorInfo":
+        return AuthorInfo(
+            author=issue.user.login if issue.user else "",
+            author_id=issue.user.id if issue.user else 0,
+        )
+
+
+class RegistryArtifactData(BaseModel):
+    """注册表数据
+
+    通过 GitHub Action Artifact 传递数据
+    """
+
     registry: RegistryModels
-    result: StoreTestResult | None = None
+    result: StoreTestResult | None
 
     @classmethod
     def from_info(cls, info: PublishInfoModels) -> Self:
-        match info:
-            case AdapterPublishInfo():
-                type = PublishType.ADAPTER
-                registry = RegistryAdapter.from_publish_info(info)
-                result = None
-            case BotPublishInfo():
-                type = PublishType.BOT
-                registry = RegistryBot.from_publish_info(info)
-                result = None
-            case DriverPublishInfo():
-                type = PublishType.DRIVER
-                registry = RegistryDriver.from_publish_info(info)
-                result = None
-            case PluginPublishInfo():
-                type = PublishType.PLUGIN
-                registry = RegistryPlugin.from_publish_info(info)
-                result = StoreTestResult.from_info(info)
+        return cls(
+            registry=to_registry(info),
+            result=StoreTestResult.from_info(info)
+            if isinstance(info, PluginPublishInfo)
+            else None,
+        )
 
-        return cls(type=type, registry=registry, result=result)
+    def save(self, path: Path) -> None:
+        """将注册表数据保存到指定路径"""
+        if not path.exists():
+            path.mkdir(parents=True, exist_ok=True)
+        if not path.is_dir():
+            raise ValueError(f"路径 {path} 不是一个目录")
+
+        with open(path / REGISTRY_DATA_NAME, "w", encoding="utf-8") as f:
+            f.write(self.model_dump_json(indent=2))
+
+
+class RegistryUpdatePayload(BaseModel):
+    """注册表更新数据
+
+    通过 GitHub Action Artifact 传递数据
+    """
+
+    repo_info: RepoInfo
+    artifact_id: int
+
+    def get_artifact_data(self) -> RegistryArtifactData:
+        """获取注册表数据"""
+
+        app_id = os.getenv("APP_ID")
+        private_key = os.getenv("PRIVATE_KEY")
+
+        if app_id is None or private_key is None:
+            raise ValueError("APP_ID 或 PRIVATE_KEY 未设置")
+
+        github = GitHub(AppAuthStrategy(app_id=app_id, private_key=private_key))
+
+        resp = github.rest.apps.get_repo_installation(
+            self.repo_info.owner, self.repo_info.repo
+        )
+        repo_installation = resp.parsed_data
+
+        installation_github = github.with_auth(
+            github.auth.as_installation(repo_installation.id)
+        )
+
+        resp = installation_github.rest.actions.download_artifact(
+            owner=self.repo_info.owner,
+            repo=self.repo_info.repo,
+            artifact_id=self.artifact_id,
+            archive_format="zip",
+        )
+
+        zip_buffer = io.BytesIO(resp.content)
+        with zipfile.ZipFile(zip_buffer) as zip_file:
+            with zip_file.open(REGISTRY_DATA_NAME) as json_file:
+                json_data = json_file.read()
+                return RegistryArtifactData.model_validate_json(json_data)

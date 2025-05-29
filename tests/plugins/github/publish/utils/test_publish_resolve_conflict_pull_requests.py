@@ -30,8 +30,8 @@ async def test_resolve_conflict_pull_requests_adapter(
 ) -> None:
     from src.plugins.github import plugin_config
     from src.plugins.github.handlers import GithubHandler
-    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
+    from src.providers.models import RepoInfo
     from src.providers.utils import dump_json5
 
     mock_subprocess_run = mocker.patch("subprocess.run")
@@ -140,8 +140,8 @@ async def test_resolve_conflict_pull_requests_bot(
 ) -> None:
     from src.plugins.github import plugin_config
     from src.plugins.github.handlers import GithubHandler
-    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
+    from src.providers.models import RepoInfo
     from src.providers.utils import dump_json5
 
     mock_subprocess_run = mocker.patch("subprocess.run")
@@ -244,9 +244,9 @@ async def test_resolve_conflict_pull_requests_plugin(
 ) -> None:
     from src.plugins.github import plugin_config
     from src.plugins.github.handlers import GithubHandler
-    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
     from src.providers.docker_test import Metadata
+    from src.providers.models import RepoInfo
     from src.providers.utils import dump_json5
 
     mock_subprocess_run = mocker.patch("subprocess.run")
@@ -372,8 +372,8 @@ async def test_resolve_conflict_pull_requests_plugin_not_valid(
     """测试插件信息不合法的情况"""
     from src.plugins.github import plugin_config
     from src.plugins.github.handlers import GithubHandler
-    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
+    from src.providers.models import RepoInfo
     from src.providers.utils import dump_json5
 
     mock_subprocess_run = mocker.patch("subprocess.run")
@@ -465,8 +465,8 @@ async def test_resolve_conflict_pull_requests_draft(
 ) -> None:
     from src.plugins.github import plugin_config
     from src.plugins.github.handlers import GithubHandler
-    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
+    from src.providers.models import RepoInfo
     from src.providers.utils import dump_json5
 
     mock_subprocess_run = mocker.patch("subprocess.run")
@@ -528,8 +528,8 @@ async def test_resolve_conflict_pull_requests_ref(
 ) -> None:
     from src.plugins.github import plugin_config
     from src.plugins.github.handlers import GithubHandler
-    from src.plugins.github.models import RepoInfo
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
+    from src.providers.models import RepoInfo
     from src.providers.utils import dump_json5
 
     mock_subprocess_run = mocker.patch("subprocess.run")

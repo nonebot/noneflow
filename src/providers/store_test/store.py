@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from src.providers.constants import (
     BOT_KEY_TEMPLATE,
@@ -21,7 +22,6 @@ from src.providers.models import (
     RegistryBot,
     RegistryDriver,
     RegistryPlugin,
-    RegistryUpdatePayload,
     StoreAdapter,
     StoreBot,
     StoreDriver,
@@ -44,6 +44,9 @@ from .constants import (
     RESULTS_PATH,
 )
 from .validation import validate_plugin
+
+if TYPE_CHECKING:
+    from src.providers.models import RegistryArtifactData
 
 
 class StoreTest:
@@ -285,28 +288,28 @@ class StoreTest:
 
         self.dump_data()
 
-    async def registry_update(self, payload: RegistryUpdatePayload):
+    async def registry_update(self, data: "RegistryArtifactData"):
         """商店更新
 
-        直接利用 payload 中的数据更新商店数据
+        直接利用 artifact 中的数据更新商店数据
         """
-        key = payload.registry.key
-        match payload.registry:
+        key = data.registry.key
+        match data.registry:
             case RegistryAdapter():
                 if key not in self._previous_adapters:
-                    self._previous_adapters[key] = payload.registry
+                    self._previous_adapters[key] = data.registry
             case RegistryBot():
                 if key not in self._previous_bots:
-                    self._previous_bots[key] = payload.registry
+                    self._previous_bots[key] = data.registry
             case RegistryDriver():
                 if key not in self._previous_drivers:
-                    self._previous_drivers[key] = payload.registry
+                    self._previous_drivers[key] = data.registry
             case RegistryPlugin():
                 if key not in self._previous_plugins:
-                    self._previous_plugins[key] = payload.registry
-                if key not in self._previous_results and payload.result:
-                    self._previous_results[key] = payload.result
-                    self._plugin_configs[key] = payload.result.config
+                    self._previous_plugins[key] = data.registry
+                if key not in self._previous_results and data.result:
+                    self._previous_results[key] = data.result
+                    self._plugin_configs[key] = data.result.config
 
         self.dump_data()
 
