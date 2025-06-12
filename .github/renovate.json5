@@ -68,9 +68,11 @@
       ],
       // https://docs.renovatebot.com/modules/manager/dockerfile/
       // https://docs.renovatebot.com/modules/manager/pyenv/
+      // https://docs.renovatebot.com/modules/manager/pep621/
       matchManagers: [
         "dockerfile",
-        "pyenv"
+        "pyenv",
+        "pep621"
       ],
       description: "Weekly update of Python version",
     },
