@@ -36,7 +36,7 @@
 <summary>历史测试</summary>
 <pre><code>
 {%- for status, action_url, time in history%}
-<li>{{"✅" if status else "⚠️"}} <a href={{action_url}}>{{time|format_datetime}}</li>
+<li>{{"✅" if status else "⚠️"}} <a href={{action_url}}>{{time|format_datetime}}</a></li>
 {%- endfor %}
 </code></pre>
 </details>

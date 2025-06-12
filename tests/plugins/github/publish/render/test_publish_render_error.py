@@ -243,7 +243,7 @@ async def test_render_error_plugin(app: App, mocker: MockFixture):
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
+<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---
@@ -375,7 +375,7 @@ async def test_render_error_plugin_metadata(app: App, mocker: MockFixture):
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
+<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---
@@ -449,7 +449,7 @@ async def test_render_error_tags_invalid(app: App, mocker: MockFixture):
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
+<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---
@@ -524,7 +524,7 @@ async def test_render_type_error(app: App, mocker: MockFixture):
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
+<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---
@@ -586,7 +586,7 @@ async def test_render_unknown_error(app: App, mocker: MockFixture):
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
+<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---
@@ -659,7 +659,7 @@ async def test_render_http_error(app: App, mocker: MockFixture):
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
+<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---
