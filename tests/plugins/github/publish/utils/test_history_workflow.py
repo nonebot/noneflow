@@ -3,6 +3,7 @@ from nonebug import App
 
 
 async def test_history_workflow(app: App):
+    """测试从评论中提取历史工作流信息"""
     from src.plugins.github.plugins.publish.utils import (
         get_history_workflow_from_comment,
     )
@@ -63,7 +64,8 @@ async def test_history_workflow(app: App):
     )
 
 
-async def test_history_workflow_2(app: App):
+async def test_history_workflow_different_repo(app: App):
+    """测试指向不同仓库的历史工作流"""
     from src.plugins.github.plugins.publish.utils import (
         get_history_workflow_from_comment,
     )
