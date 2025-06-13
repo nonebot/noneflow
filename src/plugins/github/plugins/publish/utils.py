@@ -125,7 +125,7 @@ async def resolve_conflict_pull_requests(
             # 切换到对应分支
             handler.switch_branch(pull.head.ref)
             # 更新文件
-            update_file(result, issue_handler)
+            update_file(result, handler)
 
             message = commit_message(result.type, result.name, issue_number)
             issue_handler.commit_and_push(message, pull.head.ref)

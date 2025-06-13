@@ -55,7 +55,7 @@ async def process_pull_requests(
     # 切换分支
     handler.switch_branch(branch_name)
     # 更新文件并提交更改
-    update_file(result, store_handler)
+    update_file(result, handler)
     store_handler.commit_and_push(message, branch_name, author=handler.author)
     # 创建拉取请求
     logger.info("开始创建拉取请求")
