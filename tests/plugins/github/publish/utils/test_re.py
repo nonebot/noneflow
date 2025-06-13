@@ -12,7 +12,7 @@ async def test_missing_info():
         TAGS_PATTERN,
     )
 
-    body = """### 插件名称\r\n\r\n监测群事件\r\n\r\n### 插件描述\r\n\r\n监测群成员变动、文件上传、红包运气王、管理员变动等等...\r\n\r\n### PyPI 项目名\r\n\r\n\r\n\r\n### 插件 import 包名\r\n\r\n\r\n\r\n### 插件项目仓库/主页链接\r\n\r\nhttps://github.com/cjladmin/nonebot_plugin_monitor\r\n\r\n### 标签\r\n\r\n[]"""
+    body = """### 插件名称\r\n\r\n监测群事件\r\n\r\n### 插件描述\r\n\r\n监测群成员变动、文件上传、红包运气王、管理员变动等等...\r\n\r\n### PyPI 项目名\r\n\r\n\r\n\r\n### 插件模块名\r\n\r\n\r\n\r\n### 插件项目仓库/主页链接\r\n\r\nhttps://github.com/cjladmin/nonebot_plugin_monitor\r\n\r\n### 标签\r\n\r\n[]"""
 
     module_name = PLUGIN_MODULE_NAME_PATTERN.search(body)
     project_link = PROJECT_LINK_PATTERN.search(body)
