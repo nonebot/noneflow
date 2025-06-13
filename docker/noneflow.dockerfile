@@ -1,5 +1,5 @@
 # 这样能分别控制 uv 和 Python 版本
-FROM python:3.13.3-slim
+FROM python:3.13.4-slim
 COPY --from=ghcr.io/astral-sh/uv:0.7.2 /uv /bin/uv
 
 # 设置时区
