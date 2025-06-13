@@ -8,7 +8,7 @@ from src.plugins.github.depends.utils import (
     extract_issue_number_from_ref,
     get_type_by_labels,
 )
-from src.plugins.github.handlers import GithubHandler, IssueHandler
+from src.plugins.github.handlers import GitHandler, GithubHandler, IssueHandler
 from src.plugins.github.typing import PullRequestList
 from src.plugins.github.utils import commit_message
 from src.providers.utils import dump_json5
@@ -18,7 +18,7 @@ from .constants import COMMIT_MESSAGE_PREFIX
 from .validation import RemoveInfo, load_publish_data, validate_author_info
 
 
-def update_file(result: RemoveInfo):
+def update_file(result: RemoveInfo, handler: GitHandler):
     """删除对应的包储存在 registry 里的数据"""
     logger.info("开始更新文件")
 
@@ -36,6 +36,7 @@ def update_file(result: RemoveInfo):
     # 删除对应的数据项
     data.pop(result.key)
     dump_json5(path, list(data.values()))
+    handler.add_file(path)
     logger.info(f"已更新 {path.name} 文件")
 
 
@@ -54,7 +55,7 @@ async def process_pull_reqeusts(
     # 切换分支
     handler.switch_branch(branch_name)
     # 更新文件并提交更改
-    update_file(result)
+    update_file(result, store_handler)
     store_handler.commit_and_push(message, branch_name, author=handler.author)
     # 创建拉取请求
     logger.info("开始创建拉取请求")
@@ -111,7 +112,7 @@ async def resolve_conflict_pull_requests(
             # 切换到对应分支
             handler.switch_branch(pull.head.ref)
             # 更新文件
-            update_file(result)
+            update_file(result, issue_handler)
 
             # 生成提交信息并推送
             message = commit_message(COMMIT_MESSAGE_PREFIX, result.name, issue_number)

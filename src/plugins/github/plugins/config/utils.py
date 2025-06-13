@@ -2,7 +2,7 @@ from typing import Any
 
 from nonebot import logger
 
-from src.plugins.github.handlers import IssueHandler
+from src.plugins.github.handlers import GitHandler, IssueHandler
 from src.plugins.github.plugins.publish.constants import (
     PLUGIN_CONFIG_PATTERN,
     PLUGIN_MODULE_NAME_PATTERN,
@@ -99,7 +99,7 @@ async def validate_info_from_issue(handler: IssueHandler) -> ValidationDict:
     return result
 
 
-def update_file(result: ValidationDict) -> None:
+def update_file(result: ValidationDict, handler: GitHandler) -> None:
     """更新文件"""
     if not isinstance(result.info, PluginPublishInfo):
         raise ValueError("仅支持修改插件配置")
@@ -128,5 +128,6 @@ def update_file(result: ValidationDict) -> None:
     dump_json("plugins.json", list(previous_plugins.values()))
     dump_json("results.json", previous_results)
     dump_json("plugin_configs.json", plugin_configs, False)
+    handler.add_all_files()
 
     logger.info("文件更新完成")
