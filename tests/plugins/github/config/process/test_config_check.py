@@ -134,7 +134,7 @@ async def test_process_config_check(
 
 nonebot-plugin-treehelp
 
-### 插件 import 包名
+### 插件模块名
 
 nonebot_plugin_treehelp
 
@@ -223,7 +223,7 @@ log_level=DEBUG
 
 nonebot-plugin-treehelp
 
-### 插件 import 包名
+### 插件模块名
 
 nonebot_plugin_treehelp
 

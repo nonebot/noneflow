@@ -14,7 +14,7 @@ BOT_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("机器人名称"))
 BOT_DESC_PATTERN = re.compile(ISSUE_PATTERN.format("机器人描述"))
 BOT_HOMEPAGE_PATTERN = re.compile(ISSUE_PATTERN.format("机器人项目仓库/主页链接"))
 # 插件
-PLUGIN_MODULE_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("插件 import 包名"))
+PLUGIN_MODULE_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("插件模块名"))
 PLUGIN_NAME_STRING = "插件名称"
 PLUGIN_NAME_PATTERN = re.compile(ISSUE_PATTERN.format(PLUGIN_NAME_STRING))
 PLUGIN_DESC_STRING = "插件描述"

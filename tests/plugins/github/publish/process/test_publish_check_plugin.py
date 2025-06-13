@@ -134,7 +134,7 @@ async def test_plugin_process_publish_check(
 
 project_link
 
-### 插件 import 包名
+### 插件模块名
 
 module_name
 
@@ -163,7 +163,7 @@ log_level=DEBUG
 
 project_link
 
-### 插件 import 包名
+### 插件模块名
 
 module_name
 
@@ -400,7 +400,7 @@ async def test_plugin_process_publish_check_re_run(
 
 project_link
 
-### 插件 import 包名
+### 插件模块名
 
 module_name
 
@@ -429,7 +429,7 @@ log_level=DEBUG
 
 project_link
 
-### 插件 import 包名
+### 插件模块名
 
 module_name
 
@@ -650,7 +650,7 @@ async def test_plugin_process_publish_check_missing_metadata(
 
 project_link
 
-### 插件 import 包名
+### 插件模块名
 
 module_name
 
@@ -679,7 +679,7 @@ log_level=DEBUG
 
 project_link
 
-### 插件 import 包名
+### 插件模块名
 
 module_name
 
@@ -861,7 +861,7 @@ async def test_skip_plugin_check(
 
 project_link
 
-### 插件 import 包名
+### 插件模块名
 
 module_name
 
@@ -900,7 +900,7 @@ log_level=DEBUG
 
 project_link
 
-### 插件 import 包名
+### 插件模块名
 
 module_name
 
@@ -938,7 +938,7 @@ log_level=DEBUG
 
 project_link
 
-### 插件 import 包名
+### 插件模块名
 
 module_name
 
