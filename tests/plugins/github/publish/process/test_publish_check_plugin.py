@@ -203,7 +203,7 @@ log_level=DEBUG
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
+<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---
@@ -469,7 +469,7 @@ log_level=DEBUG
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
+<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---
@@ -720,7 +720,7 @@ log_level=DEBUG
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
+<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---
@@ -979,7 +979,7 @@ log_level=DEBUG
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
+<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---

@@ -207,7 +207,7 @@ async def test_render_data_plugin(app: App, mocker: MockFixture):
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
+<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---
@@ -264,7 +264,7 @@ async def test_render_data_plugin_supported_adapters(app: App, mocker: MockFixtu
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</li></code></pre>
+<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---

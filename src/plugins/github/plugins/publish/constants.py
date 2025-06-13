@@ -48,7 +48,7 @@ ADAPTER_HOMEPAGE_PATTERN = re.compile(ISSUE_PATTERN.format("适配器项目仓�
 
 
 WORKFLOW_HISTORY_PATTERN = re.compile(
-    r'<li>(⚠️|✅)\s*<a href="(https://github\.com/nonebot/nonebot2/actions/runs/\d+)">([^<]+?CST)</a>。</li>'
+    r'<li>(⚠️|✅)\s*<a href=?["\']?(https://github\.com/[^/]+/[^/]+/actions/runs/\d+)["\']?>([^<]+?CST)</a></li>'
 )
 
 WORKFLOW_HISTORY_TEMPLATE = """<li>{status} <a href="{url}">{time}</a>。</li>"""

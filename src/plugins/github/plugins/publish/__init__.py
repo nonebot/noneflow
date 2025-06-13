@@ -160,8 +160,10 @@ async def handle_pull_request_and_update_issue(
         self_comment = await handler.get_self_comment(handler.issue_number)
 
         history: list[tuple[bool, str, datetime]] = []
+
         if self_comment and self_comment.body:
             history = await get_history_workflow_from_comment(self_comment.body)
+            logger.debug(f"获取到 {len(history)} 条历史工作流")
 
         # 渲染评论信息
         comment = await render_comment(validation, True, history)
