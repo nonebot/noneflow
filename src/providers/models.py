@@ -19,7 +19,7 @@ from src.providers.constants import (
 )
 from src.providers.docker_test import Metadata
 from src.providers.utils import get_author_name, get_pypi_upload_time, get_pypi_version
-from src.providers.validation import PublishInfoModels, validate_info
+from src.providers.validation import PublishInfoModels, ValidationDict, validate_info
 from src.providers.validation.models import (
     AdapterPublishInfo,
     BotPublishInfo,
@@ -528,17 +528,7 @@ class RegistryArtifactData(BaseModel):
     通过 GitHub Action Artifact 传递数据
     """
 
-    registry: RegistryModels
-    result: StoreTestResult | None
-
-    @classmethod
-    def from_info(cls, info: PublishInfoModels) -> Self:
-        return cls(
-            registry=to_registry(info),
-            result=StoreTestResult.from_info(info)
-            if isinstance(info, PluginPublishInfo)
-            else None,
-        )
+    result: ValidationDict
 
     def save(self, path: Path) -> None:
         """将注册表数据保存到指定路径"""
@@ -549,6 +539,60 @@ class RegistryArtifactData(BaseModel):
 
         with open(path / REGISTRY_DATA_NAME, "w", encoding="utf-8") as f:
             f.write(self.model_dump_json(indent=2))
+
+    def to_store(self) -> StoreModels:
+        """将注册表数据转换为商店数据模型"""
+        if self.result.info is None:
+            raise ValueError("注册表数据中没有有效的 info")
+        return to_store(self.result.info)
+
+    def to_registry(self) -> RegistryModels:
+        """将注册表数据转换为注册表数据模型"""
+        if self.result.info is None:
+            raise ValueError("注册表数据中没有有效的 info")
+        return to_registry(self.result.info)
+
+    def to_store_test_result(self) -> StoreTestResult:
+        """将注册表数据转换为商店测试结果数据模型"""
+        if self.result.info is None or not isinstance(
+            self.result.info, PluginPublishInfo
+        ):
+            raise ValueError("注册表数据中没有有效的 PluginPublishInfo")
+        return StoreTestResult.from_info(self.result.info)
+
+    @classmethod
+    def from_artifact_data(cls, repo_info: RepoInfo, artifact_id: int) -> Self:
+        """从 GitHub Action Artifact 数据创建注册表数据
+
+        通过 GitHub Action Artifact 传递数据
+        """
+        app_id = os.getenv("APP_ID")
+        private_key = os.getenv("PRIVATE_KEY")
+
+        if app_id is None or private_key is None:
+            raise ValueError("APP_ID 或 PRIVATE_KEY 未设置")
+
+        github = GitHub(AppAuthStrategy(app_id=app_id, private_key=private_key))
+
+        resp = github.rest.apps.get_repo_installation(repo_info.owner, repo_info.repo)
+        repo_installation = resp.parsed_data
+
+        installation_github = github.with_auth(
+            github.auth.as_installation(repo_installation.id)
+        )
+
+        resp = installation_github.rest.actions.download_artifact(
+            owner=repo_info.owner,
+            repo=repo_info.repo,
+            artifact_id=artifact_id,
+            archive_format="zip",
+        )
+
+        zip_buffer = io.BytesIO(resp.content)
+        with zipfile.ZipFile(zip_buffer) as zip_file:
+            with zip_file.open(REGISTRY_DATA_NAME) as json_file:
+                json_data = json_file.read()
+                return cls.model_validate_json(json_data)
 
 
 class RegistryUpdatePayload(BaseModel):
@@ -562,33 +606,4 @@ class RegistryUpdatePayload(BaseModel):
 
     def get_artifact_data(self) -> RegistryArtifactData:
         """获取注册表数据"""
-
-        app_id = os.getenv("APP_ID")
-        private_key = os.getenv("PRIVATE_KEY")
-
-        if app_id is None or private_key is None:
-            raise ValueError("APP_ID 或 PRIVATE_KEY 未设置")
-
-        github = GitHub(AppAuthStrategy(app_id=app_id, private_key=private_key))
-
-        resp = github.rest.apps.get_repo_installation(
-            self.repo_info.owner, self.repo_info.repo
-        )
-        repo_installation = resp.parsed_data
-
-        installation_github = github.with_auth(
-            github.auth.as_installation(repo_installation.id)
-        )
-
-        resp = installation_github.rest.actions.download_artifact(
-            owner=self.repo_info.owner,
-            repo=self.repo_info.repo,
-            artifact_id=self.artifact_id,
-            archive_format="zip",
-        )
-
-        zip_buffer = io.BytesIO(resp.content)
-        with zipfile.ZipFile(zip_buffer) as zip_file:
-            with zip_file.open(REGISTRY_DATA_NAME) as json_file:
-                json_data = json_file.read()
-                return RegistryArtifactData.model_validate_json(json_data)
+        return RegistryArtifactData.from_artifact_data(self.repo_info, self.artifact_id)

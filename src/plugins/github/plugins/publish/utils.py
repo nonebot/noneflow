@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from githubkit.exception import RequestFailed
 from nonebot import logger
@@ -10,7 +11,6 @@ from src.plugins.github.constants import (
     ISSUE_FIELD_TEMPLATE,
     PUBLISH_LABEL,
 )
-from src.plugins.github.depends.utils import get_type_by_labels
 from src.plugins.github.handlers import GitHandler, GithubHandler, IssueHandler
 from src.plugins.github.typing import PullRequestList
 from src.plugins.github.utils import commit_message as _commit_message
@@ -29,11 +29,9 @@ from .constants import (
     PLUGIN_TEST_STRING,
     WORKFLOW_HISTORY_PATTERN,
 )
-from .validation import (
-    validate_adapter_info_from_issue,
-    validate_bot_info_from_issue,
-    validate_plugin_info_from_issue,
-)
+
+if TYPE_CHECKING:
+    from githubkit.rest import Artifact
 
 
 def get_type_by_title(title: str) -> PublishType | None:
@@ -81,6 +79,33 @@ def extract_name_from_title(title: str, publish_type: PublishType) -> str | None
         return match.group(1)
 
 
+async def get_noneflow_artifact(handler: IssueHandler) -> "Artifact | None":
+    """获取 noneflow 的 Artifact"""
+    comment = await handler.get_self_comment()
+    if not comment or not comment.body:
+        logger.error("获取评论失败，无法获取 NoneFlow Artifact")
+        return
+
+    history = await get_history_workflow_from_comment(comment.body)
+    if not history:
+        logger.error("无法从评论中获取历史工作流信息")
+        return
+
+    # 获取最新的工作流运行
+    latest_run = max(filter(lambda x: x[0], history), key=lambda x: x[2])
+    run_id = latest_run[1].split("/")[-1]  # 提取 run_id
+    if not run_id or not run_id.isdigit():
+        logger.error("无法从评论中获取最新工作流运行 ID")
+        return
+
+    artifacts = await handler.list_workflow_run_artifacts(int(run_id))
+    for artifact in artifacts.artifacts:
+        if artifact.name == "noneflow":
+            return artifact
+
+    logger.error("未找到 NoneFlow Artifact")
+
+
 async def resolve_conflict_pull_requests(
     handler: GithubHandler, pulls: PullRequestList
 ):
@@ -99,38 +124,28 @@ async def resolve_conflict_pull_requests(
             logger.info("拉取请求为草稿，跳过处理")
             continue
 
-        publish_type = get_type_by_labels(pull.labels)
         issue_handler = await handler.to_issue_handler(issue_number)
 
-        if publish_type:
-            # 重新测试
-            match publish_type:
-                case PublishType.ADAPTER:
-                    result = await validate_adapter_info_from_issue(issue_handler.issue)
-                case PublishType.BOT:
-                    result = await validate_bot_info_from_issue(issue_handler.issue)
-                case PublishType.PLUGIN:
-                    result = await validate_plugin_info_from_issue(issue_handler)
-                case _:
-                    raise ValueError("暂不支持的发布类型")
+        artifact = await get_noneflow_artifact(issue_handler)
+        if not artifact:
+            logger.error(f"无法获取 {pull.title} 对应的 NoneFlow Artifact")
+            continue
 
-            # 如果信息验证失败，则跳过更新
-            if not result.valid:
-                logger.error("信息验证失败，已跳过")
-                logger.error(f"验证结果: {result}")
-                continue
+        artifact_data = RegistryArtifactData.from_artifact_data(
+            plugin_config.input_config.store_repository, artifact.id
+        )
+        result = artifact_data.result
+        # 每次切换前都要确保回到主分支
+        handler.checkout_branch(plugin_config.input_config.base, update=True)
+        # 切换到对应分支
+        handler.switch_branch(pull.head.ref)
+        # 更新文件
+        update_file(result, handler)
 
-            # 每次切换前都要确保回到主分支
-            handler.checkout_branch(plugin_config.input_config.base, update=True)
-            # 切换到对应分支
-            handler.switch_branch(pull.head.ref)
-            # 更新文件
-            update_file(result, handler)
+        message = commit_message(result.type, result.name, issue_number)
+        issue_handler.commit_and_push(message, pull.head.ref)
 
-            message = commit_message(result.type, result.name, issue_number)
-            issue_handler.commit_and_push(message, pull.head.ref)
-
-            logger.info("拉取请求更新完毕")
+        logger.info("拉取请求更新完毕")
 
 
 def update_file(result: ValidationDict, handler: GitHandler) -> None:
@@ -159,9 +174,7 @@ def update_file(result: ValidationDict, handler: GitHandler) -> None:
 
     # 保存 registry_update 所需的文件
     # 之后会上传至 Artifact，并通过 artifact_id 访问
-    RegistryArtifactData.from_info(result.info).save(
-        plugin_config.input_config.artifact_path
-    )
+    RegistryArtifactData(result=result).save(plugin_config.input_config.artifact_path)
 
     logger.info("文件更新完成")
 
@@ -257,37 +270,21 @@ async def process_pull_request(
 
 async def trigger_registry_update(handler: IssueHandler):
     """通过 repository_dispatch 触发商店列表更新"""
-    comment = await handler.get_self_comment()
-    if not comment or not comment.body:
-        logger.error("获取评论失败，无法触发商店列表更新")
+    artifact = await get_noneflow_artifact(handler)
+    if not artifact:
+        logger.error("无法获取 NoneFlow Artifact，无法触发商店列表更新")
         return
 
-    history = await get_history_workflow_from_comment(comment.body)
-    if not history:
-        logger.error("无法从评论中获取历史工作流信息")
-        return
-
-    # 获取最新的工作流运行
-    latest_run = max(filter(lambda x: x[0], history), key=lambda x: x[2])
-    run_id = latest_run[1].split("/")[-1]  # 提取 run_id
-    if not run_id or not run_id.isdigit():
-        logger.error("无法从评论中获取最新工作流运行 ID")
-        return
-
-    artifacts = await handler.list_workflow_run_artifacts(int(run_id))
-    for artifact in artifacts.artifacts:
-        if artifact.name == "noneflow":
-            # 触发商店列表更新
-            await handler.create_dispatch_event(
-                event_type="registry_update",
-                client_payload=RegistryUpdatePayload(
-                    repo_info=handler.repo_info,
-                    artifact_id=artifact.id,
-                ).model_dump(),
-                repo=plugin_config.input_config.registry_repository,
-            )
-            logger.info("已触发商店列表更新")
-            break
+    # 触发商店列表更新
+    await handler.create_dispatch_event(
+        event_type="registry_update",
+        client_payload=RegistryUpdatePayload(
+            repo_info=handler.repo_info,
+            artifact_id=artifact.id,
+        ).model_dump(),
+        repo=plugin_config.input_config.registry_repository,
+    )
+    logger.info("已触发商店列表更新")
 
 
 async def get_history_workflow_from_comment(
