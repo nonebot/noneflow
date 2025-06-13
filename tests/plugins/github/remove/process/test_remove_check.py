@@ -8,12 +8,16 @@ from respx import MockRouter
 
 from tests.plugins.github.event import get_mock_event
 from tests.plugins.github.utils import (
+    GitHubApi,
     MockIssue,
     MockUser,
+    assert_subprocess_run_calls,
     check_json_data,
     generate_issue_body_remove,
     get_github_bot,
     get_issue_labels,
+    mock_subprocess_run_with_side_effect,
+    should_call_apis,
 )
 
 
@@ -44,9 +48,7 @@ async def test_process_remove_bot_check(
         }
     ]
 
-    mock_subprocess_run = mocker.patch(
-        "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
-    )
+    mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     remove_type = "Bot"
     mock_issue = MockIssue(
@@ -76,75 +78,52 @@ async def test_process_remove_bot_check(
 
     check_json_data(plugin_config.input_config.bot_path, data)
 
-    async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
-        event = get_mock_event(IssuesOpened)
-        event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
+    apis: list[GitHubApi] = [
+        {"api": "rest.apps.async_get_repo_installation", "result": mock_installation},
+        {"api": "rest.issues.async_get", "result": mock_issues_resp},
+        {"api": "rest.pulls.async_create", "result": mock_pulls_resp},
+        {"api": "rest.issues.async_add_labels", "result": True},
+        {"api": "rest.issues.async_update", "result": True},
+        {"api": "rest.pulls.async_list", "result": mock_pulls_resp_list},
+        {"api": "rest.issues.async_list_comments", "result": mock_list_comments_resp},
+        {"api": "rest.issues.async_create_comment", "result": True},
+    ]
 
-        ctx.should_call_api(
-            "rest.apps.async_get_repo_installation",
-            {"owner": "he0119", "repo": "action-test"},
-            mock_installation,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_get",
-            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-            mock_issues_resp,
-        )
-        ctx.should_call_api(
-            "rest.pulls.async_create",
-            snapshot(
-                {
-                    "owner": "owner",
-                    "repo": "store",
-                    "title": "Bot: Remove TESTBOT",
-                    "body": "resolve he0119/action-test#80",
-                    "base": "master",
-                    "head": "remove/issue80",
-                }
-            ),
-            mock_pulls_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_add_labels",
+    data_list = [
+        {"owner": "he0119", "repo": "action-test"},
+        {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+        snapshot(
             {
                 "owner": "owner",
                 "repo": "store",
-                "issue_number": 2,
-                "labels": ["Remove", "Bot"],
-            },
-            True,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_update",
-            snapshot(
-                {
-                    "owner": "he0119",
-                    "repo": "action-test",
-                    "issue_number": 80,
-                    "title": "Bot: Remove TESTBOT",
-                }
-            ),
-            True,
-        )
-        ctx.should_call_api(
-            "rest.pulls.async_list",
-            {"owner": "owner", "repo": "store", "head": "owner:remove/issue80"},
-            mock_pulls_resp_list,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_list_comments",
-            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-            mock_list_comments_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_create_comment",
+                "title": "Bot: Remove TESTBOT",
+                "body": "resolve he0119/action-test#80",
+                "base": "master",
+                "head": "remove/issue80",
+            }
+        ),
+        {
+            "owner": "owner",
+            "repo": "store",
+            "issue_number": 2,
+            "labels": ["Remove", "Bot"],
+        },
+        snapshot(
             {
                 "owner": "he0119",
                 "repo": "action-test",
                 "issue_number": 80,
-                "body": snapshot(
-                    """\
+                "title": "Bot: Remove TESTBOT",
+            }
+        ),
+        {"owner": "owner", "repo": "store", "head": "owner:remove/issue80"},
+        {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+        {
+            "owner": "he0119",
+            "repo": "action-test",
+            "issue_number": 80,
+            "body": snapshot(
+                """\
 # 📃 商店下架检查
 
 > Bot: remove TESTBOT
@@ -160,59 +139,38 @@ async def test_process_remove_bot_check(
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
 <!-- NONEFLOW -->
 """
-                ),
-            },
-            True,
-        )
+            ),
+        },
+    ]
+
+    async with app.test_matcher() as ctx:
+        adapter, bot = get_github_bot(ctx)
+        event = get_mock_event(IssuesOpened)
+        event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
+
+        should_call_apis(ctx, apis, data_list)
 
         ctx.receive_event(bot, event)
 
-    mock_subprocess_run.assert_has_calls(
+    assert_subprocess_run_calls(
+        mock_subprocess_run,
         [
-            mocker.call(
-                ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "switch", "-C", "remove/issue80"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "config", "--global", "user.name", snapshot("test")],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                [
-                    "git",
-                    "config",
-                    "--global",
-                    "user.email",
-                    "test@users.noreply.github.com",
-                ],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(["git", "add", "-A"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "commit", "-m", snapshot(":pencil2: remove TESTBOT (#80)")],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(["git", "fetch", "origin"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "diff", "origin/remove/issue80", "remove/issue80"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "push", "origin", "remove/issue80", "-f"],
-                check=True,
-                capture_output=True,
-            ),
-        ]  # type: ignore
+            ["git", "config", "--global", "safe.directory", "*"],
+            ["git", "switch", "-C", "remove/issue80"],
+            ["git", "add", str(tmp_path / "bots.json5")],
+            ["git", "config", "--global", "user.name", "test"],
+            [
+                "git",
+                "config",
+                "--global",
+                "user.email",
+                "test@users.noreply.github.com",
+            ],
+            ["git", "commit", "-m", ":pencil2: remove TESTBOT (#80)"],
+            ["git", "fetch", "origin"],
+            ["git", "diff", "origin/remove/issue80", "remove/issue80"],
+            ["git", "push", "origin", "remove/issue80", "-f"],
+        ],
     )
 
 
@@ -240,9 +198,7 @@ async def test_process_remove_plugin_check(
         }
     ]
 
-    mock_subprocess_run = mocker.patch(
-        "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
-    )
+    mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     remove_type = "Plugin"
     mock_issue = MockIssue(
@@ -272,77 +228,54 @@ async def test_process_remove_plugin_check(
 
     check_json_data(plugin_config.input_config.plugin_path, data)
 
-    async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
-        event = get_mock_event(IssuesOpened)
-        event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
+    apis: list[GitHubApi] = [
+        {"api": "rest.apps.async_get_repo_installation", "result": mock_installation},
+        {"api": "rest.issues.async_get", "result": mock_issues_resp},
+        {"api": "rest.pulls.async_create", "result": mock_pulls_resp},
+        {"api": "rest.issues.async_add_labels", "result": True},
+        {"api": "rest.issues.async_update", "result": True},
+        {"api": "rest.pulls.async_list", "result": mock_pulls_resp_list},
+        {"api": "rest.issues.async_list_comments", "result": mock_list_comments_resp},
+        {"api": "rest.issues.async_create_comment", "result": True},
+    ]
 
-        ctx.should_call_api(
-            "rest.apps.async_get_repo_installation",
-            {"owner": "he0119", "repo": "action-test"},
-            mock_installation,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_get",
-            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-            mock_issues_resp,
-        )
-        ctx.should_call_api(
-            "rest.pulls.async_create",
-            snapshot(
-                {
-                    "owner": "owner",
-                    "repo": "store",
-                    "title": "Plugin: Remove test",
-                    "body": "resolve he0119/action-test#80",
-                    "base": "master",
-                    "head": "remove/issue80",
-                }
-            ),
-            mock_pulls_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_add_labels",
-            snapshot(
-                {
-                    "owner": "owner",
-                    "repo": "store",
-                    "issue_number": 2,
-                    "labels": ["Remove", "Plugin"],
-                }
-            ),
-            True,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_update",
-            snapshot(
-                {
-                    "owner": "he0119",
-                    "repo": "action-test",
-                    "issue_number": 80,
-                    "title": "Plugin: Remove test",
-                }
-            ),
-            True,
-        )
-        ctx.should_call_api(
-            "rest.pulls.async_list",
-            {"owner": "owner", "repo": "store", "head": "owner:remove/issue80"},
-            mock_pulls_resp_list,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_list_comments",
-            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-            mock_list_comments_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_create_comment",
+    data_list = [
+        {"owner": "he0119", "repo": "action-test"},
+        {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+        snapshot(
+            {
+                "owner": "owner",
+                "repo": "store",
+                "title": "Plugin: Remove test",
+                "body": "resolve he0119/action-test#80",
+                "base": "master",
+                "head": "remove/issue80",
+            }
+        ),
+        snapshot(
+            {
+                "owner": "owner",
+                "repo": "store",
+                "issue_number": 2,
+                "labels": ["Remove", "Plugin"],
+            }
+        ),
+        snapshot(
             {
                 "owner": "he0119",
                 "repo": "action-test",
                 "issue_number": 80,
-                "body": snapshot(
-                    """\
+                "title": "Plugin: Remove test",
+            }
+        ),
+        {"owner": "owner", "repo": "store", "head": "owner:remove/issue80"},
+        {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+        {
+            "owner": "he0119",
+            "repo": "action-test",
+            "issue_number": 80,
+            "body": snapshot(
+                """\
 # 📃 商店下架检查
 
 > Plugin: remove test
@@ -358,60 +291,32 @@ async def test_process_remove_plugin_check(
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
 <!-- NONEFLOW -->
 """
-                ),
-            },
-            True,
-        )
+            ),
+        },
+    ]
+
+    async with app.test_matcher() as ctx:
+        adapter, bot = get_github_bot(ctx)
+        event = get_mock_event(IssuesOpened)
+        event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
+
+        should_call_apis(ctx, apis, data_list)
 
         ctx.receive_event(bot, event)
 
-    mock_subprocess_run.assert_has_calls(
-        [
-            mocker.call(
-                ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "switch", "-C", "remove/issue80"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "config", "--global", "user.name", snapshot("test")],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                [
-                    "git",
-                    "config",
-                    "--global",
-                    "user.email",
-                    "test@users.noreply.github.com",
-                ],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(["git", "add", "-A"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "commit", "-m", snapshot(":pencil2: remove test (#80)")],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(["git", "fetch", "origin"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "diff", "origin/remove/issue80", "remove/issue80"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "push", "origin", "remove/issue80", "-f"],
-                check=True,
-                capture_output=True,
-            ),
-        ]  # type: ignore
-    )
+    expected_commands = [
+        ["git", "config", "--global", "safe.directory", "*"],
+        ["git", "switch", "-C", "remove/issue80"],
+        ["git", "add", str(tmp_path / "plugins.json5")],
+        ["git", "config", "--global", "user.name", "test"],
+        ["git", "config", "--global", "user.email", "test@users.noreply.github.com"],
+        ["git", "commit", "-m", ":pencil2: remove test (#80)"],
+        ["git", "fetch", "origin"],
+        ["git", "diff", "origin/remove/issue80", "remove/issue80"],
+        ["git", "push", "origin", "remove/issue80", "-f"],
+    ]
+
+    assert_subprocess_run_calls(mock_subprocess_run, expected_commands)
 
 
 async def test_process_remove_not_found_check(
@@ -425,9 +330,7 @@ async def test_process_remove_not_found_check(
     from src.plugins.github import plugin_config
     from src.providers.utils import dump_json5
 
-    mock_subprocess_run = mocker.patch(
-        "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
-    )
+    mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     remove_type = "Bot"
     mock_issue = MockIssue(
@@ -457,34 +360,23 @@ async def test_process_remove_not_found_check(
 
     check_json_data(plugin_config.input_config.bot_path, [])
 
-    async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
-        event = get_mock_event(IssuesOpened)
-        event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
+    apis: list[GitHubApi] = [
+        {"api": "rest.apps.async_get_repo_installation", "result": mock_installation},
+        {"api": "rest.issues.async_get", "result": mock_issues_resp},
+        {"api": "rest.issues.async_list_comments", "result": mock_list_comments_resp},
+        {"api": "rest.issues.async_create_comment", "result": True},
+    ]
 
-        ctx.should_call_api(
-            "rest.apps.async_get_repo_installation",
-            {"owner": "he0119", "repo": "action-test"},
-            mock_installation,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_get",
-            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-            mock_issues_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_list_comments",
-            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-            mock_list_comments_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_create_comment",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "issue_number": 80,
-                "body": snapshot(
-                    """\
+    data_list = [
+        {"owner": "he0119", "repo": "action-test"},
+        {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+        {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+        {
+            "owner": "he0119",
+            "repo": "action-test",
+            "issue_number": 80,
+            "body": snapshot(
+                """\
 # 📃 商店下架检查
 
 > Error
@@ -500,22 +392,24 @@ async def test_process_remove_not_found_check(
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
 <!-- NONEFLOW -->
 """
-                ),
-            },
-            True,
-        )
+            ),
+        },
+    ]
+
+    async with app.test_matcher() as ctx:
+        adapter, bot = get_github_bot(ctx)
+        event = get_mock_event(IssuesOpened)
+        event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
+
+        should_call_apis(ctx, apis, data_list)
 
         ctx.receive_event(bot, event)
 
-    mock_subprocess_run.assert_has_calls(
-        [
-            mocker.call(
-                ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),  # type: ignore
-        ]
-    )
+    expected_commands = [
+        ["git", "config", "--global", "safe.directory", "*"],
+    ]
+
+    assert_subprocess_run_calls(mock_subprocess_run, expected_commands)
 
 
 async def test_process_remove_author_info_not_eq(
@@ -541,9 +435,7 @@ async def test_process_remove_author_info_not_eq(
         }
     ]
 
-    mock_subprocess_run = mocker.patch(
-        "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
-    )
+    mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     remove_type = "Bot"
     mock_issue = MockIssue(
@@ -573,34 +465,23 @@ async def test_process_remove_author_info_not_eq(
 
     check_json_data(plugin_config.input_config.bot_path, bot_data)
 
-    async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
-        event = get_mock_event(IssuesOpened)
-        event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
+    apis: list[GitHubApi] = [
+        {"api": "rest.apps.async_get_repo_installation", "result": mock_installation},
+        {"api": "rest.issues.async_get", "result": mock_issues_resp},
+        {"api": "rest.issues.async_list_comments", "result": mock_list_comments_resp},
+        {"api": "rest.issues.async_create_comment", "result": True},
+    ]
 
-        ctx.should_call_api(
-            "rest.apps.async_get_repo_installation",
-            {"owner": "he0119", "repo": "action-test"},
-            mock_installation,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_get",
-            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-            mock_issues_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_list_comments",
-            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-            mock_list_comments_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_create_comment",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "issue_number": 80,
-                "body": snapshot(
-                    """\
+    data_list = [
+        {"owner": "he0119", "repo": "action-test"},
+        {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+        {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+        {
+            "owner": "he0119",
+            "repo": "action-test",
+            "issue_number": 80,
+            "body": snapshot(
+                """\
 # 📃 商店下架检查
 
 > Error
@@ -616,22 +497,24 @@ async def test_process_remove_author_info_not_eq(
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
 <!-- NONEFLOW -->
 """
-                ),
-            },
-            True,
-        )
+            ),
+        },
+    ]
+
+    async with app.test_matcher() as ctx:
+        adapter, bot = get_github_bot(ctx)
+        event = get_mock_event(IssuesOpened)
+        event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
+
+        should_call_apis(ctx, apis, data_list)
 
         ctx.receive_event(bot, event)
 
-    mock_subprocess_run.assert_has_calls(
-        [
-            mocker.call(
-                ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),  # type: ignore
-        ]
-    )
+    expected_commands = [
+        ["git", "config", "--global", "safe.directory", "*"],
+    ]
+
+    assert_subprocess_run_calls(mock_subprocess_run, expected_commands)
 
 
 async def test_process_remove_issue_info_not_found(
@@ -657,9 +540,7 @@ async def test_process_remove_issue_info_not_found(
         }
     ]
 
-    mock_subprocess_run = mocker.patch(
-        "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
-    )
+    mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     remove_type = "Bot"
     mock_issue = MockIssue(
@@ -687,34 +568,23 @@ async def test_process_remove_issue_info_not_found(
 
     check_json_data(plugin_config.input_config.bot_path, bot_data)
 
-    async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
-        event = get_mock_event(IssuesOpened)
-        event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
+    apis: list[GitHubApi] = [
+        {"api": "rest.apps.async_get_repo_installation", "result": mock_installation},
+        {"api": "rest.issues.async_get", "result": mock_issues_resp},
+        {"api": "rest.issues.async_list_comments", "result": mock_list_comments_resp},
+        {"api": "rest.issues.async_create_comment", "result": True},
+    ]
 
-        ctx.should_call_api(
-            "rest.apps.async_get_repo_installation",
-            {"owner": "he0119", "repo": "action-test"},
-            mock_installation,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_get",
-            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-            mock_issues_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_list_comments",
-            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-            mock_list_comments_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_create_comment",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "issue_number": 80,
-                "body": snapshot(
-                    """\
+    data_list = [
+        {"owner": "he0119", "repo": "action-test"},
+        {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+        {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+        {
+            "owner": "he0119",
+            "repo": "action-test",
+            "issue_number": 80,
+            "body": snapshot(
+                """\
 # 📃 商店下架检查
 
 > Error
@@ -730,22 +600,24 @@ async def test_process_remove_issue_info_not_found(
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
 <!-- NONEFLOW -->
 """
-                ),
-            },
-            True,
-        )
+            ),
+        },
+    ]
+
+    async with app.test_matcher() as ctx:
+        adapter, bot = get_github_bot(ctx)
+        event = get_mock_event(IssuesOpened)
+        event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
+
+        should_call_apis(ctx, apis, data_list)
 
         ctx.receive_event(bot, event)
 
-    mock_subprocess_run.assert_has_calls(
-        [
-            mocker.call(
-                ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),  # type: ignore
-        ]
-    )
+    expected_commands = [
+        ["git", "config", "--global", "safe.directory", "*"],
+    ]
+
+    assert_subprocess_run_calls(mock_subprocess_run, expected_commands)
 
 
 async def test_process_remove_driver(
@@ -756,9 +628,7 @@ async def test_process_remove_driver(
     mock_installation,
 ):
     """不支持驱动器类型的删除"""
-    mock_subprocess_run = mocker.patch(
-        "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
-    )
+    mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     remove_type = "Driver"
     mock_issue = MockIssue(
@@ -782,34 +652,23 @@ async def test_process_remove_driver(
     mock_pulls_resp = mocker.MagicMock()
     mock_pulls_resp.parsed_data = mock_pull
 
-    async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
-        event = get_mock_event(IssuesOpened)
-        event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
+    apis: list[GitHubApi] = [
+        {"api": "rest.apps.async_get_repo_installation", "result": mock_installation},
+        {"api": "rest.issues.async_get", "result": mock_issues_resp},
+        {"api": "rest.issues.async_list_comments", "result": mock_list_comments_resp},
+        {"api": "rest.issues.async_create_comment", "result": True},
+    ]
 
-        ctx.should_call_api(
-            "rest.apps.async_get_repo_installation",
-            {"owner": "he0119", "repo": "action-test"},
-            mock_installation,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_get",
-            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-            mock_issues_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_list_comments",
-            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-            mock_list_comments_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_create_comment",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "issue_number": 80,
-                "body": snapshot(
-                    """\
+    data_list = [
+        {"owner": "he0119", "repo": "action-test"},
+        {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+        {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+        {
+            "owner": "he0119",
+            "repo": "action-test",
+            "issue_number": 80,
+            "body": snapshot(
+                """\
 # 📃 商店下架检查
 
 > Error
@@ -825,22 +684,24 @@ async def test_process_remove_driver(
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
 <!-- NONEFLOW -->
 """
-                ),
-            },
-            True,
-        )
+            ),
+        },
+    ]
+
+    async with app.test_matcher() as ctx:
+        adapter, bot = get_github_bot(ctx)
+        event = get_mock_event(IssuesOpened)
+        event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
+
+        should_call_apis(ctx, apis, data_list)
 
         ctx.receive_event(bot, event)
 
-    mock_subprocess_run.assert_has_calls(
-        [
-            mocker.call(
-                ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),  # type: ignore
-        ]
-    )
+    expected_commands = [
+        ["git", "config", "--global", "safe.directory", "*"],
+    ]
+
+    assert_subprocess_run_calls(mock_subprocess_run, expected_commands)
 
 
 async def test_process_not_remove_label(app: App):

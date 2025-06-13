@@ -1,3 +1,4 @@
+from pathlib import Path
 from unittest.mock import MagicMock
 
 from inline_snapshot import snapshot
@@ -25,6 +26,7 @@ async def test_resolve_pull_request(
     mocker: MockerFixture,
     mock_installation: MagicMock,
     mocked_api: MockRouter,
+    tmp_path: Path,
 ) -> None:
     """测试能正确处理拉取请求关闭后其他拉取请求的冲突问题"""
     from src.plugins.github.plugins.resolve import pr_close_matcher
@@ -128,6 +130,7 @@ async def test_resolve_pull_request(
             ["git", "checkout", "master"],
             ["git", "pull"],
             ["git", "switch", "-C", "publish/issue100"],
+            ["git", "add", str(tmp_path / "bots.json5")],
             ["git", "config", "--global", "user.name", "test"],
             [
                 "git",
@@ -136,7 +139,6 @@ async def test_resolve_pull_request(
                 "user.email",
                 "test@users.noreply.github.com",
             ],
-            ["git", "add", "-A"],
             ["git", "commit", "-m", ":beers: publish bot name (#100)"],
             ["git", "fetch", "origin"],
             ["git", "diff", "origin/publish/issue100", "publish/issue100"],
@@ -145,6 +147,7 @@ async def test_resolve_pull_request(
             ["git", "checkout", "master"],
             ["git", "pull"],
             ["git", "switch", "-C", "remove/issue101"],
+            ["git", "add", str(tmp_path / "bots.json5")],
             ["git", "config", "--global", "user.name", "test"],
             [
                 "git",
@@ -153,7 +156,6 @@ async def test_resolve_pull_request(
                 "user.email",
                 "test@users.noreply.github.com",
             ],
-            ["git", "add", "-A"],
             ["git", "commit", "-m", ":pencil2: remove CoolQBot (#101)"],
             ["git", "fetch", "origin"],
             ["git", "diff", "origin/remove/issue101", "remove/issue101"],

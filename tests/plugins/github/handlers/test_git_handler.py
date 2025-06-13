@@ -50,6 +50,32 @@ async def test_checkout_remote_branch(mock_run_shell_command):
     )
 
 
+async def test_add_file(mock_run_shell_command):
+    from src.plugins.github.handlers.git import GitHandler
+
+    git_handler = GitHandler()
+    git_handler.add_file("test.txt")
+
+    mock_run_shell_command.assert_has_calls(
+        [
+            call(["git", "add", "test.txt"]),
+        ]
+    )
+
+
+async def test_add_all_files(mock_run_shell_command):
+    from src.plugins.github.handlers.git import GitHandler
+
+    git_handler = GitHandler()
+    git_handler.add_all_files()
+
+    mock_run_shell_command.assert_has_calls(
+        [
+            call(["git", "add", "-A"]),
+        ]
+    )
+
+
 async def test_commit_and_push(mock_run_shell_command):
     from src.plugins.github.handlers.git import GitHandler
 
@@ -68,7 +94,6 @@ async def test_commit_and_push(mock_run_shell_command):
                     "author@users.noreply.github.com",
                 ]
             ),
-            call(["git", "add", "-A"]),
             call(["git", "commit", "-m", "commit message"]),
             call(["git", "fetch", "origin"]),
             call(["git", "diff", "origin/main", "main"]),
@@ -100,7 +125,6 @@ async def test_commit_and_push_diff_no_change(mock_run_shell_command):
                     "author@users.noreply.github.com",
                 ]
             ),
-            call(["git", "add", "-A"]),
             call(["git", "commit", "-m", "commit message"]),
             call(["git", "fetch", "origin"]),
             call(["git", "diff", "origin/main", "main"]),

@@ -146,6 +146,7 @@ async def test_bot_process_publish_check(
         [
             ["git", "config", "--global", "safe.directory", "*"],
             ["git", "switch", "-C", "publish/issue80"],
+            ["git", "add", str(tmp_path / "bots.json5")],
             ["git", "ls-remote", "--heads", "origin", "publish/issue80"],
             ["git", "config", "--global", "user.name", "test"],
             [
@@ -155,7 +156,6 @@ async def test_bot_process_publish_check(
                 "user.email",
                 "test@users.noreply.github.com",
             ],
-            ["git", "add", "-A"],
             ["git", "commit", "-m", ":beers: publish bot test (#80)"],
             ["git", "fetch", "origin"],
             ["git", "diff", "origin/publish/issue80", "publish/issue80"],
@@ -317,6 +317,7 @@ async def test_adapter_process_publish_check(
         [
             ["git", "config", "--global", "safe.directory", "*"],
             ["git", "switch", "-C", "publish/issue80"],
+            ["git", "add", str(tmp_path / "adapters.json5")],
             ["git", "ls-remote", "--heads", "origin", "publish/issue80"],
             ["git", "config", "--global", "user.name", "test"],
             [
@@ -326,7 +327,6 @@ async def test_adapter_process_publish_check(
                 "user.email",
                 "test@users.noreply.github.com",
             ],
-            ["git", "add", "-A"],
             ["git", "commit", "-m", ":beers: publish adapter test (#80)"],
             ["git", "fetch", "origin"],
             ["git", "diff", "origin/publish/issue80", "publish/issue80"],
@@ -509,6 +509,7 @@ async def test_edit_title(
         [
             ["git", "config", "--global", "safe.directory", "*"],
             ["git", "switch", "-C", "publish/issue80"],
+            ["git", "add", str(tmp_path / "bots.json5")],
             ["git", "ls-remote", "--heads", "origin", "publish/issue80"],
             ["git", "config", "--global", "user.name", "test"],
             [
@@ -518,7 +519,6 @@ async def test_edit_title(
                 "user.email",
                 "test@users.noreply.github.com",
             ],
-            ["git", "add", "-A"],
             ["git", "commit", "-m", ":beers: publish bot test1 (#80)"],
             ["git", "fetch", "origin"],
             ["git", "diff", "origin/publish/issue80", "publish/issue80"],
@@ -1184,6 +1184,7 @@ mutation markPullRequestReadyForReview($pullRequestId: ID!) {
         [
             ["git", "config", "--global", "safe.directory", "*"],
             ["git", "switch", "-C", "publish/issue80"],
+            ["git", "add", str(tmp_path / "bots.json5")],
             ["git", "ls-remote", "--heads", "origin", "publish/issue80"],
             ["git", "config", "--global", "user.name", "test"],
             [
@@ -1193,7 +1194,6 @@ mutation markPullRequestReadyForReview($pullRequestId: ID!) {
                 "user.email",
                 "test@users.noreply.github.com",
             ],
-            ["git", "add", "-A"],
             ["git", "commit", "-m", ":beers: publish bot test (#80)"],
             ["git", "fetch", "origin"],
             ["git", "diff", "origin/publish/issue80", "publish/issue80"],
@@ -1335,6 +1335,7 @@ async def test_comment_immediate_after_pull_request_closed(
         [
             ["git", "config", "--global", "safe.directory", "*"],
             ["git", "switch", "-C", "publish/issue80"],
+            ["git", "add", str(tmp_path / "bots.json5")],
             ["git", "ls-remote", "--heads", "origin", "publish/issue80"],
             ["git", "config", "--global", "user.name", "test"],
             [
@@ -1344,7 +1345,6 @@ async def test_comment_immediate_after_pull_request_closed(
                 "user.email",
                 "test@users.noreply.github.com",
             ],
-            ["git", "add", "-A"],
             ["git", "commit", "-m", ":beers: publish bot test (#80)"],
             ["git", "fetch", "origin"],
             ["git", "diff", "origin/publish/issue80", "publish/issue80"],

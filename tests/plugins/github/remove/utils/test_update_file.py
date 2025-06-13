@@ -16,6 +16,8 @@ async def test_update_file(
     from src.providers.utils import dump_json5
     from src.providers.validation.models import PublishType
 
+    mock_git_handler = mocker.MagicMock()
+
     data = [
         {
             "name": "CoolQBot",
@@ -43,7 +45,7 @@ async def test_update_file(
         key="CoolQBot:https://github.com/he0119/CoolQBot",
         name="CoolQBot",
     )
-    update_file(remove_info)
+    update_file(remove_info, mock_git_handler)
 
     check_json_data(
         plugin_config.input_config.bot_path,
@@ -58,3 +60,5 @@ async def test_update_file(
             }
         ],
     )
+
+    mock_git_handler.add_file.assert_called_once_with(tmp_path / "bots.json5")
