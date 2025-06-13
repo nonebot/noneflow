@@ -28,7 +28,7 @@ from src.providers.validation.models import PublishType
 
 from .constants import BRANCH_NAME_PREFIX
 from .render import render_comment, render_error
-from .utils import process_pull_reqeusts
+from .utils import process_pull_requests
 from .validation import validate_author_info
 
 
@@ -99,7 +99,7 @@ async def handle_remove_check(
             bot=handler.bot, repo_info=plugin_config.input_config.store_repository
         )
         # 处理拉取请求和议题标题
-        await process_pull_reqeusts(handler, store_handler, result, branch_name, title)
+        await process_pull_requests(handler, store_handler, result, branch_name, title)
 
         await handler.update_issue_title(title)
 

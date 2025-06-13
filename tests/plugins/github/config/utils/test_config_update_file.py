@@ -18,6 +18,8 @@ async def test_update_file(
         ValidationDict,
     )
 
+    mock_git_handler = mocker.MagicMock()
+
     # 更改当前工作目录为临时目录
     os.chdir(tmp_path)
 
@@ -47,7 +49,7 @@ async def test_update_file(
         info=PluginPublishInfo.model_construct(**raw_data),
         errors=[],
     )
-    update_file(result)
+    update_file(result, mock_git_handler)
 
     check_json_data(
         mock_results["plugins"],
@@ -103,3 +105,5 @@ async def test_update_file(
             {"nonebot-plugin-treehelp:nonebot_plugin_treehelp": "log_level=DEBUG"}
         ),
     )
+
+    mock_git_handler.add_all_files.assert_called_once_with()

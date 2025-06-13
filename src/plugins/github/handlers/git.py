@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from nonebot import logger
 from pydantic import BaseModel
 
@@ -20,13 +22,26 @@ class GitHandler(BaseModel):
         run_shell_command(["git", "fetch", "origin", branch_name])
         run_shell_command(["git", "checkout", branch_name])
 
+    def add_file(self, file_path: str | Path):
+        """添加文件到暂存区"""
+        if isinstance(file_path, Path):
+            file_path = str(file_path)
+
+        run_shell_command(["git", "add", file_path])
+
+    def add_all_files(self):
+        """添加所有文件到暂存区"""
+
+        run_shell_command(["git", "add", "-A"])
+
     def commit_and_push(self, message: str, branch_name: str, author: str):
         """提交并推送"""
 
+        # 设置用户信息，假装是作者提交的
         run_shell_command(["git", "config", "--global", "user.name", author])
         user_email = f"{author}@users.noreply.github.com"
         run_shell_command(["git", "config", "--global", "user.email", user_email])
-        run_shell_command(["git", "add", "-A"])
+
         run_shell_command(["git", "commit", "-m", message])
         try:
             run_shell_command(["git", "fetch", "origin"])

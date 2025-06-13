@@ -435,7 +435,6 @@ async def test_commit_and_push(app: App, mocker: MockerFixture) -> None:
                     "he0119@users.noreply.github.com",
                 ]
             ),
-            call(["git", "add", "-A"]),
             call(["git", "commit", "-m", "message"]),
             call(["git", "fetch", "origin"]),
             call(["git", "diff", "origin/main", "main"]),

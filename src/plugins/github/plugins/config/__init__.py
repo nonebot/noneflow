@@ -98,7 +98,7 @@ async def handle_remove_check(
             # 创建新分支
             handler.switch_branch(branch_name)
             # 更新文件
-            update_file(result)
+            update_file(result, handler)
             handler.commit_and_push(commit_message, branch_name, handler.author)
             # 创建拉取请求
             try:

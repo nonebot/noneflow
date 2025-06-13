@@ -11,7 +11,7 @@ from src.plugins.github.constants import (
     PUBLISH_LABEL,
 )
 from src.plugins.github.depends.utils import get_type_by_labels
-from src.plugins.github.handlers import GithubHandler, IssueHandler
+from src.plugins.github.handlers import GitHandler, GithubHandler, IssueHandler
 from src.plugins.github.typing import PullRequestList
 from src.plugins.github.utils import commit_message as _commit_message
 from src.providers.constants import TIME_ZONE
@@ -125,7 +125,7 @@ async def resolve_conflict_pull_requests(
             # 切换到对应分支
             handler.switch_branch(pull.head.ref)
             # 更新文件
-            update_file(result)
+            update_file(result, handler)
 
             message = commit_message(result.type, result.name, issue_number)
             issue_handler.commit_and_push(message, pull.head.ref)
@@ -133,7 +133,7 @@ async def resolve_conflict_pull_requests(
             logger.info("拉取请求更新完毕")
 
 
-def update_file(result: ValidationDict) -> None:
+def update_file(result: ValidationDict, handler: GitHandler) -> None:
     """更新文件"""
     assert result.valid
     assert result.info
@@ -155,6 +155,7 @@ def update_file(result: ValidationDict) -> None:
     data = load_json_from_file(path)
     data.append(new_data)
     dump_json5(path, data)
+    handler.add_file(path)
 
     # 保存 registry_update 所需的文件
     # 之后会上传至 Artifact，并通过 artifact_id 访问
@@ -226,7 +227,7 @@ async def process_pull_request(
 
     # 更新文件
     handler.switch_branch(branch_name)
-    update_file(result)
+    update_file(result, handler)
 
     # 只有当远程分支不存在时才创建拉取请求
     # 需要在 commit_and_push 前判断，否则远程一定存在

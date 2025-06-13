@@ -93,6 +93,7 @@ async def test_resolve_conflict_pull_requests_bot(
             ["git", "checkout", "master"],
             ["git", "pull"],
             ["git", "switch", "-C", "remove/issue1"],
+            ["git", "add", str(tmp_path / "bots.json5")],
             ["git", "config", "--global", "user.name", "he0119"],
             [
                 "git",
@@ -101,7 +102,6 @@ async def test_resolve_conflict_pull_requests_bot(
                 "user.email",
                 "he0119@users.noreply.github.com",
             ],
-            ["git", "add", "-A"],
             ["git", "commit", "-m", ":pencil2: remove CoolQBot (#1)"],
             ["git", "fetch", "origin"],
             ["git", "diff", "origin/remove/issue1", "remove/issue1"],
@@ -180,6 +180,7 @@ async def test_resolve_conflict_pull_requests_plugin(
             ["git", "checkout", "master"],
             ["git", "pull"],
             ["git", "switch", "-C", "remove/issue1"],
+            ["git", "add", str(tmp_path / "plugins.json5")],
             ["git", "config", "--global", "user.name", "he0119"],
             [
                 "git",
@@ -188,7 +189,6 @@ async def test_resolve_conflict_pull_requests_plugin(
                 "user.email",
                 "he0119@users.noreply.github.com",
             ],
-            ["git", "add", "-A"],
             ["git", "commit", "-m", ":pencil2: remove nonebot_plugin_treehelp (#1)"],
             ["git", "fetch", "origin"],
             ["git", "diff", "origin/remove/issue1", "remove/issue1"],

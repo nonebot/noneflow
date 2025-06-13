@@ -247,6 +247,7 @@ log_level=DEBUG
         [
             ["git", "config", "--global", "safe.directory", "*"],
             ["git", "switch", "-C", "publish/issue80"],
+            ["git", "add", str(tmp_path / "plugins.json5")],
             ["git", "ls-remote", "--heads", "origin", "publish/issue80"],
             ["git", "config", "--global", "user.name", "test"],
             [
@@ -256,7 +257,6 @@ log_level=DEBUG
                 "user.email",
                 "test@users.noreply.github.com",
             ],
-            ["git", "add", "-A"],
             ["git", "commit", "-m", ":beers: publish plugin name (#80)"],
             ["git", "fetch", "origin"],
             ["git", "diff", "origin/publish/issue80", "publish/issue80"],
@@ -513,6 +513,7 @@ log_level=DEBUG
         [
             ["git", "config", "--global", "safe.directory", "*"],
             ["git", "switch", "-C", "publish/issue80"],
+            ["git", "add", str(tmp_path / "plugins.json5")],
             ["git", "ls-remote", "--heads", "origin", "publish/issue80"],
             ["git", "config", "--global", "user.name", "test"],
             [
@@ -522,7 +523,6 @@ log_level=DEBUG
                 "user.email",
                 "test@users.noreply.github.com",
             ],
-            ["git", "add", "-A"],
             ["git", "commit", "-m", ":beers: publish plugin name (#80)"],
             ["git", "fetch", "origin"],
             ["git", "diff", "origin/publish/issue80", "publish/issue80"],

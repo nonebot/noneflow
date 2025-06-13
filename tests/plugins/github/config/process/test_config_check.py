@@ -10,10 +10,14 @@ from respx import MockRouter
 from tests.plugins.github.config.utils import generate_issue_body
 from tests.plugins.github.event import get_mock_event
 from tests.plugins.github.utils import (
+    GitHubApi,
     MockIssue,
+    assert_subprocess_run_calls,
     check_json_data,
     get_github_bot,
     get_issue_labels,
+    mock_subprocess_run_with_side_effect,
+    should_call_apis,
 )
 
 
@@ -35,9 +39,7 @@ async def test_process_config_check(
     # 更改当前工作目录为临时目录
     os.chdir(tmp_path)
 
-    mock_subprocess_run = mocker.patch(
-        "subprocess.run", side_effect=lambda *args, **kwargs: mocker.MagicMock()
-    )
+    mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     mock_issue = MockIssue(
         body=generate_issue_body(
@@ -78,18 +80,50 @@ async def test_process_config_check(
         event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = get_config_labels()
 
-        ctx.should_call_api(
-            "rest.apps.async_get_repo_installation",
+        # 定义要调用的 API 列表
+        apis: list[GitHubApi] = [
+            {
+                "api": "rest.apps.async_get_repo_installation",
+                "result": mock_installation,
+            },
+            {
+                "api": "rest.issues.async_get",
+                "result": mock_issues_resp,
+            },
+            {
+                "api": "rest.issues.async_update",
+                "result": None,
+            },
+            {
+                "api": "rest.issues.async_list_comments",
+                "result": mock_list_comments_resp,
+            },
+            {
+                "api": "rest.issues.async_create_comment",
+                "result": True,
+            },
+            {
+                "api": "rest.issues.async_update",
+                "result": None,
+            },
+            {
+                "api": "rest.pulls.async_create",
+                "result": mock_pull_resp,
+            },
+            {
+                "api": "rest.issues.async_add_labels",
+                "result": None,
+            },
+            {
+                "api": "rest.issues.async_update",
+                "result": None,
+            },
+        ]
+
+        # 对应的 API 数据
+        api_data = [
             {"owner": "he0119", "repo": "action-test"},
-            mock_installation,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_get",
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-            mock_issues_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_update",
             snapshot(
                 {
                     "owner": "he0119",
@@ -116,16 +150,7 @@ log_level=DEBUG
 """,
                 }
             ),
-            None,
-        )
-        # 检查是否可以复用评论
-        ctx.should_call_api(
-            "rest.issues.async_list_comments",
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-            mock_list_comments_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_create_comment",
             {
                 "owner": "he0119",
                 "repo": "action-test",
@@ -162,10 +187,6 @@ log_level=DEBUG
 """
                 ),
             },
-            True,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_update",
             snapshot(
                 {
                     "owner": "he0119",
@@ -174,10 +195,6 @@ log_level=DEBUG
                     "title": "Plugin: name",
                 }
             ),
-            None,
-        )
-        ctx.should_call_api(
-            "rest.pulls.async_create",
             snapshot(
                 {
                     "owner": "he0119",
@@ -188,10 +205,6 @@ log_level=DEBUG
                     "head": "config/issue80",
                 }
             ),
-            mock_pull_resp,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_add_labels",
             snapshot(
                 {
                     "owner": "he0119",
@@ -200,10 +213,6 @@ log_level=DEBUG
                     "labels": ["Plugin", "Config"],
                 }
             ),
-            None,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_update",
             snapshot(
                 {
                     "owner": "he0119",
@@ -230,64 +239,34 @@ log_level=DEBUG
 """,
                 }
             ),
-            None,
-        )
+        ]
 
-        ctx.receive_event(bot, event)
+        # 使用辅助函数调用 API
+        should_call_apis(ctx, apis, api_data)
 
-    # 测试 git 命令
-    mock_subprocess_run.assert_has_calls(
+        ctx.receive_event(bot, event)  # 测试 git 命令
+
+    assert_subprocess_run_calls(
+        mock_subprocess_run,
         [
-            mocker.call(
-                ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "fetch", "origin", "results"], check=True, capture_output=True
-            ),
-            mocker.call(
-                ["git", "checkout", "results"], check=True, capture_output=True
-            ),
-            mocker.call(
-                ["git", "switch", "-C", "config/issue80"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "config", "--global", "user.name", "test"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                [
-                    "git",
-                    "config",
-                    "--global",
-                    "user.email",
-                    "test@users.noreply.github.com",
-                ],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(["git", "add", "-A"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "commit", "-m", "chore: edit config plugin name (#80)"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(["git", "fetch", "origin"], check=True, capture_output=True),
-            mocker.call(
-                ["git", "diff", "origin/config/issue80", "config/issue80"],
-                check=True,
-                capture_output=True,
-            ),
-            mocker.call(
-                ["git", "push", "origin", "config/issue80", "-f"],
-                check=True,
-                capture_output=True,
-            ),
-        ]  # type: ignore
+            ["git", "config", "--global", "safe.directory", "*"],
+            ["git", "fetch", "origin", "results"],
+            ["git", "checkout", "results"],
+            ["git", "switch", "-C", "config/issue80"],
+            ["git", "add", "-A"],
+            ["git", "config", "--global", "user.name", "test"],
+            [
+                "git",
+                "config",
+                "--global",
+                "user.email",
+                "test@users.noreply.github.com",
+            ],
+            ["git", "commit", "-m", "chore: edit config plugin name (#80)"],
+            ["git", "fetch", "origin"],
+            ["git", "diff", "origin/config/issue80", "config/issue80"],
+            ["git", "push", "origin", "config/issue80", "-f"],
+        ],
     )
 
     # 检查文件是否正确
