@@ -5,7 +5,7 @@ description = "Manage publish related issues in nonebot2 project"
 authors = [{ name = "uy_sun", email = "hmy0119@gmail.com" }]
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">= 3.12"
+requires-python = ">=3.13.4"
 dependencies = [
   "click>=8.1.8",
   "docker>=7.1.0",
