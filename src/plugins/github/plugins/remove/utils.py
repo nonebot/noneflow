@@ -40,7 +40,7 @@ def update_file(result: RemoveInfo, handler: GitHandler):
     logger.info(f"已更新 {path.name} 文件")
 
 
-async def process_pull_reqeusts(
+async def process_pull_requests(
     handler: IssueHandler,
     store_handler: GithubHandler,
     result: RemoveInfo,
