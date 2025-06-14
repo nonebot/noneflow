@@ -3,9 +3,6 @@ from pathlib import Path
 TEST_DIR = Path("plugin_test")
 """ 测试文件夹 """
 
-if not TEST_DIR.exists():
-    TEST_DIR.mkdir()
-
 RESULTS_PATH = TEST_DIR / "results.json"
 """ 测试结果保存路径 """
 

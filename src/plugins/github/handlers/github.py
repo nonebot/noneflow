@@ -283,3 +283,16 @@ class GithubHandler(GitHandler):
         ).parsed_data
 
         return artifacts
+
+    async def download_artifact(self, artifact_id: int, repo: RepoInfo | None = None):
+        """下载工作流运行的工件"""
+        if repo is None:
+            repo = self.repo_info
+
+        resp = await self.bot.rest.actions.async_download_artifact(
+            **repo.model_dump(),
+            artifact_id=artifact_id,
+            archive_format="zip",
+        )
+
+        return resp

@@ -1147,3 +1147,89 @@ async def test_comment_issue_no_change(app: App, mocker: MockerFixture) -> None:
         )
 
         await github_handler.comment_issue("same comment", 76, mock_comment)
+
+
+async def test_download_artifact(app: App, mocker: MockerFixture) -> None:
+    """测试下载工作流运行的工件"""
+    from src.plugins.github.handlers.github import GithubHandler
+    from src.providers.models import RepoInfo
+
+    # 创建模拟的下载响应
+    mock_download_resp = mocker.MagicMock()
+    mock_download_resp.content = b"mock artifact content"
+
+    async with app.test_api() as ctx:
+        _, bot = get_github_bot(ctx)
+
+        github_handler = GithubHandler(
+            bot=bot,
+            repo_info=RepoInfo(owner="owner", repo="repo"),
+        )
+
+        should_call_apis(
+            ctx,
+            [
+                GitHubApi(
+                    api="rest.actions.async_download_artifact",
+                    result=mock_download_resp,
+                ),
+            ],
+            snapshot(
+                {
+                    0: {
+                        "owner": "owner",
+                        "repo": "repo",
+                        "artifact_id": 123,
+                        "archive_format": "zip",
+                    },
+                }
+            ),
+        )
+
+        result = await github_handler.download_artifact(123)
+        assert result == mock_download_resp
+
+
+async def test_download_artifact_with_custom_repo(
+    app: App, mocker: MockerFixture
+) -> None:
+    """测试使用自定义仓库信息下载工作流运行的工件"""
+    from src.plugins.github.handlers.github import GithubHandler
+    from src.providers.models import RepoInfo
+
+    # 创建模拟的下载响应
+    mock_download_resp = mocker.MagicMock()
+    mock_download_resp.content = b"mock artifact content"
+
+    async with app.test_api() as ctx:
+        _, bot = get_github_bot(ctx)
+
+        github_handler = GithubHandler(
+            bot=bot,
+            repo_info=RepoInfo(owner="owner", repo="repo"),
+        )
+
+        custom_repo = RepoInfo(owner="custom_owner", repo="custom_repo")
+
+        should_call_apis(
+            ctx,
+            [
+                GitHubApi(
+                    api="rest.actions.async_download_artifact",
+                    result=mock_download_resp,
+                ),
+            ],
+            snapshot(
+                {
+                    0: {
+                        "owner": "custom_owner",
+                        "repo": "custom_repo",
+                        "artifact_id": 456,
+                        "archive_format": "zip",
+                    },
+                }
+            ),
+        )
+
+        result = await github_handler.download_artifact(456, custom_repo)
+        assert result == mock_download_resp
