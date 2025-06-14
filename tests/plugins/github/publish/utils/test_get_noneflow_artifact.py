@@ -10,8 +10,9 @@ async def test_get_noneflow_artifact_success(app: App, mocker: MockerFixture) ->
     """测试成功获取 noneflow artifact"""
     from src.plugins.github.handlers import IssueHandler
     from src.plugins.github.plugins.publish.utils import get_noneflow_artifact
-    from src.providers.models import RepoInfo  # 模拟评论内容，包含历史工作流信息
+    from src.providers.models import RepoInfo
 
+    # 模拟评论内容，包含历史工作流信息
     comment_body = """
 # 📃 商店发布检查结果
 
@@ -49,6 +50,16 @@ async def test_get_noneflow_artifact_success(app: App, mocker: MockerFixture) ->
         mock_noneflow_artifact,
     ]
 
+    # 模拟评论列表，包含自己的评论
+    mock_self_comment = mocker.MagicMock()
+    mock_self_comment.body = comment_body
+
+    mock_other_comment = mocker.MagicMock()
+    mock_other_comment.body = "some other comment"
+
+    mock_comments_resp = mocker.MagicMock()
+    mock_comments_resp.parsed_data = [mock_other_comment, mock_self_comment]
+
     async with app.test_api() as ctx:
         _, bot = get_github_bot(ctx)
 
@@ -57,16 +68,6 @@ async def test_get_noneflow_artifact_success(app: App, mocker: MockerFixture) ->
             repo_info=RepoInfo(owner="owner", repo="repo"),
             issue=mock_issue,
         )
-
-        # 模拟评论列表，包含自己的评论
-        mock_self_comment = mocker.MagicMock()
-        mock_self_comment.body = comment_body
-
-        mock_other_comment = mocker.MagicMock()
-        mock_other_comment.body = "some other comment"
-
-        mock_comments_resp = mocker.MagicMock()
-        mock_comments_resp.parsed_data = [mock_other_comment, mock_self_comment]
 
         should_call_apis(
             ctx,
@@ -112,6 +113,10 @@ async def test_get_noneflow_artifact_no_comment(
     mock_issue = mocker.MagicMock(spec=Issue)
     mock_issue.number = 76
 
+    # 模拟没有评论的情况 - 返回空列表
+    mock_comments_resp = mocker.MagicMock()
+    mock_comments_resp.parsed_data = []
+
     async with app.test_api() as ctx:
         _, bot = get_github_bot(ctx)
 
@@ -120,10 +125,6 @@ async def test_get_noneflow_artifact_no_comment(
             repo_info=RepoInfo(owner="owner", repo="repo"),
             issue=mock_issue,
         )
-
-        # 模拟没有评论的情况 - 返回空列表
-        mock_comments_resp = mocker.MagicMock()
-        mock_comments_resp.parsed_data = []
 
         should_call_apis(
             ctx,
@@ -160,6 +161,13 @@ async def test_get_noneflow_artifact_empty_comment(
     mock_issue = mocker.MagicMock(spec=Issue)
     mock_issue.number = 76
 
+    # 模拟空评论对象
+    mock_empty_comment = mocker.MagicMock()
+    mock_empty_comment.body = None
+
+    mock_comments_resp = mocker.MagicMock()
+    mock_comments_resp.parsed_data = [mock_empty_comment]
+
     async with app.test_api() as ctx:
         _, bot = get_github_bot(ctx)
 
@@ -168,13 +176,6 @@ async def test_get_noneflow_artifact_empty_comment(
             repo_info=RepoInfo(owner="owner", repo="repo"),
             issue=mock_issue,
         )
-
-        # 模拟空评论对象
-        mock_empty_comment = mocker.MagicMock()
-        mock_empty_comment.body = None
-
-        mock_comments_resp = mocker.MagicMock()
-        mock_comments_resp.parsed_data = [mock_empty_comment]
 
         should_call_apis(
             ctx,
@@ -211,7 +212,7 @@ async def test_get_noneflow_artifact_no_history(
     mock_issue = mocker.MagicMock(spec=Issue)
     mock_issue.number = 76
 
-    # 模拟没有历史工作流信息的评论
+    # 模拟包含 NONEFLOW 标记但没有历史工作流信息的评论
     comment_body = """
 # 📃 商店发布检查结果
 
@@ -219,6 +220,11 @@ async def test_get_noneflow_artifact_no_history(
 
 <!-- NONEFLOW -->
 """
+    mock_comment = mocker.MagicMock()
+    mock_comment.body = comment_body
+
+    mock_comments_resp = mocker.MagicMock()
+    mock_comments_resp.parsed_data = [mock_comment]
 
     async with app.test_api() as ctx:
         _, bot = get_github_bot(ctx)
@@ -228,13 +234,6 @@ async def test_get_noneflow_artifact_no_history(
             repo_info=RepoInfo(owner="owner", repo="repo"),
             issue=mock_issue,
         )
-
-        # 模拟包含 NONEFLOW 标记但没有历史工作流信息的评论
-        mock_comment = mocker.MagicMock()
-        mock_comment.body = comment_body
-
-        mock_comments_resp = mocker.MagicMock()
-        mock_comments_resp.parsed_data = [mock_comment]
 
         should_call_apis(
             ctx,
@@ -284,6 +283,21 @@ async def test_get_noneflow_artifact_no_noneflow_artifact(
 
 <!-- NONEFLOW -->
 """
+    # 模拟包含历史工作流信息的评论
+    mock_comment = mocker.MagicMock()
+    mock_comment.body = comment_body
+
+    mock_comments_resp = mocker.MagicMock()
+    mock_comments_resp.parsed_data = [mock_comment]
+
+    # 模拟只有其他类型的 artifact
+    mock_other_artifact = mocker.MagicMock()
+    mock_other_artifact.name = "other"
+    mock_other_artifact.id = 456
+
+    mock_artifacts_resp = mocker.MagicMock()
+    mock_artifacts_resp.parsed_data = mocker.MagicMock()
+    mock_artifacts_resp.parsed_data.artifacts = [mock_other_artifact]
 
     async with app.test_api() as ctx:
         _, bot = get_github_bot(ctx)
@@ -293,22 +307,6 @@ async def test_get_noneflow_artifact_no_noneflow_artifact(
             repo_info=RepoInfo(owner="owner", repo="repo"),
             issue=mock_issue,
         )
-
-        # 模拟包含历史工作流信息的评论
-        mock_comment = mocker.MagicMock()
-        mock_comment.body = comment_body
-
-        mock_comments_resp = mocker.MagicMock()
-        mock_comments_resp.parsed_data = [mock_comment]
-
-        # 模拟只有其他类型的 artifact
-        mock_other_artifact = mocker.MagicMock()
-        mock_other_artifact.name = "other"
-        mock_other_artifact.id = 456
-
-        mock_artifacts_resp = mocker.MagicMock()
-        mock_artifacts_resp.parsed_data = mocker.MagicMock()
-        mock_artifacts_resp.parsed_data.artifacts = [mock_other_artifact]
 
         should_call_apis(
             ctx,
@@ -365,6 +363,12 @@ async def test_get_noneflow_artifact_invalid_run_id(
 
 <!-- NONEFLOW -->
 """
+    # 模拟包含无效工作流 ID 的评论
+    mock_comment = mocker.MagicMock()
+    mock_comment.body = comment_body
+
+    mock_comments_resp = mocker.MagicMock()
+    mock_comments_resp.parsed_data = [mock_comment]
 
     async with app.test_api() as ctx:
         _, bot = get_github_bot(ctx)
@@ -374,13 +378,6 @@ async def test_get_noneflow_artifact_invalid_run_id(
             repo_info=RepoInfo(owner="owner", repo="repo"),
             issue=mock_issue,
         )
-
-        # 模拟包含无效工作流 ID 的评论
-        mock_comment = mocker.MagicMock()
-        mock_comment.body = comment_body
-
-        mock_comments_resp = mocker.MagicMock()
-        mock_comments_resp.parsed_data = [mock_comment]
 
         should_call_apis(
             ctx,
