@@ -4,7 +4,7 @@ import os
 import zipfile
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Literal, Self, TypeAlias
+from typing import TYPE_CHECKING, Any, Literal, Self, TypeAlias
 
 from githubkit import AppAuthStrategy, GitHub
 from githubkit.rest import Issue
@@ -19,7 +19,7 @@ from src.providers.constants import (
 )
 from src.providers.docker_test import Metadata
 from src.providers.utils import get_author_name, get_pypi_upload_time, get_pypi_version
-from src.providers.validation import PublishInfoModels, ValidationDict, validate_info
+from src.providers.validation import PublishInfoModels, validate_info
 from src.providers.validation.models import (
     AdapterPublishInfo,
     BotPublishInfo,
@@ -27,6 +27,9 @@ from src.providers.validation.models import (
     PluginPublishInfo,
     PublishType,
 )
+
+if TYPE_CHECKING:
+    from src.plugins.github.handlers import GithubHandler
 
 
 class Tag(BaseModel):
@@ -528,7 +531,25 @@ class RegistryArtifactData(BaseModel):
     通过 GitHub Action Artifact 传递数据
     """
 
-    result: ValidationDict
+    store: StoreModels
+    """商店数据模型"""
+    registry: RegistryModels
+    """注册表数据模型"""
+    store_test_result: StoreTestResult | None = None
+    """商店测试结果数据模型"""
+
+    @property
+    def type(self) -> PublishType:
+        """获取发布类型"""
+        match self.store:
+            case StoreAdapter():
+                return PublishType.ADAPTER
+            case StoreBot():
+                return PublishType.BOT
+            case StoreDriver():
+                return PublishType.DRIVER
+            case StorePlugin():
+                return PublishType.PLUGIN
 
     def save(self, path: Path) -> None:
         """将注册表数据保存到指定路径"""
@@ -540,28 +561,22 @@ class RegistryArtifactData(BaseModel):
         with open(path / REGISTRY_DATA_NAME, "w", encoding="utf-8") as f:
             f.write(self.model_dump_json(indent=2))
 
-    def to_store(self) -> StoreModels:
-        """将注册表数据转换为商店数据模型"""
-        if self.result.info is None:
-            raise ValueError("注册表数据中没有有效的 info")
-        return to_store(self.result.info)
+    @classmethod
+    def from_info(cls, info: PublishInfoModels) -> Self:
+        """从发布信息创建注册表数据
 
-    def to_registry(self) -> RegistryModels:
-        """将注册表数据转换为注册表数据模型"""
-        if self.result.info is None:
-            raise ValueError("注册表数据中没有有效的 info")
-        return to_registry(self.result.info)
-
-    def to_store_test_result(self) -> StoreTestResult:
-        """将注册表数据转换为商店测试结果数据模型"""
-        if self.result.info is None or not isinstance(
-            self.result.info, PluginPublishInfo
-        ):
-            raise ValueError("注册表数据中没有有效的 PluginPublishInfo")
-        return StoreTestResult.from_info(self.result.info)
+        通过 NoneBot 仓库的发布信息创建注册表数据
+        """
+        return cls(
+            store=to_store(info),
+            registry=to_registry(info),
+            store_test_result=StoreTestResult.from_info(info)
+            if isinstance(info, PluginPublishInfo)
+            else None,
+        )
 
     @classmethod
-    def from_artifact_data(cls, repo_info: RepoInfo, artifact_id: int) -> Self:
+    def from_artifact(cls, repo_info: RepoInfo, artifact_id: int) -> Self:
         """从 GitHub Action Artifact 数据创建注册表数据
 
         通过 GitHub Action Artifact 传递数据
@@ -594,6 +609,19 @@ class RegistryArtifactData(BaseModel):
                 json_data = json_file.read()
                 return cls.model_validate_json(json_data)
 
+    @classmethod
+    async def from_artifact_handler(
+        cls, handler: "GithubHandler", artifact_id: int
+    ) -> Self:
+        """使用 GitHubHandler 从 GitHub Action Artifact 获取数据"""
+        resp = await handler.download_artifact(artifact_id=artifact_id)
+
+        zip_buffer = io.BytesIO(resp.content)
+        with zipfile.ZipFile(zip_buffer) as zip_file:
+            with zip_file.open(REGISTRY_DATA_NAME) as json_file:
+                json_data = json_file.read()
+                return cls.model_validate_json(json_data)
+
 
 class RegistryUpdatePayload(BaseModel):
     """注册表更新数据
@@ -606,4 +634,4 @@ class RegistryUpdatePayload(BaseModel):
 
     def get_artifact_data(self) -> RegistryArtifactData:
         """获取注册表数据"""
-        return RegistryArtifactData.from_artifact_data(self.repo_info, self.artifact_id)
+        return RegistryArtifactData.from_artifact(self.repo_info, self.artifact_id)

@@ -293,26 +293,23 @@ class StoreTest:
 
         直接利用 artifact 中的数据更新商店数据
         """
-        registry = data.to_registry()
-        store_test_result = data.to_store_test_result()
-
-        key = registry.key
-        match registry:
+        key = data.registry.key
+        match data.registry:
             case RegistryAdapter():
                 if key not in self._previous_adapters:
-                    self._previous_adapters[key] = registry
+                    self._previous_adapters[key] = data.registry
             case RegistryBot():
                 if key not in self._previous_bots:
-                    self._previous_bots[key] = registry
+                    self._previous_bots[key] = data.registry
             case RegistryDriver():
                 if key not in self._previous_drivers:
-                    self._previous_drivers[key] = registry
+                    self._previous_drivers[key] = data.registry
             case RegistryPlugin():
                 if key not in self._previous_plugins:
-                    self._previous_plugins[key] = registry
-                if key not in self._previous_results and store_test_result:
-                    self._previous_results[key] = store_test_result
-                    self._plugin_configs[key] = store_test_result.config
+                    self._previous_plugins[key] = data.registry
+                if key not in self._previous_results and data.store_test_result:
+                    self._previous_results[key] = data.store_test_result
+                    self._plugin_configs[key] = data.store_test_result.config
 
         self.dump_data()
 

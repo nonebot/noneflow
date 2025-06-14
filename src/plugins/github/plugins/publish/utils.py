@@ -15,9 +15,20 @@ from src.plugins.github.handlers import GitHandler, GithubHandler, IssueHandler
 from src.plugins.github.typing import PullRequestList
 from src.plugins.github.utils import commit_message as _commit_message
 from src.providers.constants import TIME_ZONE
-from src.providers.models import RegistryArtifactData, RegistryUpdatePayload, to_store
+from src.providers.models import (
+    RegistryArtifactData,
+    RegistryUpdatePayload,
+    StoreAdapter,
+    StoreBot,
+    StoreModels,
+    StorePlugin,
+    to_store,
+)
 from src.providers.utils import dump_json5, load_json_from_file
-from src.providers.validation import PublishType, ValidationDict
+from src.providers.validation import (
+    PublishType,
+    ValidationDict,
+)
 
 from .constants import (
     BRANCH_NAME_PREFIX,
@@ -131,36 +142,34 @@ async def resolve_conflict_pull_requests(
             logger.error(f"无法获取 {pull.title} 对应的 NoneFlow Artifact")
             continue
 
-        artifact_data = RegistryArtifactData.from_artifact_data(
-            plugin_config.input_config.store_repository, artifact.id
+        artifact_data = await RegistryArtifactData.from_artifact_handler(
+            handler, artifact.id
         )
-        result = artifact_data.result
         # 每次切换前都要确保回到主分支
         handler.checkout_branch(plugin_config.input_config.base, update=True)
         # 切换到对应分支
         handler.switch_branch(pull.head.ref)
         # 更新文件
-        update_file(result, handler)
+        update_file(artifact_data.store, handler)
 
-        message = commit_message(result.type, result.name, issue_number)
+        message = commit_message(
+            artifact_data.type,
+            artifact_data.registry.name,
+            issue_number,
+        )
         issue_handler.commit_and_push(message, pull.head.ref)
 
         logger.info("拉取请求更新完毕")
 
 
-def update_file(result: ValidationDict, handler: GitHandler) -> None:
+def update_file(store: StoreModels, handler: GitHandler) -> None:
     """更新文件"""
-    assert result.valid
-    assert result.info
-
-    new_data = to_store(result.info).model_dump()
-
-    match result.type:
-        case PublishType.ADAPTER:
+    match store:
+        case StoreAdapter():
             path = plugin_config.input_config.adapter_path
-        case PublishType.BOT:
+        case StoreBot():
             path = plugin_config.input_config.bot_path
-        case PublishType.PLUGIN:
+        case StorePlugin():
             path = plugin_config.input_config.plugin_path
         case _:
             raise ValueError("暂不支持的发布类型")
@@ -168,13 +177,9 @@ def update_file(result: ValidationDict, handler: GitHandler) -> None:
     logger.info(f"正在更新文件: {path}")
 
     data = load_json_from_file(path)
-    data.append(new_data)
+    data.append(store.model_dump())
     dump_json5(path, data)
     handler.add_file(path)
-
-    # 保存 registry_update 所需的文件
-    # 之后会上传至 Artifact，并通过 artifact_id 访问
-    RegistryArtifactData(result=result).save(plugin_config.input_config.artifact_path)
 
     logger.info("文件更新完成")
 
@@ -233,14 +238,19 @@ async def process_pull_request(
     handler: IssueHandler, result: ValidationDict, branch_name: str, title: str
 ):
     """根据发布信息合法性创建拉取请求或将请求改为草稿"""
-    if not result.valid:
+    if not result.valid or not result.info:
         # 如果之前已经创建了拉取请求，则将其转换为草稿
         await handler.draft_pull_request(branch_name)
         return
 
     # 更新文件
     handler.switch_branch(branch_name)
-    update_file(result, handler)
+    update_file(to_store(result.info), handler)
+    # 保存 registry_update 所需的文件
+    # 之后会上传至 Artifact，并通过 artifact_id 访问
+    RegistryArtifactData.from_info(result.info).save(
+        plugin_config.input_config.artifact_path
+    )
 
     # 只有当远程分支不存在时才创建拉取请求
     # 需要在 commit_and_push 前判断，否则远程一定存在
