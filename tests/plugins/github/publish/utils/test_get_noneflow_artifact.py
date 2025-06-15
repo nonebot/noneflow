@@ -1,3 +1,4 @@
+import pytest
 from githubkit.rest import Issue
 from inline_snapshot import snapshot
 from nonebug import App
@@ -145,8 +146,10 @@ async def test_get_noneflow_artifact_no_comment(
             ),
         )
 
-        result = await get_noneflow_artifact(issue_handler)
-        assert result is None
+        with pytest.raises(
+            ValueError, match="获取评论失败，无法获取 NoneFlow Artifact"
+        ):
+            await get_noneflow_artifact(issue_handler)
 
 
 async def test_get_noneflow_artifact_empty_comment(
@@ -196,8 +199,10 @@ async def test_get_noneflow_artifact_empty_comment(
             ),
         )
 
-        result = await get_noneflow_artifact(issue_handler)
-        assert result is None
+        with pytest.raises(
+            ValueError, match="获取评论失败，无法获取 NoneFlow Artifact"
+        ):
+            await get_noneflow_artifact(issue_handler)
 
 
 async def test_get_noneflow_artifact_no_history(
@@ -254,8 +259,8 @@ async def test_get_noneflow_artifact_no_history(
             ),
         )
 
-        result = await get_noneflow_artifact(issue_handler)
-        assert result is None
+        with pytest.raises(ValueError, match="无法从评论中获取历史工作流信息"):
+            await get_noneflow_artifact(issue_handler)
 
 
 async def test_get_noneflow_artifact_no_noneflow_artifact(
@@ -336,8 +341,8 @@ async def test_get_noneflow_artifact_no_noneflow_artifact(
             ),
         )
 
-        result = await get_noneflow_artifact(issue_handler)
-        assert result is None
+        with pytest.raises(ValueError, match="未找到 NoneFlow Artifact"):
+            await get_noneflow_artifact(issue_handler)
 
 
 async def test_get_noneflow_artifact_invalid_run_id(
@@ -398,5 +403,5 @@ async def test_get_noneflow_artifact_invalid_run_id(
             ),
         )
 
-        result = await get_noneflow_artifact(issue_handler)
-        assert result is None
+        with pytest.raises(ValueError, match="无法从评论中获取历史工作流信息"):
+            await get_noneflow_artifact(issue_handler)

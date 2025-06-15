@@ -31,6 +31,7 @@ from src.providers.validation import (
 )
 
 from .constants import (
+    ARTIFACT_NAME,
     BRANCH_NAME_PREFIX,
     COMMIT_MESSAGE_PREFIX,
     PLUGIN_STRING_LIST,
@@ -90,31 +91,27 @@ def extract_name_from_title(title: str, publish_type: PublishType) -> str | None
         return match.group(1)
 
 
-async def get_noneflow_artifact(handler: IssueHandler) -> "Artifact | None":
+async def get_noneflow_artifact(handler: IssueHandler) -> "Artifact":
     """获取 noneflow 的 Artifact"""
     comment = await handler.get_self_comment()
     if not comment or not comment.body:
-        logger.error("获取评论失败，无法获取 NoneFlow Artifact")
-        return
+        raise ValueError("获取评论失败，无法获取 NoneFlow Artifact")
 
     history = await get_history_workflow_from_comment(comment.body)
     if not history:
-        logger.error("无法从评论中获取历史工作流信息")
-        return
+        raise ValueError("无法从评论中获取历史工作流信息")
 
     # 获取最新的工作流运行
+    # 上面的正则表达式能确保获取到的 id 为数字
     latest_run = max(filter(lambda x: x[0], history), key=lambda x: x[2])
-    run_id = latest_run[1].split("/")[-1]  # 提取 run_id
-    if not run_id or not run_id.isdigit():
-        logger.error("无法从评论中获取最新工作流运行 ID")
-        return
+    run_id = latest_run[1].split("/")[-1]
 
     artifacts = await handler.list_workflow_run_artifacts(int(run_id))
     for artifact in artifacts.artifacts:
-        if artifact.name == "noneflow":
+        if artifact.name == ARTIFACT_NAME:
             return artifact
 
-    logger.error("未找到 NoneFlow Artifact")
+    raise ValueError("未找到 NoneFlow Artifact")
 
 
 async def resolve_conflict_pull_requests(
@@ -137,9 +134,10 @@ async def resolve_conflict_pull_requests(
 
         issue_handler = await handler.to_issue_handler(issue_number)
 
-        artifact = await get_noneflow_artifact(issue_handler)
-        if not artifact:
-            logger.error(f"无法获取 {pull.title} 对应的 NoneFlow Artifact")
+        try:
+            artifact = await get_noneflow_artifact(issue_handler)
+        except ValueError:
+            logger.exception(f"无法获取 {pull.title} 对应的 NoneFlow Artifact")
             continue
 
         artifact_data = await RegistryArtifactData.from_artifact_handler(
@@ -280,9 +278,10 @@ async def process_pull_request(
 
 async def trigger_registry_update(handler: IssueHandler):
     """通过 repository_dispatch 触发商店列表更新"""
-    artifact = await get_noneflow_artifact(handler)
-    if not artifact:
-        logger.error("无法获取 NoneFlow Artifact，无法触发商店列表更新")
+    try:
+        artifact = await get_noneflow_artifact(handler)
+    except ValueError:
+        logger.exception("无法获取 NoneFlow Artifact，无法触发商店列表更新")
         return
 
     # 触发商店列表更新
