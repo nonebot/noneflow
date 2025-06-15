@@ -1,3 +1,5 @@
+import zipfile
+from io import BytesIO
 from pathlib import Path
 
 import pytest
@@ -7,12 +9,15 @@ from pytest_mock import MockerFixture
 from respx import MockRouter
 
 from tests.plugins.github.utils import (
+    GitHubApi,
     MockBody,
     MockIssue,
     MockUser,
     assert_subprocess_run_calls,
     check_json_data,
     get_github_bot,
+    mock_subprocess_run_with_side_effect,
+    should_call_apis,
 )
 
 
@@ -31,25 +36,81 @@ async def test_resolve_conflict_pull_requests_adapter(
     from src.plugins.github import plugin_config
     from src.plugins.github.handlers import GithubHandler
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
-    from src.providers.models import RepoInfo
+    from src.providers.models import (
+        REGISTRY_DATA_NAME,
+        AdapterPublishInfo,
+        Color,
+        RegistryArtifactData,
+        RepoInfo,
+        Tag,
+    )
     from src.providers.utils import dump_json5
 
-    mock_subprocess_run = mocker.patch("subprocess.run")
-    mock_result = mocker.MagicMock()
-    mock_subprocess_run.side_effect = lambda *args, **kwargs: mock_result
+    mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     mock_label = mocker.MagicMock()
     mock_label.name = "Adapter"
 
-    mock_issue_repo = mocker.MagicMock()
+    mock_issue_resp = mocker.MagicMock()
     mock_issue = MockIssue(
         number=1,
         body=MockBody(type="adapter").generate(),
         user=MockUser(login="he0119", id=1),
     ).as_mock(mocker)
-    mock_issue_repo.parsed_data = mock_issue
+    mock_issue_resp.parsed_data = mock_issue
 
+    mock_pull.title = "Adapter: OneBot V11"
     mock_pull.labels = [mock_label]
+
+    mock_comment = mocker.MagicMock()
+    mock_comment.body = """
+<details>
+<summary>历史测试</summary>
+<pre><code>
+<li>⚠️ <a href="https://github.com/owner/repo/actions/runs/14156878699">2025-03-28 02:21:18 CST</a></li><li>✅ <a href="https://github.com/nonebot/nonebot2/actions/runs/14156878699">2025-03-28 02:21:18 CST</a></li><li>✅ <a href="https://github.com/nonebot/nonebot2/actions/runs/14156878699">2025-03-28 02:22:18 CST</a>。</li><li>⚠️ <a href="https://github.com/nonebot/nonebot2/actions/runs/14156878699">2025-03-28 02:22:18 CST</a></li>
+</code></pre>
+</details>
+<!-- NONEFLOW -->
+"""
+    mock_list_comments_resp = mocker.MagicMock()
+    mock_list_comments_resp.parsed_data = [mock_comment]
+
+    mock_artifact = mocker.MagicMock()
+    mock_artifact.name = "noneflow"
+    mock_artifact.id = 123456789
+    mock_artifacts = mocker.MagicMock()
+    mock_artifacts.artifacts = [mock_artifact]
+    mock_artifact_resp = mocker.MagicMock()
+    mock_artifact_resp.parsed_data = mock_artifacts
+
+    raw_data = {
+        "module_name": "module_name",
+        "project_link": "project_link",
+        "time": "2025-03-28T02:21:18Z",
+        "version": "1.0.0",
+        "name": "name",
+        "desc": "desc",
+        "author": "he0119",
+        "author_id": 1,
+        "homepage": "https://nonebot.dev",
+        "tags": [Tag(label="test", color=Color("#ffffff"))],
+        "is_official": False,
+    }
+    info = AdapterPublishInfo.model_construct(**raw_data)
+    registry_data = RegistryArtifactData.from_info(info)
+
+    # 创建 zip 文件内容
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+        # 将 registry_data 转换为 JSON 字符串并添加到 zip 中
+        json_content = registry_data.model_dump_json(indent=2)
+        zip_file.writestr(REGISTRY_DATA_NAME, json_content)
+
+    # 获取 zip 文件的字节内容
+    zip_content = zip_buffer.getvalue()
+
+    mock_download_artifact_resp = mocker.MagicMock()
+    mock_download_artifact_resp.content = zip_content
 
     dump_json5(
         tmp_path / "adapters.json5",
@@ -72,10 +133,39 @@ async def test_resolve_conflict_pull_requests_adapter(
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
-        ctx.should_call_api(
-            "rest.issues.async_get",
-            snapshot({"owner": "owner", "repo": "repo", "issue_number": 1}),
-            mock_issue_repo,
+        should_call_apis(
+            ctx,
+            [
+                GitHubApi(
+                    api="rest.issues.async_get",
+                    result=mock_issue_resp,
+                ),
+                GitHubApi(
+                    api="rest.issues.async_list_comments",
+                    result=mock_list_comments_resp,
+                ),
+                GitHubApi(
+                    api="rest.actions.async_list_workflow_run_artifacts",
+                    result=mock_artifact_resp,
+                ),
+                GitHubApi(
+                    api="rest.actions.async_download_artifact",
+                    result=mock_download_artifact_resp,
+                ),
+            ],
+            snapshot(
+                {
+                    0: {"owner": "owner", "repo": "repo", "issue_number": 1},
+                    1: {"owner": "owner", "repo": "repo", "issue_number": 1},
+                    2: {"owner": "owner", "repo": "repo", "run_id": 14156878699},
+                    3: {
+                        "owner": "owner",
+                        "repo": "repo",
+                        "artifact_id": 123456789,
+                        "archive_format": "zip",
+                    },
+                }
+            ),
         )
 
         await resolve_conflict_pull_requests(handler, [mock_pull])
@@ -132,7 +222,7 @@ async def test_resolve_conflict_pull_requests_adapter(
         ),
     )
 
-    assert mocked_api["homepage"].called
+    assert not mocked_api["homepage"].called
 
 
 async def test_resolve_conflict_pull_requests_bot(
@@ -141,12 +231,17 @@ async def test_resolve_conflict_pull_requests_bot(
     from src.plugins.github import plugin_config
     from src.plugins.github.handlers import GithubHandler
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
-    from src.providers.models import RepoInfo
+    from src.providers.models import (
+        REGISTRY_DATA_NAME,
+        BotPublishInfo,
+        Color,
+        RegistryArtifactData,
+        RepoInfo,
+        Tag,
+    )
     from src.providers.utils import dump_json5
 
-    mock_subprocess_run = mocker.patch("subprocess.run")
-    mock_result = mocker.MagicMock()
-    mock_subprocess_run.side_effect = lambda *args, **kwargs: mock_result
+    mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     mock_issue_repo = mocker.MagicMock()
     mock_issue = MockIssue(
@@ -160,6 +255,56 @@ async def test_resolve_conflict_pull_requests_bot(
     mock_label.name = "Bot"
 
     mock_pull.labels = [mock_label]
+
+    mock_comment = mocker.MagicMock()
+    mock_comment.body = """
+<details>
+<summary>历史测试</summary>
+<pre><code>
+<li>⚠️ <a href="https://github.com/owner/repo/actions/runs/14156878699">2025-03-28 02:21:18 CST</a></li><li>✅ <a href="https://github.com/nonebot/nonebot2/actions/runs/14156878699">2025-03-28 02:21:18 CST</a></li><li>✅ <a href="https://github.com/nonebot/nonebot2/actions/runs/14156878699">2025-03-28 02:22:18 CST</a>。</li><li>⚠️ <a href="https://github.com/nonebot/nonebot2/actions/runs/14156878699">2025-03-28 02:22:18 CST</a></li>
+</code></pre>
+</details>
+<!-- NONEFLOW -->
+"""
+    mock_list_comments_resp = mocker.MagicMock()
+    mock_list_comments_resp.parsed_data = [mock_comment]
+
+    mock_artifact = mocker.MagicMock()
+    mock_artifact.name = "noneflow"
+    mock_artifact.id = 123456789
+    mock_artifacts = mocker.MagicMock()
+    mock_artifacts.artifacts = [mock_artifact]
+    mock_artifact_resp = mocker.MagicMock()
+    mock_artifact_resp.parsed_data = mock_artifacts
+
+    raw_data = {
+        "module_name": "module_name",
+        "project_link": "project_link",
+        "time": "2025-03-28T02:21:18Z",
+        "version": "1.0.0",
+        "name": "name",
+        "desc": "desc",
+        "author": "he0119",
+        "author_id": 1,
+        "homepage": "https://nonebot.dev",
+        "tags": [Tag(label="test", color=Color("#ffffff"))],
+        "is_official": False,
+    }
+    info = BotPublishInfo.model_construct(**raw_data)
+    registry_data = RegistryArtifactData.from_info(info)
+
+    # 创建 zip 文件内容
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+        # 将 registry_data 转换为 JSON 字符串并添加到 zip 中
+        json_content = registry_data.model_dump_json(indent=2)
+        zip_file.writestr(REGISTRY_DATA_NAME, json_content)
+
+    # 获取 zip 文件的字节内容
+    zip_content = zip_buffer.getvalue()
+
+    mock_download_artifact_resp = mocker.MagicMock()
+    mock_download_artifact_resp.content = zip_content
 
     dump_json5(
         tmp_path / "bots.json5",
@@ -180,10 +325,39 @@ async def test_resolve_conflict_pull_requests_bot(
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
-        ctx.should_call_api(
-            "rest.issues.async_get",
-            snapshot({"owner": "owner", "repo": "repo", "issue_number": 1}),
-            mock_issue_repo,
+        should_call_apis(
+            ctx,
+            [
+                GitHubApi(
+                    api="rest.issues.async_get",
+                    result=mock_issue_repo,
+                ),
+                GitHubApi(
+                    api="rest.issues.async_list_comments",
+                    result=mock_list_comments_resp,
+                ),
+                GitHubApi(
+                    api="rest.actions.async_list_workflow_run_artifacts",
+                    result=mock_artifact_resp,
+                ),
+                GitHubApi(
+                    api="rest.actions.async_download_artifact",
+                    result=mock_download_artifact_resp,
+                ),
+            ],
+            snapshot(
+                {
+                    0: {"owner": "owner", "repo": "repo", "issue_number": 1},
+                    1: {"owner": "owner", "repo": "repo", "issue_number": 1},
+                    2: {"owner": "owner", "repo": "repo", "run_id": 14156878699},
+                    3: {
+                        "owner": "owner",
+                        "repo": "repo",
+                        "artifact_id": 123456789,
+                        "archive_format": "zip",
+                    },
+                }
+            ),
         )
 
         await resolve_conflict_pull_requests(handler, [mock_pull])
@@ -236,7 +410,7 @@ async def test_resolve_conflict_pull_requests_bot(
         ),
     )
 
-    assert mocked_api["homepage"].called
+    assert not mocked_api["homepage"].called
 
 
 async def test_resolve_conflict_pull_requests_plugin(
@@ -245,13 +419,17 @@ async def test_resolve_conflict_pull_requests_plugin(
     from src.plugins.github import plugin_config
     from src.plugins.github.handlers import GithubHandler
     from src.plugins.github.plugins.publish.utils import resolve_conflict_pull_requests
-    from src.providers.docker_test import Metadata
-    from src.providers.models import RepoInfo
+    from src.providers.models import (
+        REGISTRY_DATA_NAME,
+        Color,
+        PluginPublishInfo,
+        RegistryArtifactData,
+        RepoInfo,
+        Tag,
+    )
     from src.providers.utils import dump_json5
 
-    mock_subprocess_run = mocker.patch("subprocess.run")
-    mock_result = mocker.MagicMock()
-    mock_subprocess_run.side_effect = lambda *args, **kwargs: mock_result
+    mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     mock_label = mocker.MagicMock()
     mock_label.name = "Plugin"
@@ -268,22 +446,60 @@ async def test_resolve_conflict_pull_requests_plugin(
     mock_pull.title = "Plugin: 帮助"
 
     mock_comment = mocker.MagicMock()
-    mock_comment.body = "Plugin: test"
+    mock_comment.body = """
+<details>
+<summary>历史测试</summary>
+<pre><code>
+<li>⚠️ <a href="https://github.com/owner/repo/actions/runs/14156878699">2025-03-28 02:21:18 CST</a></li><li>✅ <a href="https://github.com/nonebot/nonebot2/actions/runs/14156878699">2025-03-28 02:21:18 CST</a></li><li>✅ <a href="https://github.com/nonebot/nonebot2/actions/runs/14156878699">2025-03-28 02:22:18 CST</a>。</li><li>⚠️ <a href="https://github.com/nonebot/nonebot2/actions/runs/14156878699">2025-03-28 02:22:18 CST</a></li>
+</code></pre>
+</details>
+<!-- NONEFLOW -->
+"""
     mock_list_comments_resp = mocker.MagicMock()
     mock_list_comments_resp.parsed_data = [mock_comment]
 
-    mock_test_result = mocker.MagicMock()
-    mock_test_result.metadata = Metadata(
-        name="name",
-        desc="desc",
-        homepage="https://nonebot.dev",
-        type="application",
-        supported_adapters=["~onebot.v11"],
-    )
-    mock_test_result.version = "1.0.0"
-    mock_test_result.output = ""
-    mock_docker = mocker.patch("src.providers.docker_test.DockerPluginTest.run")
-    mock_docker.return_value = mock_test_result
+    mock_artifact = mocker.MagicMock()
+    mock_artifact.name = "noneflow"
+    mock_artifact.id = 123456789
+    mock_artifacts = mocker.MagicMock()
+    mock_artifacts.artifacts = [mock_artifact]
+    mock_artifact_resp = mocker.MagicMock()
+    mock_artifact_resp.parsed_data = mock_artifacts
+
+    raw_data = {
+        "module_name": "module_name",
+        "project_link": "project_link",
+        "time": "2025-03-28T02:21:18Z",
+        "version": "1.0.0",
+        "name": "name",
+        "desc": "desc",
+        "author": "he0119",
+        "author_id": 1,
+        "homepage": "https://nonebot.dev",
+        "tags": [Tag(label="test", color=Color("#ffffff"))],
+        "is_official": False,
+        "type": "application",
+        "supported_adapters": None,
+        "load": True,
+        "skip_test": False,
+        "test_output": "test_output",
+        "test_result": None,
+    }
+    info = PluginPublishInfo.model_construct(**raw_data)
+    registry_data = RegistryArtifactData.from_info(info)
+
+    # 创建 zip 文件内容
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+        # 将 registry_data 转换为 JSON 字符串并添加到 zip 中
+        json_content = registry_data.model_dump_json(indent=2)
+        zip_file.writestr(REGISTRY_DATA_NAME, json_content)
+
+    # 获取 zip 文件的字节内容
+    zip_content = zip_buffer.getvalue()
+
+    mock_download_artifact_resp = mocker.MagicMock()
+    mock_download_artifact_resp.content = zip_content
 
     dump_json5(
         tmp_path / "plugins.json5",
@@ -303,15 +519,39 @@ async def test_resolve_conflict_pull_requests_plugin(
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
-        ctx.should_call_api(
-            "rest.issues.async_get",
-            snapshot({"owner": "owner", "repo": "repo", "issue_number": 1}),
-            mock_issue_repo,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_list_comments",
-            {"owner": "owner", "repo": "repo", "issue_number": 1},
-            mock_list_comments_resp,
+        should_call_apis(
+            ctx,
+            [
+                GitHubApi(
+                    api="rest.issues.async_get",
+                    result=mock_issue_repo,
+                ),
+                GitHubApi(
+                    api="rest.issues.async_list_comments",
+                    result=mock_list_comments_resp,
+                ),
+                GitHubApi(
+                    api="rest.actions.async_list_workflow_run_artifacts",
+                    result=mock_artifact_resp,
+                ),
+                GitHubApi(
+                    api="rest.actions.async_download_artifact",
+                    result=mock_download_artifact_resp,
+                ),
+            ],
+            snapshot(
+                {
+                    0: {"owner": "owner", "repo": "repo", "issue_number": 1},
+                    1: {"owner": "owner", "repo": "repo", "issue_number": 1},
+                    2: {"owner": "owner", "repo": "repo", "run_id": 14156878699},
+                    3: {
+                        "owner": "owner",
+                        "repo": "repo",
+                        "artifact_id": 123456789,
+                        "archive_format": "zip",
+                    },
+                }
+            ),
         )
 
         await resolve_conflict_pull_requests(handler, [mock_pull])
@@ -363,7 +603,7 @@ async def test_resolve_conflict_pull_requests_plugin(
         ),
     )
 
-    assert mocked_api["homepage"].called
+    assert not mocked_api["homepage"].called
 
 
 async def test_resolve_conflict_pull_requests_plugin_not_valid(
@@ -376,9 +616,7 @@ async def test_resolve_conflict_pull_requests_plugin_not_valid(
     from src.providers.models import RepoInfo
     from src.providers.utils import dump_json5
 
-    mock_subprocess_run = mocker.patch("subprocess.run")
-    mock_result = mocker.MagicMock()
-    mock_subprocess_run.side_effect = lambda *args, **kwargs: mock_result
+    mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     mock_label = mocker.MagicMock()
     mock_label.name = "Plugin"
@@ -399,13 +637,6 @@ async def test_resolve_conflict_pull_requests_plugin_not_valid(
     mock_list_comments_resp = mocker.MagicMock()
     mock_list_comments_resp.parsed_data = [mock_comment]
 
-    mock_test_result = mocker.MagicMock()
-    mock_test_result.load = False
-    mock_test_result.metadata = None
-    mock_test_result.output = ""
-    mock_docker = mocker.patch("src.providers.docker_test.DockerPluginTest.run")
-    mock_docker.return_value = mock_test_result
-
     dump_json5(
         tmp_path / "plugins.json5",
         [
@@ -424,15 +655,22 @@ async def test_resolve_conflict_pull_requests_plugin_not_valid(
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
-        ctx.should_call_api(
-            "rest.issues.async_get",
-            snapshot({"owner": "owner", "repo": "repo", "issue_number": 1}),
-            mock_issue_repo,
-        )
-        ctx.should_call_api(
-            "rest.issues.async_list_comments",
-            {"owner": "owner", "repo": "repo", "issue_number": 1},
-            mock_list_comments_resp,
+        should_call_apis(
+            ctx,
+            [
+                GitHubApi(
+                    api="rest.issues.async_get",
+                    result=mock_issue_repo,
+                ),
+                GitHubApi(
+                    api="rest.issues.async_list_comments",
+                    result=mock_list_comments_resp,
+                ),
+            ],
+            [
+                snapshot({"owner": "owner", "repo": "repo", "issue_number": 1}),
+                {"owner": "owner", "repo": "repo", "issue_number": 1},
+            ],
         )
 
         await resolve_conflict_pull_requests(handler, [mock_pull])
@@ -469,9 +707,7 @@ async def test_resolve_conflict_pull_requests_draft(
     from src.providers.models import RepoInfo
     from src.providers.utils import dump_json5
 
-    mock_subprocess_run = mocker.patch("subprocess.run")
-    mock_result = mocker.MagicMock()
-    mock_subprocess_run.side_effect = lambda *args, **kwargs: mock_result
+    mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     mock_label = mocker.MagicMock()
     mock_label.name = "Bot"
@@ -532,9 +768,7 @@ async def test_resolve_conflict_pull_requests_ref(
     from src.providers.models import RepoInfo
     from src.providers.utils import dump_json5
 
-    mock_subprocess_run = mocker.patch("subprocess.run")
-    mock_result = mocker.MagicMock()
-    mock_subprocess_run.side_effect = lambda *args, **kwargs: mock_result
+    mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     mock_label = mocker.MagicMock()
     mock_label.name = "Bot"

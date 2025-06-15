@@ -71,3 +71,6 @@ LOC_NAME_MAP = {
     "version": "版本号",
     "time": "发布时间",
 }
+
+# 工件名称
+ARTIFACT_NAME = "noneflow"
