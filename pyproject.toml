@@ -7,14 +7,14 @@ readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.13.4"
 dependencies = [
-  "click>=8.1.8",
+  "click>=8.2.1",
   "docker>=7.1.0",
-  "githubkit>=0.12.12",
+  "githubkit>=0.12.14",
   "jinja2>=3.1.6",
   "nonebot-adapter-github>=0.5.0",
   "nonebot2>=2.4.2",
-  "pydantic-extra-types>=2.10.4",
-  "pyjson5>=1.6.8",
+  "pydantic-extra-types>=2.10.5",
+  "pyjson5>=1.6.9",
   "tzdata>=2025.2",
 ]
 
