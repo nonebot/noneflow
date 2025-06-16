@@ -250,7 +250,9 @@ async def process_pull_request(
     RegistryArtifactData.from_info(result.info).save(
         plugin_config.input_config.artifact_path
     )
-    logger.info("已保存 NoneFlow Artifact 文件")
+    logger.info(
+        f"已保存 NoneFlow Artifact 文件至 {plugin_config.input_config.artifact_path}"
+    )
 
     # 只有当远程分支不存在时才创建拉取请求
     # 需要在 commit_and_push 前判断，否则远程一定存在
