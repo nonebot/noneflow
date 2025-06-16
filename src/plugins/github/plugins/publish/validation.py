@@ -23,6 +23,7 @@ from .constants import (
     PLUGIN_CONFIG_PATTERN,
     PLUGIN_DESC_PATTERN,
     PLUGIN_HOMEPAGE_PATTERN,
+    PLUGIN_MODULE_IMPORT_PATTERN,
     PLUGIN_MODULE_NAME_PATTERN,
     PLUGIN_NAME_PATTERN,
     PLUGIN_SUPPORTED_ADAPTERS_PATTERN,
@@ -58,7 +59,7 @@ async def validate_plugin_info_from_issue(
     # 从议题里提取插件所需信息
     raw_data: dict[str, Any] = extract_issue_info_from_issue(
         {
-            "module_name": PLUGIN_MODULE_NAME_PATTERN,
+            "module_name": [PLUGIN_MODULE_NAME_PATTERN, PLUGIN_MODULE_IMPORT_PATTERN],
             "project_link": PROJECT_LINK_PATTERN,
             "test_config": PLUGIN_CONFIG_PATTERN,
             "tags": TAGS_PATTERN,

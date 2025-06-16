@@ -9,7 +9,9 @@ REMOVE_BOT_HOMEPAGE_PATTERN = re.compile(
 REMOVE_BOT_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("机器人名称"))
 # Plugin
 REMOVE_PLUGIN_PROJECT_LINK_PATTERN = re.compile(ISSUE_PATTERN.format("PyPI 项目名"))
-REMOVE_PLUGIN_MODULE_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("import 包名"))
+REMOVE_PLUGIN_IMPORT_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("import 包名"))
+REMOVE_PLUGIN_MODULE_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("插件模块名"))
+
 # Driver / Adapter
 REMOVE_HOMEPAGE_PATTERN = re.compile(ISSUE_PATTERN.format("项目主页"))
 
