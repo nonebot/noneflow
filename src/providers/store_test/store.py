@@ -42,6 +42,7 @@ from .constants import (
     PLUGIN_CONFIG_PATH,
     PLUGINS_PATH,
     RESULTS_PATH,
+    TEST_DIR,
 )
 from .validation import validate_plugin
 
@@ -245,6 +246,9 @@ class StoreTest:
 
     def dump_data(self):
         """储存数据到仓库中"""
+        if not TEST_DIR.exists():
+            TEST_DIR.mkdir()
+
         dump_json(ADAPTERS_PATH, list(self._previous_adapters.values()))
         dump_json(BOTS_PATH, list(self._previous_bots.values()))
         dump_json(DRIVERS_PATH, list(self._previous_drivers.values()))
@@ -307,9 +311,9 @@ class StoreTest:
             case RegistryPlugin():
                 if key not in self._previous_plugins:
                     self._previous_plugins[key] = data.registry
-                if key not in self._previous_results and data.result:
-                    self._previous_results[key] = data.result
-                    self._plugin_configs[key] = data.result.config
+                if key not in self._previous_results and data.store_test_result:
+                    self._previous_results[key] = data.store_test_result
+                    self._plugin_configs[key] = data.store_test_result.config
 
         self.dump_data()
 

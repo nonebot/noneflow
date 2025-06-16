@@ -9,9 +9,9 @@ from pytest_mock import MockerFixture
 async def test_registry_update_payload_bot(mocker: MockerFixture):
     from src.providers.constants import REGISTRY_DATA_NAME
     from src.providers.models import (
+        BotPublishInfo,
         Color,
         RegistryArtifactData,
-        RegistryBot,
         RegistryUpdatePayload,
         RepoInfo,
         Tag,
@@ -22,23 +22,22 @@ async def test_registry_update_payload_bot(mocker: MockerFixture):
     mocked_github = mocker.patch("src.providers.models.GitHub")
     mocked_github().with_auth.return_value = mocked_installation_github
 
-    registry_data = {
-        "registry": {
-            "name": "test",
-            "desc": "desc",
-            "author": "test",
-            "homepage": "https://nonebot.dev",
-            "tags": [{"label": "test", "color": "#ffffff"}],
-            "is_official": False,
-        },
-        "result": None,
+    raw_data = {
+        "name": "name",
+        "desc": "desc",
+        "author": "author",
+        "author_id": 1,
+        "homepage": "https://nonebot.dev",
+        "tags": [Tag(label="test", color=Color("#ffffff"))],
     }
+    info = BotPublishInfo.model_construct(**raw_data)
+    registry_data = RegistryArtifactData.from_info(info)
 
     # 创建 zip 文件内容
     zip_buffer = BytesIO()
     with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
         # 将 registry_data 转换为 JSON 字符串并添加到 zip 中
-        json_content = json.dumps(registry_data, indent=2)
+        json_content = registry_data.model_dump_json(indent=2)
         zip_file.writestr(REGISTRY_DATA_NAME, json_content)
 
     # 获取 zip 文件的字节内容
@@ -69,18 +68,26 @@ async def test_registry_update_payload_bot(mocker: MockerFixture):
         )
     )
     registry = payload.get_artifact_data()
-    assert registry == snapshot(
-        RegistryArtifactData(
-            registry=RegistryBot(
-                name="test",
-                desc="desc",
-                author="test",
-                homepage="https://nonebot.dev",
-                tags=[Tag(label="test", color=Color("#ffffff"))],
-                is_official=False,
-            ),
-            result=None,
-        )
+    assert registry.model_dump() == snapshot(
+        {
+            "store": {
+                "name": "name",
+                "desc": "desc",
+                "author_id": 1,
+                "homepage": "https://nonebot.dev",
+                "tags": [{"label": "test", "color": "#ffffff"}],
+                "is_official": False,
+            },
+            "registry": {
+                "name": "name",
+                "desc": "desc",
+                "author": "author",
+                "homepage": "https://nonebot.dev",
+                "tags": [{"label": "test", "color": "#ffffff"}],
+                "is_official": False,
+            },
+            "store_test_result": None,
+        }
     )
 
 
@@ -88,11 +95,10 @@ async def test_registry_update_payload_plugin(mocker: MockerFixture):
     from src.providers.constants import REGISTRY_DATA_NAME
     from src.providers.models import (
         Color,
+        PluginPublishInfo,
         RegistryArtifactData,
-        RegistryPlugin,
         RegistryUpdatePayload,
         RepoInfo,
-        StoreTestResult,
         Tag,
     )
 
@@ -101,47 +107,32 @@ async def test_registry_update_payload_plugin(mocker: MockerFixture):
     mocked_github = mocker.patch("src.providers.models.GitHub")
     mocked_github().with_auth.return_value = mocked_installation_github
 
-    registry_data = {
-        "registry": {
-            "module_name": "module_name",
-            "project_link": "project_link",
-            "name": "name",
-            "desc": "desc",
-            "author": "test",
-            "homepage": "https://nonebot.dev",
-            "tags": [{"label": "test", "color": "#ffffff"}],
-            "is_official": False,
-            "type": "application",
-            "valid": True,
-            "time": "2023-09-01T00:00:00.000000Z",
-            "version": "1.0.0",
-            "skip_test": False,
-        },
-        "result": {
-            "time": "2023-08-23T09:22:14.836035+08:00",
-            "config": "log_level=DEBUG",
-            "version": "1.0.0",
-            "test_env": {"python==3.12": True},
-            "results": {"validation": True, "load": True, "metadata": True},
-            "outputs": {
-                "validation": None,
-                "load": "",
-                "metadata": {
-                    "name": "name",
-                    "description": "desc",
-                    "homepage": "https://nonebot.dev",
-                    "type": "application",
-                    "supported_adapters": None,
-                },
-            },
-        },
+    raw_data = {
+        "module_name": "module_name",
+        "project_link": "project_link",
+        "name": "name",
+        "desc": "desc",
+        "author": "author",
+        "author_id": 1,
+        "homepage": "https://nonebot.dev",
+        "tags": [Tag(label="test", color=Color("#ffffff"))],
+        "type": "application",
+        "supported_adapters": None,
+        "load": True,
+        "skip_test": False,
+        "test_output": "test_output",
+        "version": "0.0.1",
+        "metadata": True,
+        "time": "2023-10-01T00:00:00Z",
     }
+    info = PluginPublishInfo.model_construct(**raw_data)
+    registry_data = RegistryArtifactData.from_info(info)
 
     # 创建 zip 文件内容
     zip_buffer = BytesIO()
     with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
         # 将 registry_data 转换为 JSON 字符串并添加到 zip 中
-        json_content = json.dumps(registry_data, indent=2)
+        json_content = registry_data.model_dump_json(indent=2)
         zip_file.writestr(REGISTRY_DATA_NAME, json_content)
 
     # 获取 zip 文件的字节内容
@@ -172,31 +163,40 @@ async def test_registry_update_payload_plugin(mocker: MockerFixture):
         )
     )
     registry = payload.get_artifact_data()
-    assert registry == snapshot(
-        RegistryArtifactData(
-            registry=RegistryPlugin(
-                module_name="module_name",
-                project_link="project_link",
-                name="name",
-                desc="desc",
-                author="test",
-                homepage="https://nonebot.dev",
-                tags=[Tag(label="test", color=Color("#ffffff"))],
-                is_official=False,
-                type="application",
-                valid=True,
-                time="2023-09-01T00:00:00.000000Z",
-                version="1.0.0",
-                skip_test=False,
-            ),
-            result=StoreTestResult(
-                config="log_level=DEBUG",
-                version="1.0.0",
-                test_env={"python==3.12": True},
-                results={"validation": True, "load": True, "metadata": True},
-                outputs={
+    assert registry.model_dump() == snapshot(
+        {
+            "store": {
+                "module_name": "module_name",
+                "project_link": "project_link",
+                "author_id": 1,
+                "tags": [{"label": "test", "color": "#ffffff"}],
+                "is_official": False,
+            },
+            "registry": {
+                "module_name": "module_name",
+                "project_link": "project_link",
+                "name": "name",
+                "desc": "desc",
+                "author": "author",
+                "homepage": "https://nonebot.dev",
+                "tags": [{"label": "test", "color": "#ffffff"}],
+                "is_official": False,
+                "type": "application",
+                "supported_adapters": None,
+                "valid": True,
+                "time": "2023-10-01T00:00:00Z",
+                "version": "0.0.1",
+                "skip_test": False,
+            },
+            "store_test_result": {
+                "time": "2023-08-23T09:22:14.836035+08:00",
+                "config": "",
+                "version": "0.0.1",
+                "test_env": {"python==3.12": True},
+                "results": {"validation": True, "load": True, "metadata": True},
+                "outputs": {
                     "validation": None,
-                    "load": "",
+                    "load": "test_output",
                     "metadata": {
                         "name": "name",
                         "description": "desc",
@@ -205,6 +205,6 @@ async def test_registry_update_payload_plugin(mocker: MockerFixture):
                         "supported_adapters": None,
                     },
                 },
-            ),
-        )
+            },
+        }
     )

@@ -4,7 +4,7 @@ import os
 import zipfile
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Literal, Self, TypeAlias
+from typing import TYPE_CHECKING, Any, Literal, Self, TypeAlias
 
 from githubkit import AppAuthStrategy, GitHub
 from githubkit.rest import Issue
@@ -27,6 +27,9 @@ from src.providers.validation.models import (
     PluginPublishInfo,
     PublishType,
 )
+
+if TYPE_CHECKING:
+    from src.plugins.github.handlers import GithubHandler
 
 
 class Tag(BaseModel):
@@ -528,17 +531,25 @@ class RegistryArtifactData(BaseModel):
     通过 GitHub Action Artifact 传递数据
     """
 
+    store: StoreModels
+    """商店数据模型"""
     registry: RegistryModels
-    result: StoreTestResult | None
+    """注册表数据模型"""
+    store_test_result: StoreTestResult | None = None
+    """商店测试结果数据模型"""
 
-    @classmethod
-    def from_info(cls, info: PublishInfoModels) -> Self:
-        return cls(
-            registry=to_registry(info),
-            result=StoreTestResult.from_info(info)
-            if isinstance(info, PluginPublishInfo)
-            else None,
-        )
+    @property
+    def type(self) -> PublishType:
+        """获取发布类型"""
+        match self.store:
+            case StoreAdapter():
+                return PublishType.ADAPTER
+            case StoreBot():
+                return PublishType.BOT
+            case StoreDriver():
+                return PublishType.DRIVER
+            case StorePlugin():
+                return PublishType.PLUGIN
 
     def save(self, path: Path) -> None:
         """将注册表数据保存到指定路径"""
@@ -549,6 +560,67 @@ class RegistryArtifactData(BaseModel):
 
         with open(path / REGISTRY_DATA_NAME, "w", encoding="utf-8") as f:
             f.write(self.model_dump_json(indent=2))
+
+    @classmethod
+    def from_info(cls, info: PublishInfoModels) -> Self:
+        """从发布信息创建注册表数据
+
+        通过 NoneBot 仓库的发布信息创建注册表数据
+        """
+        return cls(
+            store=to_store(info),
+            registry=to_registry(info),
+            store_test_result=StoreTestResult.from_info(info)
+            if isinstance(info, PluginPublishInfo)
+            else None,
+        )
+
+    @classmethod
+    def from_artifact(cls, repo_info: RepoInfo, artifact_id: int) -> Self:
+        """从 GitHub Action Artifact 数据创建注册表数据
+
+        通过 GitHub Action Artifact 传递数据
+        """
+        app_id = os.getenv("APP_ID")
+        private_key = os.getenv("PRIVATE_KEY")
+
+        if app_id is None or private_key is None:
+            raise ValueError("APP_ID 或 PRIVATE_KEY 未设置")
+
+        github = GitHub(AppAuthStrategy(app_id=app_id, private_key=private_key))
+
+        resp = github.rest.apps.get_repo_installation(repo_info.owner, repo_info.repo)
+        repo_installation = resp.parsed_data
+
+        installation_github = github.with_auth(
+            github.auth.as_installation(repo_installation.id)
+        )
+
+        resp = installation_github.rest.actions.download_artifact(
+            owner=repo_info.owner,
+            repo=repo_info.repo,
+            artifact_id=artifact_id,
+            archive_format="zip",
+        )
+
+        zip_buffer = io.BytesIO(resp.content)
+        with zipfile.ZipFile(zip_buffer) as zip_file:
+            with zip_file.open(REGISTRY_DATA_NAME) as json_file:
+                json_data = json_file.read()
+                return cls.model_validate_json(json_data)
+
+    @classmethod
+    async def from_artifact_handler(
+        cls, handler: "GithubHandler", artifact_id: int
+    ) -> Self:
+        """使用 GitHubHandler 从 GitHub Action Artifact 获取数据"""
+        resp = await handler.download_artifact(artifact_id=artifact_id)
+
+        zip_buffer = io.BytesIO(resp.content)
+        with zipfile.ZipFile(zip_buffer) as zip_file:
+            with zip_file.open(REGISTRY_DATA_NAME) as json_file:
+                json_data = json_file.read()
+                return cls.model_validate_json(json_data)
 
 
 class RegistryUpdatePayload(BaseModel):
@@ -562,33 +634,4 @@ class RegistryUpdatePayload(BaseModel):
 
     def get_artifact_data(self) -> RegistryArtifactData:
         """获取注册表数据"""
-
-        app_id = os.getenv("APP_ID")
-        private_key = os.getenv("PRIVATE_KEY")
-
-        if app_id is None or private_key is None:
-            raise ValueError("APP_ID 或 PRIVATE_KEY 未设置")
-
-        github = GitHub(AppAuthStrategy(app_id=app_id, private_key=private_key))
-
-        resp = github.rest.apps.get_repo_installation(
-            self.repo_info.owner, self.repo_info.repo
-        )
-        repo_installation = resp.parsed_data
-
-        installation_github = github.with_auth(
-            github.auth.as_installation(repo_installation.id)
-        )
-
-        resp = installation_github.rest.actions.download_artifact(
-            owner=self.repo_info.owner,
-            repo=self.repo_info.repo,
-            artifact_id=self.artifact_id,
-            archive_format="zip",
-        )
-
-        zip_buffer = io.BytesIO(resp.content)
-        with zipfile.ZipFile(zip_buffer) as zip_file:
-            with zip_file.open(REGISTRY_DATA_NAME) as json_file:
-                json_data = json_file.read()
-                return RegistryArtifactData.model_validate_json(json_data)
+        return RegistryArtifactData.from_artifact(self.repo_info, self.artifact_id)

@@ -1,3 +1,5 @@
+import zipfile
+from io import BytesIO
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -30,6 +32,13 @@ async def test_resolve_pull_request(
 ) -> None:
     """测试能正确处理拉取请求关闭后其他拉取请求的冲突问题"""
     from src.plugins.github.plugins.resolve import pr_close_matcher
+    from src.providers.models import (
+        REGISTRY_DATA_NAME,
+        BotPublishInfo,
+        Color,
+        RegistryArtifactData,
+        Tag,
+    )
 
     mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
@@ -49,6 +58,57 @@ async def test_resolve_pull_request(
     mock_publish_pull.draft = False
     mock_publish_pull.head.ref = "publish/issue100"
     mock_publish_pull.labels = get_pr_labels(["Publish", "Bot"])
+
+    mock_publish_issue_comment = mocker.MagicMock()
+    mock_publish_issue_comment.body = """
+<details>
+<summary>历史测试</summary>
+<pre><code>
+<li>⚠️ <a href="https://github.com/owner/repo/actions/runs/14156878699">2025-03-28 02:21:18 CST</a></li><li>✅ <a href="https://github.com/nonebot/nonebot2/actions/runs/14156878699">2025-03-28 02:21:18 CST</a></li><li>✅ <a href="https://github.com/nonebot/nonebot2/actions/runs/14156878699">2025-03-28 02:22:18 CST</a>。</li><li>⚠️ <a href="https://github.com/nonebot/nonebot2/actions/runs/14156878699">2025-03-28 02:22:18 CST</a></li>
+</code></pre>
+</details>
+<!-- NONEFLOW -->
+"""
+    mock_publish_list_comments_resp = mocker.MagicMock()
+    mock_publish_list_comments_resp.parsed_data = [mock_publish_issue_comment]
+
+    mock_publish_artifact = mocker.MagicMock()
+    mock_publish_artifact.name = "noneflow"
+    mock_publish_artifact.id = 123456789
+    mock_publish_artifacts = mocker.MagicMock()
+    mock_publish_artifacts.artifacts = [mock_publish_artifact]
+    mock_publish_artifact_resp = mocker.MagicMock()
+    mock_publish_artifact_resp.parsed_data = mock_publish_artifacts
+
+    raw_data = {
+        "module_name": "module_name",
+        "project_link": "project_link",
+        "time": "2025-03-28T02:21:18Z",
+        "version": "1.0.0",
+        "name": "name",
+        "desc": "desc",
+        "author": "he0119",
+        "author_id": 1,
+        "homepage": "https://nonebot.dev",
+        "tags": [Tag(label="test", color=Color("#ffffff"))],
+        "is_official": False,
+    }
+    info = BotPublishInfo.model_construct(**raw_data)
+    registry_data = RegistryArtifactData.from_info(info)
+
+    # 创建 zip 文件内容
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+        # 将 registry_data 转换为 JSON 字符串并添加到 zip 中
+        json_content = registry_data.model_dump_json(indent=2)
+        zip_file.writestr(REGISTRY_DATA_NAME, json_content)
+
+    # 获取 zip 文件的字节内容
+    publish_zip_content = zip_buffer.getvalue()
+
+    mock_publish_download_artifact_resp = mocker.MagicMock()
+    mock_publish_download_artifact_resp.content = publish_zip_content
+
     mock_remove_issue = MockIssue(
         body=generate_issue_body_remove(
             type="Bot", key="CoolQBot:https://github.com/he0119/CoolQBot"
@@ -62,6 +122,7 @@ async def test_resolve_pull_request(
     mock_remove_pull.draft = False
     mock_remove_pull.head.ref = "remove/issue101"
     mock_remove_pull.labels = get_pr_labels(["Remove", "Bot"])
+
     mock_pulls_resp = mocker.MagicMock()
     mock_pulls_resp.parsed_data = [mock_publish_pull, mock_remove_pull]
 
@@ -79,26 +140,23 @@ async def test_resolve_pull_request(
                     api="rest.apps.async_get_repo_installation",
                     result=mock_installation,
                 ),
+                GitHubApi(api="rest.issues.async_get", result=mock_issues_resp),
+                GitHubApi(api="rest.issues.async_update", result=True),
+                GitHubApi(api="rest.pulls.async_list", result=mock_pulls_resp),
+                GitHubApi(api="rest.issues.async_get", result=mock_publish_issue_resp),
                 GitHubApi(
-                    api="rest.issues.async_get",
-                    result=mock_issues_resp,
+                    api="rest.issues.async_list_comments",
+                    result=mock_publish_list_comments_resp,
                 ),
                 GitHubApi(
-                    api="rest.issues.async_update",
-                    result=True,
+                    api="rest.actions.async_list_workflow_run_artifacts",
+                    result=mock_publish_artifact_resp,
                 ),
                 GitHubApi(
-                    api="rest.pulls.async_list",
-                    result=mock_pulls_resp,
+                    api="rest.actions.async_download_artifact",
+                    result=mock_publish_download_artifact_resp,
                 ),
-                GitHubApi(
-                    api="rest.issues.async_get",
-                    result=mock_publish_issue_resp,
-                ),
-                GitHubApi(
-                    api="rest.issues.async_get",
-                    result=mock_remove_issue_resp,
-                ),
+                GitHubApi(api="rest.issues.async_get", result=mock_remove_issue_resp),
             ],
             snapshot(
                 {
@@ -113,7 +171,19 @@ async def test_resolve_pull_request(
                     },
                     3: {"owner": "he0119", "repo": "action-test", "state": "open"},
                     4: {"owner": "he0119", "repo": "action-test", "issue_number": 100},
-                    5: {"owner": "he0119", "repo": "action-test", "issue_number": 101},
+                    5: {"owner": "he0119", "repo": "action-test", "issue_number": 100},
+                    6: {
+                        "owner": "he0119",
+                        "repo": "action-test",
+                        "run_id": 14156878699,
+                    },
+                    7: {
+                        "owner": "he0119",
+                        "repo": "action-test",
+                        "artifact_id": 123456789,
+                        "archive_format": "zip",
+                    },
+                    8: {"owner": "he0119", "repo": "action-test", "issue_number": 101},
                 }
             ),
         )
@@ -163,4 +233,4 @@ async def test_resolve_pull_request(
         ],
     )
 
-    assert mocked_api["homepage"].called
+    assert not mocked_api["homepage"].called

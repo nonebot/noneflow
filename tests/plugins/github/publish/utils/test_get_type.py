@@ -3,7 +3,7 @@ from pytest_mock import MockerFixture
 
 async def test_get_type_by_labels(mocker: MockerFixture):
     """通过标签获取发布类型"""
-    from src.plugins.github.plugins.publish.utils import get_type_by_labels
+    from src.plugins.github.depends.utils import get_type_by_labels
     from src.providers.validation.models import PublishType
 
     mock_label = mocker.MagicMock()
@@ -27,7 +27,7 @@ async def test_get_type_by_labels(mocker: MockerFixture):
 
 
 async def test_get_type_by_labels_wrong(mocker: MockerFixture):
-    from src.plugins.github.plugins.publish.utils import get_type_by_labels
+    from src.plugins.github.depends.utils import get_type_by_labels
 
     mock_label = mocker.MagicMock()
     mock_label.name = "Something"
