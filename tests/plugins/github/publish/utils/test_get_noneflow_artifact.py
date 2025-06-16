@@ -348,14 +348,14 @@ async def test_get_noneflow_artifact_no_noneflow_artifact(
 async def test_get_noneflow_artifact_invalid_run_id(
     app: App, mocker: MockerFixture
 ) -> None:
-    """测试工作流运行 ID 无效时的情况"""
+    """测试工作流 ID 无效时的情况"""
     from src.plugins.github.handlers import IssueHandler
     from src.plugins.github.plugins.publish.utils import get_noneflow_artifact
     from src.providers.models import RepoInfo
 
     # 模拟 issue 对象
     mock_issue = mocker.MagicMock(spec=Issue)
-    mock_issue.number = 76  # 模拟评论内容，包含无效的工作流运行 ID
+    mock_issue.number = 76  # 模拟评论内容，包含无效的工作流 ID
     comment_body = """
 # 📃 商店发布检查结果
 

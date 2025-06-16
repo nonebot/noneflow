@@ -101,8 +101,8 @@ async def get_noneflow_artifact(handler: IssueHandler) -> "Artifact":
     if not history:
         raise ValueError("无法从评论中获取历史工作流信息")
 
-    # 获取最新的工作流运行
-    # 上面的正则表达式能确保获取到的 id 为数字
+    # 获取最新的工作流 ID
+    # 上面的正则表达式能确保获取到的 ID 为数字
     latest_run = max(filter(lambda x: x[0], history), key=lambda x: x[2])
     run_id = latest_run[1].split("/")[-1]
 

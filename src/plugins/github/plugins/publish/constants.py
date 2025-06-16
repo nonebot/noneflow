@@ -72,5 +72,5 @@ LOC_NAME_MAP = {
     "time": "发布时间",
 }
 
-# 工件名称
+# 工作流程构件名称
 ARTIFACT_NAME = "noneflow"

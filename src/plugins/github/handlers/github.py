@@ -274,7 +274,7 @@ class GithubHandler(GitHandler):
         )
 
     async def list_workflow_run_artifacts(self, run_id: int):
-        """获取工作流运行的所有工件"""
+        """获取工作流程的所有构件"""
         artifacts = (
             await self.bot.rest.actions.async_list_workflow_run_artifacts(
                 **self.repo_info.model_dump(),
@@ -285,11 +285,11 @@ class GithubHandler(GitHandler):
         return artifacts
 
     async def download_artifact(self, artifact_id: int, repo: RepoInfo | None = None):
-        """下载工作流运行的工件"""
+        """下载工作流程的构件"""
         if repo is None:
             repo = self.repo_info
 
-        logger.info(f"正在下载工件 {repo.owner}/{repo.repo}:{artifact_id}")
+        logger.info(f"正在下载构件 {repo.owner}/{repo.repo}:{artifact_id}")
         resp = await self.bot.rest.actions.async_download_artifact(
             **repo.model_dump(),
             artifact_id=artifact_id,
