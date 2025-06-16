@@ -70,3 +70,4 @@ jobs:
         with:
           name: noneflow
           path: artifact/*
+          if-no-files-found: ignore

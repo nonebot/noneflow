@@ -108,6 +108,7 @@ async def validate_plugin_info_from_issue(
         logger.info(f"插件已跳过测试，从议题中获取的插件元信息：{metadata}")
     else:
         # 插件不跳过则运行插件测试
+        logger.info(f"开始运行插件测试: {project_link}")
         test_result = await DockerPluginTest(
             project_link, module_name, test_config
         ).run("3.12")

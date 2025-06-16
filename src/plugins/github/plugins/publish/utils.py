@@ -244,11 +244,13 @@ async def process_pull_request(
     # 更新文件
     handler.switch_branch(branch_name)
     update_file(to_store(result.info), handler)
+
     # 保存 registry_update 所需的文件
     # 之后会上传至 Artifact，并通过 artifact_id 访问
     RegistryArtifactData.from_info(result.info).save(
         plugin_config.input_config.artifact_path
     )
+    logger.info("已保存 NoneFlow Artifact 文件")
 
     # 只有当远程分支不存在时才创建拉取请求
     # 需要在 commit_and_push 前判断，否则远程一定存在

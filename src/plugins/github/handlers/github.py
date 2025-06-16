@@ -22,6 +22,14 @@ class GithubHandler(GitHandler):
     bot: Bot
     repo_info: RepoInfo
 
+    async def to_issue_handler(self, issue_number: int):
+        """获取议题处理器"""
+        from src.plugins.github.handlers import IssueHandler
+
+        issue = await self.get_issue(issue_number)
+
+        return IssueHandler(bot=self.bot, repo_info=self.repo_info, issue=issue)
+
     async def update_issue_title(self, title: str, issue_number: int):
         """修改议题标题"""
         await self.bot.rest.issues.async_update(
@@ -265,14 +273,6 @@ class GithubHandler(GitHandler):
             state_reason=reason,
         )
 
-    async def to_issue_handler(self, issue_number: int):
-        """获取议题处理器"""
-        from src.plugins.github.handlers import IssueHandler
-
-        issue = await self.get_issue(issue_number)
-
-        return IssueHandler(bot=self.bot, repo_info=self.repo_info, issue=issue)
-
     async def list_workflow_run_artifacts(self, run_id: int):
         """获取工作流运行的所有工件"""
         artifacts = (
@@ -289,6 +289,7 @@ class GithubHandler(GitHandler):
         if repo is None:
             repo = self.repo_info
 
+        logger.info(f"正在下载工件 {repo.owner}/{repo.repo}:{artifact_id}")
         resp = await self.bot.rest.actions.async_download_artifact(
             **repo.model_dump(),
             artifact_id=artifact_id,
