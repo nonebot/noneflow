@@ -101,8 +101,8 @@ async def get_noneflow_artifact(handler: IssueHandler) -> "Artifact":
     if not history:
         raise ValueError("无法从评论中获取历史工作流信息")
 
-    # 获取最新的工作流运行
-    # 上面的正则表达式能确保获取到的 id 为数字
+    # 获取最新的工作流 ID
+    # 上面的正则表达式能确保获取到的 ID 为数字
     latest_run = max(filter(lambda x: x[0], history), key=lambda x: x[2])
     run_id = latest_run[1].split("/")[-1]
 
@@ -244,10 +244,14 @@ async def process_pull_request(
     # 更新文件
     handler.switch_branch(branch_name)
     update_file(to_store(result.info), handler)
+
     # 保存 registry_update 所需的文件
     # 之后会上传至 Artifact，并通过 artifact_id 访问
     RegistryArtifactData.from_info(result.info).save(
         plugin_config.input_config.artifact_path
+    )
+    logger.info(
+        f"已保存 NoneFlow Artifact 文件至 {plugin_config.input_config.artifact_path}"
     )
 
     # 只有当远程分支不存在时才创建拉取请求

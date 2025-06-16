@@ -1150,7 +1150,7 @@ async def test_comment_issue_no_change(app: App, mocker: MockerFixture) -> None:
 
 
 async def test_download_artifact(app: App, mocker: MockerFixture) -> None:
-    """测试下载工作流运行的工件"""
+    """测试下载工作流程的构件"""
     from src.plugins.github.handlers.github import GithubHandler
     from src.providers.models import RepoInfo
 
@@ -1193,7 +1193,7 @@ async def test_download_artifact(app: App, mocker: MockerFixture) -> None:
 async def test_download_artifact_with_custom_repo(
     app: App, mocker: MockerFixture
 ) -> None:
-    """测试使用自定义仓库信息下载工作流运行的工件"""
+    """测试使用自定义仓库信息下载工作流程的构件"""
     from src.plugins.github.handlers.github import GithubHandler
     from src.providers.models import RepoInfo
 
