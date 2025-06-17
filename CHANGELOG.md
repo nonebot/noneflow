@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [4.4.0] - 2025-06-17
+
 ### Added
 
 - 在 Noneflow 工作流评论处增设 Noneflow 运行历史
@@ -665,7 +667,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.3.1...HEAD
+[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.4.0...HEAD
+[4.4.0]: https://github.com/nonebot/noneflow/compare/v4.3.1...v4.4.0
 [4.3.1]: https://github.com/nonebot/noneflow/compare/v4.3.0...v4.3.1
 [4.3.0]: https://github.com/nonebot/noneflow/compare/v4.2.7...v4.3.0
 [4.2.7]: https://github.com/nonebot/noneflow/compare/v4.2.6...v4.2.7
