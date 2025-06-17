@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ### Fixed
 
-- 修复机器人/适配器发布时没有历史测试的问题
+- 修复机器人/适配器发布时没有历史测试的问o
+- 修复历史测试链接缺少引号的问题
 
 ## [4.4.0] - 2025-06-17
 
