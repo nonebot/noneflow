@@ -102,7 +102,7 @@ async def test_bot_process_publish_check(
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
+<pre><code><li>✅ <a href="https://github.com/owner/repo/actions/runs/123456">2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---
@@ -265,7 +265,7 @@ async def test_adapter_process_publish_check(
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
+<pre><code><li>✅ <a href="https://github.com/owner/repo/actions/runs/123456">2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---
@@ -447,7 +447,7 @@ async def test_edit_title(
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
+<pre><code><li>✅ <a href="https://github.com/owner/repo/actions/runs/123456">2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---
@@ -641,7 +641,7 @@ async def test_edit_title_too_long(
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
+<pre><code><li>⚠️ <a href="https://github.com/owner/repo/actions/runs/123456">2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---
@@ -775,7 +775,7 @@ async def test_process_publish_check_not_pass(
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
+<pre><code><li>⚠️ <a href="https://github.com/owner/repo/actions/runs/123456">2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---
@@ -1006,7 +1006,7 @@ async def test_convert_pull_request_to_draft(
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
+<pre><code><li>⚠️ <a href="https://github.com/owner/repo/actions/runs/123456">2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---
@@ -1143,7 +1143,7 @@ async def test_process_publish_check_ready_for_review(
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
+<pre><code><li>✅ <a href="https://github.com/owner/repo/actions/runs/123456">2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---
@@ -1332,7 +1332,7 @@ async def test_comment_immediate_after_pull_request_closed(
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
+<pre><code><li>✅ <a href="https://github.com/owner/repo/actions/runs/123456">2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---
