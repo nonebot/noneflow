@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 修复机器人/适配器发布时没有历史测试的问题
+
 ## [4.4.0] - 2025-06-17
 
 ### Added

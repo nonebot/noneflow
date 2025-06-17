@@ -84,14 +84,14 @@ async def render_comment(
 
     history = history or []
 
+    action_url = f"https://github.com/{plugin_config.github_repository}/actions/runs/{plugin_config.github_run_id}"
     if result.type == PublishType.PLUGIN:
         # https://github.com/he0119/action-test/actions/runs/4469672520
         # 仅在测试通过或跳过测试时显示
         # 如果 load 为 False 的时候 valid_data 里面没有 load 字段，所以直接用 raw_data
         if result.raw_data["load"] or result.raw_data["skip_test"]:
-            valid_data["action_url"] = (
-                f"https://github.com/{plugin_config.github_repository}/actions/runs/{plugin_config.github_run_id}"
-            )
+            valid_data["action_url"] = action_url
+
     # 如果 tags 字段为空则不显示
     if not valid_data.get("tags"):
         valid_data.pop("tags", None)
@@ -122,7 +122,7 @@ async def render_comment(
                 url=homepage,
             )
         )
-    if action_url := data.get("action_url"):
+    if "action_url" in data:
         card.append(
             COMMENT_CARD_TEMPLATE.format(
                 name="测试结果",
@@ -132,14 +132,9 @@ async def render_comment(
                 url=action_url,
             )
         )
-        history.append(
-            (
-                result.valid,
-                action_url,
-                datetime.now(tz=TIME_ZONE),
-            )
-        )
 
+    # 添加历史测试
+    history.append((result.valid, action_url, datetime.now(tz=TIME_ZONE)))
     # 测试历史应该时间倒序排列
     history.sort(key=lambda x: x[2], reverse=True)
     # 限制最多显示 10 条历史
