@@ -100,6 +100,10 @@ async def test_bot_process_publish_check(
 <summary>详情</summary>
 <pre><code><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 标签: test-#ffffff。</li></code></pre>
 </details>
+<details>
+<summary>历史测试</summary>
+<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
+</details>
 
 ---
 
@@ -258,6 +262,10 @@ async def test_adapter_process_publish_check(
 <details>
 <summary>详情</summary>
 <pre><code><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 项目 <a href="https://pypi.org/project/project_link/">project_link</a> 已发布至 PyPI。</li><li>✅ 标签: test-#ffffff。</li><li>✅ 版本号: 0.0.1。</li><li>✅ 发布时间：2023-09-01 08:00:00 CST。</li></code></pre>
+</details>
+<details>
+<summary>历史测试</summary>
+<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---
@@ -436,6 +444,10 @@ async def test_edit_title(
 <details>
 <summary>详情</summary>
 <pre><code><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 标签: test-#ffffff。</li></code></pre>
+</details>
+<details>
+<summary>历史测试</summary>
+<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---
@@ -627,6 +639,10 @@ async def test_edit_title_too_long(
 <summary>详情</summary>
 <pre><code><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 标签: test-#ffffff。</li></code></pre>
 </details>
+<details>
+<summary>历史测试</summary>
+<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
+</details>
 
 ---
 
@@ -756,6 +772,10 @@ async def test_process_publish_check_not_pass(
 <details>
 <summary>详情</summary>
 <pre><code><li>✅ 标签: test-#ffffff。</li></code></pre>
+</details>
+<details>
+<summary>历史测试</summary>
+<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---
@@ -984,6 +1004,10 @@ async def test_convert_pull_request_to_draft(
 <summary>详情</summary>
 <pre><code><li>✅ 标签: test-#ffffff。</li></code></pre>
 </details>
+<details>
+<summary>历史测试</summary>
+<pre><code><li>⚠️ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
+</details>
 
 ---
 
@@ -1116,6 +1140,10 @@ async def test_process_publish_check_ready_for_review(
 <details>
 <summary>详情</summary>
 <pre><code><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 标签: test-#ffffff。</li></code></pre>
+</details>
+<details>
+<summary>历史测试</summary>
+<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---
@@ -1301,6 +1329,10 @@ async def test_comment_immediate_after_pull_request_closed(
 <details>
 <summary>详情</summary>
 <pre><code><li>✅ 项目 <a href="https://nonebot.dev">主页</a> 返回状态码 200。</li><li>✅ 标签: test-#ffffff。</li></code></pre>
+</details>
+<details>
+<summary>历史测试</summary>
+<pre><code><li>✅ <a href=https://github.com/owner/repo/actions/runs/123456>2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---
