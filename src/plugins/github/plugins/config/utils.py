@@ -5,6 +5,7 @@ from nonebot import logger
 from src.plugins.github.handlers import GitHandler, IssueHandler
 from src.plugins.github.plugins.publish.constants import (
     PLUGIN_CONFIG_PATTERN,
+    PLUGIN_MODULE_IMPORT_PATTERN,
     PLUGIN_MODULE_NAME_PATTERN,
     PROJECT_LINK_PATTERN,
 )
@@ -26,7 +27,7 @@ async def validate_info_from_issue(handler: IssueHandler) -> ValidationDict:
     # 从议题里提取插件所需信息
     raw_data: dict[str, Any] = extract_issue_info_from_issue(
         {
-            "module_name": PLUGIN_MODULE_NAME_PATTERN,
+            "module_name": [PLUGIN_MODULE_NAME_PATTERN, PLUGIN_MODULE_IMPORT_PATTERN],
             "project_link": PROJECT_LINK_PATTERN,
             "test_config": PLUGIN_CONFIG_PATTERN,
         },

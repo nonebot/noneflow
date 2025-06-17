@@ -33,7 +33,7 @@ async def test_ensure_issue_plugin_test_button(app: App, mocker: MockerFixture):
 
 project_link
 
-### 插件 import 包名
+### 插件模块名
 
 module_name
 
@@ -93,7 +93,7 @@ async def test_ensure_issue_plugin_test_button_checked(app: App, mocker: MockerF
 
 project_link
 
-### 插件 import 包名
+### 插件模块名
 
 module_name
 
@@ -182,7 +182,7 @@ async def test_ensure_issue_plugin_test_button_in_progress(
 
 project_link
 
-### 插件 import 包名
+### 插件模块名
 
 module_name
 

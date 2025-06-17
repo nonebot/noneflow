@@ -12,6 +12,7 @@ from src.providers.validation.models import PublishType
 from .constants import (
     REMOVE_BOT_HOMEPAGE_PATTERN,
     REMOVE_BOT_NAME_PATTERN,
+    REMOVE_PLUGIN_IMPORT_NAME_PATTERN,
     REMOVE_PLUGIN_MODULE_NAME_PATTERN,
     REMOVE_PLUGIN_PROJECT_LINK_PATTERN,
 )
@@ -70,7 +71,10 @@ async def validate_author_info(issue: Issue, publish_type: PublishType) -> Remov
         case PublishType.PLUGIN | PublishType.ADAPTER:
             raw_data = extract_issue_info_from_issue(
                 {
-                    "module_name": REMOVE_PLUGIN_MODULE_NAME_PATTERN,
+                    "module_name": [
+                        REMOVE_PLUGIN_MODULE_NAME_PATTERN,
+                        REMOVE_PLUGIN_IMPORT_NAME_PATTERN,
+                    ],
                     "project_link": REMOVE_PLUGIN_PROJECT_LINK_PATTERN,
                 },
                 body,

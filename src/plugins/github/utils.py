@@ -27,12 +27,20 @@ def commit_message(prefix: str, message: str, issue_number: int):
 
 
 def extract_issue_info_from_issue(
-    patterns: dict[str, Pattern[str]], body: str
+    patterns: dict[str, Pattern[str] | list[Pattern[str]]], body: str
 ) -> dict[str, str | None]:
     """
     根据提供的正则表达式和议题内容来提取所需的信息
     """
-    matchers = {key: pattern.search(body) for key, pattern in patterns.items()}
+    matchers = {}
+    for key, pattern in patterns.items():
+        if isinstance(pattern, list):
+            matchers[key] = next(
+                (p.search(body) for p in pattern if p.search(body)), None
+            )
+        else:
+            matchers[key] = pattern.search(body)
+
     # 如果未匹配到数据，则不添加进字典中
     # 这样可以让 Pydantic 在校验时报错 missing
     data = {key: match.group(1).strip() for key, match in matchers.items() if match}
