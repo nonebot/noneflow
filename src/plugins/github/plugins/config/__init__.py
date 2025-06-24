@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from githubkit.exception import RequestFailed
 from nonebot import logger, on_type
 from nonebot.adapters.github import GitHubBot
@@ -24,6 +26,7 @@ from src.plugins.github.plugins.publish.render import render_comment
 from src.plugins.github.plugins.publish.utils import (
     ensure_issue_plugin_test_button,
     ensure_issue_plugin_test_button_in_progress,
+    get_history_workflow_from_comment,
 )
 from src.plugins.github.typing import IssuesEvent
 
@@ -32,6 +35,9 @@ from .utils import (
     update_file,
     validate_info_from_issue,
 )
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 async def check_rule(
@@ -77,11 +83,19 @@ async def handle_remove_check(
         # 仅在通过检查的情况下创建拉取请求
         result = await validate_info_from_issue(handler)
 
+        self_comment = await handler.get_self_comment(handler.issue_number)
+
+        history: list[tuple[bool, str, datetime]] = []
+
+        if self_comment and self_comment.body:
+            history = await get_history_workflow_from_comment(self_comment.body)
+            logger.debug(f"获取到 {len(history)} 条历史工作流")
+
         # 渲染评论信息
-        comment = await render_comment(result, True)
+        comment = await render_comment(result, True, history)
 
         # 对议题评论
-        await handler.resuable_comment_issue(comment)
+        await handler.comment_issue(comment, self_comment=self_comment)
 
         branch_name = f"{BRANCH_NAME_PREFIX}{handler.issue_number}"
 
