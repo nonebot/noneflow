@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [4.4.2] - 2025-07-01
+
 ### Fixed
 
 - 补上修改配置时获取历史测试的逻辑
@@ -678,7 +680,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.4.1...HEAD
+[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.4.2...HEAD
+[4.4.2]: https://github.com/nonebot/noneflow/compare/v4.4.1...v4.4.2
 [4.4.1]: https://github.com/nonebot/noneflow/compare/v4.4.0...v4.4.1
 [4.4.0]: https://github.com/nonebot/noneflow/compare/v4.3.1...v4.4.0
 [4.3.1]: https://github.com/nonebot/noneflow/compare/v4.3.0...v4.3.1
