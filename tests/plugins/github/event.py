@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import TypeVar
+from typing import cast
 
 from nonebot.adapters.github import (
     Adapter,
@@ -9,8 +9,6 @@ from nonebot.adapters.github import (
     PullRequestClosed,
     PullRequestReviewSubmitted,
 )
-
-T = TypeVar("T", bound=Event)
 
 # 事件类型对应的事件名称和事件文件名
 EVENT_INFO = {
@@ -24,7 +22,9 @@ EVENT_INFO = {
 }
 
 
-def get_mock_event(event_type: type[T], filename: str = "", id: str = "1") -> T:
+def get_mock_event[T: Event](
+    event_type: type[T], filename: str = "", id: str = "1"
+) -> T:
     """通过事件类型获取事件对象"""
 
     if event_type not in EVENT_INFO:
@@ -38,4 +38,4 @@ def get_mock_event(event_type: type[T], filename: str = "", id: str = "1") -> T:
     event = Adapter.payload_to_event(id, event_name, event_path.read_bytes())
 
     assert isinstance(event, event_type)
-    return event
+    return cast("T", event)
