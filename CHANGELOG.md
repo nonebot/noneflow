@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 补上修改配置时获取历史测试的逻辑
+
 ## [4.4.1] - 2025-06-17
 
 ### Fixed

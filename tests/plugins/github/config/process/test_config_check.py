@@ -58,8 +58,40 @@ async def test_process_config_check(
 
     mock_comment = mocker.MagicMock()
     mock_comment.body = "Plugin: test"
+
+    mock_self_comment = mocker.MagicMock()
+    mock_self_comment.id = 123
+    mock_self_comment.body = """\
+# 📃 商店发布检查结果
+
+> Plugin: AI群聊机器人
+
+[![主页](https://img.shields.io/badge/HOMEPAGE-200-green?style=for-the-badge)](https://github.com/KarisAya/nonebot_plugin_groups_aichat) [![测试结果](https://img.shields.io/badge/RESULT-OK-green?style=for-the-badge)](https://github.com/nonebot/registry/actions/runs/15942511177)
+
+**✅ 所有测试通过，一切准备就绪！**
+
+
+<details>
+<summary>详情</summary>
+<pre><code><li>✅ 项目 <a href="https://github.com/KarisAya/nonebot_plugin_groups_aichat">主页</a> 返回状态码 200。</li><li>✅ 项目 <a href="https://pypi.org/project/nonebot-plugin-groups-aichat/">nonebot-plugin-groups-aichat</a> 已发布至 PyPI。</li><li>✅ 标签: ChatGPT-#33cc99, Gemini-#59fb51, DeepSeek-#3399aa。</li><li>✅ 插件类型: application。</li><li>✅ 插件支持的适配器: 所有。</li><li>✅ 插件 <a href="https://github.com/nonebot/registry/actions/runs/15942511177">加载测试</a> 通过。</li><li>✅ 版本号: 0.2.0。</li><li>✅ 发布时间：2025-06-27 21:20:30 CST。</li></code></pre>
+</details>
+<details>
+<summary>历史测试</summary>
+<pre><code><li>✅ <a href="https://github.com/nonebot/registry/actions/runs/15942511177">2025-06-28 16:58:15 CST</a></li></code></pre>
+</details>
+
+---
+
+💡 如需修改信息，请直接修改 issue，机器人会自动更新检查结果。
+💡 当插件加载测试失败时，请发布新版本后勾选插件测试勾选框重新运行插件测试。
+
+♻️ 评论已更新至最新检查结果
+
+💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
+<!-- NONEFLOW -->
+"""
     mock_list_comments_resp = mocker.MagicMock()
-    mock_list_comments_resp.parsed_data = [mock_comment]
+    mock_list_comments_resp.parsed_data = [mock_comment, mock_self_comment]
 
     mock_test_result = mocker.MagicMock()
     mock_test_result.metadata = Metadata(
@@ -99,7 +131,7 @@ async def test_process_config_check(
                 "result": mock_list_comments_resp,
             },
             {
-                "api": "rest.issues.async_create_comment",
+                "api": "rest.issues.async_update_comment",
                 "result": True,
             },
             {
@@ -151,12 +183,12 @@ log_level=DEBUG
                 }
             ),
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "issue_number": 80,
-                "body": snapshot(
-                    """\
+            snapshot(
+                {
+                    "owner": "he0119",
+                    "repo": "action-test",
+                    "comment_id": 123,
+                    "body": """\
 # 📃 商店发布检查结果
 
 > Plugin: name
@@ -172,7 +204,7 @@ log_level=DEBUG
 </details>
 <details>
 <summary>历史测试</summary>
-<pre><code><li>✅ <a href="https://github.com/owner/repo/actions/runs/123456">2023-08-23 09:22:14 CST</a></li></code></pre>
+<pre><code><li>✅ <a href="https://github.com/nonebot/registry/actions/runs/15942511177">2025-06-28 16:58:15 CST</a></li><li>✅ <a href="https://github.com/owner/repo/actions/runs/123456">2023-08-23 09:22:14 CST</a></li></code></pre>
 </details>
 
 ---
@@ -184,9 +216,9 @@ log_level=DEBUG
 
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
 <!-- NONEFLOW -->
-"""
-                ),
-            },
+""",
+                }
+            ),
             snapshot(
                 {
                     "owner": "he0119",
