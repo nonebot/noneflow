@@ -26,14 +26,14 @@ Changelog = "https://github.com/nonebot/noneflow/blob/main/CHANGELOG.md"
 
 [tool.uv]
 dev-dependencies = [
-  "bump-my-version>=1.2.0",
-  "inline-snapshot>=0.23.2",
+  "bump-my-version>=1.2.1",
+  "inline-snapshot>=0.27.1",
   "nonebug>=0.4.3",
   "poethepoet>=0.36.0",
-  "pytest-asyncio>=1.0.0",
+  "pytest-asyncio>=1.1.0",
   "pytest-cov>=6.2.1",
   "pytest-mock>=3.14.1",
-  "pytest-xdist>=3.7.0",
+  "pytest-xdist>=3.8.0",
   "respx>=0.22.0",
 ]
 
