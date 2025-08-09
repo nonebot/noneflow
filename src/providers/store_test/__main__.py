@@ -53,7 +53,7 @@ def plugin_test(limit: int, offset: int, force: bool, key: str | None, recent: b
         # 指定了 key，直接测试该插件
         asyncio.run(test.run_single_plugin(key, force))
     else:
-        # 没有指定 key，根据recent参数决定测试顺序
+        # 没有指定 key，根据 recent 参数决定测试顺序
         asyncio.run(test.run(limit, offset, force, recent))
 
 
