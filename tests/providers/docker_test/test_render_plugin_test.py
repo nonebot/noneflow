@@ -60,7 +60,7 @@ async def test_render_fake(app: App):
     assert comment == snapshot(
         """\
 from typing import Optional, Union
-
+from collections.abc import AsyncGenerator
 from nonebot import logger
 from nonebot.drivers import (
     ASGIMixin,
@@ -119,6 +119,15 @@ class Driver(BaseDriver, ASGIMixin, HTTPClientMixin, WebSocketClientMixin):
 
     @override
     async def websocket(self, setup: Request) -> Response:
+        raise NotImplementedError
+
+    @override
+    async def stream_request(
+        self,
+        setup: Request,
+        *,
+        chunk_size: int = 1024,
+    ) -> AsyncGenerator[Response, None]:
         raise NotImplementedError
 
     @override
