@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 合并 Nontest 的环境变量设置，优化容器体积
+
 ## [4.4.2] - 2025-07-01
 
 ### Fixed
