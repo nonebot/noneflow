@@ -5,16 +5,10 @@ COPY --from=ghcr.io/astral-sh/uv:0.7.17 /uv /bin/uv
 WORKDIR /app
 
 # 设置时区
-ENV TZ=Asia/Shanghai
-
 # 启用字节码编译，加速 NoneFlow 启动
-ENV UV_COMPILE_BYTECODE=1
-
 # 在不更新 uv.lock 文件的情况下运行
-ENV UV_FROZEN=1
-
 # 从缓存中复制而不是链接，因为缓存是挂载的
-ENV UV_LINK_MODE=copy
+ENV TZ=Asia/Shanghai UV_COMPILE_BYTECODE=1 UV_FROZEN=1 UV_LINK_MODE=copy
 
 # OpenCV 所需的依赖
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
