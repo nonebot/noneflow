@@ -252,6 +252,128 @@ async def test_store_test_raise(
     assert not mocked_api["pypi_nonebot-plugin-wordcloud"].called
 
 
+async def test_store_test_with_recent_parameter(
+    mocked_store_data: dict[str, Path], mocked_api: MockRouter, mocker: MockerFixture
+) -> None:
+    """测试 recent 参数，验证插件按测试时间倒序排列"""
+    from src.providers.store_test.store import (
+        RegistryPlugin,
+        StorePlugin,
+        StoreTest,
+        StoreTestResult,
+    )
+
+    # Mock validate_plugin 返回结果
+    mocked_validate_plugin = mocker.patch(
+        "src.providers.store_test.store.validate_plugin"
+    )
+    mocked_validate_plugin.return_value = (
+        StoreTestResult(
+            time="2024-01-01T00:00:00.000000+08:00",
+            version="1.0.0",
+            config="",
+            results={"load": True, "metadata": True, "validation": True},
+            outputs={
+                "load": "output",
+                "metadata": {
+                    "name": "测试插件",
+                    "description": "测试插件描述",
+                    "type": "application",
+                    "homepage": "https://example.com/",
+                    "supported_adapters": None,
+                },
+                "validation": None,
+            },
+        ),
+        RegistryPlugin(
+            name="测试插件",
+            module_name="test_module",
+            author="test_author",
+            version="1.0.0",
+            desc="测试插件描述",
+            homepage="https://example.com/",
+            project_link="test-plugin",
+            tags=[],
+            supported_adapters=None,
+            type="application",
+            time="2024-01-01T00:00:00.000000+08:00",
+            is_official=False,
+            valid=True,
+            skip_test=False,
+        ),
+    )
+
+    # Mock get_plugins_sorted_by_test_time 方法来验证调用
+    test = StoreTest()
+    mocked_get_sorted = mocker.patch.object(test, "get_plugins_sorted_by_test_time")
+
+    # 设置预期的排序结果（按测试时间倒序）
+    # nonebot-plugin-treehelp 的测试时间是 2024-07-13T04:41:40.905441Z
+    # nonebot-plugin-datastore 的测试时间是 2023-06-26T22:08:18.945584+08:00
+    # 所以 treehelp 应该排在前面
+    mocked_get_sorted.return_value = [
+        "nonebot-plugin-treehelp:nonebot_plugin_treehelp",
+        "nonebot-plugin-datastore:nonebot_plugin_datastore",
+        "nonebot-plugin-wordcloud:nonebot_plugin_wordcloud",  # 没有测试结果的插件
+    ]
+
+    # 使用 recent=True 参数运行测试
+    await test.run(limit=1, offset=0, force=False, recent=True)
+
+    # 验证 get_plugins_sorted_by_test_time 被调用
+    mocked_get_sorted.assert_called_once()
+
+    # 验证测试了第一个插件（最近测试的）
+    mocked_validate_plugin.assert_called_once_with(
+        store_plugin=StorePlugin(
+            tags=[],
+            module_name="nonebot_plugin_treehelp",
+            project_link="nonebot-plugin-treehelp",
+            author_id=1,
+            is_official=False,
+        ),
+        previous_plugin=RegistryPlugin(
+            tags=[],
+            module_name="nonebot_plugin_treehelp",
+            project_link="nonebot-plugin-treehelp",
+            name="帮助",
+            desc="获取插件帮助信息",
+            author="he0119",
+            homepage="https://github.com/he0119/nonebot-plugin-treehelp",
+            is_official=False,
+            type="application",
+            supported_adapters=None,
+            valid=True,
+            time="2024-07-13T04:41:40.905441Z",
+            version="0.5.0",
+            skip_test=False,
+        ),
+        config="TEST_CONFIG=true",
+    )
+
+
+async def test_get_plugins_sorted_by_test_time(
+    mocked_store_data: dict[str, Path], mocked_api: MockRouter
+) -> None:
+    """测试 get_plugins_sorted_by_test_time 方法的排序逻辑"""
+    from src.providers.store_test.store import StoreTest
+
+    test = StoreTest()
+    sorted_plugins = test.get_plugins_sorted_by_test_time()
+
+    # 验证插件是否按测试时间倒序排列
+    # nonebot-plugin-treehelp 的测试时间是 2024-07-13T04:41:40.905441Z (更晚)
+    # nonebot-plugin-datastore 的测试时间是 2023-06-26T22:08:18.945584+08:00 (更早)
+    # nonebot-plugin-wordcloud 没有测试结果，应该在最后
+    expected_order = [
+        "nonebot-plugin-treehelp:nonebot_plugin_treehelp",
+        "nonebot-plugin-datastore:nonebot_plugin_datastore",
+        "nonebot-plugin-wordcloud:nonebot_plugin_wordcloud",
+    ]
+
+    assert sorted_plugins == expected_order
+
+
 async def test_store_test_with_key_raise(
     mocked_store_data: dict[str, Path], mocked_api: MockRouter, mocker: MockerFixture
 ):
