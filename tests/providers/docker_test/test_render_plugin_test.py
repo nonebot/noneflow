@@ -122,6 +122,15 @@ class Driver(BaseDriver, ASGIMixin, HTTPClientMixin, WebSocketClientMixin):
         raise NotImplementedError
 
     @override
+    async def stream_request(
+        self,
+        setup: Request,
+        *,
+        chunk_size: int = 1024,
+    ) -> AsyncGenerator[Response, None]:
+        raise NotImplementedError
+
+    @override
     def get_session(
         self,
         params: QueryTypes = None,

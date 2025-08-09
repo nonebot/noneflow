@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 为 FakeDriver 实现 stream_request 方法
+
 ## [4.4.2] - 2025-07-01
 
 ### Fixed
