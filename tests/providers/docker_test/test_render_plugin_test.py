@@ -60,7 +60,7 @@ async def test_render_fake(app: App):
     assert comment == snapshot(
         """\
 from typing import Optional, Union
-
+from collections.abc import AsyncGenerator
 from nonebot import logger
 from nonebot.drivers import (
     ASGIMixin,
