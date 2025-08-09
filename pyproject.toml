@@ -1,6 +1,6 @@
 [project]
 name = "noneflow"
-version = "4.4.2"
+version = "4.4.3"
 description = "Manage publish related issues in nonebot2 project"
 authors = [{ name = "uy_sun", email = "hmy0119@gmail.com" }]
 readme = "README.md"
@@ -114,7 +114,7 @@ review=["review"]
 fix=["create","fix"]
 
 [tool.bumpversion]
-current_version = "4.4.2"
+current_version = "4.4.3"
 commit = true
 message = "chore(release): {new_version}"
 
