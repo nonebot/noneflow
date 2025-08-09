@@ -36,16 +36,25 @@ def registry_update():
 @click.option("-o", "--offset", default=0, show_default=True, help="测试插件偏移量")
 @click.option("-f", "--force", default=False, is_flag=True, help="强制重新测试")
 @click.option("-k", "--key", default=None, show_default=True, help="测试插件标识符")
-def plugin_test(limit: int, offset: int, force: bool, key: str | None):
+@click.option(
+    "-r",
+    "--recent",
+    default=False,
+    is_flag=True,
+    help="按测试时间倒序排列，优先测试最近测试的插件",
+)
+def plugin_test(limit: int, offset: int, force: bool, key: str | None, recent: bool):
     """插件测试"""
     from .store import StoreTest
 
     test = StoreTest()
 
     if key:
+        # 指定了 key，直接测试该插件
         asyncio.run(test.run_single_plugin(key, force))
     else:
-        asyncio.run(test.run(limit, offset, force))
+        # 没有指定 key，根据recent参数决定测试顺序
+        asyncio.run(test.run(limit, offset, force, recent))
 
 
 if __name__ == "__main__":

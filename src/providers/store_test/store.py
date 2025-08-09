@@ -147,6 +147,31 @@ class StoreTest:
             return True
         return False
 
+    def get_plugins_sorted_by_test_time(self) -> list[str]:
+        """获取按测试时间倒序排列的插件列表"""
+        # 获取所有有测试结果的插件，按测试时间倒序排列
+        plugins_with_time = []
+        for key in self._store_plugins.keys():
+            if key in self._previous_results:
+                test_time = self._previous_results[key].time
+                plugins_with_time.append((key, test_time))
+
+        # 按时间倒序排列（最新的在前面）
+        plugins_with_time.sort(key=lambda x: x[1], reverse=True)
+
+        # 提取插件 key 列表
+        sorted_plugins = [plugin[0] for plugin in plugins_with_time]
+
+        # 将没有测试结果的插件添加到列表末尾
+        untested_plugins = [
+            key
+            for key in self._store_plugins.keys()
+            if key not in self._previous_results
+        ]
+        sorted_plugins.extend(untested_plugins)
+
+        return sorted_plugins
+
     def read_plugin_config(self, key: str) -> str:
         """获取插件配置
 
@@ -177,18 +202,26 @@ class StoreTest:
         )
         return new_result, new_plugin
 
-    async def test_plugins(self, limit: int, offset: int, force: bool):
+    async def test_plugins(
+        self, limit: int, offset: int, force: bool, recent: bool = False
+    ):
         """批量测试插件
 
         Args:
             limit (int): 至多有效测试插件数量
             offset (int): 测试插件偏移量
             force (bool): 是否强制测试
+            recent (bool): 是否按测试时间倒序排列，优先测试最近测试的插件，默认为 False
         """
         new_results: dict[str, StoreTestResult] = {}
         new_plugins: dict[str, RegistryPlugin] = {}
         i = 1
-        test_plugins = list(self._store_plugins.keys())[offset:]
+
+        # 根据 recent 参数决定插件测试顺序
+        if recent:
+            test_plugins = self.get_plugins_sorted_by_test_time()[offset:]
+        else:
+            test_plugins = list(self._store_plugins.keys())[offset:]
 
         for key in test_plugins:
             if i > limit:
@@ -257,15 +290,18 @@ class StoreTest:
         # 插件配置不需要压缩
         dump_json(PLUGIN_CONFIG_PATH, self._plugin_configs, False)
 
-    async def run(self, limit: int, offset: int = 0, force: bool = False):
+    async def run(
+        self, limit: int, offset: int = 0, force: bool = False, recent: bool = False
+    ):
         """运行商店测试
 
         Args:
             limit (int): 至多有效测试插件数量
             offset (int): 测试插件偏移量
             force (bool): 是否强制测试，默认为 False
+            recent (bool): 是否按测试时间倒序排列，优先测试最近测试的插件，默认为 False
         """
-        new_results, new_plugins = await self.test_plugins(limit, offset, force)
+        new_results, new_plugins = await self.test_plugins(limit, offset, force, recent)
         self.merge_plugin_data(new_results, new_plugins)
         await self.sync_store()
         self.dump_data()
@@ -276,7 +312,7 @@ class StoreTest:
 
         Args:
             key (str): 插件标识符
-            forece (bool): 是否强制测试，默认为 False
+            force (bool): 是否强制测试，默认为 False
         """
         if self.should_skip(key, force):
             return

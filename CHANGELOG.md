@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Added
+
+- 插件测试支持按测试时间倒序排列进行测试
+
 ## [4.4.3] - 2025-08-10
 
 ### Fixed
