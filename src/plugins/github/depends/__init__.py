@@ -205,6 +205,6 @@ async def setup_git(
     )
 
 
-async def install_pre_commit_hooks():
-    """安装 pre-commit 钩子"""
-    run_shell_command(["pre-commit", "install", "--install-hooks"])
+# async def install_pre_commit_hooks():
+#     """安装 pre-commit 钩子"""
+#     run_shell_command(["pre-commit", "install", "--install-hooks"])
