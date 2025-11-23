@@ -1,7 +1,7 @@
 from nonebug import App
 from pytest_mock import MockerFixture
 
-from tests.plugins.github.utils import get_github_bot
+from tests.plugins.github.utils import GitHubApi, get_github_bot, should_call_apis
 
 
 async def test_get_pull_requests_by_label(app: App, mocker: MockerFixture) -> None:
@@ -22,10 +22,10 @@ async def test_get_pull_requests_by_label(app: App, mocker: MockerFixture) -> No
     async with app.test_api() as ctx:
         adapter, bot = get_github_bot(ctx)
 
-        ctx.should_call_api(
-            "rest.pulls.async_list",
-            {"owner": "owner", "repo": "repo", "state": "open"},
-            mock_pulls_resp,
+        should_call_apis(
+            ctx,
+            [GitHubApi(api="rest.pulls.async_list", result=mock_pulls_resp)],
+            [{"owner": "owner", "repo": "repo", "state": "open"}],
         )
 
         pulls = await get_pull_requests_by_label(
@@ -54,10 +54,10 @@ async def test_get_pull_requests_by_label_not_match(
     async with app.test_api() as ctx:
         adapter, bot = get_github_bot(ctx)
 
-        ctx.should_call_api(
-            "rest.pulls.async_list",
-            {"owner": "owner", "repo": "repo", "state": "open"},
-            mock_pulls_resp,
+        should_call_apis(
+            ctx,
+            [GitHubApi(api="rest.pulls.async_list", result=mock_pulls_resp)],
+            [{"owner": "owner", "repo": "repo", "state": "open"}],
         )
 
         pulls = await get_pull_requests_by_label(

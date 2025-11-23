@@ -3,10 +3,17 @@ from nonebug import App
 from pytest_mock import MockerFixture
 
 from tests.plugins.github.event import get_mock_event
-from tests.plugins.github.utils import get_github_bot
+from tests.plugins.github.utils import (
+    GitHubApi,
+    assert_subprocess_run_calls,
+    get_github_bot,
+    should_call_apis,
+)
 
 
-async def test_auto_merge(app: App, mocker: MockerFixture, mock_installation) -> None:
+async def test_auto_merge(
+    app: App, mocker: MockerFixture, mock_installation, mock_installation_token
+) -> None:
     """测试审查后自动合并
 
     可直接合并的情况
@@ -24,35 +31,38 @@ async def test_auto_merge(app: App, mocker: MockerFixture, mock_installation) ->
         adapter, bot = get_github_bot(ctx)
         event = get_mock_event(PullRequestReviewSubmitted)
 
-        ctx.should_call_api(
-            "rest.apps.async_get_repo_installation",
-            {"owner": "he0119", "repo": "action-test"},
-            mock_installation,
-        )
-        ctx.should_call_api(
-            "rest.pulls.async_merge",
-            {
-                "owner": "he0119",
-                "repo": "action-test",
-                "pull_number": 100,
-                "merge_method": "rebase",
-            },
-            True,
+        should_call_apis(
+            ctx,
+            [
+                GitHubApi(
+                    api="rest.apps.async_get_repo_installation",
+                    result=mock_installation,
+                ),
+                GitHubApi(
+                    api="rest.apps.async_create_installation_access_token",
+                    result=mock_installation_token,
+                ),
+                GitHubApi(api="rest.pulls.async_merge", result=True),
+            ],
+            [
+                {"owner": "he0119", "repo": "action-test"},
+                {"installation_id": mock_installation.parsed_data.id},
+                {
+                    "owner": "he0119",
+                    "repo": "action-test",
+                    "pull_number": 100,
+                    "merge_method": "rebase",
+                },
+            ],
         )
 
         ctx.receive_event(bot, event)
         ctx.should_pass_rule(auto_merge_matcher)
 
     # 测试 git 命令
-    mock_subprocess_run.assert_has_calls(
-        [
-            mocker.call(
-                ["git", "config", "--global", "safe.directory", "*"],
-                check=True,
-                capture_output=True,
-            ),  # type: ignore
-        ],
-        any_order=True,
+    assert_subprocess_run_calls(
+        mock_subprocess_run,
+        [["git", "config", "--global", "safe.directory", "*"]],
     )
 
 

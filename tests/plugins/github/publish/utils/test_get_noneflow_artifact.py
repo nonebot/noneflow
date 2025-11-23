@@ -83,18 +83,18 @@ async def test_get_noneflow_artifact_success(app: App, mocker: MockerFixture) ->
                 ),
             ],
             snapshot(
-                {
-                    0: {
+                [
+                    {
                         "owner": "owner",
                         "repo": "repo",
                         "issue_number": 76,
                     },
-                    1: {
+                    {
                         "owner": "owner",
                         "repo": "repo",
                         "run_id": 12345678901,
                     },
-                }
+                ]
             ),
         )
 
@@ -136,13 +136,13 @@ async def test_get_noneflow_artifact_no_comment(
                 ),
             ],
             snapshot(
-                {
-                    0: {
+                [
+                    {
                         "owner": "owner",
                         "repo": "repo",
                         "issue_number": 76,
                     },
-                }
+                ]
             ),
         )
 
@@ -189,13 +189,13 @@ async def test_get_noneflow_artifact_empty_comment(
                 ),
             ],
             snapshot(
-                {
-                    0: {
+                [
+                    {
                         "owner": "owner",
                         "repo": "repo",
                         "issue_number": 76,
                     },
-                }
+                ]
             ),
         )
 
@@ -249,13 +249,13 @@ async def test_get_noneflow_artifact_no_history(
                 ),
             ],
             snapshot(
-                {
-                    0: {
+                [
+                    {
                         "owner": "owner",
                         "repo": "repo",
                         "issue_number": 76,
                     },
-                }
+                ]
             ),
         )
 
@@ -326,18 +326,18 @@ async def test_get_noneflow_artifact_no_noneflow_artifact(
                 ),
             ],
             snapshot(
-                {
-                    0: {
+                [
+                    {
                         "owner": "owner",
                         "repo": "repo",
                         "issue_number": 76,
                     },
-                    1: {
+                    {
                         "owner": "owner",
                         "repo": "repo",
                         "run_id": 12345678901,
                     },
-                }
+                ]
             ),
         )
 
@@ -393,13 +393,13 @@ async def test_get_noneflow_artifact_invalid_run_id(
                 ),
             ],
             snapshot(
-                {
-                    0: {
+                [
+                    {
                         "owner": "owner",
                         "repo": "repo",
                         "issue_number": 76,
                     },
-                }
+                ]
             ),
         )
 

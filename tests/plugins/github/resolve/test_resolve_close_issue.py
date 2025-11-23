@@ -23,6 +23,7 @@ async def test_resolve_close_issue(
     app: App,
     mocker: MockerFixture,
     mock_installation: MagicMock,
+    mock_installation_token: MagicMock,
     mocked_api: MockRouter,
 ) -> None:
     """测试能正确关闭议题"""
@@ -54,6 +55,10 @@ async def test_resolve_close_issue(
                     result=mock_installation,
                 ),
                 GitHubApi(
+                    api="rest.apps.async_create_installation_access_token",
+                    result=mock_installation_token,
+                ),
+                GitHubApi(
                     api="rest.issues.async_get",
                     result=mock_issues_resp,
                 ),
@@ -63,17 +68,18 @@ async def test_resolve_close_issue(
                 ),
             ],
             snapshot(
-                {
-                    0: {"owner": "he0119", "repo": "action-test"},
-                    1: {"owner": "he0119", "repo": "action-test", "issue_number": 76},
-                    2: {
+                [
+                    {"owner": "he0119", "repo": "action-test"},
+                    {"installation_id": mock_installation.parsed_data.id},
+                    {"owner": "he0119", "repo": "action-test", "issue_number": 76},
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 76,
                         "state": "closed",
                         "state_reason": "not_planned",
                     },
-                }
+                ]
             ),
         )
         ctx.receive_event(bot, event)
@@ -84,6 +90,13 @@ async def test_resolve_close_issue(
         mock_subprocess_run,
         [
             ["git", "config", "--global", "safe.directory", "*"],
+            [
+                "git",
+                "config",
+                "--global",
+                "url.https://x-access-token:test-token@github.com/.insteadOf",
+                "https://github.com/",
+            ],
             ["git", "push", "origin", "--delete", "publish/issue76"],
         ],
     )
@@ -96,6 +109,7 @@ async def test_resolve_close_issue_already_closed(
     app: App,
     mocker: MockerFixture,
     mock_installation: MagicMock,
+    mock_installation_token: MagicMock,
     mocked_api: MockRouter,
 ) -> None:
     """测试议题已经关闭的情况
@@ -133,6 +147,10 @@ async def test_resolve_close_issue_already_closed(
                     result=mock_installation,
                 ),
                 GitHubApi(
+                    api="rest.apps.async_create_installation_access_token",
+                    result=mock_installation_token,
+                ),
+                GitHubApi(
                     api="rest.issues.async_get",
                     result=mock_issues_resp,
                 ),
@@ -142,17 +160,18 @@ async def test_resolve_close_issue_already_closed(
                 ),
             ],
             snapshot(
-                {
-                    0: {"owner": "he0119", "repo": "action-test"},
-                    1: {"owner": "he0119", "repo": "action-test", "issue_number": 76},
-                    2: {
+                [
+                    {"owner": "he0119", "repo": "action-test"},
+                    {"installation_id": mock_installation.parsed_data.id},
+                    {"owner": "he0119", "repo": "action-test", "issue_number": 76},
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 76,
                         "state": "closed",
                         "state_reason": "not_planned",
                     },
-                }
+                ]
             ),
         )
         ctx.receive_event(bot, event)
@@ -163,6 +182,13 @@ async def test_resolve_close_issue_already_closed(
         mock_subprocess_run,
         [
             ["git", "config", "--global", "safe.directory", "*"],
+            [
+                "git",
+                "config",
+                "--global",
+                "url.https://x-access-token:test-token@github.com/.insteadOf",
+                "https://github.com/",
+            ],
             ["git", "push", "origin", "--delete", "publish/issue76"],
         ],
     )

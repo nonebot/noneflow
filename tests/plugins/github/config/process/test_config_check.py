@@ -31,6 +31,7 @@ async def test_process_config_check(
     mocked_api: MockRouter,
     tmp_path: Path,
     mock_installation,
+    mock_installation_token,
     mock_results: dict[str, Path],
 ) -> None:
     """测试发布检查不通过"""
@@ -119,6 +120,10 @@ async def test_process_config_check(
                 "result": mock_installation,
             },
             {
+                "api": "rest.apps.async_create_installation_access_token",
+                "result": mock_installation_token,
+            },
+            {
                 "api": "rest.issues.async_get",
                 "result": mock_issues_resp,
             },
@@ -155,6 +160,7 @@ async def test_process_config_check(
         # 对应的 API 数据
         api_data = [
             {"owner": "he0119", "repo": "action-test"},
+            {"installation_id": mock_installation.parsed_data.id},
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
             snapshot(
                 {
@@ -282,6 +288,13 @@ log_level=DEBUG
         mock_subprocess_run,
         [
             ["git", "config", "--global", "safe.directory", "*"],
+            [
+                "git",
+                "config",
+                "--global",
+                "url.https://x-access-token:test-token@github.com/.insteadOf",
+                "https://github.com/",
+            ],
             ["git", "fetch", "origin", "results"],
             ["git", "checkout", "results"],
             ["git", "switch", "-C", "config/issue80"],

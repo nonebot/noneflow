@@ -62,14 +62,14 @@ async def test_update_issue_title(app: App, mocker: MockerFixture) -> None:
                 GitHubApi(api="rest.issues.async_update", result=True),
             ],
             snapshot(
-                {
-                    0: {
+                [
+                    {
                         "owner": "owner",
                         "repo": "repo",
                         "issue_number": 76,
                         "title": "new title",
                     },
-                }
+                ]
             ),
         )
         await issue_handler.update_issue_title("new title")
@@ -102,14 +102,14 @@ async def test_update_issue_body(app: App, mocker: MockerFixture) -> None:
                 GitHubApi(api="rest.issues.async_update", result=True),
             ],
             snapshot(
-                {
-                    0: {
+                [
+                    {
                         "owner": "owner",
                         "repo": "repo",
                         "issue_number": 76,
                         "body": "new body",
                     },
-                }
+                ]
             ),
         )
         await issue_handler.update_issue_body("new body")
@@ -142,15 +142,15 @@ async def test_close_issue(app: App, mocker: MockerFixture) -> None:
                 GitHubApi(api="rest.issues.async_update", result=True),
             ],
             snapshot(
-                {
-                    0: {
+                [
+                    {
                         "owner": "owner",
                         "repo": "repo",
                         "issue_number": 123,
                         "state": "closed",
                         "state_reason": "completed",
                     },
-                }
+                ]
             ),
         )
         await issue_handler.close_issue("completed")
@@ -183,8 +183,8 @@ async def test_create_pull_request(app: App, mocker: MockerFixture) -> None:
                 GitHubApi(api="rest.pulls.async_create", result=mock_pull_resp),
             ],
             snapshot(
-                {
-                    0: {
+                [
+                    {
                         "owner": "owner",
                         "repo": "repo",
                         "title": "new title",
@@ -192,7 +192,7 @@ async def test_create_pull_request(app: App, mocker: MockerFixture) -> None:
                         "base": "main",
                         "head": "branch",
                     },
-                }
+                ]
             ),
         )
         number = await issue_handler.create_pull_request("main", "new title", "branch")
@@ -227,13 +227,13 @@ async def test_list_comments(app: App, mocker: MockerFixture) -> None:
                 ),
             ],
             snapshot(
-                {
-                    0: {
+                [
+                    {
                         "owner": "owner",
                         "repo": "repo",
                         "issue_number": 76,
                     },
-                }
+                ]
             ),
         )
         await issue_handler.list_comments()
@@ -268,15 +268,15 @@ async def test_comment_issue(app: App, mocker: MockerFixture) -> None:
                 GitHubApi(api="rest.issues.async_create_comment", result=True),
             ],
             snapshot(
-                {
-                    0: {"owner": "owner", "repo": "repo", "issue_number": 76},
-                    1: {
+                [
+                    {"owner": "owner", "repo": "repo", "issue_number": 76},
+                    {
                         "owner": "owner",
                         "repo": "repo",
                         "issue_number": 76,
                         "body": "new comment",
                     },
-                }
+                ]
             ),
         )
         await issue_handler.resuable_comment_issue("new comment")
@@ -310,9 +310,9 @@ async def test_should_skip_test(app: App, mocker: MockerFixture) -> None:
                 ),
             ],
             snapshot(
-                {
-                    0: {"owner": "owner", "repo": "repo", "issue_number": 76},
-                }
+                [
+                    {"owner": "owner", "repo": "repo", "issue_number": 76},
+                ]
             ),
         )
         assert await issue_handler.should_skip_test() is False
@@ -350,9 +350,9 @@ async def test_should_skip_test_true(app: App, mocker: MockerFixture) -> None:
                 ),
             ],
             snapshot(
-                {
-                    0: {"owner": "owner", "repo": "repo", "issue_number": 76},
-                }
+                [
+                    {"owner": "owner", "repo": "repo", "issue_number": 76},
+                ]
             ),
         )
         assert await issue_handler.should_skip_test() is True
@@ -390,9 +390,9 @@ async def test_should_skip_test_not_admin(app: App, mocker: MockerFixture) -> No
                 ),
             ],
             snapshot(
-                {
-                    0: {"owner": "owner", "repo": "repo", "issue_number": 76},
-                }
+                [
+                    {"owner": "owner", "repo": "repo", "issue_number": 76},
+                ]
             ),
         )
         assert await issue_handler.should_skip_test() is False
@@ -480,9 +480,9 @@ async def test_get_self_comment(app: App, mocker: MockerFixture) -> None:
                 ),
             ],
             snapshot(
-                {
-                    0: {"owner": "owner", "repo": "repo", "issue_number": 76},
-                }
+                [
+                    {"owner": "owner", "repo": "repo", "issue_number": 76},
+                ]
             ),
         )
         comment = await issue_handler.get_self_comment()
@@ -520,9 +520,9 @@ async def test_get_self_comment_not_found(app: App, mocker: MockerFixture) -> No
                 ),
             ],
             snapshot(
-                {
-                    0: {"owner": "owner", "repo": "repo", "issue_number": 76},
-                }
+                [
+                    {"owner": "owner", "repo": "repo", "issue_number": 76},
+                ]
             ),
         )
         comment = await issue_handler.get_self_comment()
@@ -552,14 +552,14 @@ async def test_comment_issue_new(app: App, mocker: MockerFixture) -> None:
                 GitHubApi(api="rest.issues.async_create_comment", result=True),
             ],
             snapshot(
-                {
-                    0: {
+                [
+                    {
                         "owner": "owner",
                         "repo": "repo",
                         "issue_number": 76,
                         "body": "test comment",
                     },
-                }
+                ]
             ),
         )
         await issue_handler.comment_issue("test comment")
@@ -592,14 +592,14 @@ async def test_comment_issue_update_existing(app: App, mocker: MockerFixture) ->
                 GitHubApi(api="rest.issues.async_update_comment", result=True),
             ],
             snapshot(
-                {
-                    0: {
+                [
+                    {
                         "owner": "owner",
                         "repo": "repo",
                         "comment_id": 123,
                         "body": "updated comment",
                     },
-                }
+                ]
             ),
         )
         await issue_handler.comment_issue("updated comment", self_comment=mock_comment)
