@@ -14,7 +14,10 @@ from tests.plugins.github.utils import (
 
 
 async def test_config_process_pull_request(
-    app: App, mocker: MockerFixture, mock_installation: MagicMock
+    app: App,
+    mocker: MockerFixture,
+    mock_installation: MagicMock,
+    mock_installation_token: MagicMock,
 ) -> None:
     """配置流程的拉取请求关闭流程"""
     mock_subprocess_run = mocker.patch("subprocess.run")
@@ -43,6 +46,11 @@ async def test_config_process_pull_request(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
             mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.apps.async_create_installation_access_token",
+            {"installation_id": mock_installation.parsed_data.id},
+            mock_installation_token,
         )
         ctx.should_call_api(
             "rest.issues.async_get",
@@ -102,7 +110,7 @@ async def test_not_config(app: App, mocker: MockerFixture) -> None:
 
 
 async def test_process_config_pull_request_not_merged(
-    app: App, mocker: MockerFixture, mock_installation
+    app: App, mocker: MockerFixture, mock_installation, mock_installation_token
 ) -> None:
     """删除掉不合并的分支"""
     mock_subprocess_run = mocker.patch("subprocess.run")
@@ -120,6 +128,11 @@ async def test_process_config_pull_request_not_merged(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
             mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.apps.async_create_installation_access_token",
+            {"installation_id": mock_installation.parsed_data.id},
+            mock_installation_token,
         )
         ctx.should_call_api(
             "rest.issues.async_get",

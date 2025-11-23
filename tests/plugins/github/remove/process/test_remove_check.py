@@ -31,6 +31,7 @@ async def test_process_remove_bot_check(
     mocked_api: MockRouter,
     tmp_path: Path,
     mock_installation,
+    mock_installation_token,
 ):
     """测试正常的删除流程"""
     from src.plugins.github import plugin_config
@@ -80,6 +81,10 @@ async def test_process_remove_bot_check(
 
     apis: list[GitHubApi] = [
         {"api": "rest.apps.async_get_repo_installation", "result": mock_installation},
+        {
+            "api": "rest.apps.async_create_installation_access_token",
+            "result": mock_installation_token,
+        },
         {"api": "rest.issues.async_get", "result": mock_issues_resp},
         {"api": "rest.pulls.async_create", "result": mock_pulls_resp},
         {"api": "rest.issues.async_add_labels", "result": True},
@@ -91,6 +96,7 @@ async def test_process_remove_bot_check(
 
     data_list = [
         {"owner": "he0119", "repo": "action-test"},
+        {"installation_id": mock_installation.parsed_data.id},
         {"owner": "he0119", "repo": "action-test", "issue_number": 80},
         snapshot(
             {
@@ -156,6 +162,13 @@ async def test_process_remove_bot_check(
         mock_subprocess_run,
         [
             ["git", "config", "--global", "safe.directory", "*"],
+            [
+                "git",
+                "config",
+                "--global",
+                "url.https://x-access-token:test-token@github.com/.insteadOf",
+                "https://github.com/",
+            ],
             ["git", "switch", "-C", "remove/issue80"],
             ["git", "add", str(tmp_path / "bots.json5")],
             ["git", "config", "--global", "user.name", "test"],
@@ -180,6 +193,7 @@ async def test_process_remove_plugin_check(
     mocked_api: MockRouter,
     tmp_path: Path,
     mock_installation,
+    mock_installation_token,
 ):
     """测试正常的删除流程"""
     from src.plugins.github import plugin_config
@@ -230,6 +244,10 @@ async def test_process_remove_plugin_check(
 
     apis: list[GitHubApi] = [
         {"api": "rest.apps.async_get_repo_installation", "result": mock_installation},
+        {
+            "api": "rest.apps.async_create_installation_access_token",
+            "result": mock_installation_token,
+        },
         {"api": "rest.issues.async_get", "result": mock_issues_resp},
         {"api": "rest.pulls.async_create", "result": mock_pulls_resp},
         {"api": "rest.issues.async_add_labels", "result": True},
@@ -241,6 +259,7 @@ async def test_process_remove_plugin_check(
 
     data_list = [
         {"owner": "he0119", "repo": "action-test"},
+        {"installation_id": mock_installation.parsed_data.id},
         {"owner": "he0119", "repo": "action-test", "issue_number": 80},
         snapshot(
             {
@@ -306,6 +325,13 @@ async def test_process_remove_plugin_check(
 
     expected_commands = [
         ["git", "config", "--global", "safe.directory", "*"],
+        [
+            "git",
+            "config",
+            "--global",
+            "url.https://x-access-token:test-token@github.com/.insteadOf",
+            "https://github.com/",
+        ],
         ["git", "switch", "-C", "remove/issue80"],
         ["git", "add", str(tmp_path / "plugins.json5")],
         ["git", "config", "--global", "user.name", "test"],
@@ -325,6 +351,7 @@ async def test_process_remove_not_found_check(
     mocked_api: MockRouter,
     tmp_path: Path,
     mock_installation,
+    mock_installation_token,
 ):
     """要删除的包不在数据文件中的情况"""
     from src.plugins.github import plugin_config
@@ -362,6 +389,10 @@ async def test_process_remove_not_found_check(
 
     apis: list[GitHubApi] = [
         {"api": "rest.apps.async_get_repo_installation", "result": mock_installation},
+        {
+            "api": "rest.apps.async_create_installation_access_token",
+            "result": mock_installation_token,
+        },
         {"api": "rest.issues.async_get", "result": mock_issues_resp},
         {"api": "rest.issues.async_list_comments", "result": mock_list_comments_resp},
         {"api": "rest.issues.async_create_comment", "result": True},
@@ -369,6 +400,7 @@ async def test_process_remove_not_found_check(
 
     data_list = [
         {"owner": "he0119", "repo": "action-test"},
+        {"installation_id": mock_installation.parsed_data.id},
         {"owner": "he0119", "repo": "action-test", "issue_number": 80},
         {"owner": "he0119", "repo": "action-test", "issue_number": 80},
         {
@@ -418,6 +450,7 @@ async def test_process_remove_author_info_not_eq(
     mocked_api: MockRouter,
     tmp_path: Path,
     mock_installation,
+    mock_installation_token,
 ):
     """删除包时作者信息不相等的问题"""
     from src.plugins.github import plugin_config
@@ -467,6 +500,10 @@ async def test_process_remove_author_info_not_eq(
 
     apis: list[GitHubApi] = [
         {"api": "rest.apps.async_get_repo_installation", "result": mock_installation},
+        {
+            "api": "rest.apps.async_create_installation_access_token",
+            "result": mock_installation_token,
+        },
         {"api": "rest.issues.async_get", "result": mock_issues_resp},
         {"api": "rest.issues.async_list_comments", "result": mock_list_comments_resp},
         {"api": "rest.issues.async_create_comment", "result": True},
@@ -474,6 +511,7 @@ async def test_process_remove_author_info_not_eq(
 
     data_list = [
         {"owner": "he0119", "repo": "action-test"},
+        {"installation_id": mock_installation.parsed_data.id},
         {"owner": "he0119", "repo": "action-test", "issue_number": 80},
         {"owner": "he0119", "repo": "action-test", "issue_number": 80},
         {
@@ -523,6 +561,7 @@ async def test_process_remove_issue_info_not_found(
     mocked_api: MockRouter,
     tmp_path: Path,
     mock_installation,
+    mock_installation_token,
 ):
     """删除包时无法从议题获取信息的测试"""
     from src.plugins.github import plugin_config
@@ -570,6 +609,10 @@ async def test_process_remove_issue_info_not_found(
 
     apis: list[GitHubApi] = [
         {"api": "rest.apps.async_get_repo_installation", "result": mock_installation},
+        {
+            "api": "rest.apps.async_create_installation_access_token",
+            "result": mock_installation_token,
+        },
         {"api": "rest.issues.async_get", "result": mock_issues_resp},
         {"api": "rest.issues.async_list_comments", "result": mock_list_comments_resp},
         {"api": "rest.issues.async_create_comment", "result": True},
@@ -577,6 +620,7 @@ async def test_process_remove_issue_info_not_found(
 
     data_list = [
         {"owner": "he0119", "repo": "action-test"},
+        {"installation_id": mock_installation.parsed_data.id},
         {"owner": "he0119", "repo": "action-test", "issue_number": 80},
         {"owner": "he0119", "repo": "action-test", "issue_number": 80},
         {
@@ -626,6 +670,7 @@ async def test_process_remove_driver(
     mocked_api: MockRouter,
     tmp_path: Path,
     mock_installation,
+    mock_installation_token,
 ):
     """不支持驱动器类型的删除"""
     mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
@@ -654,6 +699,10 @@ async def test_process_remove_driver(
 
     apis: list[GitHubApi] = [
         {"api": "rest.apps.async_get_repo_installation", "result": mock_installation},
+        {
+            "api": "rest.apps.async_create_installation_access_token",
+            "result": mock_installation_token,
+        },
         {"api": "rest.issues.async_get", "result": mock_issues_resp},
         {"api": "rest.issues.async_list_comments", "result": mock_list_comments_resp},
         {"api": "rest.issues.async_create_comment", "result": True},
@@ -661,6 +710,7 @@ async def test_process_remove_driver(
 
     data_list = [
         {"owner": "he0119", "repo": "action-test"},
+        {"installation_id": mock_installation.parsed_data.id},
         {"owner": "he0119", "repo": "action-test", "issue_number": 80},
         {"owner": "he0119", "repo": "action-test", "issue_number": 80},
         {

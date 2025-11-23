@@ -27,6 +27,7 @@ async def test_resolve_pull_request(
     app: App,
     mocker: MockerFixture,
     mock_installation: MagicMock,
+    mock_installation_token: MagicMock,
     mocked_api: MockRouter,
     tmp_path: Path,
 ) -> None:
@@ -140,6 +141,10 @@ async def test_resolve_pull_request(
                     api="rest.apps.async_get_repo_installation",
                     result=mock_installation,
                 ),
+                GitHubApi(
+                    api="rest.apps.async_create_installation_access_token",
+                    result=mock_installation_token,
+                ),
                 GitHubApi(api="rest.issues.async_get", result=mock_issues_resp),
                 GitHubApi(api="rest.issues.async_update", result=True),
                 GitHubApi(api="rest.pulls.async_list", result=mock_pulls_resp),
@@ -161,29 +166,30 @@ async def test_resolve_pull_request(
             snapshot(
                 {
                     0: {"owner": "he0119", "repo": "action-test"},
-                    1: {"owner": "he0119", "repo": "action-test", "issue_number": 76},
-                    2: {
+                    1: {"installation_id": mock_installation.parsed_data.id},
+                    2: {"owner": "he0119", "repo": "action-test", "issue_number": 76},
+                    3: {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 76,
                         "state": "closed",
                         "state_reason": "completed",
                     },
-                    3: {"owner": "he0119", "repo": "action-test", "state": "open"},
-                    4: {"owner": "he0119", "repo": "action-test", "issue_number": 100},
+                    4: {"owner": "he0119", "repo": "action-test", "state": "open"},
                     5: {"owner": "he0119", "repo": "action-test", "issue_number": 100},
-                    6: {
+                    6: {"owner": "he0119", "repo": "action-test", "issue_number": 100},
+                    7: {
                         "owner": "he0119",
                         "repo": "action-test",
                         "run_id": 14156878699,
                     },
-                    7: {
+                    8: {
                         "owner": "he0119",
                         "repo": "action-test",
                         "artifact_id": 123456789,
                         "archive_format": "zip",
                     },
-                    8: {"owner": "he0119", "repo": "action-test", "issue_number": 101},
+                    9: {"owner": "he0119", "repo": "action-test", "issue_number": 101},
                 }
             ),
         )
@@ -195,6 +201,13 @@ async def test_resolve_pull_request(
         mock_subprocess_run,
         [
             ["git", "config", "--global", "safe.directory", "*"],
+            [
+                "git",
+                "config",
+                "--global",
+                "url.https://x-access-token:test-token@github.com/.insteadOf",
+                "https://github.com/",
+            ],
             ["git", "push", "origin", "--delete", "publish/issue76"],
             # 处理发布
             ["git", "checkout", "master"],

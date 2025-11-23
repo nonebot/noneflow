@@ -28,7 +28,7 @@ def get_issue_labels(labels: list[str]):
 
 
 async def test_config_auto_merge(
-    app: App, mocker: MockerFixture, mock_installation
+    app: App, mocker: MockerFixture, mock_installation, mock_installation_token
 ) -> None:
     """测试审查后自动合并
 
@@ -47,6 +47,11 @@ async def test_config_auto_merge(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
             mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.apps.async_create_installation_access_token",
+            {"installation_id": mock_installation.parsed_data.id},
+            mock_installation_token,
         )
         ctx.should_call_api(
             "rest.pulls.async_merge",

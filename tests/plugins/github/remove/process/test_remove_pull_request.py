@@ -14,7 +14,10 @@ from tests.plugins.github.utils import (
 
 
 async def test_remove_process_pull_request(
-    app: App, mocker: MockerFixture, mock_installation: MagicMock
+    app: App,
+    mocker: MockerFixture,
+    mock_installation: MagicMock,
+    mock_installation_token: MagicMock,
 ) -> None:
     """删除流程的拉取请求关闭流程"""
     mock_subprocess_run = mocker.patch("subprocess.run")
@@ -48,6 +51,11 @@ async def test_remove_process_pull_request(
             mock_installation,
         )
         ctx.should_call_api(
+            "rest.apps.async_create_installation_access_token",
+            {"installation_id": mock_installation.parsed_data.id},
+            mock_installation_token,
+        )
+        ctx.should_call_api(
             "rest.issues.async_get",
             {"owner": "he0119", "repo": "action-test", "issue_number": 76},
             mock_issues_resp,
@@ -79,6 +87,17 @@ async def test_remove_process_pull_request(
                 capture_output=True,
             ),
             mocker.call(
+                [
+                    "git",
+                    "config",
+                    "--global",
+                    "url.https://x-access-token:test-token@github.com/.insteadOf",
+                    "https://github.com/",
+                ],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
                 ["git", "push", "origin", "--delete", "publish/issue76"],
                 check=True,
                 capture_output=True,
@@ -105,7 +124,7 @@ async def test_not_remove(app: App, mocker: MockerFixture) -> None:
 
 
 async def test_process_remove_pull_request_not_merged(
-    app: App, mocker: MockerFixture, mock_installation
+    app: App, mocker: MockerFixture, mock_installation, mock_installation_token
 ) -> None:
     """删除掉不合并的分支"""
     mock_subprocess_run = mocker.patch("subprocess.run")
@@ -126,6 +145,11 @@ async def test_process_remove_pull_request_not_merged(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
             mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.apps.async_create_installation_access_token",
+            {"installation_id": mock_installation.parsed_data.id},
+            mock_installation_token,
         )
         ctx.should_call_api(
             "rest.issues.async_get",
@@ -151,6 +175,17 @@ async def test_process_remove_pull_request_not_merged(
         [
             mocker.call(
                 ["git", "config", "--global", "safe.directory", "*"],
+                check=True,
+                capture_output=True,
+            ),
+            mocker.call(
+                [
+                    "git",
+                    "config",
+                    "--global",
+                    "url.https://x-access-token:test-token@github.com/.insteadOf",
+                    "https://github.com/",
+                ],
                 check=True,
                 capture_output=True,
             ),

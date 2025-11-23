@@ -29,6 +29,7 @@ async def test_bot_process_publish_check(
     mocked_api: MockRouter,
     tmp_path: Path,
     mock_installation,
+    mock_installation_token,
 ) -> None:
     """测试机器人的发布流程"""
     from src.plugins.github import plugin_config
@@ -68,6 +69,11 @@ async def test_bot_process_publish_check(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
             mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.apps.async_create_installation_access_token",
+            {"installation_id": mock_installation.parsed_data.id},
+            mock_installation_token,
         )
         ctx.should_call_api(
             "rest.issues.async_get",
@@ -149,6 +155,13 @@ async def test_bot_process_publish_check(
         mock_subprocess_run,
         [
             ["git", "config", "--global", "safe.directory", "*"],
+            [
+                "git",
+                "config",
+                "--global",
+                "url.https://x-access-token:test-token@github.com/.insteadOf",
+                "https://github.com/",
+            ],
             ["git", "switch", "-C", "publish/issue80"],
             ["git", "add", str(tmp_path / "bots.json5")],
             ["git", "ls-remote", "--heads", "origin", "publish/issue80"],
@@ -191,6 +204,7 @@ async def test_adapter_process_publish_check(
     mocked_api: MockRouter,
     tmp_path: Path,
     mock_installation,
+    mock_installation_token,
 ) -> None:
     """测试适配器的发布流程"""
     from src.plugins.github import plugin_config
@@ -231,6 +245,11 @@ async def test_adapter_process_publish_check(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
             mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.apps.async_create_installation_access_token",
+            {"installation_id": mock_installation.parsed_data.id},
+            mock_installation_token,
         )
         ctx.should_call_api(
             "rest.issues.async_get",
@@ -324,6 +343,13 @@ async def test_adapter_process_publish_check(
         mock_subprocess_run,
         [
             ["git", "config", "--global", "safe.directory", "*"],
+            [
+                "git",
+                "config",
+                "--global",
+                "url.https://x-access-token:test-token@github.com/.insteadOf",
+                "https://github.com/",
+            ],
             ["git", "switch", "-C", "publish/issue80"],
             ["git", "add", str(tmp_path / "adapters.json5")],
             ["git", "ls-remote", "--heads", "origin", "publish/issue80"],
@@ -370,6 +396,7 @@ async def test_edit_title(
     mocked_api: MockRouter,
     tmp_path: Path,
     mock_installation,
+    mock_installation_token,
 ) -> None:
     """测试编辑标题
 
@@ -413,6 +440,11 @@ async def test_edit_title(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
             mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.apps.async_create_installation_access_token",
+            {"installation_id": mock_installation.parsed_data.id},
+            mock_installation_token,
         )
         ctx.should_call_api(
             "rest.issues.async_get",
@@ -520,6 +552,13 @@ async def test_edit_title(
         mock_subprocess_run,
         [
             ["git", "config", "--global", "safe.directory", "*"],
+            [
+                "git",
+                "config",
+                "--global",
+                "url.https://x-access-token:test-token@github.com/.insteadOf",
+                "https://github.com/",
+            ],
             ["git", "switch", "-C", "publish/issue80"],
             ["git", "add", str(tmp_path / "bots.json5")],
             ["git", "ls-remote", "--heads", "origin", "publish/issue80"],
@@ -562,6 +601,7 @@ async def test_edit_title_too_long(
     mocked_api: MockRouter,
     tmp_path: Path,
     mock_installation,
+    mock_installation_token,
 ) -> None:
     """测试编辑标题
 
@@ -606,6 +646,11 @@ async def test_edit_title_too_long(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
             mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.apps.async_create_installation_access_token",
+            {"installation_id": mock_installation.parsed_data.id},
+            mock_installation_token,
         )
         ctx.should_call_api(
             "rest.issues.async_get",
@@ -704,6 +749,7 @@ async def test_process_publish_check_not_pass(
     mocked_api: MockRouter,
     tmp_path: Path,
     mock_installation,
+    mock_installation_token,
 ) -> None:
     """测试发布检查不通过"""
     from src.plugins.github import plugin_config
@@ -740,6 +786,11 @@ async def test_process_publish_check_not_pass(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
             mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.apps.async_create_installation_access_token",
+            {"installation_id": mock_installation.parsed_data.id},
+            mock_installation_token,
         )
         ctx.should_call_api(
             "rest.issues.async_get",
@@ -843,7 +894,11 @@ async def test_comment_at_pull_request(
 
 
 async def test_issue_state_closed(
-    app: App, mocker: MockerFixture, mocked_api: MockRouter, mock_installation
+    app: App,
+    mocker: MockerFixture,
+    mocked_api: MockRouter,
+    mock_installation,
+    mock_installation_token,
 ) -> None:
     """测试议题已关闭
 
@@ -865,6 +920,11 @@ async def test_issue_state_closed(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
             mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.apps.async_create_installation_access_token",
+            {"installation_id": mock_installation.parsed_data.id},
+            mock_installation_token,
         )
         ctx.should_call_api(
             "rest.issues.async_get",
@@ -930,6 +990,7 @@ async def test_convert_pull_request_to_draft(
     mocked_api: MockRouter,
     tmp_path: Path,
     mock_installation,
+    mock_installation_token,
 ) -> None:
     """未通过时将拉取请求转换为草稿"""
     from src.plugins.github import plugin_config
@@ -972,6 +1033,11 @@ async def test_convert_pull_request_to_draft(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
             mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.apps.async_create_installation_access_token",
+            {"installation_id": mock_installation.parsed_data.id},
+            mock_installation_token,
         )
         ctx.should_call_api(
             "rest.issues.async_get",
@@ -1067,6 +1133,7 @@ async def test_process_publish_check_ready_for_review(
     mocked_api: MockRouter,
     tmp_path: Path,
     mock_installation,
+    mock_installation_token,
 ) -> None:
     """当之前失败后再次通过测试时，应该将拉取请求标记为 ready for review"""
     from src.plugins.github import plugin_config
@@ -1109,6 +1176,11 @@ async def test_process_publish_check_ready_for_review(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
             mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.apps.async_create_installation_access_token",
+            {"installation_id": mock_installation.parsed_data.id},
+            mock_installation_token,
         )
         ctx.should_call_api(
             "rest.issues.async_get",
@@ -1211,6 +1283,13 @@ mutation markPullRequestReadyForReview($pullRequestId: ID!) {
         mock_subprocess_run,
         [
             ["git", "config", "--global", "safe.directory", "*"],
+            [
+                "git",
+                "config",
+                "--global",
+                "url.https://x-access-token:test-token@github.com/.insteadOf",
+                "https://github.com/",
+            ],
             ["git", "switch", "-C", "publish/issue80"],
             ["git", "add", str(tmp_path / "bots.json5")],
             ["git", "ls-remote", "--heads", "origin", "publish/issue80"],
@@ -1253,6 +1332,7 @@ async def test_comment_immediate_after_pull_request_closed(
     mocked_api: MockRouter,
     tmp_path: Path,
     mock_installation,
+    mock_installation_token,
 ) -> None:
     """测试在拉取请求关闭后立即评论
 
@@ -1298,6 +1378,11 @@ async def test_comment_immediate_after_pull_request_closed(
             "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
             mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.apps.async_create_installation_access_token",
+            {"installation_id": mock_installation.parsed_data.id},
+            mock_installation_token,
         )
         ctx.should_call_api(
             "rest.issues.async_get",
@@ -1366,6 +1451,13 @@ async def test_comment_immediate_after_pull_request_closed(
         mock_subprocess_run,
         [
             ["git", "config", "--global", "safe.directory", "*"],
+            [
+                "git",
+                "config",
+                "--global",
+                "url.https://x-access-token:test-token@github.com/.insteadOf",
+                "https://github.com/",
+            ],
             ["git", "switch", "-C", "publish/issue80"],
             ["git", "add", str(tmp_path / "bots.json5")],
             ["git", "ls-remote", "--heads", "origin", "publish/issue80"],
