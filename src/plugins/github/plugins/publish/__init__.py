@@ -19,7 +19,6 @@ from src.plugins.github.constants import (
     TITLE_MAX_LENGTH,
 )
 from src.plugins.github.depends import (
-    bypass_git,
     get_github_handler,
     get_installation_id,
     get_issue_handler,
@@ -27,6 +26,7 @@ from src.plugins.github.depends import (
     get_related_issue_number,
     is_bot_triggered_workflow,
     is_publish_workflow,
+    setup_git,
 )
 from src.plugins.github.handlers import GithubHandler, IssueHandler
 from src.providers.validation.models import PublishType, ValidationDict
@@ -77,7 +77,7 @@ publish_check_matcher = on_type(
 )
 
 
-@publish_check_matcher.handle(parameterless=[Depends(bypass_git)])
+@publish_check_matcher.handle(parameterless=[Depends(setup_git)])
 async def handle_publish_plugin_check(
     bot: GitHubBot,
     state: T_State,
@@ -109,7 +109,7 @@ async def handle_publish_plugin_check(
         state["validation"] = result
 
 
-@publish_check_matcher.handle(parameterless=[Depends(bypass_git)])
+@publish_check_matcher.handle(parameterless=[Depends(setup_git)])
 async def handle_adapter_publish_check(
     bot: GitHubBot,
     state: T_State,
@@ -129,7 +129,7 @@ async def handle_adapter_publish_check(
         state["validation"] = result
 
 
-@publish_check_matcher.handle(parameterless=[Depends(bypass_git)])
+@publish_check_matcher.handle(parameterless=[Depends(setup_git)])
 async def handle_bot_publish_check(
     bot: GitHubBot,
     state: T_State,
@@ -149,7 +149,7 @@ async def handle_bot_publish_check(
         state["validation"] = result
 
 
-@publish_check_matcher.handle(parameterless=[Depends(bypass_git)])
+@publish_check_matcher.handle(parameterless=[Depends(setup_git)])
 async def handle_pull_request_and_update_issue(
     bot: GitHubBot,
     validation: ValidationDict = Arg(),
@@ -202,7 +202,7 @@ async def pr_close_rule(
 pr_close_matcher = on_type(PullRequestClosed, rule=Rule(pr_close_rule))
 
 
-@pr_close_matcher.handle(parameterless=[Depends(bypass_git)])
+@pr_close_matcher.handle(parameterless=[Depends(setup_git)])
 async def handle_pr_close(
     event: PullRequestClosed,
     bot: GitHubBot,
@@ -239,7 +239,7 @@ auto_merge_matcher = on_type(
 )
 
 
-@auto_merge_matcher.handle(parameterless=[Depends(bypass_git)])
+@auto_merge_matcher.handle(parameterless=[Depends(setup_git)])
 async def handle_auto_merge(
     bot: GitHubBot,
     event: PullRequestReviewSubmitted,

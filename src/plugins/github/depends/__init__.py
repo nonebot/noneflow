@@ -20,17 +20,6 @@ from src.providers.validation.models import PublishType
 from .utils import extract_issue_number_from_ref
 
 
-async def bypass_git():
-    """绕过检查"""
-    # https://github.blog/2022-04-18-highlights-from-git-2-36/#stricter-repository-ownership-checks
-    run_shell_command(["git", "config", "--global", "safe.directory", "*"])
-
-
-async def install_pre_commit_hooks():
-    """安装 pre-commit 钩子"""
-    run_shell_command(["pre-commit", "install", "--install-hooks"])
-
-
 async def get_labels(event: PullRequestEvent | IssuesEvent):
     """获取议题或拉取请求的标签"""
     if isinstance(event, PullRequestClosed | PullRequestReviewSubmitted):
@@ -186,3 +175,36 @@ async def is_config_workflow(
         return False
 
     return CONFIG_LABEL in labels
+
+
+async def setup_git(
+    bot: GitHubBot, installation_id: int = Depends(get_installation_id)
+):
+    """设置 Git 环境"""
+    # 绕过检查
+    # https://github.blog/2022-04-18-highlights-from-git-2-36/#stricter-repository-ownership-checks
+    run_shell_command(["git", "config", "--global", "safe.directory", "*"])
+
+    token = (
+        await bot.rest.apps.async_create_installation_access_token(
+            installation_id=installation_id
+        )
+    ).parsed_data.token
+
+    # 设置 GitHub App 令牌
+    # https://docs.github.com/zh/apps/creating-github-apps/authenticating-with-a-github-app/authenticating-as-a-github-app-installation
+    # https://github.com/actions/create-github-app-token/issues/204
+    run_shell_command(
+        [
+            "git",
+            "config",
+            "--global",
+            f"url.https://x-access-token:{token}@github.com/.insteadOf",
+            "https://github.com/",
+        ]
+    )
+
+
+async def install_pre_commit_hooks():
+    """安装 pre-commit 钩子"""
+    run_shell_command(["pre-commit", "install", "--install-hooks"])

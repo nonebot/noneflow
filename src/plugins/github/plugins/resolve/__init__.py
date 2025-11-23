@@ -4,11 +4,11 @@ from nonebot.params import Depends
 
 from src.plugins.github.constants import PUBLISH_LABEL, REMOVE_LABEL
 from src.plugins.github.depends import (
-    bypass_git,
     get_installation_id,
     get_related_issue_handler,
     get_related_issue_number,
     get_type_by_labels_name,
+    setup_git,
 )
 from src.plugins.github.handlers import GithubHandler, IssueHandler
 from src.plugins.github.plugins.publish.utils import (
@@ -57,7 +57,7 @@ async def pr_close_rule(
 pr_close_matcher = on_type(PullRequestClosed, rule=pr_close_rule, priority=10)
 
 
-@pr_close_matcher.handle(parameterless=[Depends(bypass_git)])
+@pr_close_matcher.handle(parameterless=[Depends(setup_git)])
 async def handle_pr_close(
     event: PullRequestClosed,
     bot: GitHubBot,

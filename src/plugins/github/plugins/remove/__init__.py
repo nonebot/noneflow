@@ -13,7 +13,6 @@ from pydantic_core import PydanticCustomError
 from src.plugins.github import plugin_config
 from src.plugins.github.constants import TITLE_MAX_LENGTH
 from src.plugins.github.depends import (
-    bypass_git,
     get_github_handler,
     get_installation_id,
     get_issue_handler,
@@ -21,6 +20,7 @@ from src.plugins.github.depends import (
     get_type_by_labels_name,
     is_bot_triggered_workflow,
     is_remove_workflow,
+    setup_git,
 )
 from src.plugins.github.handlers import GithubHandler, IssueHandler
 from src.plugins.github.typing import IssuesEvent
@@ -69,7 +69,7 @@ remove_check_matcher = on_type(
 )
 
 
-@remove_check_matcher.handle(parameterless=[Depends(bypass_git)])
+@remove_check_matcher.handle(parameterless=[Depends(setup_git)])
 async def handle_remove_check(
     bot: GitHubBot,
     installation_id: int = Depends(get_installation_id),
@@ -136,7 +136,7 @@ async def review_submitted_rule(
 auto_merge_matcher = on_type(PullRequestReviewSubmitted, rule=review_submitted_rule)
 
 
-@auto_merge_matcher.handle(parameterless=[Depends(bypass_git)])
+@auto_merge_matcher.handle(parameterless=[Depends(setup_git)])
 async def handle_auto_merge(
     bot: GitHubBot,
     event: PullRequestReviewSubmitted,
