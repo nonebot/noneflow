@@ -62,7 +62,7 @@ async def test_process_pull_request(
     mock_list_artifacts_resp.parsed_data = mock_list_artifacts_data
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _, bot = get_github_bot(ctx)
         event = get_mock_event(PullRequestClosed)
         event.payload.pull_request.merged = True
 
@@ -103,13 +103,13 @@ async def test_process_pull_request(
                 },
             ],
             snapshot(
-                {
-                    0: {"owner": "he0119", "repo": "action-test"},
-                    1: {"installation_id": mock_installation.parsed_data.id},
-                    2: {"owner": "he0119", "repo": "action-test", "issue_number": 76},
-                    3: {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-                    4: {"owner": "he0119", "repo": "action-test", "run_id": 3},
-                    5: {
+                [
+                    {"owner": "he0119", "repo": "action-test"},
+                    {"installation_id": mock_installation.parsed_data.id},
+                    {"owner": "he0119", "repo": "action-test", "issue_number": 76},
+                    {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+                    {"owner": "he0119", "repo": "action-test", "run_id": 3},
+                    {
                         "owner": "owner",
                         "repo": "registry",
                         "event_type": "registry_update",
@@ -118,15 +118,15 @@ async def test_process_pull_request(
                             "artifact_id": 233,
                         },
                     },
-                    6: {
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 80,
                         "state": "closed",
                         "state_reason": "completed",
                     },
-                    7: {"owner": "he0119", "repo": "action-test", "state": "open"},
-                }
+                    {"owner": "he0119", "repo": "action-test", "state": "open"},
+                ]
             ),
         )
 
@@ -160,7 +160,7 @@ async def test_process_pull_request_not_merged(
     mock_issues_resp.parsed_data = mock_issue
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _, bot = get_github_bot(ctx)
         event = get_mock_event(PullRequestClosed)
         assert isinstance(event, PullRequestClosed)
 
@@ -222,7 +222,7 @@ async def test_not_publish(app: App, mocker: MockerFixture) -> None:
     mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _, bot = get_github_bot(ctx)
         event = get_mock_event(PullRequestClosed)
         event.payload.pull_request.labels = []
 
@@ -240,7 +240,7 @@ async def test_extract_issue_number_from_ref_failed(
     mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _, bot = get_github_bot(ctx)
         event = get_mock_event(PullRequestClosed)
         event.payload.pull_request.head.ref = "1"
 

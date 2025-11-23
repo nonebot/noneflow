@@ -73,7 +73,7 @@ async def test_plugin_process_publish_check(
     check_json_data(plugin_config.input_config.plugin_path, [])
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = get_issue_labels(["Plugin", "Publish"])
 
@@ -127,11 +127,11 @@ async def test_plugin_process_publish_check(
                 },
             ],
             snapshot(
-                {
-                    0: {"owner": "he0119", "repo": "action-test"},
-                    1: {"installation_id": 123},
-                    2: {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-                    3: {
+                [
+                    {"owner": "he0119", "repo": "action-test"},
+                    {"installation_id": 123},
+                    {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 80,
@@ -159,8 +159,8 @@ log_level=DEBUG
 - [x] 🔥插件测试中，请稍候\
 """,
                     },
-                    4: {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-                    5: {
+                    {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 80,
@@ -188,8 +188,8 @@ log_level=DEBUG
 - [ ] 如需重新运行插件测试，请勾选左侧勾选框\
 """,
                     },
-                    6: {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-                    7: {
+                    {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 80,
@@ -223,13 +223,13 @@ log_level=DEBUG
 <!-- NONEFLOW -->
 """,
                     },
-                    8: {
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 80,
                         "title": "Plugin: name",
                     },
-                    9: {
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "title": "Plugin: name",
@@ -237,13 +237,13 @@ log_level=DEBUG
                         "base": "master",
                         "head": "publish/issue80",
                     },
-                    10: {
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 2,
                         "labels": ["Publish", "Plugin"],
                     },
-                }
+                ]
             ),
         )
 
@@ -352,7 +352,7 @@ async def test_plugin_process_publish_check_re_run(
     check_json_data(plugin_config.input_config.plugin_path, [])
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = get_issue_labels(["Plugin", "Publish"])
 
@@ -406,11 +406,11 @@ async def test_plugin_process_publish_check_re_run(
                 },
             ],
             snapshot(
-                {
-                    0: {"owner": "he0119", "repo": "action-test"},
-                    1: {"installation_id": 123},
-                    2: {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-                    3: {
+                [
+                    {"owner": "he0119", "repo": "action-test"},
+                    {"installation_id": 123},
+                    {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 80,
@@ -438,8 +438,8 @@ log_level=DEBUG
 - [x] 🔥插件测试中，请稍候\
 """,
                     },
-                    4: {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-                    5: {
+                    {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 80,
@@ -467,8 +467,8 @@ log_level=DEBUG
 - [ ] 如需重新运行插件测试，请勾选左侧勾选框\
 """,
                     },
-                    6: {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-                    7: {
+                    {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 80,
@@ -502,13 +502,13 @@ log_level=DEBUG
 <!-- NONEFLOW -->
 """,
                     },
-                    8: {
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 80,
                         "title": "Plugin: name",
                     },
-                    9: {
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "title": "Plugin: name",
@@ -516,13 +516,13 @@ log_level=DEBUG
                         "base": "master",
                         "head": "publish/issue80",
                     },
-                    10: {
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 2,
                         "labels": ["Publish", "Plugin"],
                     },
-                }
+                ]
             ),
         )
 
@@ -619,7 +619,7 @@ async def test_plugin_process_publish_check_missing_metadata(
     check_json_data(plugin_config.input_config.plugin_path, [])
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = get_issue_labels(["Plugin", "Publish"])
 
@@ -669,11 +669,11 @@ async def test_plugin_process_publish_check_missing_metadata(
                 },
             ],
             snapshot(
-                {
-                    0: {"owner": "he0119", "repo": "action-test"},
-                    1: {"installation_id": 123},
-                    2: {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-                    3: {
+                [
+                    {"owner": "he0119", "repo": "action-test"},
+                    {"installation_id": 123},
+                    {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 80,
@@ -701,8 +701,8 @@ log_level=DEBUG
 - [x] 🔥插件测试中，请稍候\
 """,
                     },
-                    4: {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-                    5: {
+                    {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 80,
@@ -730,8 +730,8 @@ log_level=DEBUG
 - [ ] 如需重新运行插件测试，请勾选左侧勾选框\
 """,
                     },
-                    6: {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-                    7: {
+                    {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 80,
@@ -766,18 +766,18 @@ log_level=DEBUG
 <!-- NONEFLOW -->
 """,
                     },
-                    8: {
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 80,
                         "title": "Plugin: project_link",
                     },
-                    9: {
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "head": "he0119:publish/issue80",
                     },
-                }
+                ]
             ),
         )
 
@@ -831,7 +831,7 @@ async def test_skip_plugin_check(
     check_json_data(plugin_config.input_config.plugin_path, [])
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _, bot = get_github_bot(ctx)
         event = get_mock_event(IssueCommentCreated, "issue-comment-skip")
 
         ctx.receive_event(bot, event)
@@ -886,11 +886,11 @@ async def test_skip_plugin_check(
                 },
             ],
             snapshot(
-                {
-                    0: {"owner": "he0119", "repo": "action-test"},
-                    1: {"installation_id": 123},
-                    2: {"owner": "he0119", "repo": "action-test", "issue_number": 70},
-                    3: {
+                [
+                    {"owner": "he0119", "repo": "action-test"},
+                    {"installation_id": 123},
+                    {"owner": "he0119", "repo": "action-test", "issue_number": 70},
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 70,
@@ -918,8 +918,8 @@ log_level=DEBUG
 - [x] 🔥插件测试中，请稍候\
 """,
                     },
-                    4: {"owner": "he0119", "repo": "action-test", "issue_number": 70},
-                    5: {
+                    {"owner": "he0119", "repo": "action-test", "issue_number": 70},
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 70,
@@ -957,7 +957,7 @@ log_level=DEBUG
 - [x] 🔥插件测试中，请稍候\
 """,
                     },
-                    6: {
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 70,
@@ -995,8 +995,8 @@ log_level=DEBUG
 - [ ] 如需重新运行插件测试，请勾选左侧勾选框\
 """,
                     },
-                    7: {"owner": "he0119", "repo": "action-test", "issue_number": 70},
-                    8: {
+                    {"owner": "he0119", "repo": "action-test", "issue_number": 70},
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 70,
@@ -1031,18 +1031,18 @@ log_level=DEBUG
 <!-- NONEFLOW -->
 """,
                     },
-                    9: {
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 70,
                         "title": "Plugin: project_link",
                     },
-                    10: {
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "head": "he0119:publish/issue70",
                     },
-                }
+                ]
             ),
         )
 

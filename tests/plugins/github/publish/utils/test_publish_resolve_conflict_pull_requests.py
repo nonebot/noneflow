@@ -154,17 +154,17 @@ async def test_resolve_conflict_pull_requests_adapter(
                 ),
             ],
             snapshot(
-                {
-                    0: {"owner": "owner", "repo": "repo", "issue_number": 1},
-                    1: {"owner": "owner", "repo": "repo", "issue_number": 1},
-                    2: {"owner": "owner", "repo": "repo", "run_id": 14156878699},
-                    3: {
+                [
+                    {"owner": "owner", "repo": "repo", "issue_number": 1},
+                    {"owner": "owner", "repo": "repo", "issue_number": 1},
+                    {"owner": "owner", "repo": "repo", "run_id": 14156878699},
+                    {
                         "owner": "owner",
                         "repo": "repo",
                         "artifact_id": 123456789,
                         "archive_format": "zip",
                     },
-                }
+                ]
             ),
         )
 
@@ -540,17 +540,17 @@ async def test_resolve_conflict_pull_requests_plugin(
                 ),
             ],
             snapshot(
-                {
-                    0: {"owner": "owner", "repo": "repo", "issue_number": 1},
-                    1: {"owner": "owner", "repo": "repo", "issue_number": 1},
-                    2: {"owner": "owner", "repo": "repo", "run_id": 14156878699},
-                    3: {
+                [
+                    {"owner": "owner", "repo": "repo", "issue_number": 1},
+                    {"owner": "owner", "repo": "repo", "issue_number": 1},
+                    {"owner": "owner", "repo": "repo", "run_id": 14156878699},
+                    {
                         "owner": "owner",
                         "repo": "repo",
                         "artifact_id": 123456789,
                         "archive_format": "zip",
                     },
-                }
+                ]
             ),
         )
 

@@ -68,18 +68,18 @@ async def test_resolve_close_issue(
                 ),
             ],
             snapshot(
-                {
-                    0: {"owner": "he0119", "repo": "action-test"},
-                    1: {"installation_id": mock_installation.parsed_data.id},
-                    2: {"owner": "he0119", "repo": "action-test", "issue_number": 76},
-                    3: {
+                [
+                    {"owner": "he0119", "repo": "action-test"},
+                    {"installation_id": mock_installation.parsed_data.id},
+                    {"owner": "he0119", "repo": "action-test", "issue_number": 76},
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 76,
                         "state": "closed",
                         "state_reason": "not_planned",
                     },
-                }
+                ]
             ),
         )
         ctx.receive_event(bot, event)
@@ -160,18 +160,18 @@ async def test_resolve_close_issue_already_closed(
                 ),
             ],
             snapshot(
-                {
-                    0: {"owner": "he0119", "repo": "action-test"},
-                    1: {"installation_id": mock_installation.parsed_data.id},
-                    2: {"owner": "he0119", "repo": "action-test", "issue_number": 76},
-                    3: {
+                [
+                    {"owner": "he0119", "repo": "action-test"},
+                    {"installation_id": mock_installation.parsed_data.id},
+                    {"owner": "he0119", "repo": "action-test", "issue_number": 76},
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 76,
                         "state": "closed",
                         "state_reason": "not_planned",
                     },
-                }
+                ]
             ),
         )
         ctx.receive_event(bot, event)

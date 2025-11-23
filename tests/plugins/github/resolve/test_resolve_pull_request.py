@@ -164,33 +164,33 @@ async def test_resolve_pull_request(
                 GitHubApi(api="rest.issues.async_get", result=mock_remove_issue_resp),
             ],
             snapshot(
-                {
-                    0: {"owner": "he0119", "repo": "action-test"},
-                    1: {"installation_id": mock_installation.parsed_data.id},
-                    2: {"owner": "he0119", "repo": "action-test", "issue_number": 76},
-                    3: {
+                [
+                    {"owner": "he0119", "repo": "action-test"},
+                    {"installation_id": mock_installation.parsed_data.id},
+                    {"owner": "he0119", "repo": "action-test", "issue_number": 76},
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "issue_number": 76,
                         "state": "closed",
                         "state_reason": "completed",
                     },
-                    4: {"owner": "he0119", "repo": "action-test", "state": "open"},
-                    5: {"owner": "he0119", "repo": "action-test", "issue_number": 100},
-                    6: {"owner": "he0119", "repo": "action-test", "issue_number": 100},
-                    7: {
+                    {"owner": "he0119", "repo": "action-test", "state": "open"},
+                    {"owner": "he0119", "repo": "action-test", "issue_number": 100},
+                    {"owner": "he0119", "repo": "action-test", "issue_number": 100},
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "run_id": 14156878699,
                     },
-                    8: {
+                    {
                         "owner": "he0119",
                         "repo": "action-test",
                         "artifact_id": 123456789,
                         "archive_format": "zip",
                     },
-                    9: {"owner": "he0119", "repo": "action-test", "issue_number": 101},
-                }
+                    {"owner": "he0119", "repo": "action-test", "issue_number": 101},
+                ]
             ),
         )
         ctx.receive_event(bot, event)
