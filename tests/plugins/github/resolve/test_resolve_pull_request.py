@@ -128,7 +128,7 @@ async def test_resolve_pull_request(
     mock_pulls_resp.parsed_data = [mock_publish_pull, mock_remove_pull]
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         event = get_mock_event(PullRequestClosed)
         event.payload.pull_request.labels = get_pr_labels(["Remove", "Bot"])

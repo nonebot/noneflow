@@ -62,7 +62,7 @@ async def test_get_noneflow_artifact_success(app: App, mocker: MockerFixture) ->
     mock_comments_resp.parsed_data = [mock_other_comment, mock_self_comment]
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         issue_handler = IssueHandler(
             bot=bot,
@@ -119,7 +119,7 @@ async def test_get_noneflow_artifact_no_comment(
     mock_comments_resp.parsed_data = []
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         issue_handler = IssueHandler(
             bot=bot,
@@ -172,7 +172,7 @@ async def test_get_noneflow_artifact_empty_comment(
     mock_comments_resp.parsed_data = [mock_empty_comment]
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         issue_handler = IssueHandler(
             bot=bot,
@@ -232,7 +232,7 @@ async def test_get_noneflow_artifact_no_history(
     mock_comments_resp.parsed_data = [mock_comment]
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         issue_handler = IssueHandler(
             bot=bot,
@@ -305,7 +305,7 @@ async def test_get_noneflow_artifact_no_noneflow_artifact(
     mock_artifacts_resp.parsed_data.artifacts = [mock_other_artifact]
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         issue_handler = IssueHandler(
             bot=bot,
@@ -376,7 +376,7 @@ async def test_get_noneflow_artifact_invalid_run_id(
     mock_comments_resp.parsed_data = [mock_comment]
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         issue_handler = IssueHandler(
             bot=bot,

@@ -62,7 +62,7 @@ async def test_process_pull_request(
     mock_list_artifacts_resp.parsed_data = mock_list_artifacts_data
 
     async with app.test_matcher() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(PullRequestClosed)
         event.payload.pull_request.merged = True
 
@@ -160,7 +160,7 @@ async def test_process_pull_request_not_merged(
     mock_issues_resp.parsed_data = mock_issue
 
     async with app.test_matcher() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(PullRequestClosed)
         assert isinstance(event, PullRequestClosed)
 
@@ -222,7 +222,7 @@ async def test_not_publish(app: App, mocker: MockerFixture) -> None:
     mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     async with app.test_matcher() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(PullRequestClosed)
         event.payload.pull_request.labels = []
 
@@ -240,7 +240,7 @@ async def test_extract_issue_number_from_ref_failed(
     mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     async with app.test_matcher() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(PullRequestClosed)
         event.payload.pull_request.head.ref = "1"
 

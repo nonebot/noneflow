@@ -20,7 +20,7 @@ async def test_comment_issue(app: App, mocker: MockerFixture):
     mock_list_comments_resp.parsed_data = [mock_comment]
 
     async with app.test_api() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         should_call_apis(
             ctx,
@@ -68,7 +68,7 @@ async def test_comment_issue_reuse(app: App, mocker: MockerFixture):
     mock_list_comments_resp.parsed_data = [mock_comment]
 
     async with app.test_api() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         should_call_apis(
             ctx,
@@ -113,7 +113,7 @@ async def test_comment_issue_reuse_same(app: App, mocker: MockerFixture):
     mock_list_comments_resp.parsed_data = [mock_comment]
 
     async with app.test_api() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         should_call_apis(
             ctx,

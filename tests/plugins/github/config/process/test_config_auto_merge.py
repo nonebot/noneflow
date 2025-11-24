@@ -44,7 +44,7 @@ async def test_config_auto_merge(
     mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(PullRequestReviewSubmitted)
         event.payload.pull_request.labels = get_issue_labels(["Config", "Plugin"])
 
@@ -96,7 +96,7 @@ async def test_auto_merge_not_remove(app: App, mocker: MockerFixture) -> None:
     mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(PullRequestReviewSubmitted)
         event.payload.pull_request.labels = []
 
@@ -117,7 +117,7 @@ async def test_auto_merge_not_member(app: App, mocker: MockerFixture) -> None:
     mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(PullRequestReviewSubmitted)
         event.payload.review.author_association = "CONTRIBUTOR"
         event.payload.pull_request.labels = get_issue_labels(["Config", "Plugin"])
@@ -139,7 +139,7 @@ async def test_auto_merge_not_approve(app: App, mocker: MockerFixture) -> None:
     mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(PullRequestReviewSubmitted)
         event.payload.pull_request.labels = get_issue_labels(["Config", "Plugin"])
         event.payload.review.state = "commented"

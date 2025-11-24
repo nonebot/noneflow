@@ -24,7 +24,7 @@ async def test_issue_property(app: App, mocker: MockerFixture) -> None:
     mock_pulls_resp.parsed_data = [mock_pull]
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         issue_handler = IssueHandler(
             bot=bot,
@@ -48,7 +48,7 @@ async def test_update_issue_title(app: App, mocker: MockerFixture) -> None:
     mock_issue.title = "old title"
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         issue_handler = IssueHandler(
             bot=bot,
@@ -88,7 +88,7 @@ async def test_update_issue_body(app: App, mocker: MockerFixture) -> None:
     mock_issue.body = "old body"
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         issue_handler = IssueHandler(
             bot=bot,
@@ -128,7 +128,7 @@ async def test_close_issue(app: App, mocker: MockerFixture) -> None:
     mock_issue.state = "open"
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         issue_handler = IssueHandler(
             bot=bot,
@@ -170,7 +170,7 @@ async def test_create_pull_request(app: App, mocker: MockerFixture) -> None:
     mock_issue.number = 76
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         issue_handler = IssueHandler(
             bot=bot,
@@ -211,7 +211,7 @@ async def test_list_comments(app: App, mocker: MockerFixture) -> None:
     mock_issue.number = 76
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         issue_handler = IssueHandler(
             bot=bot,
@@ -251,7 +251,7 @@ async def test_comment_issue(app: App, mocker: MockerFixture) -> None:
     mock_issue.number = 76
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         issue_handler = IssueHandler(
             bot=bot,
@@ -294,7 +294,7 @@ async def test_should_skip_test(app: App, mocker: MockerFixture) -> None:
     mock_comments_resp.parsed_data = []
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         issue_handler = IssueHandler(
             bot=bot,
@@ -334,7 +334,7 @@ async def test_should_skip_test_true(app: App, mocker: MockerFixture) -> None:
     mock_comments_resp.parsed_data = [mock_comment]
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         issue_handler = IssueHandler(
             bot=bot,
@@ -374,7 +374,7 @@ async def test_should_skip_test_not_admin(app: App, mocker: MockerFixture) -> No
     mock_comments_resp.parsed_data = [mock_comment]
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         issue_handler = IssueHandler(
             bot=bot,
@@ -413,7 +413,7 @@ async def test_commit_and_push(app: App, mocker: MockerFixture) -> None:
     mock_issue.user.id = 1
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         issue_handler = IssueHandler(
             bot=bot,
@@ -464,7 +464,7 @@ async def test_get_self_comment(app: App, mocker: MockerFixture) -> None:
     mock_issue.number = 76
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         issue_handler = IssueHandler(
             bot=bot,
@@ -504,7 +504,7 @@ async def test_get_self_comment_not_found(app: App, mocker: MockerFixture) -> No
     mock_issue.number = 76
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         issue_handler = IssueHandler(
             bot=bot,
@@ -538,7 +538,7 @@ async def test_comment_issue_new(app: App, mocker: MockerFixture) -> None:
     mock_issue.number = 76
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         issue_handler = IssueHandler(
             bot=bot,
@@ -578,7 +578,7 @@ async def test_comment_issue_update_existing(app: App, mocker: MockerFixture) ->
     mock_issue.number = 76
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         issue_handler = IssueHandler(
             bot=bot,

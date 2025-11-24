@@ -48,7 +48,7 @@ async def test_trigger_registry_update(app: App, mocker: MockerFixture):
     mock_list_artifacts_resp.parsed_data = mock_list_artifacts_data
 
     async with app.test_api() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         should_call_apis(
             ctx,
@@ -109,7 +109,7 @@ async def test_trigger_registry_update_missing_comment(app: App, mocker: MockerF
     mock_list_comments_resp.parsed_data = [mock_comment]
 
     async with app.test_api() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         should_call_apis(
             ctx,
@@ -173,7 +173,7 @@ async def test_trigger_registry_update_missing_artifact(
     mock_list_artifacts_resp.parsed_data = mock_list_artifacts_data
 
     async with app.test_api() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         should_call_apis(
             ctx,

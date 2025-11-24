@@ -42,7 +42,7 @@ async def test_remove_process_pull_request(
     mock_list_comments_resp.parsed_data = [mock_comment]
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         event = get_mock_event(PullRequestClosed)
         event.payload.pull_request.labels = get_pr_labels(["Remove", "Bot"])
@@ -111,7 +111,7 @@ async def test_not_remove(app: App, mocker: MockerFixture) -> None:
     mock_subprocess_run = mock_subprocess_run_with_side_effect(mocker)
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(PullRequestClosed)
         event.payload.pull_request.labels = []
 
@@ -135,7 +135,7 @@ async def test_process_remove_pull_request_not_merged(
     mock_issues_resp.parsed_data = mock_issue
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(PullRequestClosed)
         event.payload.pull_request.labels = get_pr_labels(["Remove", "Bot"])
 

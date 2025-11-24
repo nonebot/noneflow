@@ -73,7 +73,7 @@ async def test_plugin_process_publish_check(
     check_json_data(plugin_config.input_config.plugin_path, [])
 
     async with app.test_matcher() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = get_issue_labels(["Plugin", "Publish"])
 
@@ -352,7 +352,7 @@ async def test_plugin_process_publish_check_re_run(
     check_json_data(plugin_config.input_config.plugin_path, [])
 
     async with app.test_matcher() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = get_issue_labels(["Plugin", "Publish"])
 
@@ -619,7 +619,7 @@ async def test_plugin_process_publish_check_missing_metadata(
     check_json_data(plugin_config.input_config.plugin_path, [])
 
     async with app.test_matcher() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = get_issue_labels(["Plugin", "Publish"])
 
@@ -831,7 +831,7 @@ async def test_skip_plugin_check(
     check_json_data(plugin_config.input_config.plugin_path, [])
 
     async with app.test_matcher() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssueCommentCreated, "issue-comment-skip")
 
         ctx.receive_event(bot, event)

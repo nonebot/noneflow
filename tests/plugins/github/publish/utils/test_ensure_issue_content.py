@@ -17,7 +17,7 @@ async def test_ensure_issue_content(app: App, mocker: MockerFixture):
     from src.providers.models import RepoInfo
 
     async with app.test_api() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         issue = MockIssue(body="什么都没有", number=1)
         handler = IssueHandler(
             bot=bot,
@@ -67,7 +67,7 @@ async def test_ensure_issue_content_partial(app: App, mocker: MockerFixture):
     from src.providers.models import RepoInfo
 
     async with app.test_api() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         issue = MockIssue(body="### 插件名称\n\nname\n\n### 插件类型\n", number=1)
         handler = IssueHandler(
@@ -104,7 +104,7 @@ async def test_ensure_issue_content_complete(app: App, mocker: MockerFixture):
     from src.providers.models import RepoInfo
 
     async with app.test_api() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         issue = MockIssue(
             body="### 插件描述\n\n### 插件项目仓库/主页链接\n\n### 插件支持的适配器\n\n### 插件名称\n\nname\n\n### 插件类型\n",
             number=1,

@@ -109,7 +109,7 @@ async def test_process_config_check(
     mock_docker.return_value = mock_test_result
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = get_config_labels()
 
