@@ -76,7 +76,7 @@ async def test_resolve_conflict_pull_requests_bot(
     )
 
     async with app.test_api() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
@@ -163,7 +163,7 @@ async def test_resolve_conflict_pull_requests_plugin(
     )
 
     async with app.test_api() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         should_call_apis(
             ctx,
@@ -238,7 +238,7 @@ async def test_resolve_conflict_pull_requests_not_found(
     dump_json5(tmp_path / "plugins.json5", [])
 
     async with app.test_api() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         should_call_apis(
             ctx,

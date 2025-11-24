@@ -41,7 +41,7 @@ async def test_resolve_close_issue(
     mock_issues_resp.parsed_data = mock_issue
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         event = get_mock_event(PullRequestClosed)
         event.payload.pull_request.labels = get_pr_labels(["Publish", "Bot"])
@@ -133,7 +133,7 @@ async def test_resolve_close_issue_already_closed(
     mock_issues_resp.parsed_data = mock_issue
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         event = get_mock_event(PullRequestClosed)
         event.payload.pull_request.labels = get_pr_labels(["Publish", "Bot"])

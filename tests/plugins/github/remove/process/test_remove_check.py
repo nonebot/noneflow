@@ -150,7 +150,7 @@ async def test_process_remove_bot_check(
     ]
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
 
@@ -315,7 +315,7 @@ async def test_process_remove_plugin_check(
     ]
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
 
@@ -429,7 +429,7 @@ async def test_process_remove_not_found_check(
     ]
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
 
@@ -540,7 +540,7 @@ async def test_process_remove_author_info_not_eq(
     ]
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
 
@@ -649,7 +649,7 @@ async def test_process_remove_issue_info_not_found(
     ]
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
 
@@ -739,7 +739,7 @@ async def test_process_remove_driver(
     ]
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = get_issue_labels(["Remove", remove_type])
 
@@ -761,7 +761,7 @@ async def test_process_not_remove_label(app: App):
     remove_type = "Driver"
 
     async with app.test_matcher(remove_check_matcher) as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = get_issue_labels([remove_type])
         ctx.receive_event(bot, event)
@@ -770,7 +770,7 @@ async def test_process_not_remove_label(app: App):
 async def test_process_trigger_by_bot(app: App):
     """测试 Bot 触发工作流的情况"""
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssueCommentCreated)
         assert event.payload.comment.user
         event.payload.comment.user.type = "Bot"
@@ -779,7 +779,7 @@ async def test_process_trigger_by_bot(app: App):
         ctx.should_not_pass_rule()
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
         assert event.payload.sender.type
         event.payload.sender.type = "Bot"

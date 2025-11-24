@@ -129,7 +129,7 @@ async def test_resolve_conflict_pull_requests_adapter(
     )
 
     async with app.test_api() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
@@ -321,7 +321,7 @@ async def test_resolve_conflict_pull_requests_bot(
     )
 
     async with app.test_api() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
@@ -515,7 +515,7 @@ async def test_resolve_conflict_pull_requests_plugin(
     )
 
     async with app.test_api() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
@@ -651,7 +651,7 @@ async def test_resolve_conflict_pull_requests_plugin_not_valid(
     )
 
     async with app.test_api() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
@@ -732,7 +732,7 @@ async def test_resolve_conflict_pull_requests_draft(
     )
 
     async with app.test_api() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
@@ -793,7 +793,7 @@ async def test_resolve_conflict_pull_requests_ref(
     )
 
     async with app.test_api() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 

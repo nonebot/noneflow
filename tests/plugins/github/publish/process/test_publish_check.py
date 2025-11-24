@@ -63,7 +63,7 @@ async def test_bot_process_publish_check(
     check_json_data(plugin_config.input_config.bot_path, [])
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
 
         should_call_apis(
@@ -245,7 +245,7 @@ async def test_adapter_process_publish_check(
     check_json_data(plugin_config.input_config.adapter_path, [])
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = get_issue_labels(["Adapter", "Publish"])
 
@@ -448,7 +448,7 @@ async def test_edit_title(
     check_json_data(plugin_config.input_config.bot_path, [])
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
 
         should_call_apis(
@@ -659,7 +659,7 @@ async def test_edit_title_too_long(
     check_json_data(plugin_config.input_config.bot_path, [])
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
 
         should_call_apis(
@@ -800,7 +800,7 @@ async def test_process_publish_check_not_pass(
     check_json_data(plugin_config.input_config.bot_path, [])
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
 
         should_call_apis(
@@ -905,7 +905,7 @@ async def test_comment_at_pull_request(
     )
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssueCommentCreated, "pr-comment")
 
         ctx.receive_event(bot, event)
@@ -934,7 +934,7 @@ async def test_issue_state_closed(
     mock_issues_resp.parsed_data = mock_issue
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
 
         should_call_apis(
@@ -981,7 +981,7 @@ async def test_not_publish_issue(
     )
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = []
 
@@ -999,7 +999,7 @@ async def test_comment_by_self(
     )
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssueCommentCreated, "issue-comment-bot")
 
         ctx.receive_event(bot, event)
@@ -1049,7 +1049,7 @@ async def test_convert_pull_request_to_draft(
     check_json_data(plugin_config.input_config.bot_path, [])
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
 
         should_call_apis(
@@ -1192,7 +1192,7 @@ async def test_process_publish_check_ready_for_review(
     check_json_data(plugin_config.input_config.bot_path, [])
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
 
         should_call_apis(
@@ -1400,7 +1400,7 @@ async def test_comment_immediate_after_pull_request_closed(
     check_json_data(plugin_config.input_config.bot_path, [])
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(IssuesOpened)
 
         should_call_apis(

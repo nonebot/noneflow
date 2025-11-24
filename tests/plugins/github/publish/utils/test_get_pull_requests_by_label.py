@@ -20,7 +20,7 @@ async def test_get_pull_requests_by_label(app: App, mocker: MockerFixture) -> No
     mock_pulls_resp.parsed_data = [mock_pull]
 
     async with app.test_api() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         should_call_apis(
             ctx,
@@ -52,7 +52,7 @@ async def test_get_pull_requests_by_label_not_match(
     mock_pulls_resp.parsed_data = [mock_pull]
 
     async with app.test_api() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         should_call_apis(
             ctx,

@@ -13,7 +13,7 @@ async def test_update_issue_title(app: App) -> None:
     from src.providers.models import RepoInfo
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -45,7 +45,7 @@ async def test_update_issue_body(app: App) -> None:
     from src.providers.models import RepoInfo
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -77,7 +77,7 @@ async def test_create_dispatch_event(app: App) -> None:
     from src.providers.models import RepoInfo
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -112,7 +112,7 @@ async def test_list_comments(app: App, mocker: MockerFixture) -> None:
     mock_comments_resp.parsed_data = []
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -145,7 +145,7 @@ async def test_create_comment(app: App) -> None:
     from src.providers.models import RepoInfo
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -177,7 +177,7 @@ async def test_update_comment(app: App) -> None:
     from src.providers.models import RepoInfo
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -212,7 +212,7 @@ async def test_comment_issue(app: App, mocker: MockerFixture) -> None:
     mock_comments_resp.parsed_data = []
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -254,7 +254,7 @@ async def test_comment_issue_reuse(app: App, mocker: MockerFixture) -> None:
     mock_comments_resp.parsed_data = [mock_comment]
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -296,7 +296,7 @@ async def test_comment_issue_reuse_no_change(app: App, mocker: MockerFixture) ->
     mock_comments_resp.parsed_data = [mock_comment]
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -338,7 +338,7 @@ async def test_get_pull_requests_by_label(app: App, mocker: MockerFixture) -> No
     mock_pulls_resp.parsed_data = [mock_pull_bot, mock_pull_plugin]
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -370,7 +370,7 @@ async def test_get_pull_request_by_branch(app: App, mocker: MockerFixture) -> No
     mock_pulls_resp.parsed_data = [mock_pull]
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -403,7 +403,7 @@ async def test_get_pull_request_by_branch_empty(
     mock_pulls_resp.parsed_data = []
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -435,7 +435,7 @@ async def test_get_pull_request(app: App, mocker: MockerFixture) -> None:
     mock_pull_resp.parsed_data = mock_pull
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -472,7 +472,7 @@ async def test_draft_pull_request(app: App, mocker: MockerFixture) -> None:
     mock_pulls_resp.parsed_data = [mock_pull]
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -518,7 +518,7 @@ async def test_draft_pull_request_no_pr(app: App, mocker: MockerFixture) -> None
     mock_pulls_resp.parsed_data = []
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -553,7 +553,7 @@ async def test_draft_pull_request_drafted(app: App, mocker: MockerFixture) -> No
     mock_pulls_resp.parsed_data = [mock_pull]
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -587,7 +587,7 @@ async def test_merge_pull_request(app: App, mocker: MockerFixture) -> None:
     mock_pull_resp.parsed_data = mock_pull
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -630,7 +630,7 @@ async def test_update_pull_request_status(app: App, mocker: MockerFixture) -> No
     mock_pulls_resp.parsed_data = [mock_pull]
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -680,7 +680,7 @@ async def test_create_pull_request(app: App, mocker: MockerFixture) -> None:
     mock_pull_resp.parsed_data = mock_pull
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -716,7 +716,7 @@ async def test_add_labels(app: App) -> None:
     from src.providers.models import RepoInfo
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -748,7 +748,7 @@ async def test_ready_pull_request(app: App) -> None:
     from src.providers.models import RepoInfo
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -784,7 +784,7 @@ async def test_update_pull_request_title(app: App) -> None:
     from src.providers.models import RepoInfo
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -821,7 +821,7 @@ async def test_get_user_name(app: App, mocker: MockerFixture) -> None:
     mock_user_resp.parsed_data = mock_user
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -853,7 +853,7 @@ async def test_get_user_id(app: App, mocker: MockerFixture) -> None:
     mock_user_resp.parsed_data = mock_user
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -886,7 +886,7 @@ async def test_get_issue(app: App, mocker: MockerFixture) -> None:
     mock_issue_resp.parsed_data = mock_issue
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -914,7 +914,7 @@ async def test_close_issue(app: App) -> None:
     from src.providers.models import RepoInfo
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -952,7 +952,7 @@ async def test_to_issue_handler(app: App, mocker: MockerFixture) -> None:
     mock_issue_resp.parsed_data = mock_issue
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -992,7 +992,7 @@ async def test_get_self_comment(app: App, mocker: MockerFixture) -> None:
     mock_comments_resp.parsed_data = [mock_comment_user, mock_comment_bot]
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -1033,7 +1033,7 @@ async def test_get_self_comment_not_found(app: App, mocker: MockerFixture) -> No
     mock_comments_resp.parsed_data = [mock_comment_user]
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -1067,7 +1067,7 @@ async def test_comment_issue_new(app: App, mocker: MockerFixture) -> None:
     from src.providers.models import RepoInfo
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -1103,7 +1103,7 @@ async def test_comment_issue_update(app: App, mocker: MockerFixture) -> None:
     mock_comment.id = 123
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -1139,7 +1139,7 @@ async def test_comment_issue_no_change(app: App, mocker: MockerFixture) -> None:
     mock_comment.id = 123
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -1159,7 +1159,7 @@ async def test_download_artifact(app: App, mocker: MockerFixture) -> None:
     mock_download_resp.content = b"mock artifact content"
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,
@@ -1202,7 +1202,7 @@ async def test_download_artifact_with_custom_repo(
     mock_download_resp.content = b"mock artifact content"
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         github_handler = GithubHandler(
             bot=bot,

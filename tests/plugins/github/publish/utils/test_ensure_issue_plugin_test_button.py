@@ -25,7 +25,7 @@ async def test_ensure_issue_plugin_test_button(app: App, mocker: MockerFixture):
     ).as_mock(mocker)
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         should_call_apis(
             ctx,
@@ -92,7 +92,7 @@ async def test_ensure_issue_plugin_test_button_checked(app: App, mocker: MockerF
     ).as_mock(mocker)
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         should_call_apis(
             ctx,
@@ -161,7 +161,7 @@ async def test_ensure_issue_plugin_test_button_unchecked(
     ).as_mock(mocker)
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         handler = IssueHandler(
             bot=bot,
@@ -188,7 +188,7 @@ async def test_ensure_issue_plugin_test_button_in_progress(
     ).as_mock(mocker)
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
 
         should_call_apis(
             ctx,

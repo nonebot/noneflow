@@ -87,7 +87,7 @@ async def test_validate_info_from_issue_plugin(
     mock_docker.return_value = mock_test_result
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         handler = IssueHandler(
             bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"), issue=mock_issue
         )
@@ -164,7 +164,7 @@ async def test_validate_info_from_issue_plugin_skip_test(
     mock_list_comments_resp.parsed_data = [mock_comment]
 
     async with app.test_api() as ctx:
-        _, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         handler = IssueHandler(
             bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"), issue=mock_issue
         )

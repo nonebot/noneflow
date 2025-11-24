@@ -28,7 +28,7 @@ async def test_auto_merge(
     mock_pull_resp.parsed_data = mock_pull
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(PullRequestReviewSubmitted)
 
         should_call_apis(
@@ -76,7 +76,7 @@ async def test_auto_merge_not_publish(app: App, mocker: MockerFixture) -> None:
     mock_subprocess_run = mocker.patch("subprocess.run")
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(PullRequestReviewSubmitted)
         event.payload.pull_request.labels = []
 
@@ -97,7 +97,7 @@ async def test_auto_merge_not_member(app: App, mocker: MockerFixture) -> None:
     mock_subprocess_run = mocker.patch("subprocess.run")
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(PullRequestReviewSubmitted)
         event.payload.review.author_association = "CONTRIBUTOR"
 
@@ -118,7 +118,7 @@ async def test_auto_merge_not_approve(app: App, mocker: MockerFixture) -> None:
     mock_subprocess_run = mocker.patch("subprocess.run")
 
     async with app.test_matcher() as ctx:
-        adapter, bot = get_github_bot(ctx)
+        _adapter, bot = get_github_bot(ctx)
         event = get_mock_event(PullRequestReviewSubmitted)
         event.payload.review.state = "commented"
 
