@@ -84,7 +84,7 @@ class DockerPluginTest:
                 data = {
                     "run": True,
                     "load": False,
-                    "output": f"插件测试结果解析失败，输出内容非 JSON 格式。{output}",
+                    "output": f"插件测试结果解析失败，输出内容非 JSON 格式。\n输出内容：{output}",
                 }
         except Exception as e:
             data = {
