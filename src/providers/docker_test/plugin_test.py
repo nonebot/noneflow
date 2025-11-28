@@ -171,11 +171,15 @@ class PluginTest:
         # 补上获取到 Python 版本
         self._test_env.insert(0, f"python=={self._test_python_version}")
         # 读取插件元数据
-        metadata = None
         metadata_path = self._test_dir / "metadata.json"
+        metadata = None
         if metadata_path.exists():
-            with open(self._test_dir / "metadata.json", encoding="utf-8") as f:
-                metadata = json.load(f)
+            try:
+                metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                self._log_output("插件元数据读取失败，metadata.json 格式不正确。")
+            except Exception as e:
+                self._log_output(f"插件元数据读取失败，错误信息：{e}")
 
         result = {
             "metadata": metadata,
