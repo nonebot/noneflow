@@ -1,11 +1,96 @@
 import json
+from pathlib import Path
 
+import pytest
 from inline_snapshot import snapshot
 from pytest_mock import MockerFixture
 from respx import MockRouter
 
 
-async def test_docker_plugin_test(mocked_api: MockRouter, mocker: MockerFixture):
+async def test_docker_plugin_test_from_file(
+    mocked_api: MockRouter,
+    mocker: MockerFixture,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+):
+    TEST_DIR = tmp_path.absolute().as_posix()
+    monkeypatch.setattr(
+        "src.providers.docker_test.PLUGIN_TEST_DIR", TEST_DIR, raising=False
+    )
+    from src.providers.constants import DOCKER_BIND_RESULT_PATH
+
+    test_result_path = Path(TEST_DIR) / "module-name.json"
+
+    from src.providers.docker_test import DockerPluginTest, DockerTestResult
+
+    data = json.dumps(
+        {
+            "metadata": None,
+            "output": "test",
+            "load": True,
+            "run": True,
+            "version": "0.0.1",
+            "config": "",
+            "test_env": "python==3.12",
+        }
+    )
+
+    with open(test_result_path, "w", encoding="utf-8") as f:
+        f.write(data)
+
+    mocked_run = mocker.Mock()
+    mocked_run.return_value = b""
+    mocked_client = mocker.Mock()
+    mocked_client.containers.run = mocked_run
+    mocked_docker = mocker.patch("docker.DockerClient")
+    mocked_docker.return_value = mocked_client
+
+    test = DockerPluginTest("project_link", "module_name")
+    result = await test.run("3.12")
+
+    assert result == snapshot(
+        DockerTestResult(
+            run=True, load=True, output="test", version="0.0.1", test_env="python==3.12"
+        )
+    )
+
+    assert not mocked_api["store_plugins"].called
+    mocked_run.assert_called_once_with(
+        "ghcr.io/nonebot/nonetest:latest",
+        environment=snapshot(
+            {
+                "PROJECT_LINK": "project_link",
+                "MODULE_NAME": "module_name",
+                "PLUGIN_CONFIG": "",
+                "PYTHON_VERSION": "3.12",
+                "TEST_RESULT_PATH": "/app/plugin_test/test_result.json",
+            }
+        ),
+        detach=False,
+        remove=True,
+        volumes={
+            test_result_path.resolve(strict=False).as_posix(): {
+                "bind": DOCKER_BIND_RESULT_PATH,
+                "mode": "rw",
+            }
+        },
+    )
+
+
+async def test_docker_plugin_test_from_output(
+    mocked_api: MockRouter,
+    mocker: MockerFixture,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+):
+    TEST_DIR = tmp_path.absolute().as_posix()
+    monkeypatch.setattr(
+        "src.providers.docker_test.PLUGIN_TEST_DIR", TEST_DIR, raising=False
+    )
+    from src.providers.constants import DOCKER_BIND_RESULT_PATH
+
+    test_result_path = Path(TEST_DIR) / "module-name.json"
+
     from src.providers.docker_test import DockerPluginTest, DockerTestResult
 
     mocked_run = mocker.Mock()
@@ -19,7 +104,7 @@ async def test_docker_plugin_test(mocked_api: MockRouter, mocker: MockerFixture)
             "config": "",
             "test_env": "python==3.12",
         }
-    ).encode()
+    ).encode(encoding="utf-8")
     mocked_client = mocker.Mock()
     mocked_client.containers.run = mocked_run
     mocked_docker = mocker.patch("docker.DockerClient")
@@ -30,11 +115,7 @@ async def test_docker_plugin_test(mocked_api: MockRouter, mocker: MockerFixture)
 
     assert result == snapshot(
         DockerTestResult(
-            load=True,
-            output="test",
-            run=True,
-            test_env="python==3.12",
-            version="0.0.1",
+            load=True, output="test", run=True, version="0.0.1", test_env="python==3.12"
         )
     )
 
@@ -47,17 +128,35 @@ async def test_docker_plugin_test(mocked_api: MockRouter, mocker: MockerFixture)
                 "MODULE_NAME": "module_name",
                 "PLUGIN_CONFIG": "",
                 "PYTHON_VERSION": "3.12",
+                "TEST_RESULT_PATH": "/app/plugin_test/test_result.json",
             }
         ),
         detach=False,
         remove=True,
+        volumes={
+            test_result_path.resolve(strict=False).as_posix(): {
+                "bind": DOCKER_BIND_RESULT_PATH,
+                "mode": "rw",
+            }
+        },
     )
 
 
 async def test_docker_plugin_test_exception(
-    mocked_api: MockRouter, mocker: MockerFixture
+    mocked_api: MockRouter,
+    mocker: MockerFixture,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
 ):
     """插件测试时报错"""
+    TEST_DIR = tmp_path.absolute().as_posix()
+    monkeypatch.setattr(
+        "src.providers.docker_test.PLUGIN_TEST_DIR", TEST_DIR, raising=False
+    )
+    from src.providers.constants import DOCKER_BIND_RESULT_PATH
+
+    test_result_path = Path(TEST_DIR) / "module-name.json"
+
     from src.providers.docker_test import DockerPluginTest, DockerTestResult
 
     mocked_run = mocker.Mock()
@@ -74,7 +173,28 @@ async def test_docker_plugin_test_exception(
         DockerTestResult(
             run=False,
             load=False,
-            output="Docker failed",
+            output="""\
+Traceback (most recent call last):
+  File "/home/bigorangeqwq/projects/noneflow/src/providers/docker_test/__init__.py", line 83, in run
+    output = client.containers.run(
+             ~~~~~~~~~~~~~~~~~~~~~^
+        DOCKER_IMAGES,
+        ^^^^^^^^^^^^^^
+    ...<16 lines>...
+        },
+        ^^
+    ).decode(errors="ignore", encoding="utf-8")
+    ^
+  File "/home/bigorangeqwq/.local/share/uv/python/cpython-3.13.4-linux-x86_64-gnu/lib/python3.13/unittest/mock.py", line 1169, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/home/bigorangeqwq/.local/share/uv/python/cpython-3.13.4-linux-x86_64-gnu/lib/python3.13/unittest/mock.py", line 1173, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/home/bigorangeqwq/.local/share/uv/python/cpython-3.13.4-linux-x86_64-gnu/lib/python3.13/unittest/mock.py", line 1228, in _execute_mock_call
+    raise effect
+Exception: Docker failed
+""",
         )
     )
 
@@ -87,17 +207,35 @@ async def test_docker_plugin_test_exception(
                 "MODULE_NAME": "module_name",
                 "PLUGIN_CONFIG": "",
                 "PYTHON_VERSION": "3.12",
+                "TEST_RESULT_PATH": "/app/plugin_test/test_result.json",
             }
         ),
         detach=False,
         remove=True,
+        volumes={
+            test_result_path.resolve(strict=False).as_posix(): {
+                "bind": DOCKER_BIND_RESULT_PATH,
+                "mode": "rw",
+            }
+        },
     )
 
 
 async def test_docker_plugin_test_metadata_some_fields_empty(
-    mocked_api: MockRouter, mocker: MockerFixture
+    mocked_api: MockRouter,
+    mocker: MockerFixture,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
 ):
     """测试 metadata 的部分字段为空"""
+    TEST_DIR = tmp_path.absolute().as_posix()
+    monkeypatch.setattr(
+        "src.providers.docker_test.PLUGIN_TEST_DIR", TEST_DIR, raising=False
+    )
+    from src.providers.constants import DOCKER_BIND_RESULT_PATH
+
+    test_result_path = Path(TEST_DIR) / "module-name.json"
+
     from src.providers.docker_test import DockerPluginTest, DockerTestResult
 
     mocked_run = mocker.Mock()
@@ -129,6 +267,10 @@ async def test_docker_plugin_test_metadata_some_fields_empty(
     assert result == snapshot(
         DockerTestResult(
             load=True,
+            output="test",
+            run=True,
+            version="0.0.1",
+            test_env="python==3.12",
             metadata={
                 "name": "name",
                 "desc": "desc",
@@ -136,10 +278,6 @@ async def test_docker_plugin_test_metadata_some_fields_empty(
                 "type": None,
                 "supported_adapters": None,
             },
-            output="test",
-            run=True,
-            test_env="python==3.12",
-            version="0.0.1",
         )
     )
 
@@ -152,73 +290,101 @@ async def test_docker_plugin_test_metadata_some_fields_empty(
                 "MODULE_NAME": "module_name",
                 "PLUGIN_CONFIG": "",
                 "PYTHON_VERSION": "3.12",
+                "TEST_RESULT_PATH": "/app/plugin_test/test_result.json",
             }
         ),
         detach=False,
         remove=True,
+        volumes={
+            test_result_path.resolve(strict=False).as_posix(): {
+                "bind": DOCKER_BIND_RESULT_PATH,
+                "mode": "rw",
+            }
+        },
     )
 
 
 async def test_docker_plugin_test_metadata_some_fields_invalid(
-    mocked_api: MockRouter, mocker: MockerFixture
+    mocked_api: MockRouter,
+    mocker: MockerFixture,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
 ):
     """测试 metadata 的部分字段不符合规范"""
+
+    TEST_DIR = tmp_path.absolute().as_posix()
+    monkeypatch.setattr(
+        "src.providers.docker_test.PLUGIN_TEST_DIR", TEST_DIR, raising=False
+    )
+    from src.providers.constants import DOCKER_BIND_RESULT_PATH
+
+    test_result_path = Path(TEST_DIR) / "module-name.json"
+
     from src.providers.docker_test import DockerPluginTest, DockerTestResult
 
     mocked_run = mocker.Mock()
-    mocked_run.return_value = json.dumps(
-        {
-            "metadata": {
-                "name": "name",
-                "desc": "desc",
-                "homepage": 12,
-                "type": True,
-                "supported_adapters": {},
-            },
-            "output": "test",
-            "load": True,
-            "run": True,
-            "version": "0.0.1",
-            "config": "",
-            "test_env": "python==3.12",
-        }
-    ).encode()
+    mocked_run.return_value = b""
     mocked_client = mocker.Mock()
     mocked_client.containers.run = mocked_run
     mocked_docker = mocker.patch("docker.DockerClient")
     mocked_docker.return_value = mocked_client
+
+    with open(test_result_path, "w", encoding="utf-8") as f:
+        json.dump(
+            {
+                "metadata": {
+                    "name": "name",
+                    "desc": "desc",
+                    "homepage": 12,
+                    "type": True,
+                    "supported_adapters": {},
+                },
+                "output": "test",
+                "load": True,
+                "run": True,
+                "version": "0.0.1",
+                "config": "",
+                "test_env": "python==3.12",
+            },
+            f,
+        )
 
     test = DockerPluginTest("project_link", "module_name")
     result = await test.run("3.12")
 
     assert result == snapshot(
         DockerTestResult(
+            run=True,
             load=True,
-            metadata={
+            output="test",
+            version="0.0.1",
+            test_env="python==3.12",
+            metadata={  # type: ignore
                 "name": "name",
                 "desc": "desc",
                 "homepage": 12,
                 "type": True,
                 "supported_adapters": {},
-            },  # type: ignore
-            output="test",
-            run=True,
-            test_env="python==3.12",
-            version="0.0.1",
+            },
         )
     )
 
     assert not mocked_api["store_plugins"].called
     mocked_run.assert_called_once_with(
         "ghcr.io/nonebot/nonetest:latest",
-        environment=snapshot(
-            {
-                "PROJECT_LINK": "project_link",
-                "MODULE_NAME": "module_name",
-                "PLUGIN_CONFIG": "",
-                "PYTHON_VERSION": "3.12",
-            }
-        ),
+        environment={
+            "PROJECT_LINK": "project_link",
+            "MODULE_NAME": "module_name",
+            "PLUGIN_CONFIG": "",
+            "PYTHON_VERSION": "3.12",
+            "TEST_RESULT_PATH": "/app/plugin_test/test_result.json",
+        },
         detach=False,
         remove=True,
+        volumes={
+            test_result_path.resolve(strict=False).as_posix(): {
+                "bind": DOCKER_BIND_RESULT_PATH,
+                "mode": "rw",
+            }
+        },
     )
