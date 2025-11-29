@@ -13,7 +13,7 @@ from pathlib import Path
 
 import httpx
 
-from src.providers.constants import REGISTRY_PLUGINS_URL
+from src.providers.constants import PLUGIN_TEST_DIR, REGISTRY_PLUGINS_URL
 
 from .render import render_fake, render_runner
 
@@ -115,7 +115,7 @@ class PluginTest:
         self.config = config
 
         self._plugin_list = None
-        self._test_dir = Path("plugin_test")
+        self._test_dir = PLUGIN_TEST_DIR
         # 插件信息
         self._version = None
         # 插件测试结果
@@ -190,6 +190,15 @@ class PluginTest:
             "config": self.config,
             "test_env": " ".join(self._test_env),
         }
+        # 写入测试结果文件
+        try:
+            result_path = self.env.get("TEST_RESULT_PATH")
+            if result_path:
+                result_path = Path(result_path)
+                with open(result_path, "w", encoding="utf-8") as f:
+                    json.dump(result, f, ensure_ascii=False)
+        except Exception as e:
+            self._log_output(f"写入测试结果文件失败，错误信息：{e}")
         # 输出测试结果
         print(json.dumps(result, ensure_ascii=False))
         return result
