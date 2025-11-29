@@ -1,11 +1,16 @@
 import json
+import traceback
 from pathlib import Path
 from typing import TypedDict
 
 import docker
 from pydantic import BaseModel, SkipValidation, field_validator
 
-from src.providers.constants import DOCKER_BIND_RESULT_PATH, DOCKER_IMAGES
+from src.providers.constants import (
+    DOCKER_BIND_RESULT_PATH,
+    DOCKER_IMAGES,
+    PLUGIN_TEST_DIR,
+)
 from src.providers.utils import pypi_name_to_path
 
 
@@ -52,7 +57,7 @@ class DockerPluginTest:
         self.module_name = module_name
         self.config = config
 
-        results = Path("./plugin_test")
+        results = Path(PLUGIN_TEST_DIR)
         if not results.exists():
             results.mkdir(parents=True, exist_ok=True)
 
@@ -68,15 +73,10 @@ class DockerPluginTest:
         # 连接 Docker 环境
         client = docker.DockerClient(base_url="unix://var/run/docker.sock")
         plugin_test_result = Path(
-            f"./plugin_test/{pypi_name_to_path(self.module_name)}.json"
+            f"{PLUGIN_TEST_DIR}/{pypi_name_to_path(self.module_name)}.json"
         )
-        data = {
-            "run": False,
-            "load": False,
-            "output": "未知错误，未运行测试",
-        }
-
-        plugin_test_result.write_text(json.dumps(data), encoding="utf-8")
+        # 创建文件，以确保 Docker 容器内可以写入
+        plugin_test_result.touch(exist_ok=True)
 
         try:
             # 运行 Docker 容器，捕获输出。 容器内运行的代码拥有超时设限，此处无需设置超时
@@ -101,9 +101,8 @@ class DockerPluginTest:
                 },
             ).decode(errors="ignore", encoding="utf-8")
 
-            data["run"] = True
-
             try:
+                # 若测试结果文件存在且可解析，则优先使用测试结果文件
                 data = json.loads(plugin_test_result.read_text(encoding="utf-8"))
             except Exception as e:
                 try:
@@ -112,13 +111,22 @@ class DockerPluginTest:
                     data = {
                         "run": True,
                         "load": False,
-                        "output": f"解析测试结果文件失败。\n {e}"
-                        f"标准输入输出流的插件测试结果解析失败，输出内容非 JSON 格式。\n{output}",
+                        "output": f"""
+                        测试结果文件解析失败，输出内容写入失败。
+                        {e}
+                        输出内容：{output}
+                        """,
                     }
         except Exception as e:
+            # 格式化异常堆栈信息
+            trackback = "".join(traceback.format_exception(type(e), e, e.__traceback__))
+            MAX_OUTPUT = 2000
+            if len(trackback) > MAX_OUTPUT:
+                trackback = trackback[-MAX_OUTPUT:]
+
             data = {
                 "run": False,
                 "load": False,
-                "output": str(e),
+                "output": trackback,
             }
         return DockerTestResult(**data)

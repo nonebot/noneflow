@@ -13,7 +13,7 @@ from pathlib import Path
 
 import httpx
 
-from src.providers.constants import REGISTRY_PLUGINS_URL
+from src.providers.constants import PLUGIN_TEST_DIR, REGISTRY_PLUGINS_URL
 
 from .render import render_fake, render_runner
 
@@ -115,7 +115,7 @@ class PluginTest:
         self.config = config
 
         self._plugin_list = None
-        self._test_dir = Path("plugin_test")
+        self._test_dir = Path(PLUGIN_TEST_DIR)
         # 插件信息
         self._version = None
         # 插件测试结果
