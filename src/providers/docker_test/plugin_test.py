@@ -195,7 +195,6 @@ class PluginTest:
             result_path = self.env.get("TEST_RESULT_PATH")
             if result_path:
                 result_path = Path(result_path)
-                result_path.parent.mkdir(parents=True, exist_ok=True)
                 with open(result_path, "w", encoding="utf-8") as f:
                     json.dump(result, f, ensure_ascii=False)
         except Exception as e:

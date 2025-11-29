@@ -70,13 +70,13 @@ class DockerPluginTest:
         plugin_test_result = Path(
             f"./plugin_test/{pypi_name_to_path(self.module_name)}.json"
         )
-        plugin_test_result.write_text("{}", encoding="utf-8")
-
         data = {
             "run": False,
             "load": False,
             "output": "未知错误，未运行测试",
         }
+
+        plugin_test_result.write_text(json.dumps(data), encoding="utf-8")
 
         try:
             # 运行 Docker 容器，捕获输出。 容器内运行的代码拥有超时设限，此处无需设置超时
