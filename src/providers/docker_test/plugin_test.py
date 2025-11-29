@@ -190,6 +190,16 @@ class PluginTest:
             "config": self.config,
             "test_env": " ".join(self._test_env),
         }
+        # 写入测试结果文件
+        try:
+            result_path = self.env.get("TEST_RESULT_PATH")
+            if result_path:
+                result_path = Path(result_path)
+                result_path.parent.mkdir(parents=True, exist_ok=True)
+                with open(result_path, "w", encoding="utf-8") as f:
+                    json.dump(result, f, ensure_ascii=False)
+        except Exception as e:
+            self._log_output(f"写入测试结果文件失败，错误信息：{e}")
         # 输出测试结果
         print(json.dumps(result, ensure_ascii=False))
         return result
