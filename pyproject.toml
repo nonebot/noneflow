@@ -24,8 +24,8 @@ Repository = "https://github.com/nonebot/noneflow.git"
 Issues = "https://github.com/nonebot/noneflow/issues"
 Changelog = "https://github.com/nonebot/noneflow/blob/main/CHANGELOG.md"
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
   "bump-my-version>=1.2.4",
   "inline-snapshot>=0.31.1",
   "nonebug>=0.4.3",
@@ -103,15 +103,15 @@ adapters = [{ name = "GitHub", module_name = "nonebot.adapters.github" }]
 plugin_dirs = ["src/plugins"]
 
 [tool.inline-snapshot]
-hash-length=15
-default-flags=["report"]
-default-flags-tui=["create", "review"]
-format-command="ruff format --stdin-filename {filename}"
-skip-snapshot-updates-for-now=false
+hash-length = 15
+default-flags = ["report"]
+default-flags-tui = ["create", "review"]
+format-command = "ruff format --stdin-filename {filename}"
+skip-snapshot-updates-for-now = false
 
 [tool.inline-snapshot.shortcuts]
-review=["review"]
-fix=["create","fix"]
+review = ["review"]
+fix = ["create", "fix"]
 
 [tool.bumpversion]
 current_version = "4.4.5"
