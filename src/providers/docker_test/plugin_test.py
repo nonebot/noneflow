@@ -115,7 +115,7 @@ class PluginTest:
         self.config = config
 
         self._plugin_list = None
-        self._test_dir = Path(PLUGIN_TEST_DIR)
+        self._test_dir = PLUGIN_TEST_DIR
         # 插件信息
         self._version = None
         # 插件测试结果

@@ -73,7 +73,7 @@ class DockerPluginTest:
         # 连接 Docker 环境
         client = docker.DockerClient(base_url="unix://var/run/docker.sock")
         plugin_test_result = Path(
-            f"{PLUGIN_TEST_DIR}/{pypi_name_to_path(self.module_name)}.json"
+            PLUGIN_TEST_DIR / f"{pypi_name_to_path(self.module_name)}.json"
         )
         # 创建文件，以确保 Docker 容器内可以写入
         plugin_test_result.touch(exist_ok=True)

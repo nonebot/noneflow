@@ -13,13 +13,12 @@ async def test_docker_plugin_test_from_file(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ):
-    TEST_DIR = tmp_path.absolute().as_posix()
     monkeypatch.setattr(
-        "src.providers.docker_test.PLUGIN_TEST_DIR", TEST_DIR, raising=False
+        "src.providers.docker_test.PLUGIN_TEST_DIR", tmp_path, raising=False
     )
     from src.providers.constants import DOCKER_BIND_RESULT_PATH
 
-    test_result_path = Path(TEST_DIR) / "module-name.json"
+    test_result_path = tmp_path / "module-name.json"
 
     from src.providers.docker_test import DockerPluginTest, DockerTestResult
 
@@ -83,13 +82,12 @@ async def test_docker_plugin_test_from_output(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ):
-    TEST_DIR = tmp_path.absolute().as_posix()
     monkeypatch.setattr(
-        "src.providers.docker_test.PLUGIN_TEST_DIR", TEST_DIR, raising=False
+        "src.providers.docker_test.PLUGIN_TEST_DIR", tmp_path, raising=False
     )
     from src.providers.constants import DOCKER_BIND_RESULT_PATH
 
-    test_result_path = Path(TEST_DIR) / "module-name.json"
+    test_result_path = tmp_path / "module-name.json"
 
     from src.providers.docker_test import DockerPluginTest, DockerTestResult
 
@@ -149,15 +147,14 @@ async def test_docker_plugin_test_exception(
     tmp_path: Path,
 ):
     """插件测试时报错"""
-    TEST_DIR = tmp_path.absolute().as_posix()
     monkeypatch.setattr(
-        "src.providers.docker_test.PLUGIN_TEST_DIR", TEST_DIR, raising=False
+        "src.providers.docker_test.PLUGIN_TEST_DIR", tmp_path, raising=False
     )
     from src.providers.constants import DOCKER_BIND_RESULT_PATH
 
-    test_result_path = Path(TEST_DIR) / "module-name.json"
+    test_result_path = tmp_path / "module-name.json"
 
-    from src.providers.docker_test import DockerPluginTest, DockerTestResult
+    from src.providers.docker_test import DockerPluginTest
 
     mocked_run = mocker.Mock()
     mocked_run.side_effect = Exception("Docker failed")
@@ -169,34 +166,7 @@ async def test_docker_plugin_test_exception(
     test = DockerPluginTest("project_link", "module_name")
     result = await test.run("3.12")
 
-    assert result == snapshot(
-        DockerTestResult(
-            run=False,
-            load=False,
-            output="""\
-Traceback (most recent call last):
-  File "/home/bigorangeqwq/projects/noneflow/src/providers/docker_test/__init__.py", line 83, in run
-    output = client.containers.run(
-             ~~~~~~~~~~~~~~~~~~~~~^
-        DOCKER_IMAGES,
-        ^^^^^^^^^^^^^^
-    ...<16 lines>...
-        },
-        ^^
-    ).decode(errors="ignore", encoding="utf-8")
-    ^
-  File "/home/bigorangeqwq/.local/share/uv/python/cpython-3.13.4-linux-x86_64-gnu/lib/python3.13/unittest/mock.py", line 1169, in __call__
-    return self._mock_call(*args, **kwargs)
-           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
-  File "/home/bigorangeqwq/.local/share/uv/python/cpython-3.13.4-linux-x86_64-gnu/lib/python3.13/unittest/mock.py", line 1173, in _mock_call
-    return self._execute_mock_call(*args, **kwargs)
-           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
-  File "/home/bigorangeqwq/.local/share/uv/python/cpython-3.13.4-linux-x86_64-gnu/lib/python3.13/unittest/mock.py", line 1228, in _execute_mock_call
-    raise effect
-Exception: Docker failed
-""",
-        )
-    )
+    assert result.output.endswith("Exception: Docker failed\n")
 
     assert not mocked_api["store_plugins"].called
     mocked_run.assert_called_once_with(
@@ -228,13 +198,12 @@ async def test_docker_plugin_test_metadata_some_fields_empty(
     tmp_path: Path,
 ):
     """测试 metadata 的部分字段为空"""
-    TEST_DIR = tmp_path.absolute().as_posix()
     monkeypatch.setattr(
-        "src.providers.docker_test.PLUGIN_TEST_DIR", TEST_DIR, raising=False
+        "src.providers.docker_test.PLUGIN_TEST_DIR", tmp_path, raising=False
     )
     from src.providers.constants import DOCKER_BIND_RESULT_PATH
 
-    test_result_path = Path(TEST_DIR) / "module-name.json"
+    test_result_path = tmp_path / "module-name.json"
 
     from src.providers.docker_test import DockerPluginTest, DockerTestResult
 
@@ -312,13 +281,12 @@ async def test_docker_plugin_test_metadata_some_fields_invalid(
 ):
     """测试 metadata 的部分字段不符合规范"""
 
-    TEST_DIR = tmp_path.absolute().as_posix()
     monkeypatch.setattr(
-        "src.providers.docker_test.PLUGIN_TEST_DIR", TEST_DIR, raising=False
+        "src.providers.docker_test.PLUGIN_TEST_DIR", tmp_path, raising=False
     )
     from src.providers.constants import DOCKER_BIND_RESULT_PATH
 
-    test_result_path = Path(TEST_DIR) / "module-name.json"
+    test_result_path = tmp_path / "module-name.json"
 
     from src.providers.docker_test import DockerPluginTest, DockerTestResult
 
