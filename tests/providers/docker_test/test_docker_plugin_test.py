@@ -18,7 +18,7 @@ async def test_docker_plugin_test_from_file(
     )
     from src.providers.constants import DOCKER_BIND_RESULT_PATH
 
-    test_result_path = tmp_path / "module-name.json"
+    test_result_path = tmp_path / "project-link-module-name.json"
 
     from src.providers.docker_test import DockerPluginTest, DockerTestResult
 
@@ -86,7 +86,7 @@ async def test_docker_plugin_test_from_output(
     )
     from src.providers.constants import DOCKER_BIND_RESULT_PATH
 
-    test_result_path = tmp_path / "module-name.json"
+    test_result_path = tmp_path / "project-link-module-name.json"
 
     from src.providers.docker_test import DockerPluginTest, DockerTestResult
 
@@ -150,7 +150,7 @@ async def test_docker_plugin_test_exception(
     )
     from src.providers.constants import DOCKER_BIND_RESULT_PATH
 
-    test_result_path = tmp_path / "module-name.json"
+    test_result_path = tmp_path / "project-link-module-name.json"
 
     from src.providers.docker_test import DockerPluginTest
 
@@ -200,7 +200,7 @@ async def test_docker_plugin_test_metadata_some_fields_empty(
     )
     from src.providers.constants import DOCKER_BIND_RESULT_PATH
 
-    test_result_path = tmp_path / "module-name.json"
+    test_result_path = tmp_path / "project-link-module-name.json"
 
     from src.providers.docker_test import DockerPluginTest, DockerTestResult
 
@@ -282,7 +282,7 @@ async def test_docker_plugin_test_metadata_some_fields_invalid(
     )
     from src.providers.constants import DOCKER_BIND_RESULT_PATH
 
-    test_result_path = tmp_path / "module-name.json"
+    test_result_path = tmp_path / "project-link-module-name.json"
 
     from src.providers.docker_test import DockerPluginTest, DockerTestResult
 

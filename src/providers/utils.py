@@ -125,9 +125,9 @@ def add_step_summary(summary: str):
     logger.debug(f"已添加作业摘要：{summary}")
 
 
-def pypi_name_to_path(name: str) -> str:
-    """将 PyPI 名称转换为路径字符"""
-    return name.replace(".", "-").replace("_", "-")
+def pypi_key_to_path(key: str) -> str:
+    """将 PyPI 键名转换为路径字符"""
+    return key.replace(":", "-").replace(".", "-").replace("_", "-")
 
 
 @cache

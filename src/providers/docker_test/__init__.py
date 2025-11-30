@@ -1,6 +1,5 @@
 import json
 import traceback
-from pathlib import Path
 from typing import TypedDict
 
 import docker
@@ -10,8 +9,9 @@ from src.providers.constants import (
     DOCKER_BIND_RESULT_PATH,
     DOCKER_IMAGES,
     PLUGIN_TEST_DIR,
+    PYPI_KEY_TEMPLATE,
 )
-from src.providers.utils import pypi_name_to_path
+from src.providers.utils import pypi_key_to_path
 
 
 class Metadata(TypedDict):
@@ -57,9 +57,8 @@ class DockerPluginTest:
         self.module_name = module_name
         self.config = config
 
-        results = Path(PLUGIN_TEST_DIR)
-        if not results.exists():
-            results.mkdir(parents=True, exist_ok=True)
+        if not PLUGIN_TEST_DIR.exists():
+            PLUGIN_TEST_DIR.mkdir(parents=True, exist_ok=True)
 
     async def run(self, version: str) -> DockerTestResult:
         """运行 Docker 容器测试插件
@@ -72,9 +71,10 @@ class DockerPluginTest:
         """
         # 连接 Docker 环境
         client = docker.DockerClient(base_url="unix://var/run/docker.sock")
-        plugin_test_result = (
-            PLUGIN_TEST_DIR / f"{pypi_name_to_path(self.module_name)}.json"
+        key = PYPI_KEY_TEMPLATE.format(
+            project_link=self.project_link, module_name=self.module_name
         )
+        plugin_test_result = PLUGIN_TEST_DIR / f"{pypi_key_to_path(key)}.json"
 
         # 创建文件，以确保 Docker 容器内可以写入
         plugin_test_result.touch(exist_ok=True)

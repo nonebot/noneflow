@@ -41,7 +41,7 @@ DOCKER_IMAGES_VERSION = os.environ.get("DOCKER_IMAGES_VERSION") or "latest"
 DOCKER_IMAGES = f"ghcr.io/nonebot/nonetest:{DOCKER_IMAGES_VERSION}"
 DOCKER_BIND_RESULT_PATH = "/app/plugin_test/test_result.json"
 
-PLUGIN_TEST_DIR = Path("./plugin_test")
+PLUGIN_TEST_DIR = Path("plugin_test")
 
 # Artifact 相关常量
 REGISTRY_DATA_NAME = "registry_data.json"
