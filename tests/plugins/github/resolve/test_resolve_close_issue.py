@@ -9,13 +9,11 @@ from respx import MockRouter
 from tests.plugins.github.event import get_mock_event
 from tests.plugins.github.resolve.utils import get_pr_labels
 from tests.plugins.github.utils import (
-    GitHubApi,
     MockIssue,
     assert_subprocess_run_calls,
     generate_issue_body_remove,
     get_github_bot,
     mock_subprocess_run_with_side_effect,
-    should_call_apis,
 )
 
 
@@ -47,40 +45,33 @@ async def test_resolve_close_issue(
         event.payload.pull_request.labels = get_pr_labels(["Publish", "Bot"])
         event.payload.pull_request.merged = False
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.apps.async_get_repo_installation",
-                    result=mock_installation,
-                ),
-                GitHubApi(
-                    api="rest.apps.async_create_installation_access_token",
-                    result=mock_installation_token,
-                ),
-                GitHubApi(
-                    api="rest.issues.async_get",
-                    result=mock_issues_resp,
-                ),
-                GitHubApi(
-                    api="rest.issues.async_update",
-                    result=mock_issues_resp,
-                ),
-            ],
+        ctx.should_call_api(
+            "rest.apps.async_get_repo_installation",
+            snapshot({"owner": "he0119", "repo": "action-test"}),
+            mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.apps.async_create_installation_access_token",
+            snapshot({"installation_id": mock_installation.parsed_data.id}),
+            mock_installation_token,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            snapshot({"owner": "he0119", "repo": "action-test", "issue_number": 76}),
+            mock_issues_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
             snapshot(
-                [
-                    {"owner": "he0119", "repo": "action-test"},
-                    {"installation_id": mock_installation.parsed_data.id},
-                    {"owner": "he0119", "repo": "action-test", "issue_number": 76},
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "issue_number": 76,
-                        "state": "closed",
-                        "state_reason": "not_planned",
-                    },
-                ]
+                {
+                    "owner": "he0119",
+                    "repo": "action-test",
+                    "issue_number": 76,
+                    "state": "closed",
+                    "state_reason": "not_planned",
+                }
             ),
+            mock_issues_resp,
         )
         ctx.receive_event(bot, event)
         ctx.should_pass_rule(pr_close_matcher)
@@ -139,40 +130,33 @@ async def test_resolve_close_issue_already_closed(
         event.payload.pull_request.labels = get_pr_labels(["Publish", "Bot"])
         event.payload.pull_request.merged = False
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.apps.async_get_repo_installation",
-                    result=mock_installation,
-                ),
-                GitHubApi(
-                    api="rest.apps.async_create_installation_access_token",
-                    result=mock_installation_token,
-                ),
-                GitHubApi(
-                    api="rest.issues.async_get",
-                    result=mock_issues_resp,
-                ),
-                GitHubApi(
-                    api="rest.issues.async_update",
-                    result=mock_issues_resp,
-                ),
-            ],
+        ctx.should_call_api(
+            "rest.apps.async_get_repo_installation",
+            snapshot({"owner": "he0119", "repo": "action-test"}),
+            mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.apps.async_create_installation_access_token",
+            snapshot({"installation_id": mock_installation.parsed_data.id}),
+            mock_installation_token,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            snapshot({"owner": "he0119", "repo": "action-test", "issue_number": 76}),
+            mock_issues_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
             snapshot(
-                [
-                    {"owner": "he0119", "repo": "action-test"},
-                    {"installation_id": mock_installation.parsed_data.id},
-                    {"owner": "he0119", "repo": "action-test", "issue_number": 76},
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "issue_number": 76,
-                        "state": "closed",
-                        "state_reason": "not_planned",
-                    },
-                ]
+                {
+                    "owner": "he0119",
+                    "repo": "action-test",
+                    "issue_number": 76,
+                    "state": "closed",
+                    "state_reason": "not_planned",
+                }
             ),
+            mock_issues_resp,
         )
         ctx.receive_event(bot, event)
         ctx.should_pass_rule(pr_close_matcher)

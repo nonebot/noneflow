@@ -6,7 +6,6 @@ from tests.plugins.github.utils import (
     MockBody,
     MockIssue,
     get_github_bot,
-    should_call_apis,
 )
 
 
@@ -50,37 +49,30 @@ async def test_trigger_registry_update(app: App, mocker: MockerFixture):
     async with app.test_api() as ctx:
         _adapter, bot = get_github_bot(ctx)
 
-        should_call_apis(
-            ctx,
-            [
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "owner", "repo": "registry", "issue_number": 1},
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.actions.async_list_workflow_run_artifacts",
+            {"owner": "owner", "repo": "registry", "run_id": 3},
+            mock_list_artifacts_resp,
+        )
+        ctx.should_call_api(
+            "rest.repos.async_create_dispatch_event",
+            snapshot(
                 {
-                    "api": "rest.issues.async_list_comments",
-                    "result": mock_list_comments_resp,
-                },
-                {
-                    "api": "rest.actions.async_list_workflow_run_artifacts",
-                    "result": mock_list_artifacts_resp,
-                },
-                {
-                    "api": "rest.repos.async_create_dispatch_event",
-                    "result": True,
-                },
-            ],
-            [
-                {"owner": "owner", "repo": "registry", "issue_number": 1},
-                {"owner": "owner", "repo": "registry", "run_id": 3},
-                snapshot(
-                    {
-                        "repo": "registry",
-                        "owner": "owner",
-                        "event_type": "registry_update",
-                        "client_payload": {
-                            "repo_info": {"owner": "owner", "repo": "registry"},
-                            "artifact_id": 233,
-                        },
-                    }
-                ),
-            ],
+                    "repo": "registry",
+                    "owner": "owner",
+                    "event_type": "registry_update",
+                    "client_payload": {
+                        "repo_info": {"owner": "owner", "repo": "registry"},
+                        "artifact_id": 233,
+                    },
+                }
+            ),
+            True,
         )
 
         handler = IssueHandler(
@@ -111,17 +103,10 @@ async def test_trigger_registry_update_missing_comment(app: App, mocker: MockerF
     async with app.test_api() as ctx:
         _adapter, bot = get_github_bot(ctx)
 
-        should_call_apis(
-            ctx,
-            [
-                {
-                    "api": "rest.issues.async_list_comments",
-                    "result": mock_list_comments_resp,
-                },
-            ],
-            [
-                {"owner": "owner", "repo": "registry", "issue_number": 1},
-            ],
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "owner", "repo": "registry", "issue_number": 1},
+            mock_list_comments_resp,
         )
 
         handler = IssueHandler(
@@ -175,22 +160,15 @@ async def test_trigger_registry_update_missing_artifact(
     async with app.test_api() as ctx:
         _adapter, bot = get_github_bot(ctx)
 
-        should_call_apis(
-            ctx,
-            [
-                {
-                    "api": "rest.issues.async_list_comments",
-                    "result": mock_list_comments_resp,
-                },
-                {
-                    "api": "rest.actions.async_list_workflow_run_artifacts",
-                    "result": mock_list_artifacts_resp,
-                },
-            ],
-            [
-                {"owner": "owner", "repo": "registry", "issue_number": 1},
-                {"owner": "owner", "repo": "registry", "run_id": 3},
-            ],
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "owner", "repo": "registry", "issue_number": 1},
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.actions.async_list_workflow_run_artifacts",
+            {"owner": "owner", "repo": "registry", "run_id": 3},
+            mock_list_artifacts_resp,
         )
 
         handler = IssueHandler(

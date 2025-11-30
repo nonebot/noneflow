@@ -9,7 +9,6 @@ from pytest_mock import MockerFixture
 from respx import MockRouter
 
 from tests.plugins.github.utils import (
-    GitHubApi,
     MockBody,
     MockIssue,
     MockUser,
@@ -17,7 +16,6 @@ from tests.plugins.github.utils import (
     check_json_data,
     get_github_bot,
     mock_subprocess_run_with_side_effect,
-    should_call_apis,
 )
 
 
@@ -133,39 +131,32 @@ async def test_resolve_conflict_pull_requests_adapter(
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_get",
-                    result=mock_issue_resp,
-                ),
-                GitHubApi(
-                    api="rest.issues.async_list_comments",
-                    result=mock_list_comments_resp,
-                ),
-                GitHubApi(
-                    api="rest.actions.async_list_workflow_run_artifacts",
-                    result=mock_artifact_resp,
-                ),
-                GitHubApi(
-                    api="rest.actions.async_download_artifact",
-                    result=mock_download_artifact_resp,
-                ),
-            ],
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            snapshot({"owner": "owner", "repo": "repo", "issue_number": 1}),
+            mock_issue_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            snapshot({"owner": "owner", "repo": "repo", "issue_number": 1}),
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.actions.async_list_workflow_run_artifacts",
+            snapshot({"owner": "owner", "repo": "repo", "run_id": 14156878699}),
+            mock_artifact_resp,
+        )
+        ctx.should_call_api(
+            "rest.actions.async_download_artifact",
             snapshot(
-                [
-                    {"owner": "owner", "repo": "repo", "issue_number": 1},
-                    {"owner": "owner", "repo": "repo", "issue_number": 1},
-                    {"owner": "owner", "repo": "repo", "run_id": 14156878699},
-                    {
-                        "owner": "owner",
-                        "repo": "repo",
-                        "artifact_id": 123456789,
-                        "archive_format": "zip",
-                    },
-                ]
+                {
+                    "owner": "owner",
+                    "repo": "repo",
+                    "artifact_id": 123456789,
+                    "archive_format": "zip",
+                }
             ),
+            mock_download_artifact_resp,
         )
 
         await resolve_conflict_pull_requests(handler, [mock_pull])
@@ -325,39 +316,32 @@ async def test_resolve_conflict_pull_requests_bot(
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_get",
-                    result=mock_issue_repo,
-                ),
-                GitHubApi(
-                    api="rest.issues.async_list_comments",
-                    result=mock_list_comments_resp,
-                ),
-                GitHubApi(
-                    api="rest.actions.async_list_workflow_run_artifacts",
-                    result=mock_artifact_resp,
-                ),
-                GitHubApi(
-                    api="rest.actions.async_download_artifact",
-                    result=mock_download_artifact_resp,
-                ),
-            ],
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            snapshot({"owner": "owner", "repo": "repo", "issue_number": 1}),
+            mock_issue_repo,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            snapshot({"owner": "owner", "repo": "repo", "issue_number": 1}),
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.actions.async_list_workflow_run_artifacts",
+            snapshot({"owner": "owner", "repo": "repo", "run_id": 14156878699}),
+            mock_artifact_resp,
+        )
+        ctx.should_call_api(
+            "rest.actions.async_download_artifact",
             snapshot(
                 {
-                    0: {"owner": "owner", "repo": "repo", "issue_number": 1},
-                    1: {"owner": "owner", "repo": "repo", "issue_number": 1},
-                    2: {"owner": "owner", "repo": "repo", "run_id": 14156878699},
-                    3: {
-                        "owner": "owner",
-                        "repo": "repo",
-                        "artifact_id": 123456789,
-                        "archive_format": "zip",
-                    },
+                    "owner": "owner",
+                    "repo": "repo",
+                    "artifact_id": 123456789,
+                    "archive_format": "zip",
                 }
             ),
+            mock_download_artifact_resp,
         )
 
         await resolve_conflict_pull_requests(handler, [mock_pull])
@@ -519,39 +503,32 @@ async def test_resolve_conflict_pull_requests_plugin(
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_get",
-                    result=mock_issue_repo,
-                ),
-                GitHubApi(
-                    api="rest.issues.async_list_comments",
-                    result=mock_list_comments_resp,
-                ),
-                GitHubApi(
-                    api="rest.actions.async_list_workflow_run_artifacts",
-                    result=mock_artifact_resp,
-                ),
-                GitHubApi(
-                    api="rest.actions.async_download_artifact",
-                    result=mock_download_artifact_resp,
-                ),
-            ],
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            snapshot({"owner": "owner", "repo": "repo", "issue_number": 1}),
+            mock_issue_repo,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            snapshot({"owner": "owner", "repo": "repo", "issue_number": 1}),
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.actions.async_list_workflow_run_artifacts",
+            snapshot({"owner": "owner", "repo": "repo", "run_id": 14156878699}),
+            mock_artifact_resp,
+        )
+        ctx.should_call_api(
+            "rest.actions.async_download_artifact",
             snapshot(
-                [
-                    {"owner": "owner", "repo": "repo", "issue_number": 1},
-                    {"owner": "owner", "repo": "repo", "issue_number": 1},
-                    {"owner": "owner", "repo": "repo", "run_id": 14156878699},
-                    {
-                        "owner": "owner",
-                        "repo": "repo",
-                        "artifact_id": 123456789,
-                        "archive_format": "zip",
-                    },
-                ]
+                {
+                    "owner": "owner",
+                    "repo": "repo",
+                    "artifact_id": 123456789,
+                    "archive_format": "zip",
+                }
             ),
+            mock_download_artifact_resp,
         )
 
         await resolve_conflict_pull_requests(handler, [mock_pull])
@@ -655,22 +632,15 @@ async def test_resolve_conflict_pull_requests_plugin_not_valid(
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_get",
-                    result=mock_issue_repo,
-                ),
-                GitHubApi(
-                    api="rest.issues.async_list_comments",
-                    result=mock_list_comments_resp,
-                ),
-            ],
-            [
-                snapshot({"owner": "owner", "repo": "repo", "issue_number": 1}),
-                {"owner": "owner", "repo": "repo", "issue_number": 1},
-            ],
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            snapshot({"owner": "owner", "repo": "repo", "issue_number": 1}),
+            mock_issue_repo,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "owner", "repo": "repo", "issue_number": 1},
+            mock_list_comments_resp,
         )
 
         await resolve_conflict_pull_requests(handler, [mock_pull])

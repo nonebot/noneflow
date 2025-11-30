@@ -7,7 +7,6 @@ from tests.plugins.github.utils import (
     assert_subprocess_run_calls,
     get_github_bot,
     mock_subprocess_run_with_side_effect,
-    should_call_apis,
 )
 
 
@@ -48,32 +47,25 @@ async def test_config_auto_merge(
         event = get_mock_event(PullRequestReviewSubmitted)
         event.payload.pull_request.labels = get_issue_labels(["Config", "Plugin"])
 
-        should_call_apis(
-            ctx,
-            [
-                {
-                    "api": "rest.apps.async_get_repo_installation",
-                    "result": mock_installation,
-                },
-                {
-                    "api": "rest.apps.async_create_installation_access_token",
-                    "result": mock_installation_token,
-                },
-                {
-                    "api": "rest.pulls.async_merge",
-                    "result": True,
-                },
-            ],
-            [
-                {"owner": "he0119", "repo": "action-test"},
-                {"installation_id": mock_installation.parsed_data.id},
-                {
-                    "owner": "he0119",
-                    "repo": "action-test",
-                    "pull_number": 100,
-                    "merge_method": "rebase",
-                },
-            ],
+        ctx.should_call_api(
+            "rest.apps.async_get_repo_installation",
+            {"owner": "he0119", "repo": "action-test"},
+            mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.apps.async_create_installation_access_token",
+            {"installation_id": mock_installation.parsed_data.id},
+            mock_installation_token,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_merge",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "pull_number": 100,
+                "merge_method": "rebase",
+            },
+            True,
         )
 
         ctx.receive_event(bot, event)

@@ -11,7 +11,6 @@ from tests.plugins.github.utils import (
     assert_subprocess_run_calls,
     get_github_bot,
     mock_subprocess_run_with_side_effect,
-    should_call_apis,
 )
 
 
@@ -66,68 +65,63 @@ async def test_process_pull_request(
         event = get_mock_event(PullRequestClosed)
         event.payload.pull_request.merged = True
 
-        should_call_apis(
-            ctx,
-            [
-                {
-                    "api": "rest.apps.async_get_repo_installation",
-                    "result": mock_installation,
-                },
-                {
-                    "api": "rest.apps.async_create_installation_access_token",
-                    "result": mock_installation_token,
-                },
-                {
-                    "api": "rest.issues.async_get",
-                    "result": mock_issues_resp,
-                },
-                {
-                    "api": "rest.issues.async_list_comments",
-                    "result": mock_list_comments_resp,
-                },
-                {
-                    "api": "rest.actions.async_list_workflow_run_artifacts",
-                    "result": mock_list_artifacts_resp,
-                },
-                {
-                    "api": "rest.repos.async_create_dispatch_event",
-                    "result": None,
-                },
-                {
-                    "api": "rest.issues.async_update",
-                    "result": None,
-                },
-                {
-                    "api": "rest.pulls.async_list",
-                    "result": mock_pulls_resp,
-                },
-            ],
+        ctx.should_call_api(
+            "rest.apps.async_get_repo_installation",
+            snapshot({"owner": "he0119", "repo": "action-test"}),
+            mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.apps.async_create_installation_access_token",
+            snapshot({"installation_id": mock_installation.parsed_data.id}),
+            mock_installation_token,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            snapshot({"owner": "he0119", "repo": "action-test", "issue_number": 76}),
+            mock_issues_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            snapshot({"owner": "he0119", "repo": "action-test", "issue_number": 80}),
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.actions.async_list_workflow_run_artifacts",
+            snapshot({"owner": "he0119", "repo": "action-test", "run_id": 3}),
+            mock_list_artifacts_resp,
+        )
+        ctx.should_call_api(
+            "rest.repos.async_create_dispatch_event",
             snapshot(
-                [
-                    {"owner": "he0119", "repo": "action-test"},
-                    {"installation_id": mock_installation.parsed_data.id},
-                    {"owner": "he0119", "repo": "action-test", "issue_number": 76},
-                    {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-                    {"owner": "he0119", "repo": "action-test", "run_id": 3},
-                    {
-                        "owner": "owner",
-                        "repo": "registry",
-                        "event_type": "registry_update",
-                        "client_payload": {
-                            "repo_info": {"owner": "he0119", "repo": "action-test"},
-                            "artifact_id": 233,
-                        },
+                {
+                    "owner": "owner",
+                    "repo": "registry",
+                    "event_type": "registry_update",
+                    "client_payload": {
+                        "repo_info": {"owner": "he0119", "repo": "action-test"},
+                        "artifact_id": 233,
                     },
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "issue_number": 80,
-                        "state": "closed",
-                        "state_reason": "completed",
-                    },
-                    {"owner": "he0119", "repo": "action-test", "state": "open"},
-                ]
+                }
             ),
+            None,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            snapshot(
+                {
+                    "owner": "he0119",
+                    "repo": "action-test",
+                    "issue_number": 80,
+                    "state": "closed",
+                    "state_reason": "completed",
+                }
+            ),
+            None,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_list",
+            snapshot({"owner": "he0119", "repo": "action-test", "state": "open"}),
+            mock_pulls_resp,
         )
 
         ctx.receive_event(bot, event)
@@ -164,38 +158,31 @@ async def test_process_pull_request_not_merged(
         event = get_mock_event(PullRequestClosed)
         assert isinstance(event, PullRequestClosed)
 
-        should_call_apis(
-            ctx,
-            [
-                {
-                    "api": "rest.apps.async_get_repo_installation",
-                    "result": mock_installation,
-                },
-                {
-                    "api": "rest.apps.async_create_installation_access_token",
-                    "result": mock_installation_token,
-                },
-                {
-                    "api": "rest.issues.async_get",
-                    "result": mock_issues_resp,
-                },
-                {
-                    "api": "rest.issues.async_update",
-                    "result": True,
-                },
-            ],
-            [
-                {"owner": "he0119", "repo": "action-test"},
-                {"installation_id": mock_installation.parsed_data.id},
-                {"owner": "he0119", "repo": "action-test", "issue_number": 76},
-                {
-                    "owner": "he0119",
-                    "repo": "action-test",
-                    "issue_number": 80,
-                    "state": "closed",
-                    "state_reason": "not_planned",
-                },
-            ],
+        ctx.should_call_api(
+            "rest.apps.async_get_repo_installation",
+            {"owner": "he0119", "repo": "action-test"},
+            mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.apps.async_create_installation_access_token",
+            {"installation_id": mock_installation.parsed_data.id},
+            mock_installation_token,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 76},
+            mock_issues_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 80,
+                "state": "closed",
+                "state_reason": "not_planned",
+            },
+            True,
         )
 
         ctx.receive_event(bot, event)

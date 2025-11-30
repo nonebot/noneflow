@@ -3,11 +3,9 @@ from nonebug import App
 from pytest_mock import MockerFixture
 
 from tests.plugins.github.utils import (
-    GitHubApi,
     MockBody,
     MockIssue,
     get_github_bot,
-    should_call_apis,
 )
 
 
@@ -27,21 +25,14 @@ async def test_ensure_issue_plugin_test_button(app: App, mocker: MockerFixture):
     async with app.test_api() as ctx:
         _adapter, bot = get_github_bot(ctx)
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_update",
-                    result=True,
-                )
-            ],
-            [
-                snapshot(
-                    {
-                        "owner": "owner",
-                        "repo": "repo",
-                        "issue_number": 1,
-                        "body": """\
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            snapshot(
+                {
+                    "owner": "owner",
+                    "repo": "repo",
+                    "issue_number": 1,
+                    "body": """\
 ### PyPI 项目名
 
 project_link
@@ -64,9 +55,9 @@ log_level=DEBUG
 
 - [ ] 如需重新运行插件测试，请勾选左侧勾选框\
 """,
-                    }
-                )
-            ],
+                }
+            ),
+            True,
         )
 
         handler = IssueHandler(
@@ -94,21 +85,14 @@ async def test_ensure_issue_plugin_test_button_checked(app: App, mocker: MockerF
     async with app.test_api() as ctx:
         _adapter, bot = get_github_bot(ctx)
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_update",
-                    result=True,
-                )
-            ],
-            [
-                snapshot(
-                    {
-                        "owner": "owner",
-                        "repo": "repo",
-                        "issue_number": 1,
-                        "body": """\
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            snapshot(
+                {
+                    "owner": "owner",
+                    "repo": "repo",
+                    "issue_number": 1,
+                    "body": """\
 ### PyPI 项目名
 
 project_link
@@ -131,9 +115,9 @@ log_level=DEBUG
 
 - [ ] 如需重新运行插件测试，请勾选左侧勾选框\
 """,
-                    }
-                )
-            ],
+                }
+            ),
+            True,
         )
 
         handler = IssueHandler(
@@ -190,21 +174,14 @@ async def test_ensure_issue_plugin_test_button_in_progress(
     async with app.test_api() as ctx:
         _adapter, bot = get_github_bot(ctx)
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_update",
-                    result=True,
-                )
-            ],
-            [
-                snapshot(
-                    {
-                        "owner": "owner",
-                        "repo": "repo",
-                        "issue_number": 1,
-                        "body": """\
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            snapshot(
+                {
+                    "owner": "owner",
+                    "repo": "repo",
+                    "issue_number": 1,
+                    "body": """\
 ### PyPI 项目名
 
 project_link
@@ -227,9 +204,9 @@ log_level=DEBUG
 
 - [x] 🔥插件测试中，请稍候\
 """,
-                    }
-                )
-            ],
+                }
+            ),
+            True,
         )
 
         handler = IssueHandler(

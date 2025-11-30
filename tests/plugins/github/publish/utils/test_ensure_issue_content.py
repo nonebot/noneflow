@@ -3,10 +3,8 @@ from nonebug import App
 from pytest_mock import MockerFixture
 
 from tests.plugins.github.utils import (
-    GitHubApi,
     MockIssue,
     get_github_bot,
-    should_call_apis,
 )
 
 
@@ -25,21 +23,14 @@ async def test_ensure_issue_content(app: App, mocker: MockerFixture):
             issue=issue.as_mock(mocker),
         )
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_update",
-                    result=True,
-                )
-            ],
-            [
-                {
-                    "owner": "owner",
-                    "repo": "repo",
-                    "issue_number": 1,
-                    "body": snapshot(
-                        """\
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            {
+                "owner": "owner",
+                "repo": "repo",
+                "issue_number": 1,
+                "body": snapshot(
+                    """\
 ### 插件名称
 
 ### 插件描述
@@ -52,9 +43,9 @@ async def test_ensure_issue_content(app: App, mocker: MockerFixture):
 
 什么都没有\
 """
-                    ),
-                }
-            ],
+                ),
+            },
+            True,
         )
 
         await ensure_issue_content(handler)
@@ -76,22 +67,15 @@ async def test_ensure_issue_content_partial(app: App, mocker: MockerFixture):
             issue=issue.as_mock(mocker),
         )
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_update",
-                    result=True,
-                )
-            ],
-            [
-                {
-                    "owner": "owner",
-                    "repo": "repo",
-                    "issue_number": 1,
-                    "body": "### 插件描述\n\n### 插件项目仓库/主页链接\n\n### 插件支持的适配器\n\n### 插件名称\n\nname\n\n### 插件类型\n",
-                }
-            ],
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            {
+                "owner": "owner",
+                "repo": "repo",
+                "issue_number": 1,
+                "body": "### 插件描述\n\n### 插件项目仓库/主页链接\n\n### 插件支持的适配器\n\n### 插件名称\n\nname\n\n### 插件类型\n",
+            },
+            True,
         )
 
         await ensure_issue_content(handler)

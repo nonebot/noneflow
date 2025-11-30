@@ -5,7 +5,7 @@ from inline_snapshot import snapshot
 from nonebug import App
 from pytest_mock import MockerFixture
 
-from tests.plugins.github.utils import GitHubApi, get_github_bot, should_call_apis
+from tests.plugins.github.utils import get_github_bot
 
 
 async def test_issue_property(app: App, mocker: MockerFixture) -> None:
@@ -56,21 +56,17 @@ async def test_update_issue_title(app: App, mocker: MockerFixture) -> None:
             issue=mock_issue,
         )
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(api="rest.issues.async_update", result=True),
-            ],
+        ctx.should_call_api(
+            "rest.issues.async_update",
             snapshot(
-                [
-                    {
-                        "owner": "owner",
-                        "repo": "repo",
-                        "issue_number": 76,
-                        "title": "new title",
-                    },
-                ]
+                {
+                    "owner": "owner",
+                    "repo": "repo",
+                    "issue_number": 76,
+                    "title": "new title",
+                }
             ),
+            True,
         )
         await issue_handler.update_issue_title("new title")
         assert mock_issue.title == "new title"
@@ -96,21 +92,17 @@ async def test_update_issue_body(app: App, mocker: MockerFixture) -> None:
             issue=mock_issue,
         )
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(api="rest.issues.async_update", result=True),
-            ],
+        ctx.should_call_api(
+            "rest.issues.async_update",
             snapshot(
-                [
-                    {
-                        "owner": "owner",
-                        "repo": "repo",
-                        "issue_number": 76,
-                        "body": "new body",
-                    },
-                ]
+                {
+                    "owner": "owner",
+                    "repo": "repo",
+                    "issue_number": 76,
+                    "body": "new body",
+                }
             ),
+            True,
         )
         await issue_handler.update_issue_body("new body")
         assert mock_issue.body == "new body"
@@ -136,22 +128,18 @@ async def test_close_issue(app: App, mocker: MockerFixture) -> None:
             issue=mock_issue,
         )
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(api="rest.issues.async_update", result=True),
-            ],
+        ctx.should_call_api(
+            "rest.issues.async_update",
             snapshot(
-                [
-                    {
-                        "owner": "owner",
-                        "repo": "repo",
-                        "issue_number": 123,
-                        "state": "closed",
-                        "state_reason": "completed",
-                    },
-                ]
+                {
+                    "owner": "owner",
+                    "repo": "repo",
+                    "issue_number": 123,
+                    "state": "closed",
+                    "state_reason": "completed",
+                }
             ),
+            True,
         )
         await issue_handler.close_issue("completed")
 
@@ -177,23 +165,19 @@ async def test_create_pull_request(app: App, mocker: MockerFixture) -> None:
             repo_info=RepoInfo(owner="owner", repo="repo"),
             issue=mock_issue,
         )
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(api="rest.pulls.async_create", result=mock_pull_resp),
-            ],
+        ctx.should_call_api(
+            "rest.pulls.async_create",
             snapshot(
-                [
-                    {
-                        "owner": "owner",
-                        "repo": "repo",
-                        "title": "new title",
-                        "body": "resolve #76",
-                        "base": "main",
-                        "head": "branch",
-                    },
-                ]
+                {
+                    "owner": "owner",
+                    "repo": "repo",
+                    "title": "new title",
+                    "body": "resolve #76",
+                    "base": "main",
+                    "head": "branch",
+                }
             ),
+            mock_pull_resp,
         )
         number = await issue_handler.create_pull_request("main", "new title", "branch")
         assert number == 123
@@ -219,22 +203,16 @@ async def test_list_comments(app: App, mocker: MockerFixture) -> None:
             issue=mock_issue,
         )
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_list_comments", result=mock_comments_resp
-                ),
-            ],
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
             snapshot(
-                [
-                    {
-                        "owner": "owner",
-                        "repo": "repo",
-                        "issue_number": 76,
-                    },
-                ]
+                {
+                    "owner": "owner",
+                    "repo": "repo",
+                    "issue_number": 76,
+                }
             ),
+            mock_comments_resp,
         )
         await issue_handler.list_comments()
 
@@ -259,25 +237,22 @@ async def test_comment_issue(app: App, mocker: MockerFixture) -> None:
             issue=mock_issue,
         )
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_list_comments", result=mock_comments_resp
-                ),
-                GitHubApi(api="rest.issues.async_create_comment", result=True),
-            ],
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            snapshot({"owner": "owner", "repo": "repo", "issue_number": 76}),
+            mock_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_create_comment",
             snapshot(
-                [
-                    {"owner": "owner", "repo": "repo", "issue_number": 76},
-                    {
-                        "owner": "owner",
-                        "repo": "repo",
-                        "issue_number": 76,
-                        "body": "new comment",
-                    },
-                ]
+                {
+                    "owner": "owner",
+                    "repo": "repo",
+                    "issue_number": 76,
+                    "body": "new comment",
+                }
             ),
+            True,
         )
         await issue_handler.resuable_comment_issue("new comment")
 
@@ -302,18 +277,10 @@ async def test_should_skip_test(app: App, mocker: MockerFixture) -> None:
             issue=mock_issue,
         )
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_list_comments", result=mock_comments_resp
-                ),
-            ],
-            snapshot(
-                [
-                    {"owner": "owner", "repo": "repo", "issue_number": 76},
-                ]
-            ),
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            snapshot({"owner": "owner", "repo": "repo", "issue_number": 76}),
+            mock_comments_resp,
         )
         assert await issue_handler.should_skip_test() is False
 
@@ -342,18 +309,10 @@ async def test_should_skip_test_true(app: App, mocker: MockerFixture) -> None:
             issue=mock_issue,
         )
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_list_comments", result=mock_comments_resp
-                ),
-            ],
-            snapshot(
-                [
-                    {"owner": "owner", "repo": "repo", "issue_number": 76},
-                ]
-            ),
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            snapshot({"owner": "owner", "repo": "repo", "issue_number": 76}),
+            mock_comments_resp,
         )
         assert await issue_handler.should_skip_test() is True
 
@@ -382,18 +341,10 @@ async def test_should_skip_test_not_admin(app: App, mocker: MockerFixture) -> No
             issue=mock_issue,
         )
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_list_comments", result=mock_comments_resp
-                ),
-            ],
-            snapshot(
-                [
-                    {"owner": "owner", "repo": "repo", "issue_number": 76},
-                ]
-            ),
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            snapshot({"owner": "owner", "repo": "repo", "issue_number": 76}),
+            mock_comments_resp,
         )
         assert await issue_handler.should_skip_test() is False
 
@@ -472,18 +423,10 @@ async def test_get_self_comment(app: App, mocker: MockerFixture) -> None:
             issue=mock_issue,
         )
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_list_comments", result=mock_comments_resp
-                ),
-            ],
-            snapshot(
-                [
-                    {"owner": "owner", "repo": "repo", "issue_number": 76},
-                ]
-            ),
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            snapshot({"owner": "owner", "repo": "repo", "issue_number": 76}),
+            mock_comments_resp,
         )
         comment = await issue_handler.get_self_comment()
         assert comment == mock_comment_bot
@@ -512,18 +455,10 @@ async def test_get_self_comment_not_found(app: App, mocker: MockerFixture) -> No
             issue=mock_issue,
         )
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_list_comments", result=mock_comments_resp
-                ),
-            ],
-            snapshot(
-                [
-                    {"owner": "owner", "repo": "repo", "issue_number": 76},
-                ]
-            ),
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            snapshot({"owner": "owner", "repo": "repo", "issue_number": 76}),
+            mock_comments_resp,
         )
         comment = await issue_handler.get_self_comment()
         assert comment is None
@@ -546,21 +481,17 @@ async def test_comment_issue_new(app: App, mocker: MockerFixture) -> None:
             issue=mock_issue,
         )
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(api="rest.issues.async_create_comment", result=True),
-            ],
+        ctx.should_call_api(
+            "rest.issues.async_create_comment",
             snapshot(
-                [
-                    {
-                        "owner": "owner",
-                        "repo": "repo",
-                        "issue_number": 76,
-                        "body": "test comment",
-                    },
-                ]
+                {
+                    "owner": "owner",
+                    "repo": "repo",
+                    "issue_number": 76,
+                    "body": "test comment",
+                }
             ),
+            True,
         )
         await issue_handler.comment_issue("test comment")
 
@@ -586,20 +517,16 @@ async def test_comment_issue_update_existing(app: App, mocker: MockerFixture) ->
             issue=mock_issue,
         )
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(api="rest.issues.async_update_comment", result=True),
-            ],
+        ctx.should_call_api(
+            "rest.issues.async_update_comment",
             snapshot(
-                [
-                    {
-                        "owner": "owner",
-                        "repo": "repo",
-                        "comment_id": 123,
-                        "body": "updated comment",
-                    },
-                ]
+                {
+                    "owner": "owner",
+                    "repo": "repo",
+                    "comment_id": 123,
+                    "body": "updated comment",
+                }
             ),
+            True,
         )
         await issue_handler.comment_issue("updated comment", self_comment=mock_comment)

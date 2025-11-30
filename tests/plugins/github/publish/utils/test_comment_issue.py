@@ -1,7 +1,7 @@
 from nonebug import App
 from pytest_mock import MockerFixture
 
-from tests.plugins.github.utils import GitHubApi, get_github_bot, should_call_apis
+from tests.plugins.github.utils import get_github_bot
 
 
 async def test_comment_issue(app: App, mocker: MockerFixture):
@@ -22,27 +22,20 @@ async def test_comment_issue(app: App, mocker: MockerFixture):
     async with app.test_api() as ctx:
         _adapter, bot = get_github_bot(ctx)
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_list_comments",
-                    result=mock_list_comments_resp,
-                ),
-                GitHubApi(
-                    api="rest.issues.async_create_comment",
-                    result=True,
-                ),
-            ],
-            [
-                {"owner": "owner", "repo": "repo", "issue_number": 1},
-                {
-                    "owner": "owner",
-                    "repo": "repo",
-                    "issue_number": 1,
-                    "body": "test",
-                },
-            ],
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "owner", "repo": "repo", "issue_number": 1},
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_create_comment",
+            {
+                "owner": "owner",
+                "repo": "repo",
+                "issue_number": 1,
+                "body": "test",
+            },
+            True,
         )
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
@@ -70,27 +63,20 @@ async def test_comment_issue_reuse(app: App, mocker: MockerFixture):
     async with app.test_api() as ctx:
         _adapter, bot = get_github_bot(ctx)
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_list_comments",
-                    result=mock_list_comments_resp,
-                ),
-                GitHubApi(
-                    api="rest.issues.async_update_comment",
-                    result=True,
-                ),
-            ],
-            [
-                {"owner": "owner", "repo": "repo", "issue_number": 1},
-                {
-                    "owner": "owner",
-                    "repo": "repo",
-                    "comment_id": 123,
-                    "body": "test",
-                },
-            ],
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "owner", "repo": "repo", "issue_number": 1},
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update_comment",
+            {
+                "owner": "owner",
+                "repo": "repo",
+                "comment_id": 123,
+                "body": "test",
+            },
+            True,
         )
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
@@ -115,17 +101,10 @@ async def test_comment_issue_reuse_same(app: App, mocker: MockerFixture):
     async with app.test_api() as ctx:
         _adapter, bot = get_github_bot(ctx)
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_list_comments",
-                    result=mock_list_comments_resp,
-                ),
-            ],
-            [
-                {"owner": "owner", "repo": "repo", "issue_number": 1},
-            ],
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "owner", "repo": "repo", "issue_number": 1},
+            mock_list_comments_resp,
         )
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))

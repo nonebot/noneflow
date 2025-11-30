@@ -1,27 +1,12 @@
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Literal, NotRequired, TypedDict
+from typing import Any, Literal
 from unittest.mock import MagicMock, call
 
 import pyjson5
 from githubkit.rest import Issue
-from nonebug.mixin.call_api import ApiContext
-from nonebug.mixin.process import MatcherContext
 from pytest_mock import MockerFixture, MockFixture, MockType
-
-
-class GitHubApi(TypedDict):
-    api: str
-    result: Any | None
-    exception: NotRequired[Exception | None]
-
-
-def should_call_apis(
-    ctx: MatcherContext | ApiContext, apis: list[GitHubApi], data: list[Any]
-) -> None:
-    for n, api in enumerate(apis):
-        ctx.should_call_api(**api, data=data[n])
 
 
 def mock_subprocess_run_with_side_effect(
