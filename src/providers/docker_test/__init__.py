@@ -90,7 +90,6 @@ class DockerPluginTest:
                     "PROJECT_LINK": self.project_link,
                     "MODULE_NAME": self.module_name,
                     "PLUGIN_CONFIG": self.config,
-                    "TEST_RESULT_PATH": DOCKER_BIND_RESULT_PATH,
                 },
                 detach=False,
                 remove=True,

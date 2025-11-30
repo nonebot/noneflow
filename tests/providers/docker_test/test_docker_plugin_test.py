@@ -62,7 +62,6 @@ async def test_docker_plugin_test_from_file(
                 "MODULE_NAME": "module_name",
                 "PLUGIN_CONFIG": "",
                 "PYTHON_VERSION": "3.12",
-                "TEST_RESULT_PATH": "/app/plugin_test/test_result.json",
             }
         ),
         detach=False,
@@ -126,7 +125,6 @@ async def test_docker_plugin_test_from_output(
                 "MODULE_NAME": "module_name",
                 "PLUGIN_CONFIG": "",
                 "PYTHON_VERSION": "3.12",
-                "TEST_RESULT_PATH": "/app/plugin_test/test_result.json",
             }
         ),
         detach=False,
@@ -177,7 +175,6 @@ async def test_docker_plugin_test_exception(
                 "MODULE_NAME": "module_name",
                 "PLUGIN_CONFIG": "",
                 "PYTHON_VERSION": "3.12",
-                "TEST_RESULT_PATH": "/app/plugin_test/test_result.json",
             }
         ),
         detach=False,
@@ -259,7 +256,6 @@ async def test_docker_plugin_test_metadata_some_fields_empty(
                 "MODULE_NAME": "module_name",
                 "PLUGIN_CONFIG": "",
                 "PYTHON_VERSION": "3.12",
-                "TEST_RESULT_PATH": "/app/plugin_test/test_result.json",
             }
         ),
         detach=False,
@@ -345,7 +341,6 @@ async def test_docker_plugin_test_metadata_some_fields_invalid(
             "MODULE_NAME": "module_name",
             "PLUGIN_CONFIG": "",
             "PYTHON_VERSION": "3.12",
-            "TEST_RESULT_PATH": "/app/plugin_test/test_result.json",
         },
         detach=False,
         remove=True,

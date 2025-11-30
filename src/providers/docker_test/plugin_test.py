@@ -13,7 +13,11 @@ from pathlib import Path
 
 import httpx
 
-from src.providers.constants import PLUGIN_TEST_DIR, REGISTRY_PLUGINS_URL
+from src.providers.constants import (
+    DOCKER_BIND_RESULT_PATH,
+    PLUGIN_TEST_DIR,
+    REGISTRY_PLUGINS_URL,
+)
 
 from .render import render_fake, render_runner
 
@@ -192,11 +196,9 @@ class PluginTest:
         }
         # 写入测试结果文件
         try:
-            result_path = self.env.get("TEST_RESULT_PATH")
-            if result_path:
-                result_path = Path(result_path)
-                with open(result_path, "w", encoding="utf-8") as f:
-                    json.dump(result, f, ensure_ascii=False)
+            result_path = Path(DOCKER_BIND_RESULT_PATH)
+            with open(result_path, "w", encoding="utf-8") as f:
+                json.dump(result, f, ensure_ascii=False)
         except Exception as e:
             self._log_output(f"写入测试结果文件失败，错误信息：{e}")
         # 输出测试结果
