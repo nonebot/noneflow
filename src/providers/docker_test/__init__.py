@@ -108,7 +108,7 @@ class DockerPluginTest:
                 # 如果测试结果文件不存在或不可解析，则尝试使用容器输出内容
                 # 这个时候才需要解码容器输出内容，避免不必要的解码开销
                 try:
-                    data = json.loads(output.decode(encoding="utf-8", errors="ignore"))
+                    data = json.loads(output.decode(encoding="utf-8"))
                 except json.JSONDecodeError:
                     data = {
                         "run": True,
