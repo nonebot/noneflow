@@ -1,10 +1,17 @@
 import json
+import traceback
 from typing import TypedDict
 
 import docker
 from pydantic import BaseModel, SkipValidation, field_validator
 
-from src.providers.constants import DOCKER_IMAGES
+from src.providers.constants import (
+    DOCKER_BIND_RESULT_PATH,
+    DOCKER_IMAGES,
+    PLUGIN_TEST_DIR,
+    PYPI_KEY_TEMPLATE,
+)
+from src.providers.utils import pypi_key_to_path
 
 
 class Metadata(TypedDict):
@@ -50,6 +57,9 @@ class DockerPluginTest:
         self.module_name = module_name
         self.config = config
 
+        if not PLUGIN_TEST_DIR.exists():
+            PLUGIN_TEST_DIR.mkdir(parents=True, exist_ok=True)
+
     async def run(self, version: str) -> DockerTestResult:
         """运行 Docker 容器测试插件
 
@@ -61,6 +71,13 @@ class DockerPluginTest:
         """
         # 连接 Docker 环境
         client = docker.DockerClient(base_url="unix://var/run/docker.sock")
+        key = PYPI_KEY_TEMPLATE.format(
+            project_link=self.project_link, module_name=self.module_name
+        )
+        plugin_test_result = PLUGIN_TEST_DIR / f"{pypi_key_to_path(key)}.json"
+
+        # 创建文件，以确保 Docker 容器内可以写入
+        plugin_test_result.touch(exist_ok=True)
 
         try:
             # 运行 Docker 容器，捕获输出。 容器内运行的代码拥有超时设限，此处无需设置超时
@@ -76,20 +93,42 @@ class DockerPluginTest:
                 },
                 detach=False,
                 remove=True,
-            ).decode()
+                volumes={
+                    plugin_test_result.resolve(strict=False).as_posix(): {
+                        "bind": DOCKER_BIND_RESULT_PATH,
+                        "mode": "rw",
+                    }
+                },
+            )
 
             try:
-                data = json.loads(output)
-            except json.JSONDecodeError:
-                data = {
-                    "run": True,
-                    "load": False,
-                    "output": f"插件测试结果解析失败，输出内容非 JSON 格式。\n输出内容：{output}",
-                }
+                # 若测试结果文件存在且可解析，则优先使用测试结果文件
+                data = json.loads(plugin_test_result.read_text(encoding="utf-8"))
+            except Exception as e:
+                # 如果测试结果文件不存在或不可解析，则尝试使用容器输出内容
+                # 这个时候才需要解码容器输出内容，避免不必要的解码开销
+                try:
+                    data = json.loads(output.decode(encoding="utf-8"))
+                except json.JSONDecodeError:
+                    data = {
+                        "run": True,
+                        "load": False,
+                        "output": f"""
+                        测试结果文件解析失败，输出内容写入失败。
+                        {e}
+                        输出内容：{output}
+                        """,
+                    }
         except Exception as e:
+            # 格式化异常堆栈信息
+            trackback = "".join(traceback.format_exception(type(e), e, e.__traceback__))
+            MAX_OUTPUT = 2000
+            if len(trackback) > MAX_OUTPUT:
+                trackback = trackback[-MAX_OUTPUT:]
+
             data = {
                 "run": False,
                 "load": False,
-                "output": str(e),
+                "output": trackback,
             }
         return DockerTestResult(**data)

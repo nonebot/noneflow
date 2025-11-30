@@ -125,6 +125,11 @@ def add_step_summary(summary: str):
     logger.debug(f"已添加作业摘要：{summary}")
 
 
+def pypi_key_to_path(key: str) -> str:
+    """将 PyPI 键名转换为路径字符"""
+    return key.replace(":", "-").replace(".", "-").replace("_", "-")
+
+
 @cache
 def get_author_name(author_id: int) -> str:
     """通过作者的ID获取作者名字"""
