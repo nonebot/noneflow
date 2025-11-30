@@ -7,14 +7,12 @@ from pytest_mock import MockerFixture
 from respx import MockRouter
 
 from tests.plugins.github.utils import (
-    GitHubApi,
     MockIssue,
     MockUser,
     assert_subprocess_run_calls,
     check_json_data,
     generate_issue_body_remove,
     get_github_bot,
-    should_call_apis,
 )
 
 
@@ -80,10 +78,10 @@ async def test_resolve_conflict_pull_requests_bot(
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
 
-        should_call_apis(
-            ctx,
-            [GitHubApi(api="rest.issues.async_get", result=mock_issue_repo)],
-            snapshot([{"owner": "owner", "repo": "repo", "issue_number": 1}]),
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            snapshot({"owner": "owner", "repo": "repo", "issue_number": 1}),
+            mock_issue_repo,
         )
 
         await resolve_conflict_pull_requests(handler, [mock_pull])
@@ -165,10 +163,10 @@ async def test_resolve_conflict_pull_requests_plugin(
     async with app.test_api() as ctx:
         _adapter, bot = get_github_bot(ctx)
 
-        should_call_apis(
-            ctx,
-            [GitHubApi(api="rest.issues.async_get", result=mock_issue_repo)],
-            snapshot([{"owner": "owner", "repo": "repo", "issue_number": 1}]),
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            snapshot({"owner": "owner", "repo": "repo", "issue_number": 1}),
+            mock_issue_repo,
         )
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))
@@ -240,10 +238,10 @@ async def test_resolve_conflict_pull_requests_not_found(
     async with app.test_api() as ctx:
         _adapter, bot = get_github_bot(ctx)
 
-        should_call_apis(
-            ctx,
-            [GitHubApi(api="rest.issues.async_get", result=mock_issue_repo)],
-            snapshot([{"owner": "owner", "repo": "repo", "issue_number": 1}]),
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            snapshot({"owner": "owner", "repo": "repo", "issue_number": 1}),
+            mock_issue_repo,
         )
 
         handler = GithubHandler(bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"))

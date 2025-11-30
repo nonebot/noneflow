@@ -398,3 +398,65 @@ async def test_docker_plugin_test_metadata_some_fields_invalid(
             }
         },
     )
+
+
+async def test_docker_plugin_test_file_invalid_and_output_invalid(
+    mocked_api: MockRouter,
+    mocker: MockerFixture,
+    tmp_path: Path,
+):
+    """测试结果文件解析失败且容器输出也无法解析为 JSON"""
+    from src.providers.constants import DOCKER_BIND_RESULT_PATH
+    from src.providers.docker_test import DockerPluginTest, DockerTestResult
+
+    mocker.patch("src.providers.docker_test.PLUGIN_TEST_DIR", tmp_path)
+    test_result_path = tmp_path / "project-link-module-name.json"
+
+    # 写入无效的 JSON 到测试结果文件
+    with open(test_result_path, "w", encoding="utf-8") as f:
+        f.write("invalid json {")
+
+    mocked_run = mocker.Mock()
+    # 容器输出也是无效的 JSON
+    mocked_run.return_value = b"not a valid json output"
+    mocked_client = mocker.Mock()
+    mocked_client.containers.run = mocked_run
+    mocked_docker = mocker.patch("docker.DockerClient")
+    mocked_docker.return_value = mocked_client
+
+    test = DockerPluginTest("project_link", "module_name")
+    result = await test.run("3.12")
+
+    # 验证返回的结果
+    assert result == snapshot(
+        DockerTestResult(
+            run=True,
+            load=False,
+            output="""\
+
+                        测试结果文件解析失败，输出内容写入失败。
+                        Expecting value: line 1 column 1 (char 0)
+                        输出内容：b'not a valid json output'
+                        \
+""",
+        )
+    )
+
+    assert not mocked_api["store_plugins"].called
+    mocked_run.assert_called_once_with(
+        "ghcr.io/nonebot/nonetest:latest",
+        environment={
+            "PROJECT_LINK": "project_link",
+            "MODULE_NAME": "module_name",
+            "PLUGIN_CONFIG": "",
+            "PYTHON_VERSION": "3.12",
+        },
+        detach=False,
+        remove=True,
+        volumes={
+            test_result_path.resolve(strict=False).as_posix(): {
+                "bind": DOCKER_BIND_RESULT_PATH,
+                "mode": "rw",
+            }
+        },
+    )

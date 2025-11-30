@@ -4,7 +4,7 @@ from inline_snapshot import snapshot
 from nonebug import App
 from pytest_mock import MockerFixture
 
-from tests.plugins.github.utils import GitHubApi, get_github_bot, should_call_apis
+from tests.plugins.github.utils import get_github_bot
 
 
 async def test_get_noneflow_artifact_success(app: App, mocker: MockerFixture) -> None:
@@ -70,32 +70,27 @@ async def test_get_noneflow_artifact_success(app: App, mocker: MockerFixture) ->
             issue=mock_issue,
         )
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_list_comments",
-                    result=mock_comments_resp,
-                ),
-                GitHubApi(
-                    api="rest.actions.async_list_workflow_run_artifacts",
-                    result=mock_artifacts_resp,
-                ),
-            ],
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
             snapshot(
-                [
-                    {
-                        "owner": "owner",
-                        "repo": "repo",
-                        "issue_number": 76,
-                    },
-                    {
-                        "owner": "owner",
-                        "repo": "repo",
-                        "run_id": 12345678901,
-                    },
-                ]
+                {
+                    "owner": "owner",
+                    "repo": "repo",
+                    "issue_number": 76,
+                }
             ),
+            mock_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.actions.async_list_workflow_run_artifacts",
+            snapshot(
+                {
+                    "owner": "owner",
+                    "repo": "repo",
+                    "run_id": 12345678901,
+                }
+            ),
+            mock_artifacts_resp,
         )
 
         result = await get_noneflow_artifact(issue_handler)
@@ -127,23 +122,16 @@ async def test_get_noneflow_artifact_no_comment(
             issue=mock_issue,
         )
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_list_comments",
-                    result=mock_comments_resp,
-                ),
-            ],
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
             snapshot(
-                [
-                    {
-                        "owner": "owner",
-                        "repo": "repo",
-                        "issue_number": 76,
-                    },
-                ]
+                {
+                    "owner": "owner",
+                    "repo": "repo",
+                    "issue_number": 76,
+                }
             ),
+            mock_comments_resp,
         )
 
         with pytest.raises(
@@ -180,23 +168,16 @@ async def test_get_noneflow_artifact_empty_comment(
             issue=mock_issue,
         )
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_list_comments",
-                    result=mock_comments_resp,
-                ),
-            ],
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
             snapshot(
-                [
-                    {
-                        "owner": "owner",
-                        "repo": "repo",
-                        "issue_number": 76,
-                    },
-                ]
+                {
+                    "owner": "owner",
+                    "repo": "repo",
+                    "issue_number": 76,
+                }
             ),
+            mock_comments_resp,
         )
 
         with pytest.raises(
@@ -240,23 +221,16 @@ async def test_get_noneflow_artifact_no_history(
             issue=mock_issue,
         )
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_list_comments",
-                    result=mock_comments_resp,
-                ),
-            ],
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
             snapshot(
-                [
-                    {
-                        "owner": "owner",
-                        "repo": "repo",
-                        "issue_number": 76,
-                    },
-                ]
+                {
+                    "owner": "owner",
+                    "repo": "repo",
+                    "issue_number": 76,
+                }
             ),
+            mock_comments_resp,
         )
 
         with pytest.raises(ValueError, match="无法从评论中获取历史工作流信息"):
@@ -313,32 +287,27 @@ async def test_get_noneflow_artifact_no_noneflow_artifact(
             issue=mock_issue,
         )
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_list_comments",
-                    result=mock_comments_resp,
-                ),
-                GitHubApi(
-                    api="rest.actions.async_list_workflow_run_artifacts",
-                    result=mock_artifacts_resp,
-                ),
-            ],
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
             snapshot(
-                [
-                    {
-                        "owner": "owner",
-                        "repo": "repo",
-                        "issue_number": 76,
-                    },
-                    {
-                        "owner": "owner",
-                        "repo": "repo",
-                        "run_id": 12345678901,
-                    },
-                ]
+                {
+                    "owner": "owner",
+                    "repo": "repo",
+                    "issue_number": 76,
+                }
             ),
+            mock_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.actions.async_list_workflow_run_artifacts",
+            snapshot(
+                {
+                    "owner": "owner",
+                    "repo": "repo",
+                    "run_id": 12345678901,
+                }
+            ),
+            mock_artifacts_resp,
         )
 
         with pytest.raises(ValueError, match="未找到 NoneFlow Artifact"):
@@ -384,23 +353,16 @@ async def test_get_noneflow_artifact_invalid_run_id(
             issue=mock_issue,
         )
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_list_comments",
-                    result=mock_comments_resp,
-                ),
-            ],
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
             snapshot(
-                [
-                    {
-                        "owner": "owner",
-                        "repo": "repo",
-                        "issue_number": 76,
-                    },
-                ]
+                {
+                    "owner": "owner",
+                    "repo": "repo",
+                    "issue_number": 76,
+                }
             ),
+            mock_comments_resp,
         )
 
         with pytest.raises(ValueError, match="无法从评论中获取历史工作流信息"):

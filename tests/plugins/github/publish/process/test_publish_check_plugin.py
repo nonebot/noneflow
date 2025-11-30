@@ -17,7 +17,6 @@ from tests.plugins.github.utils import (
     get_github_bot,
     get_issue_labels,
     mock_subprocess_run_with_side_effect,
-    should_call_apis,
 )
 
 
@@ -78,64 +77,28 @@ async def test_plugin_process_publish_check(
         event.payload.issue.labels = get_issue_labels(["Plugin", "Publish"])
 
         ctx.receive_event(bot, event)
-        should_call_apis(
-            ctx,
-            [
-                {
-                    "api": "rest.apps.async_get_repo_installation",
-                    "result": mock_installation,
-                },
-                {
-                    "api": "rest.apps.async_create_installation_access_token",
-                    "result": mock_installation_token,
-                },
-                {
-                    "api": "rest.issues.async_get",
-                    "result": mock_issues_resp,
-                },
-                {
-                    "api": "rest.issues.async_update",
-                    "result": None,
-                },
-                {
-                    "api": "rest.issues.async_list_comments",
-                    "result": mock_list_comments_resp,
-                },
-                {
-                    "api": "rest.issues.async_update",
-                    "result": None,
-                },
-                {
-                    "api": "rest.issues.async_list_comments",
-                    "result": mock_list_comments_resp,
-                },
-                {
-                    "api": "rest.issues.async_create_comment",
-                    "result": None,
-                },
-                {
-                    "api": "rest.issues.async_update",
-                    "result": None,
-                },
-                {
-                    "api": "rest.pulls.async_create",
-                    "result": mock_pulls_resp,
-                },
-                {
-                    "api": "rest.issues.async_add_labels",
-                    "result": None,
-                },
-            ],
-            snapshot(
-                [
-                    {"owner": "he0119", "repo": "action-test"},
-                    {"installation_id": 123},
-                    {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "issue_number": 80,
-                        "body": """\
+        ctx.should_call_api(
+            "rest.apps.async_get_repo_installation",
+            {"owner": "he0119", "repo": "action-test"},
+            mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.apps.async_create_installation_access_token",
+            {"installation_id": 123},
+            mock_installation_token,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+            mock_issues_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 80,
+                "body": """\
 ### PyPI 项目名
 
 project_link
@@ -158,13 +121,21 @@ log_level=DEBUG
 
 - [x] 🔥插件测试中，请稍候\
 """,
-                    },
-                    {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "issue_number": 80,
-                        "body": """\
+            },
+            None,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 80,
+                "body": """\
 ### PyPI 项目名
 
 project_link
@@ -187,13 +158,21 @@ log_level=DEBUG
 
 - [ ] 如需重新运行插件测试，请勾选左侧勾选框\
 """,
-                    },
-                    {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "issue_number": 80,
-                        "body": """\
+            },
+            None,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_create_comment",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 80,
+                "body": """\
 # 📃 商店发布检查结果
 
 > Plugin: name
@@ -222,29 +201,40 @@ log_level=DEBUG
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
 <!-- NONEFLOW -->
 """,
-                    },
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "issue_number": 80,
-                        "title": "Plugin: name",
-                    },
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "title": "Plugin: name",
-                        "body": "resolve #80",
-                        "base": "master",
-                        "head": "publish/issue80",
-                    },
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "issue_number": 2,
-                        "labels": ["Publish", "Plugin"],
-                    },
-                ]
-            ),
+            },
+            None,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 80,
+                "title": "Plugin: name",
+            },
+            None,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_create",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "title": "Plugin: name",
+                "body": "resolve #80",
+                "base": "master",
+                "head": "publish/issue80",
+            },
+            mock_pulls_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_add_labels",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 2,
+                "labels": ["Publish", "Plugin"],
+            },
+            None,
         )
 
     # 测试 git 命令
@@ -357,64 +347,28 @@ async def test_plugin_process_publish_check_re_run(
         event.payload.issue.labels = get_issue_labels(["Plugin", "Publish"])
 
         ctx.receive_event(bot, event)
-        should_call_apis(
-            ctx,
-            [
-                {
-                    "api": "rest.apps.async_get_repo_installation",
-                    "result": mock_installation,
-                },
-                {
-                    "api": "rest.apps.async_create_installation_access_token",
-                    "result": mock_installation_token,
-                },
-                {
-                    "api": "rest.issues.async_get",
-                    "result": mock_issues_resp,
-                },
-                {
-                    "api": "rest.issues.async_update",
-                    "result": None,
-                },
-                {
-                    "api": "rest.issues.async_list_comments",
-                    "result": mock_list_comments_resp,
-                },
-                {
-                    "api": "rest.issues.async_update",
-                    "result": None,
-                },
-                {
-                    "api": "rest.issues.async_list_comments",
-                    "result": mock_list_comments_resp,
-                },
-                {
-                    "api": "rest.issues.async_create_comment",
-                    "result": None,
-                },
-                {
-                    "api": "rest.issues.async_update",
-                    "result": None,
-                },
-                {
-                    "api": "rest.pulls.async_create",
-                    "result": mock_pulls_resp,
-                },
-                {
-                    "api": "rest.issues.async_add_labels",
-                    "result": None,
-                },
-            ],
-            snapshot(
-                [
-                    {"owner": "he0119", "repo": "action-test"},
-                    {"installation_id": 123},
-                    {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "issue_number": 80,
-                        "body": """\
+        ctx.should_call_api(
+            "rest.apps.async_get_repo_installation",
+            {"owner": "he0119", "repo": "action-test"},
+            mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.apps.async_create_installation_access_token",
+            {"installation_id": 123},
+            mock_installation_token,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+            mock_issues_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 80,
+                "body": """\
 ### PyPI 项目名
 
 project_link
@@ -437,13 +391,21 @@ log_level=DEBUG
 
 - [x] 🔥插件测试中，请稍候\
 """,
-                    },
-                    {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "issue_number": 80,
-                        "body": """\
+            },
+            None,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 80,
+                "body": """\
 ### PyPI 项目名
 
 project_link
@@ -466,13 +428,21 @@ log_level=DEBUG
 
 - [ ] 如需重新运行插件测试，请勾选左侧勾选框\
 """,
-                    },
-                    {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "issue_number": 80,
-                        "body": """\
+            },
+            None,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_create_comment",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 80,
+                "body": """\
 # 📃 商店发布检查结果
 
 > Plugin: name
@@ -501,29 +471,40 @@ log_level=DEBUG
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
 <!-- NONEFLOW -->
 """,
-                    },
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "issue_number": 80,
-                        "title": "Plugin: name",
-                    },
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "title": "Plugin: name",
-                        "body": "resolve #80",
-                        "base": "master",
-                        "head": "publish/issue80",
-                    },
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "issue_number": 2,
-                        "labels": ["Publish", "Plugin"],
-                    },
-                ]
-            ),
+            },
+            None,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 80,
+                "title": "Plugin: name",
+            },
+            None,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_create",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "title": "Plugin: name",
+                "body": "resolve #80",
+                "base": "master",
+                "head": "publish/issue80",
+            },
+            mock_pulls_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_add_labels",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 2,
+                "labels": ["Publish", "Plugin"],
+            },
+            None,
         )
 
     # 测试 git 命令
@@ -624,60 +605,28 @@ async def test_plugin_process_publish_check_missing_metadata(
         event.payload.issue.labels = get_issue_labels(["Plugin", "Publish"])
 
         ctx.receive_event(bot, event)
-        should_call_apis(
-            ctx,
-            [
-                {
-                    "api": "rest.apps.async_get_repo_installation",
-                    "result": mock_installation,
-                },
-                {
-                    "api": "rest.apps.async_create_installation_access_token",
-                    "result": mock_installation_token,
-                },
-                {
-                    "api": "rest.issues.async_get",
-                    "result": mock_issues_resp,
-                },
-                {
-                    "api": "rest.issues.async_update",
-                    "result": None,
-                },
-                {
-                    "api": "rest.issues.async_list_comments",
-                    "result": mock_list_comments_resp,
-                },
-                {
-                    "api": "rest.issues.async_update",
-                    "result": None,
-                },
-                {
-                    "api": "rest.issues.async_list_comments",
-                    "result": mock_list_comments_resp,
-                },
-                {
-                    "api": "rest.issues.async_create_comment",
-                    "result": None,
-                },
-                {
-                    "api": "rest.issues.async_update",
-                    "result": None,
-                },
-                {
-                    "api": "rest.pulls.async_list",
-                    "result": mock_pulls_resp,
-                },
-            ],
-            snapshot(
-                [
-                    {"owner": "he0119", "repo": "action-test"},
-                    {"installation_id": 123},
-                    {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "issue_number": 80,
-                        "body": """\
+        ctx.should_call_api(
+            "rest.apps.async_get_repo_installation",
+            {"owner": "he0119", "repo": "action-test"},
+            mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.apps.async_create_installation_access_token",
+            {"installation_id": 123},
+            mock_installation_token,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+            mock_issues_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 80,
+                "body": """\
 ### PyPI 项目名
 
 project_link
@@ -700,13 +649,21 @@ log_level=DEBUG
 
 - [x] 🔥插件测试中，请稍候\
 """,
-                    },
-                    {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "issue_number": 80,
-                        "body": """\
+            },
+            None,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 80,
+                "body": """\
 ### PyPI 项目名
 
 project_link
@@ -729,13 +686,21 @@ log_level=DEBUG
 
 - [ ] 如需重新运行插件测试，请勾选左侧勾选框\
 """,
-                    },
-                    {"owner": "he0119", "repo": "action-test", "issue_number": 80},
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "issue_number": 80,
-                        "body": """\
+            },
+            None,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_create_comment",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 80,
+                "body": """\
 # 📃 商店发布检查结果
 
 > Plugin: project_link
@@ -765,20 +730,27 @@ log_level=DEBUG
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
 <!-- NONEFLOW -->
 """,
-                    },
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "issue_number": 80,
-                        "title": "Plugin: project_link",
-                    },
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "head": "he0119:publish/issue80",
-                    },
-                ]
-            ),
+            },
+            None,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 80,
+                "title": "Plugin: project_link",
+            },
+            None,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_list",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "head": "he0119:publish/issue80",
+            },
+            mock_pulls_resp,
         )
 
     # 测试 git 命令
@@ -835,66 +807,30 @@ async def test_skip_plugin_check(
         event = get_mock_event(IssueCommentCreated, "issue-comment-skip")
 
         ctx.receive_event(bot, event)
-        should_call_apis(
-            ctx,
-            [
-                # 获取安装信息
-                {
-                    "api": "rest.apps.async_get_repo_installation",
-                    "result": mock_installation,
-                },
-                {
-                    "api": "rest.apps.async_create_installation_access_token",
-                    "result": mock_installation_token,
-                },
-                # 获取议题信息
-                {
-                    "api": "rest.issues.async_get",
-                    "result": mock_issues_resp,
-                },
-                {
-                    "api": "rest.issues.async_update",
-                    "result": None,
-                },
-                {
-                    "api": "rest.issues.async_list_comments",
-                    "result": mock_list_comments_resp,
-                },
-                {
-                    "api": "rest.issues.async_update",
-                    "result": None,
-                },
-                {
-                    "api": "rest.issues.async_update",
-                    "result": None,
-                },
-                {
-                    "api": "rest.issues.async_list_comments",
-                    "result": mock_list_comments_resp,
-                },
-                {
-                    "api": "rest.issues.async_create_comment",
-                    "result": None,
-                },
-                {
-                    "api": "rest.issues.async_update",
-                    "result": None,
-                },
-                {
-                    "api": "rest.pulls.async_list",
-                    "result": mock_pulls_resp,
-                },
-            ],
-            snapshot(
-                [
-                    {"owner": "he0119", "repo": "action-test"},
-                    {"installation_id": 123},
-                    {"owner": "he0119", "repo": "action-test", "issue_number": 70},
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "issue_number": 70,
-                        "body": """\
+        # 获取安装信息
+        ctx.should_call_api(
+            "rest.apps.async_get_repo_installation",
+            {"owner": "he0119", "repo": "action-test"},
+            mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.apps.async_create_installation_access_token",
+            {"installation_id": 123},
+            mock_installation_token,
+        )
+        # 获取议题信息
+        ctx.should_call_api(
+            "rest.issues.async_get",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 70},
+            mock_issues_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 70,
+                "body": """\
 ### PyPI 项目名
 
 project_link
@@ -917,13 +853,21 @@ log_level=DEBUG
 
 - [x] 🔥插件测试中，请稍候\
 """,
-                    },
-                    {"owner": "he0119", "repo": "action-test", "issue_number": 70},
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "issue_number": 70,
-                        "body": """\
+            },
+            None,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 70},
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 70,
+                "body": """\
 ### 插件名称
 
 ### 插件描述
@@ -956,12 +900,16 @@ log_level=DEBUG
 
 - [x] 🔥插件测试中，请稍候\
 """,
-                    },
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "issue_number": 70,
-                        "body": """\
+            },
+            None,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 70,
+                "body": """\
 ### 插件名称
 
 ### 插件描述
@@ -994,13 +942,21 @@ log_level=DEBUG
 
 - [ ] 如需重新运行插件测试，请勾选左侧勾选框\
 """,
-                    },
-                    {"owner": "he0119", "repo": "action-test", "issue_number": 70},
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "issue_number": 70,
-                        "body": """\
+            },
+            None,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "he0119", "repo": "action-test", "issue_number": 70},
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_create_comment",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 70,
+                "body": """\
 # 📃 商店发布检查结果
 
 > Plugin: project_link
@@ -1030,20 +986,27 @@ log_level=DEBUG
 💪 Powered by [NoneFlow](https://github.com/nonebot/noneflow)
 <!-- NONEFLOW -->
 """,
-                    },
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "issue_number": 70,
-                        "title": "Plugin: project_link",
-                    },
-                    {
-                        "owner": "he0119",
-                        "repo": "action-test",
-                        "head": "he0119:publish/issue70",
-                    },
-                ]
-            ),
+            },
+            None,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "issue_number": 70,
+                "title": "Plugin: project_link",
+            },
+            None,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_list",
+            {
+                "owner": "he0119",
+                "repo": "action-test",
+                "head": "he0119:publish/issue70",
+            },
+            mock_pulls_resp,
         )
 
     # 测试 git 命令

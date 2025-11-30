@@ -10,14 +10,12 @@ from respx import MockRouter
 from tests.plugins.github.config.utils import generate_issue_body
 from tests.plugins.github.event import get_mock_event
 from tests.plugins.github.utils import (
-    GitHubApi,
     MockIssue,
     assert_subprocess_run_calls,
     check_json_data,
     get_github_bot,
     get_issue_labels,
     mock_subprocess_run_with_side_effect,
-    should_call_apis,
 )
 
 
@@ -113,55 +111,23 @@ async def test_process_config_check(
         event = get_mock_event(IssuesOpened)
         event.payload.issue.labels = get_config_labels()
 
-        # 定义要调用的 API 列表
-        apis: list[GitHubApi] = [
-            {
-                "api": "rest.apps.async_get_repo_installation",
-                "result": mock_installation,
-            },
-            {
-                "api": "rest.apps.async_create_installation_access_token",
-                "result": mock_installation_token,
-            },
-            {
-                "api": "rest.issues.async_get",
-                "result": mock_issues_resp,
-            },
-            {
-                "api": "rest.issues.async_update",
-                "result": None,
-            },
-            {
-                "api": "rest.issues.async_list_comments",
-                "result": mock_list_comments_resp,
-            },
-            {
-                "api": "rest.issues.async_update_comment",
-                "result": True,
-            },
-            {
-                "api": "rest.issues.async_update",
-                "result": None,
-            },
-            {
-                "api": "rest.pulls.async_create",
-                "result": mock_pull_resp,
-            },
-            {
-                "api": "rest.issues.async_add_labels",
-                "result": None,
-            },
-            {
-                "api": "rest.issues.async_update",
-                "result": None,
-            },
-        ]
-
-        # 对应的 API 数据
-        api_data = [
+        ctx.should_call_api(
+            "rest.apps.async_get_repo_installation",
             {"owner": "he0119", "repo": "action-test"},
+            mock_installation,
+        )
+        ctx.should_call_api(
+            "rest.apps.async_create_installation_access_token",
             {"installation_id": mock_installation.parsed_data.id},
+            mock_installation_token,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_get",
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+            mock_issues_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
             snapshot(
                 {
                     "owner": "he0119",
@@ -188,7 +154,15 @@ log_level=DEBUG
 """,
                 }
             ),
+            None,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
             {"owner": "he0119", "repo": "action-test", "issue_number": 80},
+            mock_list_comments_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update_comment",
             snapshot(
                 {
                     "owner": "he0119",
@@ -225,6 +199,10 @@ log_level=DEBUG
 """,
                 }
             ),
+            True,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
             snapshot(
                 {
                     "owner": "he0119",
@@ -233,6 +211,10 @@ log_level=DEBUG
                     "title": "Plugin: name",
                 }
             ),
+            None,
+        )
+        ctx.should_call_api(
+            "rest.pulls.async_create",
             snapshot(
                 {
                     "owner": "he0119",
@@ -243,6 +225,10 @@ log_level=DEBUG
                     "head": "config/issue80",
                 }
             ),
+            mock_pull_resp,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_add_labels",
             snapshot(
                 {
                     "owner": "he0119",
@@ -251,6 +237,10 @@ log_level=DEBUG
                     "labels": ["Plugin", "Config"],
                 }
             ),
+            None,
+        )
+        ctx.should_call_api(
+            "rest.issues.async_update",
             snapshot(
                 {
                     "owner": "he0119",
@@ -277,10 +267,8 @@ log_level=DEBUG
 """,
                 }
             ),
-        ]
-
-        # 使用辅助函数调用 API
-        should_call_apis(ctx, apis, api_data)
+            None,
+        )
 
         ctx.receive_event(bot, event)  # 测试 git 命令
 

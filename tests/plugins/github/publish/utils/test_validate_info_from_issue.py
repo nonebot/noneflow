@@ -5,13 +5,11 @@ from pytest_mock import MockerFixture
 from respx import MockRouter
 
 from tests.plugins.github.utils import (
-    GitHubApi,
     generate_issue_body_adapter,
     generate_issue_body_bot,
     generate_issue_body_plugin,
     generate_issue_body_plugin_skip_test,
     get_github_bot,
-    should_call_apis,
 )
 
 
@@ -92,15 +90,10 @@ async def test_validate_info_from_issue_plugin(
             bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"), issue=mock_issue
         )
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_list_comments",
-                    result=mock_list_comments_resp,
-                )
-            ],
-            [{"owner": "owner", "repo": "repo", "issue_number": 1}],
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "owner", "repo": "repo", "issue_number": 1},
+            mock_list_comments_resp,
         )
 
         result = await validate_plugin_info_from_issue(handler)
@@ -169,15 +162,10 @@ async def test_validate_info_from_issue_plugin_skip_test(
             bot=bot, repo_info=RepoInfo(owner="owner", repo="repo"), issue=mock_issue
         )
 
-        should_call_apis(
-            ctx,
-            [
-                GitHubApi(
-                    api="rest.issues.async_list_comments",
-                    result=mock_list_comments_resp,
-                )
-            ],
-            [{"owner": "owner", "repo": "repo", "issue_number": 1}],
+        ctx.should_call_api(
+            "rest.issues.async_list_comments",
+            {"owner": "owner", "repo": "repo", "issue_number": 1},
+            mock_list_comments_resp,
         )
 
         result = await validate_plugin_info_from_issue(handler)
