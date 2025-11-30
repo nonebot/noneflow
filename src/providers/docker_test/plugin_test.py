@@ -197,6 +197,7 @@ class PluginTest:
         # 写入测试结果文件
         try:
             result_path = Path(DOCKER_BIND_RESULT_PATH)
+            result_path.parent.mkdir(parents=True, exist_ok=True)
             with open(result_path, "w", encoding="utf-8") as f:
                 json.dump(result, f, ensure_ascii=False)
         except Exception as e:
