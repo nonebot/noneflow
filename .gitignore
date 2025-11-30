@@ -178,5 +178,9 @@ pyrightconfig.json
 
 .vscode/
 
+# Noneflow 
+
 plugin_test/
 artifact/
+
+test_result.json
