@@ -1,7 +1,6 @@
 import json
 from pathlib import Path
 
-import pytest
 from inline_snapshot import snapshot
 from pytest_mock import MockerFixture
 from respx import MockRouter
@@ -10,17 +9,13 @@ from respx import MockRouter
 async def test_docker_plugin_test_from_file(
     mocked_api: MockRouter,
     mocker: MockerFixture,
-    monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ):
-    monkeypatch.setattr(
-        "src.providers.docker_test.PLUGIN_TEST_DIR", tmp_path, raising=False
-    )
     from src.providers.constants import DOCKER_BIND_RESULT_PATH
-
-    test_result_path = tmp_path / "project-link-module-name.json"
-
     from src.providers.docker_test import DockerPluginTest, DockerTestResult
+
+    mocker.patch("src.providers.docker_test.PLUGIN_TEST_DIR", tmp_path)
+    test_result_path = tmp_path / "project-link-module-name.json"
 
     data = json.dumps(
         {
@@ -78,17 +73,13 @@ async def test_docker_plugin_test_from_file(
 async def test_docker_plugin_test_from_output(
     mocked_api: MockRouter,
     mocker: MockerFixture,
-    monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ):
-    monkeypatch.setattr(
-        "src.providers.docker_test.PLUGIN_TEST_DIR", tmp_path, raising=False
-    )
     from src.providers.constants import DOCKER_BIND_RESULT_PATH
-
-    test_result_path = tmp_path / "project-link-module-name.json"
-
     from src.providers.docker_test import DockerPluginTest, DockerTestResult
+
+    mocker.patch("src.providers.docker_test.PLUGIN_TEST_DIR", tmp_path)
+    test_result_path = tmp_path / "project-link-module-name.json"
 
     mocked_run = mocker.Mock()
     mocked_run.return_value = json.dumps(
@@ -141,18 +132,14 @@ async def test_docker_plugin_test_from_output(
 async def test_docker_plugin_test_exception(
     mocked_api: MockRouter,
     mocker: MockerFixture,
-    monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ):
     """插件测试时报错"""
-    monkeypatch.setattr(
-        "src.providers.docker_test.PLUGIN_TEST_DIR", tmp_path, raising=False
-    )
     from src.providers.constants import DOCKER_BIND_RESULT_PATH
-
-    test_result_path = tmp_path / "project-link-module-name.json"
-
     from src.providers.docker_test import DockerPluginTest
+
+    mocker.patch("src.providers.docker_test.PLUGIN_TEST_DIR", tmp_path)
+    test_result_path = tmp_path / "project-link-module-name.json"
 
     mocked_run = mocker.Mock()
     mocked_run.side_effect = Exception("Docker failed")
@@ -191,18 +178,14 @@ async def test_docker_plugin_test_exception(
 async def test_docker_plugin_test_metadata_some_fields_empty(
     mocked_api: MockRouter,
     mocker: MockerFixture,
-    monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ):
     """测试 metadata 的部分字段为空"""
-    monkeypatch.setattr(
-        "src.providers.docker_test.PLUGIN_TEST_DIR", tmp_path, raising=False
-    )
     from src.providers.constants import DOCKER_BIND_RESULT_PATH
-
-    test_result_path = tmp_path / "project-link-module-name.json"
-
     from src.providers.docker_test import DockerPluginTest, DockerTestResult
+
+    mocker.patch("src.providers.docker_test.PLUGIN_TEST_DIR", tmp_path)
+    test_result_path = tmp_path / "project-link-module-name.json"
 
     mocked_run = mocker.Mock()
     mocked_run.return_value = json.dumps(
@@ -272,19 +255,14 @@ async def test_docker_plugin_test_metadata_some_fields_empty(
 async def test_docker_plugin_test_metadata_some_fields_invalid(
     mocked_api: MockRouter,
     mocker: MockerFixture,
-    monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ):
     """测试 metadata 的部分字段不符合规范"""
-
-    monkeypatch.setattr(
-        "src.providers.docker_test.PLUGIN_TEST_DIR", tmp_path, raising=False
-    )
     from src.providers.constants import DOCKER_BIND_RESULT_PATH
-
-    test_result_path = tmp_path / "project-link-module-name.json"
-
     from src.providers.docker_test import DockerPluginTest, DockerTestResult
+
+    mocker.patch("src.providers.docker_test.PLUGIN_TEST_DIR", tmp_path)
+    test_result_path = tmp_path / "project-link-module-name.json"
 
     mocked_run = mocker.Mock()
     mocked_run.return_value = b""
