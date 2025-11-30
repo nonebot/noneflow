@@ -70,6 +70,75 @@ async def test_docker_plugin_test_from_file(
     )
 
 
+async def test_docker_plugin_test_from_file_invalid_output(
+    mocked_api: MockRouter,
+    mocker: MockerFixture,
+    tmp_path: Path,
+):
+    """测试结果文件内容不是合法的 UTF-8 编码
+
+    不会影响到测试结果的读取，仍然会从文件中读取结果
+    """
+    from src.providers.constants import DOCKER_BIND_RESULT_PATH
+    from src.providers.docker_test import DockerPluginTest, DockerTestResult
+
+    mocker.patch("src.providers.docker_test.PLUGIN_TEST_DIR", tmp_path)
+    test_result_path = tmp_path / "project-link-module-name.json"
+
+    data = json.dumps(
+        {
+            "metadata": None,
+            "output": "test",
+            "load": True,
+            "run": True,
+            "version": "0.0.1",
+            "config": "",
+            "test_env": "python==3.12",
+        }
+    )
+
+    with open(test_result_path, "w", encoding="utf-8") as f:
+        f.write(data)
+
+    mocked_run = mocker.Mock()
+    # 非法 UTF-8 编码
+    mocked_run.return_value = b"\xff\xfe\xfd"
+    mocked_client = mocker.Mock()
+    mocked_client.containers.run = mocked_run
+    mocked_docker = mocker.patch("docker.DockerClient")
+    mocked_docker.return_value = mocked_client
+
+    test = DockerPluginTest("project_link", "module_name")
+    result = await test.run("3.12")
+
+    assert result == snapshot(
+        DockerTestResult(
+            run=True, load=True, output="test", version="0.0.1", test_env="python==3.12"
+        )
+    )
+
+    assert not mocked_api["store_plugins"].called
+    mocked_run.assert_called_once_with(
+        "ghcr.io/nonebot/nonetest:latest",
+        environment=snapshot(
+            {
+                "PROJECT_LINK": "project_link",
+                "MODULE_NAME": "module_name",
+                "PLUGIN_CONFIG": "",
+                "PYTHON_VERSION": "3.12",
+            }
+        ),
+        detach=False,
+        remove=True,
+        volumes={
+            test_result_path.resolve(strict=False).as_posix(): {
+                "bind": DOCKER_BIND_RESULT_PATH,
+                "mode": "rw",
+            }
+        },
+    )
+
+
 async def test_docker_plugin_test_from_output(
     mocked_api: MockRouter,
     mocker: MockerFixture,

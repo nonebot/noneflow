@@ -99,14 +99,16 @@ class DockerPluginTest:
                         "mode": "rw",
                     }
                 },
-            ).decode(errors="ignore", encoding="utf-8")
+            )
 
             try:
                 # 若测试结果文件存在且可解析，则优先使用测试结果文件
                 data = json.loads(plugin_test_result.read_text(encoding="utf-8"))
             except Exception as e:
+                # 如果测试结果文件不存在或不可解析，则尝试使用容器输出内容
+                # 这个时候才需要解码容器输出内容，避免不必要的解码开销
                 try:
-                    data = json.loads(output)
+                    data = json.loads(output.decode(encoding="utf-8", errors="ignore"))
                 except json.JSONDecodeError:
                     data = {
                         "run": True,
