@@ -112,14 +112,14 @@ wheels = [
 
 [[package]]
 name = "click"
-version = "8.2.1"
+version = "8.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorama", marker = "sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/60/6c/8ca2efa64cf75a977a0d7fac081354553ebe483345c734fb6b6515d96bbc/click-8.2.1.tar.gz", hash = "sha256:27c491cc05d968d271d5a1db13e3b5a184636d9d930f148c50b038f0d0646202", size = 286342, upload-time = "2025-05-20T23:19:49.832Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3d/fa/656b739db8587d7b5dfa22e22ed02566950fbfbcdc20311993483657a5c0/click-8.3.1.tar.gz", hash = "sha256:12ff4785d337a1bb490bb7e9c2b1ee5da3112e94a8622f26a6c77f5d2fc6842a", size = 295065, upload-time = "2025-11-15T20:45:42.706Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/85/32/10bb5764d90a8eee674e9dc6f4db6a0ab47c8c4d0d83c27f7c39ac415a4d/click-8.2.1-py3-none-any.whl", hash = "sha256:61a3265b914e850b85317d0b3109c7f8cd35a670f963866005d6ef1d5175a12b", size = 102215, upload-time = "2025-05-20T23:19:47.796Z" },
+    { url = "https://files.pythonhosted.org/packages/98/78/01c019cdb5d6498122777c1a43056ebb3ebfeef2076d9d026bfe15583b2b/click-8.3.1-py3-none-any.whl", hash = "sha256:981153a64e25f12d547d3426c367a4857371575ee7ad18df2a6183ab0545b2a6", size = 108274, upload-time = "2025-11-15T20:45:41.139Z" },
 ]
 
 [[package]]
@@ -256,7 +256,7 @@ wheels = [
 
 [[package]]
 name = "githubkit"
-version = "0.12.15"
+version = "0.14.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -265,9 +265,9 @@ dependencies = [
     { name = "pydantic" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a6/d9/ccbfee35b103dbbd4ea9c660b0b3f078e3c3bee643d9f8efd948237f7e18/githubkit-0.12.15.tar.gz", hash = "sha256:5efce5bec3afc67f5f929c13940c804b800b94f30220690d5c07a6922c4c10c7", size = 2141906, upload-time = "2025-06-29T05:51:34.931Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/75/0b/1849d1dc89af4f878fdbcd67d80c61374d06e3ab86bb0a9706a908cf5b5f/githubkit-0.14.0.tar.gz", hash = "sha256:68042a27370018d1a2cdb97d30216fea779ac3dc8b60cd86e99afb07ed512512", size = 2622771, upload-time = "2025-12-07T12:09:04.011Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6c/68/af86fca22a10d882819b9ca32f138b207625d042ae46292208c5a7620416/githubkit-0.12.15-py3-none-any.whl", hash = "sha256:14a7ffa87495c4e4502296be1c46ddebdb9b4287a7c3b11114ba49dbc601d63d", size = 5776298, upload-time = "2025-06-29T05:51:33.025Z" },
+    { url = "https://files.pythonhosted.org/packages/bb/da/9883ea65ac536416face5acc04822431f04d5b8d395c36ffc892559e8c61/githubkit-0.14.0-py3-none-any.whl", hash = "sha256:490de9230c2a8e20ab46cc88d7298826e733064603640f6eccf0f3ab70e4ff50", size = 6376854, upload-time = "2025-12-07T12:09:02.316Z" },
 ]
 
 [package.optional-dependencies]
@@ -458,21 +458,21 @@ wheels = [
 
 [[package]]
 name = "nonebot-adapter-github"
-version = "0.5.0"
+version = "0.6.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "githubkit", extra = ["auth-app"] },
     { name = "nonebot2" },
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/83/18/f482d679e30f5cf4707e5ad28a95d371af10de0bffffdde633a322e4b750/nonebot_adapter_github-0.5.0.tar.gz", hash = "sha256:03ad011eea89b269ec1ce881458f1c143ee3f8d3c74d7c573d28bd35c907f26a", size = 33324, upload-time = "2024-12-22T13:48:37.817Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/20/b2/1ef684dfdc79571035ee884de3679e491e208bcc707c7206cedf41496c23/nonebot_adapter_github-0.6.0.tar.gz", hash = "sha256:f746942b9d915acbdcf018a6b3d10e59ec3e591937635365ac7174c2939921de", size = 29757, upload-time = "2025-12-11T08:51:07.333Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c8/c5/54b5042e5eac4988c610543320ee24278da23bf7e0a754bdedf965cddb45/nonebot_adapter_github-0.5.0-py3-none-any.whl", hash = "sha256:b7ec4ad910adf55309ce8212762370680998e6c8bce6a2312e855e858f83bfe1", size = 110848, upload-time = "2024-12-22T13:48:35.156Z" },
+    { url = "https://files.pythonhosted.org/packages/28/ec/df43c1326e49838683d7047e2f7ea5f304e47e22fe14166d358aa653949c/nonebot_adapter_github-0.6.0-py3-none-any.whl", hash = "sha256:b0f26258b873bfb7a1f6c52067562788804a46b1d21599c4f04111fa8af1d6f6", size = 113866, upload-time = "2025-12-11T08:51:08.223Z" },
 ]
 
 [[package]]
 name = "nonebot2"
-version = "2.4.2"
+version = "2.4.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -484,9 +484,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "yarl" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1c/06/754d4aea53d1a6622956c9d9a261760b15df03f95d7540666b85ba48d653/nonebot2-2.4.2.tar.gz", hash = "sha256:cf72d5920503ff373ba1d7963f3ddf573db913eb504e3b68ee347efb937db27d", size = 94868, upload-time = "2025-03-12T03:57:45.705Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0a/85/d2201a11ec3c6e1ba4f663c61ff65a4da06becd3d66c3536c26694325361/nonebot2-2.4.4.tar.gz", hash = "sha256:b367c17f31ae0d548e374bb80b719ed12885620f29f3cbc305a5a88a6175f4e3", size = 90954, upload-time = "2025-10-29T04:02:55.577Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/26/a8/18b79572cb6178a18bc2da76a041fc6b9f6308c5d376f5c7cbd84f4acf2d/nonebot2-2.4.2-py3-none-any.whl", hash = "sha256:ed3e970cdb6c885fb23349b65a045c08cf3ac7f43e28564ae0c72d3671ecda74", size = 115183, upload-time = "2025-03-12T03:57:43.988Z" },
+    { url = "https://files.pythonhosted.org/packages/66/ef/fa4a179d56f372619ce3899890277760b138ff6d5b395420e6d01e4523fd/nonebot2-2.4.4-py3-none-any.whl", hash = "sha256:8885d02906f1def83c138f298a7aa99ca1975351f44d8d290ea0eeec5aec1f0b", size = 118319, upload-time = "2025-10-29T04:02:54.55Z" },
 ]
 
 [[package]]
@@ -535,13 +535,13 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "click", specifier = ">=8.2.1" },
+    { name = "click", specifier = ">=8.3.1" },
     { name = "docker", specifier = ">=7.1.0" },
-    { name = "githubkit", specifier = ">=0.12.15" },
+    { name = "githubkit", specifier = ">=0.14.0" },
     { name = "jinja2", specifier = ">=3.1.6" },
-    { name = "nonebot-adapter-github", specifier = ">=0.5.0" },
-    { name = "nonebot2", specifier = ">=2.4.2" },
-    { name = "pydantic-extra-types", specifier = ">=2.10.5" },
+    { name = "nonebot-adapter-github", specifier = ">=0.6.0" },
+    { name = "nonebot2", specifier = ">=2.4.4" },
+    { name = "pydantic-extra-types", specifier = ">=2.10.6" },
     { name = "pyjson5", specifier = ">=2.0.0" },
     { name = "tzdata", specifier = ">=2025.2" },
 ]
@@ -671,15 +671,15 @@ wheels = [
 
 [[package]]
 name = "pydantic-extra-types"
-version = "2.10.5"
+version = "2.10.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7e/ba/4178111ec4116c54e1dc7ecd2a1ff8f54256cdbd250e576882911e8f710a/pydantic_extra_types-2.10.5.tar.gz", hash = "sha256:1dcfa2c0cf741a422f088e0dbb4690e7bfadaaf050da3d6f80d6c3cf58a2bad8", size = 138429, upload-time = "2025-06-02T09:31:52.713Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3a/10/fb64987804cde41bcc39d9cd757cd5f2bb5d97b389d81aa70238b14b8a7e/pydantic_extra_types-2.10.6.tar.gz", hash = "sha256:c63d70bf684366e6bbe1f4ee3957952ebe6973d41e7802aea0b770d06b116aeb", size = 141858, upload-time = "2025-10-08T13:47:49.483Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/70/1a/5f4fd9e7285f10c44095a4f9fe17d0f358d1702a7c74a9278c794e8a7537/pydantic_extra_types-2.10.5-py3-none-any.whl", hash = "sha256:b60c4e23d573a69a4f1a16dd92888ecc0ef34fb0e655b4f305530377fa70e7a8", size = 38315, upload-time = "2025-06-02T09:31:51.229Z" },
+    { url = "https://files.pythonhosted.org/packages/93/04/5c918669096da8d1c9ec7bb716bd72e755526103a61bc5e76a3e4fb23b53/pydantic_extra_types-2.10.6-py3-none-any.whl", hash = "sha256:6106c448316d30abf721b5b9fecc65e983ef2614399a24142d689c7546cc246a", size = 40949, upload-time = "2025-10-08T13:47:48.268Z" },
 ]
 
 [[package]]
