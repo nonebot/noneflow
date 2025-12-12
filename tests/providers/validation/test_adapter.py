@@ -72,12 +72,14 @@ async def test_adapter_info_validation_failed(mocked_api: MockRouter) -> None:
                     "loc": ("time",),
                     "msg": "值不是合法的字符串",
                     "input": None,
+                    "url": "https://errors.pydantic.dev/2.12/v/string_type",
                 },
                 {
                     "type": "string_type",
                     "loc": ("version",),
                     "msg": "值不是合法的字符串",
                     "input": None,
+                    "url": "https://errors.pydantic.dev/2.12/v/string_type",
                 },
                 {
                     "type": "homepage",
@@ -92,6 +94,7 @@ async def test_adapter_info_validation_failed(mocked_api: MockRouter) -> None:
                     "msg": "字符串长度不能超过 10 个字符",
                     "input": "testtoolong",
                     "ctx": {"max_length": 10},
+                    "url": "https://errors.pydantic.dev/2.12/v/string_too_long",
                 },
                 {
                     "type": "color_error",

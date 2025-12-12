@@ -57,6 +57,7 @@ async def test_fields_missing_plugin(mocked_api: MockRouter) -> None:
                     "test_output": "error",
                     "time": "2023-09-01T00:00:00.000000Z",
                 },
+                "url": "https://errors.pydantic.dev/2.12/v/missing",
             },
             {
                 "type": "missing",
@@ -75,6 +76,7 @@ async def test_fields_missing_plugin(mocked_api: MockRouter) -> None:
                     "test_output": "error",
                     "time": "2023-09-01T00:00:00.000000Z",
                 },
+                "url": "https://errors.pydantic.dev/2.12/v/missing",
             },
             {
                 "type": "missing",
@@ -93,6 +95,7 @@ async def test_fields_missing_plugin(mocked_api: MockRouter) -> None:
                     "test_output": "error",
                     "time": "2023-09-01T00:00:00.000000Z",
                 },
+                "url": "https://errors.pydantic.dev/2.12/v/missing",
             },
             {
                 "type": "missing",
@@ -111,6 +114,7 @@ async def test_fields_missing_plugin(mocked_api: MockRouter) -> None:
                     "test_output": "error",
                     "time": "2023-09-01T00:00:00.000000Z",
                 },
+                "url": "https://errors.pydantic.dev/2.12/v/missing",
             },
             {
                 "type": "missing",
@@ -129,6 +133,7 @@ async def test_fields_missing_plugin(mocked_api: MockRouter) -> None:
                     "test_output": "error",
                     "time": "2023-09-01T00:00:00.000000Z",
                 },
+                "url": "https://errors.pydantic.dev/2.12/v/missing",
             },
             {
                 "type": "plugin.test",
