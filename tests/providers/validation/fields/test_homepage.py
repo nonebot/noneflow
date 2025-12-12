@@ -67,6 +67,7 @@ async def test_homepage_failed_empty_homepage(mocked_api: MockRouter) -> None:
                 "msg": "字符串应满足格式 '^(https?://.*|/docs/.*)$'",
                 "input": "",
                 "ctx": {"pattern": "^(https?://.*|/docs/.*)$"},
+                "url": "https://errors.pydantic.dev/2.12/v/string_pattern_mismatch",
             }
         ]
     )
