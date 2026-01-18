@@ -285,7 +285,7 @@ wheels = [
 
 [[package]]
 name = "githubkit"
-version = "0.14.0"
+version = "0.14.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -294,9 +294,9 @@ dependencies = [
     { name = "pydantic" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/75/0b/1849d1dc89af4f878fdbcd67d80c61374d06e3ab86bb0a9706a908cf5b5f/githubkit-0.14.0.tar.gz", hash = "sha256:68042a27370018d1a2cdb97d30216fea779ac3dc8b60cd86e99afb07ed512512", size = 2622771, upload-time = "2025-12-07T12:09:04.011Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0a/b7/946faaa1150a43718f82dd4eeee0129f86223b3878aaeaa60651cfa528a0/githubkit-0.14.2.tar.gz", hash = "sha256:6294d6364ce888a8ab65462671c7cef9f47ed9ea2c189758fc69e08f4a42cfa3", size = 2642918, upload-time = "2026-01-03T09:55:52.995Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bb/da/9883ea65ac536416face5acc04822431f04d5b8d395c36ffc892559e8c61/githubkit-0.14.0-py3-none-any.whl", hash = "sha256:490de9230c2a8e20ab46cc88d7298826e733064603640f6eccf0f3ab70e4ff50", size = 6376854, upload-time = "2025-12-07T12:09:02.316Z" },
+    { url = "https://files.pythonhosted.org/packages/08/90/ad97f8bd30de07f2804f1d151078d5897bbb3a4cd851de64af1c1a934a9b/githubkit-0.14.2-py3-none-any.whl", hash = "sha256:00e6f3f49e2cface9699f8f988fbf2bc5c5dcb1ef38133f7a120bf48565923be", size = 6445194, upload-time = "2026-01-03T09:55:51.291Z" },
 ]
 
 [package.optional-dependencies]
@@ -618,13 +618,13 @@ dev = [
 requires-dist = [
     { name = "click", specifier = ">=8.3.1" },
     { name = "docker", specifier = ">=7.1.0" },
-    { name = "githubkit", specifier = ">=0.14.0" },
+    { name = "githubkit", specifier = ">=0.14.2" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "nonebot-adapter-github", specifier = ">=0.6.0" },
     { name = "nonebot2", specifier = ">=2.4.4" },
-    { name = "pydantic-extra-types", specifier = ">=2.10.6" },
+    { name = "pydantic-extra-types", specifier = ">=2.11.0" },
     { name = "pyjson5", specifier = ">=2.0.0" },
-    { name = "tzdata", specifier = ">=2025.2" },
+    { name = "tzdata", specifier = ">=2025.3" },
 ]
 
 [package.metadata.requires-dev]
@@ -783,15 +783,15 @@ wheels = [
 
 [[package]]
 name = "pydantic-extra-types"
-version = "2.10.6"
+version = "2.11.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/3a/10/fb64987804cde41bcc39d9cd757cd5f2bb5d97b389d81aa70238b14b8a7e/pydantic_extra_types-2.10.6.tar.gz", hash = "sha256:c63d70bf684366e6bbe1f4ee3957952ebe6973d41e7802aea0b770d06b116aeb", size = 141858, upload-time = "2025-10-08T13:47:49.483Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/fd/35/2fee58b1316a73e025728583d3b1447218a97e621933fc776fb8c0f2ebdd/pydantic_extra_types-2.11.0.tar.gz", hash = "sha256:4e9991959d045b75feb775683437a97991d02c138e00b59176571db9ce634f0e", size = 157226, upload-time = "2025-12-31T16:18:27.944Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/93/04/5c918669096da8d1c9ec7bb716bd72e755526103a61bc5e76a3e4fb23b53/pydantic_extra_types-2.10.6-py3-none-any.whl", hash = "sha256:6106c448316d30abf721b5b9fecc65e983ef2614399a24142d689c7546cc246a", size = 40949, upload-time = "2025-10-08T13:47:48.268Z" },
+    { url = "https://files.pythonhosted.org/packages/fe/17/fabd56da47096d240dd45ba627bead0333b0cf0ee8ada9bec579287dadf3/pydantic_extra_types-2.11.0-py3-none-any.whl", hash = "sha256:84b864d250a0fc62535b7ec591e36f2c5b4d1325fa0017eb8cda9aeb63b374a6", size = 74296, upload-time = "2025-12-31T16:18:26.38Z" },
 ]
 
 [[package]]
@@ -1049,11 +1049,11 @@ wheels = [
 
 [[package]]
 name = "tzdata"
-version = "2025.2"
+version = "2025.3"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/95/32/1a225d6164441be760d75c2c42e2780dc0873fe382da3e98a2e1e48361e5/tzdata-2025.2.tar.gz", hash = "sha256:b60a638fcc0daffadf82fe0f57e53d06bdec2f36c4df66280ae79bce6bd6f2b9", size = 196380, upload-time = "2025-03-23T13:54:43.652Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/5e/a7/c202b344c5ca7daf398f3b8a477eeb205cf3b6f32e7ec3a6bac0629ca975/tzdata-2025.3.tar.gz", hash = "sha256:de39c2ca5dc7b0344f2eba86f49d614019d29f060fc4ebc8a417896a620b56a7", size = 196772, upload-time = "2025-12-13T17:45:35.667Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5c/23/c7abc0ca0a1526a0774eca151daeb8de62ec457e77262b66b359c3c7679e/tzdata-2025.2-py2.py3-none-any.whl", hash = "sha256:1a403fada01ff9221ca8044d701868fa132215d84beb92242d9acd2147f667a8", size = 347839, upload-time = "2025-03-23T13:54:41.845Z" },
+    { url = "https://files.pythonhosted.org/packages/c7/b0/003792df09decd6849a5e39c28b513c06e84436a54440380862b5aeff25d/tzdata-2025.3-py2.py3-none-any.whl", hash = "sha256:06a47e5700f3081aab02b2e513160914ff0694bce9947d6b76ebd6bf57cfc5d1", size = 348521, upload-time = "2025-12-13T17:45:33.889Z" },
 ]
 
 [[package]]
