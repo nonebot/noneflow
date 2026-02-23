@@ -250,7 +250,6 @@ uv run poe bump
 ### GitHub Actions 工作流
 
 1. **CI** (`.github/workflows/main.yml`):
-
    - 运行测试
    - 上传覆盖率到 Codecov
    - 构建并推送 Docker 镜像
