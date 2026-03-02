@@ -282,7 +282,7 @@ wheels = [
 
 [[package]]
 name = "githubkit"
-version = "0.14.2"
+version = "0.14.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -291,9 +291,9 @@ dependencies = [
     { name = "pydantic" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0a/b7/946faaa1150a43718f82dd4eeee0129f86223b3878aaeaa60651cfa528a0/githubkit-0.14.2.tar.gz", hash = "sha256:6294d6364ce888a8ab65462671c7cef9f47ed9ea2c189758fc69e08f4a42cfa3", size = 2642918, upload-time = "2026-01-03T09:55:52.995Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/4e/05/82961e26bac250994f2f8db5c76109565bc5c2ab29882f46944dd1c33e44/githubkit-0.14.6.tar.gz", hash = "sha256:4f6015cdb64ed12883bb64781fc7ceb6f13aa72b08b6aea37a762f72183e4072", size = 2709113, upload-time = "2026-03-02T04:24:30.318Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/08/90/ad97f8bd30de07f2804f1d151078d5897bbb3a4cd851de64af1c1a934a9b/githubkit-0.14.2-py3-none-any.whl", hash = "sha256:00e6f3f49e2cface9699f8f988fbf2bc5c5dcb1ef38133f7a120bf48565923be", size = 6445194, upload-time = "2026-01-03T09:55:51.291Z" },
+    { url = "https://files.pythonhosted.org/packages/81/8e/56ee492a82351b38f9d366308d569cd52772ef35573f79dd57d4a152030f/githubkit-0.14.6-py3-none-any.whl", hash = "sha256:de405fc28b959697b49a19e238e8cb12e3a09679cf356525458e4782c7a15f60", size = 6611599, upload-time = "2026-03-02T04:24:27.449Z" },
 ]
 
 [package.optional-dependencies]
@@ -615,7 +615,7 @@ dev = [
 requires-dist = [
     { name = "click", specifier = ">=8.3.1" },
     { name = "docker", specifier = ">=7.1.0" },
-    { name = "githubkit", specifier = ">=0.14.2" },
+    { name = "githubkit", specifier = ">=0.14.6" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "nonebot-adapter-github", specifier = ">=0.6.0" },
     { name = "nonebot2", specifier = ">=2.4.4" },
