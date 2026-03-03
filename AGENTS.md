@@ -2,17 +2,6 @@
 
 NoneFlow 是一个基于 NoneBot2 框架开发的 GitHub Actions 工作流管理机器人，用于自动化处理 NoneBot 生态中的插件、适配器和机器人发布流程。
 
-## 项目概述
-
-NoneFlow 主要功能包括：
-
-- 自动处理商店发布议题（Plugin/Adapter/Bot），根据议题内容创建拉取请求
-- 自动修改已创建的拉取请求当议题内容变化时
-- 拉取请求关闭时自动关闭对应议题并删除分支
-- 自动解决已创建拉取请求的冲突
-- 自动检查发布要求（主页可访问、已发布至 PyPI、插件可正常加载）
-- 审查通过后自动合并
-
 ## 技术栈
 
 - **Python**: 3.14.3+
@@ -73,37 +62,6 @@ uv run poe snapshot-create
 uv run poe snapshot-fix
 ```
 
-### Docker 构建
-
-```bash
-# 构建 NoneFlow 镜像
-docker build -f docker/noneflow.dockerfile -t noneflow .
-
-# 构建 NoneTest 镜像（用于插件测试）
-docker build -f docker/nonetest.dockerfile -t nonetest .
-```
-
-### GitHub Actions 运行
-
-项目作为 GitHub Action 运行，配置示例见 `examples/noneflow.yml`：
-
-```yaml
-- name: NoneFlow
-  uses: docker://ghcr.io/nonebot/noneflow:latest
-  with:
-    config: >
-      {
-        "base": "master",
-        "plugin_path": "assets/plugins.json5",
-        "bot_path": "assets/bots.json5",
-        "adapter_path": "assets/adapters.json5",
-        "registry_repository": "nonebot/registry"
-      }
-  env:
-    APP_ID: ${{ secrets.APP_ID }}
-    PRIVATE_KEY: ${{ secrets.APP_KEY }}
-```
-
 ## 测试
 
 测试使用 pytest 框架，配置如下：
@@ -137,14 +95,6 @@ pytest --cov=src --cov-report xml --junitxml=./junit.xml -n auto
 - **目标 Python 版本**: 3.13+
 - **导入排序**: isort 规则启用
 - **类型检查**: Pyright (standard 模式)
-
-### 主要规则
-
-- `F`, `W`, `E`: Pyflakes 和 pycodestyle
-- `UP`: pyupgrade
-- `ASYNC`: flake8-async
-- `I`: isort 导入排序
-- `RUF`: Ruff 特定规则
 
 ## 主要模块说明
 
@@ -197,42 +147,6 @@ pytest --cov=src --cov-report xml --junitxml=./junit.xml -n auto
 - `RegistryPlugin`/`RegistryAdapter`/`RegistryBot`: 注册表数据格式
 - `RegistryArtifactData`: GitHub Artifact 数据传递
 
-## 配置说明
-
-### 环境变量
-
-- `APP_ID`: GitHub App ID
-- `PRIVATE_KEY`: GitHub App 私钥
-- `GITHUB_REPOSITORY`: 当前仓库
-- `GITHUB_RUN_ID`: 工作流运行 ID
-- `GITHUB_EVENT_NAME`: 事件名称
-- `GITHUB_EVENT_PATH`: 事件文件路径
-- `INPUT_CONFIG`: JSON 格式的配置
-
-### 输入配置 (INPUT_CONFIG)
-
-```json
-{
-  "base": "master", // 基础分支
-  "plugin_path": "assets/plugins.json5", // 插件数据文件路径
-  "bot_path": "assets/bots.json5", // 机器人数据文件路径
-  "adapter_path": "assets/adapters.json5", // 适配器数据文件路径
-  "registry_repository": "nonebot/registry", // 注册表仓库
-  "store_repository": "nonebot/nonebot2", // 商店仓库
-  "artifact_path": "artifact" // Artifact 存储路径
-}
-```
-
-## 发布流程
-
-1. 用户在仓库创建带 `Plugin`/`Adapter`/`Bot` 标签的议题
-2. NoneFlow 自动检测议题并提取信息
-3. 验证信息完整性（名称、主页、PyPI 项目等）
-4. 如果是插件，在 Docker 中测试加载
-5. 创建拉取请求修改商店数据文件
-6. 审查通过后自动合并
-7. 触发注册表更新
-
 ## 版本管理
 
 使用 `bump-my-version` 管理版本号：
@@ -245,23 +159,6 @@ uv run poe show-bump
 uv run poe bump
 ```
 
-## CI/CD
-
-### GitHub Actions 工作流
-
-1. **CI** (`.github/workflows/main.yml`):
-   - 运行测试
-   - 上传覆盖率到 Codecov
-   - 构建并推送 Docker 镜像
-
-2. **Release Draft** (`.github/workflows/release-draft.yml`):
-   - 自动生成发布草稿
-
-### Docker 镜像
-
-- `ghcr.io/nonebot/noneflow`: NoneFlow 主镜像
-- `ghcr.io/nonebot/nonetest`: 插件测试镜像
-
 ## 开发注意事项
 
 1. **GitHub App 权限**: 需要 `contents:write`、`issues:write`、`pull_requests:write` 等权限
@@ -272,5 +169,7 @@ uv run poe bump
 ## 相关仓库
 
 - [nonebot2](https://github.com/nonebot/nonebot2): NoneBot 主仓库
+- [adapter-github](https://github.com/nonebot/adapter-github): GitHub 协议适配
+- [githubkit](https://github.com/yanyongyu/githubkit): GitHub API
 - [registry](https://github.com/nonebot/registry): 商店注册表
 - [noneflow-test](https://github.com/nonebot/noneflow-test): 测试仓库
