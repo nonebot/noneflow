@@ -74,6 +74,8 @@ uv run poe test
 pytest --cov=src --cov-report xml --junitxml=./junit.xml -n auto
 ```
 
+测试用例应按目录和多个文件组织，不要使用测试类。
+
 ### 测试结构
 
 - `tests/conftest.py`: 全局测试配置和 fixtures
@@ -95,57 +97,6 @@ pytest --cov=src --cov-report xml --junitxml=./junit.xml -n auto
 - **目标 Python 版本**: 3.13+
 - **导入排序**: isort 规则启用
 - **类型检查**: Pyright (standard 模式)
-
-## 主要模块说明
-
-### 1. GitHub 插件 (`src/plugins/github/`)
-
-#### 发布处理 (`plugins/publish/`)
-
-处理 Plugin/Adapter/Bot 的发布流程：
-
-- `__init__.py`: 事件处理器（issue 打开/编辑/评论，PR 关闭/审查）
-- `validation.py`: 议题内容验证逻辑
-- `render.py`: 评论渲染
-- `utils.py`: 工具函数
-
-#### 移除处理 (`plugins/remove/`)
-
-处理商店项目的移除请求。
-
-#### 冲突解决 (`plugins/resolve/`)
-
-自动解决多个发布 PR 之间的冲突。
-
-#### 配置处理 (`plugins/config/`)
-
-处理商店配置的修改。
-
-### 2. 数据验证 (`src/providers/validation/`)
-
-使用 Pydantic 模型验证发布数据：
-
-- `PluginPublishInfo`: 插件发布信息
-- `AdapterPublishInfo`: 适配器发布信息
-- `BotPublishInfo`: 机器人发布信息
-- `DriverPublishInfo`: 驱动器发布信息
-
-### 3. Docker 测试 (`src/providers/docker_test/`)
-
-在隔离的 Docker 环境中测试插件加载：
-
-- 拉取插件代码
-- 安装依赖
-- 验证插件可正常加载
-- 提取插件元数据
-
-### 4. 数据模型 (`src/providers/models.py`)
-
-核心数据模型：
-
-- `StorePlugin`/`StoreAdapter`/`StoreBot`: 商店数据格式
-- `RegistryPlugin`/`RegistryAdapter`/`RegistryBot`: 注册表数据格式
-- `RegistryArtifactData`: GitHub Artifact 数据传递
 
 ## 版本管理
 
