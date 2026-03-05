@@ -5,6 +5,8 @@ on:
     types: [opened, reopened, edited]
   issue_comment:
     types: [created]
+  pull_request_target:
+    types: [closed]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.issue.number || github.run_id }}
@@ -28,7 +30,14 @@ jobs:
           private_key: ${{ secrets.APP_KEY }}
 
       - name: Checkout Code
-        uses: actions/checkout@v4
+        if: contains(github.event.issue.labels.*.name, 'Config')
+        uses: actions/checkout@v6
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+
+      - name: Checkout Code
+        if: contains(github.event.issue.labels.*.name, 'Remove')
+        uses: actions/checkout@v6
         with:
           token: ${{ steps.generate-token.outputs.token }}
           repository: nonebot/nonebot2
