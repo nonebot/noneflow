@@ -1,6 +1,6 @@
 # 这样能分别控制 uv 和 Python 版本
 FROM python:3.14.3-slim
-COPY --from=ghcr.io/astral-sh/uv:0.10.8 /uv /bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.10.9 /uv /bin/uv
 
 WORKDIR /app
 
