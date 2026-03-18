@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from githubkit.exception import RequestFailed
 from nonebot import logger
+from nonebot.adapters.github import ActionFailed
 
 from src.plugins.github import plugin_config
 from src.plugins.github.constants import (
@@ -132,7 +133,11 @@ async def resolve_conflict_pull_requests(
             logger.info("拉取请求为草稿，跳过处理")
             continue
 
-        issue_handler = await handler.to_issue_handler(issue_number)
+        try:
+            issue_handler = await handler.to_issue_handler(issue_number)
+        except (ActionFailed, RequestFailed):
+            logger.error(f"议题 #{issue_number} 不存在，跳过处理 {pull.title}")
+            continue
 
         try:
             artifact = await get_noneflow_artifact(issue_handler)
