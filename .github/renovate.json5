@@ -36,7 +36,7 @@
         "pep621"
       ],
       matchDepTypes: [
-        "tool.uv.dev-dependencies"
+        "dependency-groups"
       ],
       matchUpdateTypes: [
         "minor",
