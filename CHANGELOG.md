@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 将容器内测试数据的传输方式由标准输入输出流改为优先通过文件传输
+- 修复配置的拉取请求关闭时没有关闭对应议题的问题
+- 当 PR 对应的 Issue 不存在时跳过处理而非崩溃
+
 ## [4.4.5] - 2025-11-23
 
 ### Fixed
