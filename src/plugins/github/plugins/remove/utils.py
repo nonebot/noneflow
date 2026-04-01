@@ -1,5 +1,6 @@
 from githubkit.exception import RequestFailed
 from nonebot import logger
+from nonebot.adapters.github import ActionFailed
 from pydantic_core import PydanticCustomError
 
 from src.plugins.github import plugin_config
@@ -97,7 +98,11 @@ async def resolve_conflict_pull_requests(
 
         # 根据标签获取发布类型
         publish_type = get_type_by_labels(pull.labels)
-        issue_handler = await handler.to_issue_handler(issue_number)
+        try:
+            issue_handler = await handler.to_issue_handler(issue_number)
+        except (ActionFailed, RequestFailed):
+            logger.error(f"议题 #{issue_number} 不存在，跳过处理 {pull.title}")
+            continue
 
         if publish_type:
             # 验证作者信息
