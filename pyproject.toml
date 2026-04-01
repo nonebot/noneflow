@@ -9,11 +9,10 @@ requires-python = ">=3.14.3"
 dependencies = [
   "click>=8.3.1",
   "docker>=7.1.0",
-  "githubkit>=0.14.7",
   "jinja2>=3.1.6",
   "nonebot-adapter-github>=0.6.0",
   "nonebot2>=2.4.4",
-  "pydantic-extra-types>=2.11.0",
+  "pydantic-extra-types>=2.11.1",
   "pyjson5>=2.0.0",
   "tzdata>=2025.3",
 ]
