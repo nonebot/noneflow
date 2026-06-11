@@ -14,7 +14,7 @@ dependencies = [
   "nonebot2>=2.4.4",
   "pydantic-extra-types>=2.11.1",
   "pyjson5>=2.0.0",
-  "tzdata>=2025.3",
+  "tzdata>=2026.2",
 ]
 
 [project.urls]
