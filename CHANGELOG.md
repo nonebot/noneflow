@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [4.5.1] - 2026-07-03
+
 ### Fixed
 
 - 修复商店同步时不会清理 registry 中已移除插件、适配器、驱动器和机器人的问题
@@ -713,7 +715,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 - 最初的版本
 
-[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.5.0...HEAD
+[Unreleased]: https://github.com/nonebot/noneflow/compare/v4.5.1...HEAD
+[4.5.1]: https://github.com/nonebot/noneflow/compare/v4.5.0...v4.5.1
 [4.5.0]: https://github.com/nonebot/noneflow/compare/v4.4.5...v4.5.0
 [4.4.5]: https://github.com/nonebot/noneflow/compare/v4.4.4...v4.4.5
 [4.4.4]: https://github.com/nonebot/noneflow/compare/v4.4.3...v4.4.4
