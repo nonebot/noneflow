@@ -413,6 +413,120 @@ async def test_store_sync(
     )
 
 
+async def test_store_sync_removes_stale_registry_data(
+    mocked_store_data: dict[str, Path], mocked_api: MockRouter
+) -> None:
+    """同步商店数据时清理 nonebot2 仓库中已不存在的旧数据"""
+    from src.providers.constants import BOT_KEY_TEMPLATE, PYPI_KEY_TEMPLATE
+    from src.providers.store_test.store import StoreTest
+
+    test = StoreTest()
+
+    adapter_key = PYPI_KEY_TEMPLATE.format(
+        project_link="nonebot-adapter-onebot",
+        module_name="nonebot.adapters.onebot.v11",
+    )
+    stale_adapter_key = PYPI_KEY_TEMPLATE.format(
+        project_link="nonebot-adapter-onebot",
+        module_name="onebot.v11",
+    )
+    test._previous_adapters[stale_adapter_key] = test._previous_adapters[
+        adapter_key
+    ].model_copy(update={"module_name": "onebot.v11"})
+
+    bot_key = BOT_KEY_TEMPLATE.format(
+        name="CoolQBot",
+        homepage="https://github.com/he0119/CoolQBot",
+    )
+    stale_bot_key = BOT_KEY_TEMPLATE.format(
+        name="Old Bot",
+        homepage="https://example.com/old-bot",
+    )
+    test._previous_bots[stale_bot_key] = test._previous_bots[bot_key].model_copy(
+        update={"name": "Old Bot", "homepage": "https://example.com/old-bot"}
+    )
+
+    driver_key = PYPI_KEY_TEMPLATE.format(project_link="", module_name="~none")
+    stale_driver_key = PYPI_KEY_TEMPLATE.format(
+        project_link="nonebot2[old]",
+        module_name="~old",
+    )
+    test._previous_drivers[stale_driver_key] = test._previous_drivers[
+        driver_key
+    ].model_copy(update={"project_link": "nonebot2[old]", "module_name": "~old"})
+
+    plugin_key = PYPI_KEY_TEMPLATE.format(
+        project_link="nonebot-plugin-datastore",
+        module_name="nonebot_plugin_datastore",
+    )
+    stale_plugin_key = PYPI_KEY_TEMPLATE.format(
+        project_link="nonebot-plugin-old",
+        module_name="nonebot_plugin_old",
+    )
+    test._previous_plugins[stale_plugin_key] = test._previous_plugins[
+        plugin_key
+    ].model_copy(
+        update={
+            "module_name": "nonebot_plugin_old",
+            "project_link": "nonebot-plugin-old",
+        }
+    )
+    test._previous_results[stale_plugin_key] = test._previous_results[
+        plugin_key
+    ].model_copy(update={"version": "0.1.0"})
+    test._plugin_configs[stale_plugin_key] = "OLD_CONFIG=true"
+
+    await test.sync_store()
+    test.dump_data()
+
+    assert set(test._previous_adapters) == set(test._store_adapters)
+    assert set(test._previous_bots) == set(test._store_bots)
+    assert set(test._previous_drivers) == set(test._store_drivers)
+    assert stale_plugin_key not in test._previous_plugins
+    assert stale_plugin_key not in test._previous_results
+    assert stale_plugin_key not in test._plugin_configs
+
+    adapters = load_json(mocked_store_data["adapters"])
+    adapter_keys = {
+        PYPI_KEY_TEMPLATE.format(
+            project_link=adapter["project_link"],
+            module_name=adapter["module_name"],
+        )
+        for adapter in adapters
+    }
+    assert stale_adapter_key not in adapter_keys
+
+    bots = load_json(mocked_store_data["bots"])
+    bot_keys = {
+        BOT_KEY_TEMPLATE.format(name=bot["name"], homepage=bot["homepage"])
+        for bot in bots
+    }
+    assert stale_bot_key not in bot_keys
+
+    drivers = load_json(mocked_store_data["drivers"])
+    driver_keys = {
+        PYPI_KEY_TEMPLATE.format(
+            project_link=driver["project_link"],
+            module_name=driver["module_name"],
+        )
+        for driver in drivers
+    }
+    assert stale_driver_key not in driver_keys
+
+    plugins = load_json(mocked_store_data["plugins"])
+    plugin_keys = {
+        PYPI_KEY_TEMPLATE.format(
+            project_link=plugin["project_link"],
+            module_name=plugin["module_name"],
+        )
+        for plugin in plugins
+    }
+    assert stale_plugin_key not in plugin_keys
+
+    assert stale_plugin_key not in load_json(mocked_store_data["results"])
+    assert stale_plugin_key not in load_json(mocked_store_data["plugin_configs"])
+
+
 async def test_store_sync_validation_failed(
     mocked_store_data: dict[str, Path], mocked_api: MockRouter, mocker: MockerFixture
 ) -> None:

@@ -116,6 +116,8 @@ uv run poe bump
 2. **Docker 测试**: 插件测试需要 Docker 环境，测试时会拉取插件代码并在隔离环境中运行
 3. **并发控制**: 使用 `concurrency` 配置避免同一议题的并发处理
 4. **Artifact 传递**: 通过 GitHub Actions Artifact 在不同工作流间传递数据
+5. **变更记录**: 修复缺陷、调整用户可见行为或发布流程时，同步更新 `CHANGELOG.md` 的 `[Unreleased]` 条目
+6. **分支命名**: 新建分支应匹配 `.github/release-drafter.yml` 的自动标签规则，修复使用 `fix/...`，新功能使用 `feat/...` 或 `feature/...`，行为变更使用 `change/...`，改进使用 `improve/...`
 
 ## 相关仓库
 

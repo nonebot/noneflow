@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+
+- 修复商店同步时不会清理 registry 中已移除插件、适配器、驱动器和机器人的问题
+
 ## [4.5.0] - 2026-04-01
 
 ### Added
