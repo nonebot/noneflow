@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 
 from src.providers.constants import (
     BOT_KEY_TEMPLATE,
@@ -48,6 +49,9 @@ from .validation import validate_plugin
 
 if TYPE_CHECKING:
     from src.providers.models import RegistryArtifactData
+
+StoreModelT = TypeVar("StoreModelT")
+RegistryModelT = TypeVar("RegistryModelT")
 
 
 class StoreTest:
@@ -353,61 +357,86 @@ class StoreTest:
 
         self.dump_data()
 
+    @staticmethod
+    def _sync_registry_data(
+        previous_data: dict[str, RegistryModelT],
+        store_data: dict[str, StoreModelT],
+        data_type: str,
+        update_registry: Callable[[RegistryModelT, StoreModelT], RegistryModelT],
+        create_registry: Callable[[StoreModelT], RegistryModelT],
+    ) -> dict[str, RegistryModelT]:
+        """以 nonebot2 仓库商店数据为准同步 registry 数据。"""
+        synced_data: dict[str, RegistryModelT] = {}
+        # 只遍历当前 store 中存在的 key，未写入 synced_data 的旧 key 会被清理。
+        for key, store_item in store_data.items():
+            try:
+                if key in previous_data:
+                    synced_item = update_registry(previous_data[key], store_item)
+                else:
+                    synced_item = create_registry(store_item)
+            except Exception as e:
+                logger.error(f"{data_type} {key} 同步商店数据失败：{e}")
+                if key in previous_data:
+                    synced_data[key] = previous_data[key]
+                continue
+
+            synced_data[key] = synced_item
+
+        return synced_data
+
+    @staticmethod
+    def _create_plugin_registry(_: StorePlugin) -> RegistryPlugin:
+        # TODO: 如果插件不存在，尝试重新测试获取相关信息验证
+        raise NotImplementedError("插件需要重新测试")
+
     async def sync_store(self):
         """同步商店数据
 
         以商店数据为准，更新商店数据到仓库中，如果仓库中不存在则获取用户名后存储
         """
-        for key in self._store_adapters:
-            try:
-                if key in self._previous_adapters:
-                    new_adapter = self._previous_adapters[key].update(
-                        self._store_adapters[key]
-                    )
-                else:
-                    new_adapter = self._store_adapters[key].to_registry()
-            except Exception as e:
-                logger.error(f"适配器 {key} 同步商店数据失败：{e}")
-                continue
-            self._previous_adapters[key] = new_adapter
-        for key in self._store_bots:
-            try:
-                if key in self._previous_bots:
-                    new_bot = self._previous_bots[key].update(self._store_bots[key])
-                else:
-                    new_bot = self._store_bots[key].to_registry()
-            except Exception as e:
-                logger.error(f"机器人 {key} 同步商店数据失败：{e}")
-                continue
+        self._previous_adapters = self._sync_registry_data(
+            self._previous_adapters,
+            self._store_adapters,
+            "适配器",
+            RegistryAdapter.update,
+            StoreAdapter.to_registry,
+        )
+        self._previous_bots = self._sync_registry_data(
+            self._previous_bots,
+            self._store_bots,
+            "机器人",
+            RegistryBot.update,
+            StoreBot.to_registry,
+        )
+        self._previous_drivers = self._sync_registry_data(
+            self._previous_drivers,
+            self._store_drivers,
+            "驱动器",
+            RegistryDriver.update,
+            StoreDriver.to_registry,
+        )
+        self._previous_plugins = self._sync_registry_data(
+            self._previous_plugins,
+            self._store_plugins,
+            "插件",
+            RegistryPlugin.update,
+            self._create_plugin_registry,
+        )
 
-            self._previous_bots[key] = new_bot
-        for key in self._store_drivers:
-            try:
-                if key in self._previous_drivers:
-                    new_driver = self._previous_drivers[key].update(
-                        self._store_drivers[key]
-                    )
-                else:
-                    new_driver = self._store_drivers[key].to_registry()
-            except Exception as e:
-                logger.error(f"驱动器 {key} 同步商店数据失败：{e}")
-                continue
-
-            self._previous_drivers[key] = new_driver
-        for key in self._store_plugins:
-            try:
-                if key in self._previous_plugins:
-                    new_plugin = self._previous_plugins[key].update(
-                        self._store_plugins[key]
-                    )
-                else:
-                    # TODO: 如果插件不存在，尝试重新测试获取相关信息验证
-                    raise NotImplementedError("插件需要重新测试")
-            except Exception as e:
-                logger.error(f"插件 {key} 同步商店数据失败：{e}")
-                continue
-
-            self._previous_plugins[key] = new_plugin
+        store_plugin_keys = set(self._store_plugins)
+        # 插件被从 nonebot2 仓库移除后，registry results 中对应的测试结果
+        # 也要删除，避免继续输出孤立的旧插件 key。
+        self._previous_results = {
+            key: result
+            for key, result in self._previous_results.items()
+            if key in store_plugin_keys
+        }
+        # 插件配置与测试结果一样跟随插件列表收敛。
+        self._plugin_configs = {
+            key: config
+            for key, config in self._plugin_configs.items()
+            if key in store_plugin_keys
+        }
 
     def generate_github_summary(self, results: dict[str, StoreTestResult]):
         """生成 GitHub 摘要"""
