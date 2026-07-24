@@ -663,7 +663,7 @@ async def test_render_http_error(app: App, mocker: MockFixture):
 
 **⚠️ 在发布检查过程中，我们发现以下问题：**
 
-<pre><code><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保你的项目主页可访问。</dt></li><li>⚠️ 项目 <a href="12312">主页</a> 访问出错。<details><summary>错误信息</summary></details></li></code></pre>
+<pre><code><li>⚠️ 项目 <a href="https://www.baidu.com">主页</a> 返回状态码 404。<dt>请确保你的项目主页可访问。</dt></li><li>⚠️ 项目 <a href="12312">主页</a> 访问出错。<details><summary>错误信息</summary>Request URL is missing an &#39;http://&#39; or &#39;https://&#39; protocol.</details></li></code></pre>
 
 <details>
 <summary>详情</summary>

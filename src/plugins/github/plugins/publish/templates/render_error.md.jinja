@@ -26,7 +26,7 @@
 {%- if ctx.status_code != -1 %}
 项目 <a href="{{ input }}">主页</a> 返回状态码 {{ ctx.status_code }}。<dt>请确保你的项目主页可访问。</dt>
 {%- else %}
-项目 <a href="{{ input }}">主页</a> 访问出错。{{ detail_message("错误信息", ctx.error) }}
+项目 <a href="{{ input }}">主页</a> 访问出错。{{ detail_message("错误信息", ctx.msg) }}
 {%- endif %}
 {%- elif type == "project_link.not_found" %}
 项目 <a href="https://pypi.org/project/{{ input }}/">{{ input }}</a> 未发布至 PyPI。<dt>请将你的项目发布至 PyPI。</dt>
