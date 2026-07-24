@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 
 from src.providers.constants import STORE_ADAPTERS_URL
+from src.providers.logger import logger
 from src.providers.utils import get_url, load_json_from_web
 
 from .constants import MESSAGE_TRANSLATIONS
@@ -25,6 +26,7 @@ def check_url(url: str) -> tuple[int, str]:
         r = get_url(url)
         return r.status_code, ""
     except Exception as e:
+        logger.debug(f"访问网址 {url} 时出错", exc_info=True)
         return -1, str(e)
 
 
