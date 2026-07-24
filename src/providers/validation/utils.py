@@ -26,7 +26,7 @@ def check_url(url: str) -> tuple[int, str]:
         r = get_url(url)
         return r.status_code, ""
     except Exception as e:
-        logger.debug("访问网址 %s 时出错", url, exc_info=True)
+        logger.debug(f"访问网址 {url} 时出错", exc_info=True)
         return -1, str(e)
 
 
