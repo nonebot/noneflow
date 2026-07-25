@@ -25,9 +25,9 @@ Changelog = "https://github.com/nonebot/noneflow/blob/main/CHANGELOG.md"
 
 [dependency-groups]
 dev = [
-  "inline-snapshot>=0.34.2",
+  "inline-snapshot>=0.35.2",
   "nonebug>=0.4.4",
-  "poethepoet>=0.47.1",
+  "poethepoet>=0.48.0",
   "pytest-asyncio>=1.4.0",
   "pytest-cov>=7.1.0",
   "pytest-mock>=3.15.1",
