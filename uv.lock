@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.14.6"
 
 [[package]]
@@ -394,7 +394,7 @@ wheels = [
 
 [[package]]
 name = "inline-snapshot"
-version = "0.35.2"
+version = "0.36.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "asttokens" },
@@ -403,9 +403,9 @@ dependencies = [
     { name = "rich" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c6/b3/38a1b9c6323c5dff0ab6c74aa839f1c7d8b7057a861d80ec5bfe834be24e/inline_snapshot-0.35.2.tar.gz", hash = "sha256:6cfd2ea0b52d9cb9beb13c1e73d740ff86f630ba48d9ea6947e54e3ff8494876", size = 2534713, upload-time = "2026-07-16T10:51:58.826Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/bc/39/05067e7dd5c27e3fd31760a21db6a8e9d6908a39b5e17b8698f473b6b7fe/inline_snapshot-0.36.0.tar.gz", hash = "sha256:c45dfc34affc42116fd23e22665fb58e59426c564ddb17114a6833f61a31b1f7", size = 2541802, upload-time = "2026-10-02T12:14:13.112Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b7/ea/de85fc264e4c76bda3552eee42904e8b7079fd826902aa5fa044bc5bbc3c/inline_snapshot-0.35.2-py3-none-any.whl", hash = "sha256:91b230b310c95a8c3b91cdbc637e064c7c2f98c13935b64875a7ba9ef174e161", size = 94669, upload-time = "2026-07-16T10:51:57.457Z" },
+    { url = "https://files.pythonhosted.org/packages/39/de/f625b9c923c4264ee8d94e416c0d5fd59194f7b6cd8fc0d6ec2f51dfc506/inline_snapshot-0.36.0-py3-none-any.whl", hash = "sha256:1079cf302098fedb418c7ac2be9cadd14f2e71461143bcaf605be1214530bef4", size = 98033, upload-time = "2026-10-02T12:14:11.398Z" },
 ]
 
 [[package]]
@@ -648,12 +648,12 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "inline-snapshot", specifier = ">=0.35.2" },
+    { name = "inline-snapshot", specifier = ">=0.36.0" },
     { name = "nonebug", specifier = ">=0.4.4" },
     { name = "poethepoet", specifier = ">=0.48.0" },
     { name = "pytest-asyncio", specifier = ">=1.4.0" },
     { name = "pytest-cov", specifier = ">=7.1.0" },
-    { name = "pytest-mock", specifier = ">=3.15.1" },
+    { name = "pytest-mock", specifier = ">=3.16.0" },
     { name = "pytest-xdist", specifier = ">=3.8.0" },
     { name = "respx", specifier = ">=0.23.1" },
 ]
@@ -937,14 +937,14 @@ wheels = [
 
 [[package]]
 name = "pytest-mock"
-version = "3.15.1"
+version = "3.16.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pytest" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/68/14/eb014d26be205d38ad5ad20d9a80f7d201472e08167f0bb4361e251084a9/pytest_mock-3.15.1.tar.gz", hash = "sha256:1849a238f6f396da19762269de72cb1814ab44416fa73a8686deac10b0d87a0f", size = 34036, upload-time = "2025-09-16T16:37:27.081Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7a/7f/6ed29931d5c8cd396e7c0a55412e6cc88020373365c8685985dea53d26d7/pytest_mock-3.16.0.tar.gz", hash = "sha256:5a8395528b8f498205f3718f575228d0edaed7425fff638f87d1a6c3e0383636", size = 35362, upload-time = "2026-09-27T14:57:55.46Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5a/cc/06253936f4a7fa2e0f48dfe6d851d9c56df896a9ab09ac019d70b760619c/pytest_mock-3.15.1-py3-none-any.whl", hash = "sha256:0a25e2eb88fe5168d535041d09a4529a188176ae608a6d249ee65abc0949630d", size = 10095, upload-time = "2025-09-16T16:37:25.734Z" },
+    { url = "https://files.pythonhosted.org/packages/db/5b/b83a9bf1a3b4ec222f9fa083147ff6816245223da0ab92370e7e056f113f/pytest_mock-3.16.0-py3-none-any.whl", hash = "sha256:007cfeb257801d88d9c0b2a7b5a15a15e73b71968dfd72e7bf8c4a2f8393aec8", size = 10016, upload-time = "2026-09-27T14:57:54.283Z" },
 ]
 
 [[package]]
